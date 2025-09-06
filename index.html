@@ -10,12 +10,11 @@
 
   <!-- ===== TOPBAR ===== -->
   <header class="topbar">
-    <!-- Kairė: logotipas (mažas) -->
     <a class="brand" href="/">
       <img class="brand-icon" src="/assets/icon/paule-logo.webp" alt="paule">
     </a>
 
-    <!-- Centras: AI modeliai (vienoje eilėje, sulygiuota aukštyje su mygtukais) -->
+    <!-- Modeliai centre, sulygiuota su mygtukais -->
     <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
       <button class="model-pill active" data-model="auto" aria-pressed="true">
         <img src="/assets/icon/ai-auto.svg" width="16" height="16" alt=""> Auto
@@ -40,38 +39,34 @@
       </button>
     </nav>
 
-    <!-- Dešinė: veiksmai -->
     <div class="top-actions">
       <a class="btn ghost" href="/community">
         <img src="/assets/icon/nav-results.svg" width="16" height="16" alt=""> Community
       </a>
-
       <button class="btn ghost" id="btnNewChat">
         <img src="/assets/icon/nav-new-chat.svg" width="16" height="16" alt=""> Naujas pokalbis
       </button>
-
       <button class="btn ghost mobile-toggle" id="btnMobile">
         <img src="/assets/icon/nav-menu.svg" width="16" height="16" alt=""> Meniu
       </button>
 
-      <!-- jei NEprisijungta -->
+      <!-- KEITIMASIS su prisijungimu (šablone palieku abu) -->
       <button class="btn ghost" id="btnLogin">
         <img src="/assets/icon/user.svg" width="16" height="16" alt=""> Prisijungti
       </button>
 
-      <!-- jei prisijungta – parodyk šitą vietoje "Prisijungti" -->
       <div class="user-profile hidden" id="userProfile">
         <div class="user-avatar">U</div>
         <div class="user-name">Vartotojas</div>
-        <div class="profile-dropdown" id="profileDropdown">
+        <div class="profile-dropdown">
           <div class="dropdown-item" style="cursor:default">
             <img src="/assets/icon/nav-theme.svg" width="16" height="16" alt="">
-            <div style="display:flex; gap:8px; margin-left:auto;">
-              <select class="select" id="themeSelect" onchange="document.documentElement.setAttribute('data-theme', this.value)">
+            <div class="profile-controls">
+              <select class="select" onchange="document.documentElement.setAttribute('data-theme', this.value)">
                 <option value="light">Šviesi</option>
                 <option value="dark">Tamsi</option>
               </select>
-              <select class="select" id="langSelect">
+              <select class="select">
                 <option value="lt">LT</option>
                 <option value="en">EN</option>
               </select>
@@ -79,8 +74,6 @@
           </div>
 
           <div class="dropdown-divider"></div>
-
-          <!-- Statistika profilyje -->
           <div class="dropdown-item" style="cursor:default; flex-direction:column; align-items:flex-start;">
             <div class="mini-title">Statistika</div>
             <div class="stats-grid">
@@ -108,16 +101,6 @@
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
 
-      <!-- Bendruomenės aktyvumas -->
-      <section class="side-section">
-        <div class="side-title">Bendruomenės aktyvumas</div>
-        <div class="community-pings">
-          <div class="ping"><img src="/assets/icon/music.svg" width="14" height="14" alt=""> @Mantas įkėlė dainą „Vasaros vėjas“</div>
-          <div class="ping"><img src="/assets/icon/photo.svg" width="14" height="14" alt=""> @Ieva pridėjo 3 nuotraukas</div>
-          <div class="ping"><img src="/assets/icon/video-library.svg" width="14" height="14" alt=""> @Ruta publikavo „Reklama-15s“</div>
-        </div>
-      </section>
-
       <!-- AI specialistai -->
       <section class="side-section">
         <div class="side-title">AI specialistai</div>
@@ -135,7 +118,17 @@
         </div>
       </section>
 
-      <!-- Mano biblioteka (aktyvūs pavadinimai) -->
+      <!-- Aktyvumas (perkelta žemiau specialistų) -->
+      <section class="side-section">
+        <div class="side-title">Aktyvumas</div>
+        <div class="community-pings">
+          <div class="ping"><img src="/assets/icon/music.svg" width="14" height="14" alt=""> @Mantas įkėlė dainą „Vasaros vėjas“</div>
+          <div class="ping"><img src="/assets/icon/photo.svg" width="14" height="14" alt=""> @Ieva pridėjo 3 nuotraukas</div>
+          <div class="ping"><img src="/assets/icon/video-library.svg" width="14" height="14" alt=""> @Ruta publikavo „Reklama-15s“</div>
+        </div>
+      </section>
+
+      <!-- Mano biblioteka -->
       <section class="side-section">
         <div class="side-title"><a class="lib-link" href="/biblioteka#dainos">Dainos</a></div>
         <div class="library-grid">
@@ -184,10 +177,9 @@
     <main class="main">
       <div class="chat-area" id="chatArea">
 
-        <!-- HERO: didesnis logotipas vietoje mėlyno teksto -->
+        <!-- HERO su gradientiniu užrašu -->
         <section class="welcome" id="welcome">
-          <img class="hero-logo" src="/assets/icon/paule-logo.webp" alt="paule">
-          <h1>Sveiki atvykę į</h1>
+          <h1 class="hero-title">Sveiki atvykę į <span>paule</span></h1>
           <p>Pradėkite naują pokalbį arba pasirinkite modelį viršuje.</p>
 
           <div class="welcome-actions">
@@ -196,15 +188,14 @@
             <button class="welcome-btn"><img src="/assets/icon/business-finance.svg" width="16" height="16" alt=""> Verslo strategija</button>
           </div>
 
-          <!-- horizontali bendruomenės juosta -->
           <div class="community-strip">
-            <div class="strip-item"><img src="/assets/icon/like.svg" onerror="this.style.display='none'" alt=""> Populiaru: „Miesto pulsas“ • 2.1k</div>
+            <div class="strip-item">Populiaru: „Miesto pulsas“ • 2.1k</div>
             <div class="strip-item">Nauja: @Ieva įkėlė 3 nuotraukas</div>
             <div class="strip-item">Konkursas: Geriausia daina rugsėjį</div>
           </div>
         </section>
 
-        <!-- Pavyzdinė žinutė — ribotas aukštis su scroll -->
+        <!-- Pavyzdinis burbulas (ribotas aukštis su scroll) -->
         <article class="message">
           <div class="avatar"><img src="/assets/icon/ai.svg" alt=""></div>
           <div class="bubble" data-model="chatgpt">
@@ -244,7 +235,7 @@
     </div>
   </div>
 
-  <!-- Login modal karkasas (nekeistas) -->
+  <!-- Login modal (nefunkcionalus šablone) -->
   <div class="modal-overlay" id="loginModalOverlay">
     <div class="login-modal">
       <button class="modal-close" id="closeLoginModal">×</button>
@@ -272,3 +263,4 @@
 
 </body>
 </html>
+
