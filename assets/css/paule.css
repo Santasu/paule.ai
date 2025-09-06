@@ -883,3 +883,101 @@ body[data-view="community"] .main{ grid-template-rows: 1fr; }
   background: var(--bg-elevated, #f4f4f5); color: var(--text, #111);
 }
 .debate-actions .action-btn:hover{ filter:brightness(1.05); }
+/* ——— Top bar su modelių juosta ——— */
+.topbar{
+  position: sticky; top: 0; z-index: 200;
+  display: grid; grid-template-columns: auto 1fr auto; gap: 12px;
+  align-items: center;
+  height: 64px; padding: 8px 14px;
+  background: color-mix(in srgb, var(--bg-primary), #fff 0%);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+.brand{ display:flex; align-items:center; }
+.brand-icon{ width:28px;height:28px; display:block; }
+
+.model-strip{
+  display:flex; gap:8px; overflow-x:auto; padding:4px 0;
+  scrollbar-width: thin;
+}
+.model-strip::-webkit-scrollbar{ height:6px; }
+.model-strip::-webkit-scrollbar-thumb{ background: var(--border); border-radius: 3px; }
+
+/* Pastelinė spalva pagal modelį */
+.model-tab{
+  --c: var(--accent);
+  border:1px solid color-mix(in srgb, var(--c) 40%, transparent);
+  background: color-mix(in srgb, var(--c) 8%, #fff);
+  color: color-mix(in srgb, var(--c) 70%, #111);
+  padding:8px 12px; border-radius: 999px;
+  font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  transition: .15s ease;
+}
+.model-tab:hover{ transform: translateY(-1px); }
+.model-tab.active{
+  background: color-mix(in srgb, var(--c) 14%, #fff);
+  border-color: color-mix(in srgb, var(--c) 55%, transparent);
+}
+
+/* spalvų priskyrimai */
+.model-tab[data-model="paule"]   { --c:#7C3AED; }  /* violet */
+.model-tab[data-model="chatgpt"] { --c:#10B981; }  /* teal */
+.model-tab[data-model="claude"]  { --c:#F59E0B; }  /* amber */
+.model-tab[data-model="gemini"]  { --c:#4285F4; }  /* google blue */
+.model-tab[data-model="grok"]    { --c:#111111; }  /* black */
+.model-tab[data-model="deepseek"]{ --c:#8B5E3C; }  /* brown */
+.model-tab[data-model="llama"]   { --c:#9333EA; }  /* purple */
+
+/* ——— Pilno ekrano modalas ——— */
+.modal-overlay{
+  position: fixed; inset: 0; background: rgba(0,0,0,.7);
+  display: none; place-items: center; z-index: 2000;
+}
+.modal-overlay.open{ display: grid; }
+
+.modal{
+  width: 100vw; height: 100vh; max-width: none; max-height: none;
+  border-radius: 0; background: var(--bg-primary); color: var(--text-primary);
+  display: grid; grid-template-rows: auto 1fr; overflow: hidden;
+}
+.modal-head{
+  display:flex; align-items:center; gap:12px; padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-head #modal-title{ font-size:18px; font-weight:800; }
+.share-link{
+  margin-left: auto; font-weight:700; font-size:13px;
+  border:1px solid var(--border); padding:6px 10px; border-radius:8px;
+  text-decoration:none; color: var(--text-primary);
+}
+.share-link:hover{ background: var(--accent-light); }
+
+.modal-body{
+  overflow: auto; padding: 20px; line-height: 1.6;
+}
+
+/* Didelis X */
+.modal-close{
+  position: absolute; top: 12px; right: 12px;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(0,0,0,.06); color: var(--text-primary);
+  border: 1px solid var(--border);
+  font-size: 28px; font-weight: 700; line-height: 1; cursor: pointer;
+}
+.modal-close:hover{ background: rgba(0,0,0,.12); transform: scale(1.04); }
+
+/* CTA spalvų atitikimas modalo header pagal modelį */
+.modal[data-model="paule"]   .modal-head{ background: color-mix(in srgb, #7C3AED 10%, transparent); }
+.modal[data-model="chatgpt"] .modal-head{ background: color-mix(in srgb, #10B981 10%, transparent); }
+.modal[data-model="claude"]  .modal-head{ background: color-mix(in srgb, #F59E0B 10%, transparent); }
+.modal[data-model="gemini"]  .modal-head{ background: color-mix(in srgb, #4285F4 10%, transparent); }
+.modal[data-model="grok"]    .modal-head{ background: color-mix(in srgb, #111111 10%, transparent); }
+.modal[data-model="deepseek"].modal-head{ background: color-mix(in srgb, #8B5E3C 10%, transparent); }
+.modal[data-model="llama"]   .modal-head{ background: color-mix(in srgb, #9333EA 10%, transparent); }
+
+/* Mažesniems ekranams */
+@media (max-width: 1024px){
+  .topbar{ grid-template-columns: auto 1fr auto; height: 60px; }
+  .modal-body{ padding: 16px; }
+}
+
