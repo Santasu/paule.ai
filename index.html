@@ -235,7 +235,7 @@
     </div>
   </div>
 
-  <!-- ===== URLinis POPUP – paliekam pavyzdį šefui (tikslų popupą išėmiau, nes /spec/goal.html) -->
+  <!-- ===== URLinis POPUP – pavyzdys (šefas) -->
   <section class="popup" id="spec-sefas" aria-modal="true" role="dialog">
     <div class="popup-body">
       <header class="popup-head">
@@ -248,6 +248,77 @@
     </div>
   </section>
 
+  <!-- ====== PRISIJUNGIMO MODALAS (nauja) ====== -->
+  <div class="modal" id="authModal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <h3>Prisijungti / Registruotis</h3>
+        <button class="modal-close" id="authClose" aria-label="Uždaryti">
+          <img src="/assets/icon/nav-close.svg" alt="">
+        </button>
+      </div>
+
+      <div class="auth-grid">
+        <button class="btn-auth" id="btnGoogle">
+          <img src="/assets/icon/google.svg" alt=""> Prisijungti su Google
+        </button>
+
+        <div class="form-row">
+          <input class="input-auth" type="email" placeholder="El. paštas">
+          <input class="input-auth" type="password" placeholder="Slaptažodis">
+          <button class="btn-auth primary" onclick="mockLoginSuccess()">Prisijungti</button>
+        </div>
+
+        <p class="note-auth">Neturite paskyros? Įveskite el. paštą ir spauskite „Prisijungti“ – paskyra bus sukurta automatiškai.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- išorinis JS -->
   <script src="/assets/js/paule.js" defer></script>
+
+  <!-- mini inline JS, kad veiktų net jeigu išoriniame dar nepakeista -->
+  <script>
+  (() => {
+    // Meniu (mobile / sidebar)
+    const btnMobile = document.getElementById('btnMobile');
+    const sidebar   = document.getElementById('sidebar');
+    btnMobile && sidebar && btnMobile.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+
+    // Prisijungimo modalas
+    const btnLogin  = document.getElementById('btnLogin');
+    const authModal = document.getElementById('authModal');
+    const authClose = document.getElementById('authClose');
+
+    function openAuth(){ authModal && authModal.classList.add('open'); }
+    function closeAuth(){ authModal && authModal.classList.remove('open'); }
+
+    btnLogin  && btnLogin .addEventListener('click', openAuth);
+    authClose && authClose.addEventListener('click', closeAuth);
+    authModal && authModal.addEventListener('click', (e)=>{ if(e.target === authModal) closeAuth(); });
+
+    // Tema iš profilio dropdown
+    const selTheme = document.getElementById('selTheme');
+    if (selTheme) {
+      selTheme.value = document.documentElement.getAttribute('data-theme') || 'light';
+      selTheme.addEventListener('change', (e)=> {
+        document.documentElement.setAttribute('data-theme', e.target.value);
+      });
+    }
+
+    // Demo login per Google
+    const btnGoogle = document.getElementById('btnGoogle');
+    window.mockLoginSuccess = function(name='Vartotojas'){
+      document.getElementById('userProfile')?.classList.remove('hidden');
+      document.getElementById('btnLogin')?.classList.add('hidden');
+      const nm = document.querySelector('#userProfile .user-name');
+      if (nm) nm.textContent = name;
+      closeAuth();
+    };
+    btnGoogle && btnGoogle.addEventListener('click', ()=> mockLoginSuccess('Google'));
+  })();
+  </script>
 </body>
 </html>
