@@ -1,1020 +1,311 @@
 /* =========================================================
-   Paule – Premium Chat UI CSS (light / dark)
-   Tipografija liesesnė, ikonų dydžiai mažesni, URL popupai
+   Paule – Premium Chat UI
+   Šviesi / tamsi tema, mažesnės ikonėlės, soft 3D (neumorph),
+   borderless layout, responsive bottom input (nesikerta su sidebar)
    ========================================================= */
 
-/* Reset */
+/* ---------- Reset ---------- */
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",system-ui,sans-serif;line-height:1.55;overflow:hidden}
+html,body{height:100%;min-height:100vh}
 img,svg{max-width:100%;height:auto;display:block}
+:focus-visible{outline:none}
 
-/* Palette (light) */
+/* ---------- Paletė (šviesi) ---------- */
 :root{
   --bg-primary:#ffffff;
-  --bg-secondary:#fafafa;
-  --bg-elev:#f5f6f8;
+  --bg-secondary:#f7f7f9;
+  --bg-elev:#f2f3f7;
 
-  --text-primary:#121317;
-  --text-secondary:#4f515a;
+  --text-primary:#13151a;
+  --text-secondary:#535666;
   --text-muted:#9aa0a8;
 
-  --border:#e8eaf0;
-  --border-2:#f2f3f6;
+  --border:#eceef3;
+  --border-2:#f0f2f7;
 
-  --accent:#6f77ff;       /* pastel violet-blue */
+  --accent:#6f77ff;
   --accent-ghost:#eef0ff;
-  --accent-hover:#5b62f2;
 
   --radius:12px;
-  --shadow:0 1px 2px rgba(0,0,0,.05);
+  --shadow:0 1px 2px rgba(0,0,0,.04);
   --shadow-lg:0 10px 30px rgba(0,0,0,.08);
 
-  --icon:14px;            /* bazinis ikonų dydis */
-  --icon-sm:12px;
+  --icon-10:10px;
+  --icon-12:12px;
+  --icon-14:14px;
+
+  /* Neumorph */
+  --neu-raise: 6px 6px 14px rgba(0,0,0,.08), -6px -6px 14px rgba(255,255,255,.65);
+  --neu-press: inset 6px 6px 12px rgba(0,0,0,.08), inset -6px -6px 12px rgba(255,255,255,.65);
+
+  /* Layout */
+  --sidebar:300px;
+  --gutter:14px;
+
+  /* Focus ring */
+  --ring:0 0 0 4px color-mix(in srgb,var(--accent) 22%, transparent);
 }
 
-/* Dark */
+/* ---------- Tamsi tema ---------- */
 [data-theme="dark"]{
   --bg-primary:#0e1116;
-  --bg-secondary:#151a22;
-  --bg-elev:#1b2230;
+  --bg-secondary:#141924;
+  --bg-elev:#192233;
 
-  --text-primary:#f3f4f6;
-  --text-secondary:#c9cbd4;
+  --text-primary:#eef0f3;
+  --text-secondary:#c9cdd6;
   --text-muted:#a1a7b1;
 
   --border:#283143;
   --border-2:#20283a;
 
   --accent:#8a96ff;
-  --accent-ghost:#1b1f33;
-  --accent-hover:#a5afff;
+  --accent-ghost:#1b2035;
+
+  --neu-raise: 6px 6px 14px rgba(0,0,0,.55), -6px -6px 14px rgba(255,255,255,.06);
+  --neu-press: inset 6px 6px 12px rgba(0,0,0,.55), inset -6px -6px 12px rgba(255,255,255,.06);
 }
 
-body{background:var(--bg-primary);color:var(--text-primary)}
+/* ---------- Bazė ---------- */
+body{background:var(--bg-primary);color:var(--text-primary);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",system-ui,sans-serif;line-height:1.55;overflow:hidden}
+a,button,.btn,.chip,.tool,.model-pill,.lib-card,.project-item{transition:.15s ease}
+button{background:none;border:0;color:inherit;cursor:pointer}
+.hidden{display:none !important}
 
-/* ===== Topbar ===== */
+/* Accessible focus */
+a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.tool:focus-visible,.model-pill:focus-visible{box-shadow:var(--ring)}
+
+/* =========================================================
+   TOPBAR
+   ========================================================= */
 .topbar{
-  position:sticky;top:0;z-index:200;
-  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;
-  height:66px;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--bg-primary);backdrop-filter:blur(8px)
+  position:sticky; top:0; z-index:200;
+  display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:10px;
+  height:66px; padding:8px 14px;
+  background:var(--bg-primary); backdrop-filter:blur(8px);
+  /* be linijos viršuje */
+  border-bottom:0;
+  overflow:visible;
 }
-.brand-icon{width:68px;height:auto}
 
-.models-in-topbar{display:flex;gap:6px;justify-content:center;align-items:center;overflow-x:auto;scrollbar-width:thin}
+/* Logotipas – vienas, be rėmelių; auto swap pagal temą.
+   Jei paliksi .webp – tamsiai temai pritaikys invert filtrą. */
+.brand{display:flex;align-items:center}
+.brand-icon{width:72px;height:auto;padding:0;border:0;background:transparent}
+.brand-icon{content:url("/assets/icon/paule-logo-w.svg")}
+[data-theme="dark"] .brand-icon{content:url("/assets/icon/paule-logo-b.svg")}
+[data-theme="dark"] .brand-icon[src$=".webp"]{filter:brightness(0) invert(1)} /* fallback jei nepakeisi failo */
+
+/* Modelių juosta */
+.models-in-topbar{display:flex;gap:6px;justify-content:center;align-items:center;overflow-x:auto;scrollbar-width:thin;padding-block:2px}
 .models-in-topbar::-webkit-scrollbar{height:6px}
 .models-in-topbar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-
 .model-pill{
-  border:1px solid var(--border);
-  background:var(--bg-secondary);
-  color:var(--text-primary);
-  padding:7px 10px;border-radius:999px;font-size:12px;font-weight:600;
-  display:inline-flex;align-items:center;gap:6px;cursor:pointer;transition:.15s ease;white-space:nowrap
+  padding:6px 9px; font-size:11.5px; border-radius:999px; white-space:nowrap;
+  color:var(--text-primary); background:var(--bg-secondary); box-shadow:var(--neu-raise);
 }
-.model-pill img{width:var(--icon);height:var(--icon)}
-.model-pill:hover{transform:translateY(-1px);border-color:var(--accent);box-shadow:0 4px 12px rgba(62,70,255,.10)}
-.model-pill.active{background:var(--accent-ghost);border-color:var(--accent);color:var(--accent)}
+.model-pill img{width:13px;height:13px}
+.model-pill:hover{transform:translateY(-1px)}
+.model-pill.active{background:var(--accent-ghost); color:var(--accent); box-shadow:var(--neu-press)}
+/* „Auto“ prigesinti, kai aktyvus kitas */
+.models-in-topbar:has(.model-pill.active:not([data-model="auto"])) .model-pill[data-model="auto"]{opacity:.45}
 
+/* Dešinė */
 .top-actions{display:flex;gap:6px;align-items:center}
-.btn{border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);padding:7px 10px;border-radius:10px;font-weight:600;cursor:pointer;display:inline-flex;gap:6px;align-items:center;transition:.15s}
-.btn img{width:var(--icon-sm);height:var(--icon-sm)}
-.btn.ghost:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-ghost)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:10px;font-weight:600;background:var(--bg-secondary);color:var(--text-primary);box-shadow:var(--neu-raise)}
+.btn img{width:var(--icon-12);height:var(--icon-12)}
+.btn:hover{box-shadow:var(--neu-press)}
+/* „Meniu“ desktop’e slepiam – mobile rodysim */
+.top-actions .mobile-toggle{display:none}
 
-/* Profile dropdown */
-.user-profile{position:relative;display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--border);background:var(--bg-secondary);border-radius:10px;cursor:pointer}
-.user-avatar{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
-.user-name{font-weight:600;font-size:12px}
-.profile-dropdown{position:absolute;top:100%;right:0;margin-top:8px;min-width:320px;padding:8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);opacity:0;visibility:hidden;transform:translateY(-6px);transition:.2s}
-.user-profile:hover .profile-dropdown{opacity:1;visibility:visible;transform:translateY(0)}
-.dropdown-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:10px;color:var(--text-primary)}
-.dropdown-item:hover{background:var(--bg-secondary)}
-.dropdown-divider{height:1px;background:var(--border);margin:4px 0}
-.profile-controls{display:flex;gap:8px;margin-left:auto}
-.mini-title{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px}
-
-/* ===== Layout ===== */
-.layout{display:grid;grid-template-columns:300px 1fr;height:calc(100vh - 66px);overflow:hidden}
-
-/* Sidebar */
-.sidebar{border-right:1px solid var(--border);overflow:auto;background:var(--bg-primary)}
-.side-section{padding:12px 14px;border-bottom:1px solid var(--border-2)}
-.side-title{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;font-weight:700}
-
-.specialist-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.chip{
-  background:var(--bg-secondary);padding:7px 9px;border-radius:10px;font-size:12px;cursor:pointer;color:var(--text-secondary);
-  border:1px solid var(--border);transition:.15s;display:flex;align-items:center;gap:6px;font-weight:600;text-decoration:none
+/* =========================================================
+   LAYOUT + SIDEBAR
+   ========================================================= */
+.layout{display:grid;grid-template-columns:var(--sidebar) 1fr;height:calc(100vh - 66px);overflow:hidden}
+.sidebar{
+  overflow:auto;background:var(--bg-primary);
+  /* be linijos kairėje */
+  border-right:0;
 }
-.chip img{width:var(--icon-sm);height:var(--icon-sm)}
-.chip:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-ghost)}
+.side-section{padding:12px 14px /* be border-bottom */}
+.side-title{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;font-weight:700}
+.specialist-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+
+.chip{
+  background:var(--bg-secondary);padding:7px 9px;border-radius:10px;font-size:12px;cursor:pointer;
+  color:var(--text-secondary);box-shadow:var(--neu-raise);text-decoration:none;display:flex;align-items:center;gap:6px;font-weight:600
+}
+.chip img{width:var(--icon-12);height:var(--icon-12)}
+.chip:hover{color:var(--accent);box-shadow:var(--neu-press)}
 
 .community-pings{display:flex;flex-direction:column;gap:6px}
-.ping{font-size:11.5px;color:var(--text-secondary);display:flex;gap:6px;align-items:center;padding:7px;border:1px dashed var(--border);border-radius:10px;background:var(--bg-secondary)}
-.ping img{width:var(--icon-sm);height:var(--icon-sm)}
+.ping{
+  font-size:12px;color:var(--text-secondary);display:flex;gap:6px;align-items:center;padding:7px;border-radius:10px;
+  background:var(--bg-secondary);box-shadow:var(--neu-raise)
+}
+.ping img{width:var(--icon-12);height:var(--icon-12)}
 
 .lib-link{color:var(--text-secondary);text-decoration:none;font-weight:700}
 .lib-link:hover{color:var(--accent)}
 .library-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .lib-card{
-  display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 6px;border:1px solid var(--border);border-radius:12px;
-  background:var(--bg-secondary);text-decoration:none;color:var(--text-secondary);font-size:10.5px;font-weight:600;transition:.15s
+  display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 6px;border-radius:12px;
+  background:var(--bg-secondary);text-decoration:none;color:var(--text-secondary);font-size:11px;font-weight:600;box-shadow:var(--neu-raise)
 }
-.lib-card img{width:34px;height:34px;object-fit:contain}
-.lib-card:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent);background:var(--accent-ghost)}
+.lib-card img{width:30px;height:30px;object-fit:contain}
+.lib-card:hover{transform:translateY(-1px);color:var(--accent);box-shadow:var(--neu-press)}
 
-.project-item{display:flex;align-items:center;gap:8px;padding:9px;border:1px solid var(--border);border-radius:10px;color:var(--text-secondary);cursor:pointer;font-weight:600}
-.project-item img{width:var(--icon-sm);height:var(--icon-sm)}
-.project-item:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-ghost)}
+.project-item{display:flex;align-items:center;gap:8px;padding:9px;border-radius:10px;color:var(--text-secondary);cursor:pointer;font-weight:600;background:var(--bg-secondary);box-shadow:var(--neu-raise)}
+.project-item img{width:var(--icon-12);height:var(--icon-12)}
+.project-item:hover{color:var(--accent);box-shadow:var(--neu-press)}
 
-/* ===== Main / Chat ===== */
+/* =========================================================
+   MAIN / CHAT
+   ========================================================= */
 .main{display:flex;flex-direction:column;overflow:hidden;background:var(--bg-primary)}
-.chat-area{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:14px;padding-bottom:230px}
-
+.chat-area{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:14px;padding-bottom:250px}
 .hero-title{
-  font-size:28px;line-height:1.2;margin:4px 0 6px;font-weight:800;text-align:center;
+  font-size:28px;line-height:1.2;margin:6px 0 6px;font-weight:800;text-align:center;
   background:linear-gradient(90deg,#0a0a0a 0%,var(--accent) 75%);-webkit-background-clip:text;background-clip:text;color:transparent
 }
-.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:24vh;text-align:center;margin-top:2px}
+[data-theme="dark"] .hero-title{background:linear-gradient(90deg,#ffffff 0%,var(--accent) 65%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:22vh;text-align:center}
 .welcome p{color:var(--text-secondary);margin-bottom:12px}
 .welcome-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-.welcome-btn{padding:8px 12px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);border-radius:12px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;text-decoration:none}
-.welcome-btn img{width:var(--icon-sm);height:var(--icon-sm)}
-.welcome-btn:hover{background:var(--accent-ghost);border-color:var(--accent);color:var(--accent)}
-
+.welcome-btn{padding:8px 12px;border-radius:12px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;text-decoration:none;background:var(--bg-secondary);color:var(--text-primary);box-shadow:var(--neu-raise)}
+.welcome-btn img{width:12px;height:12px}
+.welcome-btn:hover{box-shadow:var(--neu-press)}
 .community-strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;justify-content:center}
-.strip-item{font-size:11.5px;color:var(--text-secondary);border:1px dashed var(--border);background:var(--bg-secondary);padding:5px 9px;border-radius:999px}
+.strip-item{font-size:11.5px;color:var(--text-secondary);background:var(--bg-secondary);padding:6px 10px;border-radius:999px;box-shadow:var(--neu-raise)}
 
-/* Messages – ribotas aukštis su scroll burbuluose */
+/* Po pirmos žinutės – paslepiam hero */
+.chat-area:has(.message) #welcome{display:none}
+
+/* Žinutės */
 .message{display:flex;gap:10px;align-items:flex-start}
-.avatar{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--bg-secondary)}
+.avatar{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--bg-secondary);box-shadow:var(--neu-raise)}
 .avatar img{width:16px;height:16px}
 .bubble{flex:1;max-width:78%}
-.bubble-card{background:var(--bg-secondary);border-radius:14px;padding:12px;border:1px solid var(--border)}
+.bubble-card{background:var(--bg-secondary);border-radius:14px;padding:12px;box-shadow:var(--neu-raise)}
 .msg-content{max-height:210px;overflow:auto;font-size:14px}
 .msg-content::-webkit-scrollbar{width:6px}
 .msg-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .msg-meta{display:flex;gap:6px;color:var(--text-muted);font-size:11.5px;margin-top:5px}
-.model-tag{border:1px solid var(--border);background:var(--bg-elev);padding:2px 7px;border-radius:8px}
+.model-tag{background:var(--bg-elev);padding:2px 7px;border-radius:8px}
 
-/* Model tint */
-.bubble[data-model="chatgpt"] .bubble-card{border-left:3px solid color-mix(in srgb,#10b981 45%,transparent)}
-.bubble[data-model="claude"] .bubble-card{border-left:3px solid color-mix(in srgb,#f59e0b 45%,transparent)}
-.bubble[data-model="gemini"] .bubble-card{border-left:3px solid color-mix(in srgb,#4285f4 45%,transparent)}
-.bubble[data-model="grok"] .bubble-card{border-left:3px solid color-mix(in srgb,#111 35%,transparent)}
-.bubble[data-model="deepseek"] .bubble-card{border-left:3px solid color-mix(in srgb,#8B5E3C 45%,transparent)}
-.bubble[data-model="llama"] .bubble-card{border-left:3px solid color-mix(in srgb,#9333EA 45%,transparent)}
+/* Model tint kairėje */
+.bubble[data-model="chatgpt"] .bubble-card{border-left:3px solid color-mix(in srgb,#10b981 45%, transparent)}
+.bubble[data-model="claude"] .bubble-card{border-left:3px solid color-mix(in srgb,#f59e0b 45%, transparent)}
+.bubble[data-model="gemini"] .bubble-card{border-left:3px solid color-mix(in srgb,#4285f4 45%, transparent)}
+.bubble[data-model="grok"]   .bubble-card{border-left:3px solid color-mix(in srgb,#111 35%, transparent)}
+.bubble[data-model="deepseek"] .bubble-card{border-left:3px solid color-mix(in srgb,#8B5E3C 45%, transparent)}
+.bubble[data-model="llama"] .bubble-card{border-left:3px solid color-mix(in srgb,#9333EA 45%, transparent)}
 
-/* ===== Bottom input ===== */
-.bottom-section{
-  position:fixed;left:50%;transform:translateX(-50%);bottom:12px;width:calc(100% - 680px);max-width:880px;
-  background:var(--bg-primary);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);z-index:180
+@supports not (color: color-mix(in srgb, #000 50%, #fff 50%)){
+  .bubble[data-model="chatgpt"] .bubble-card{ border-left:3px solid #10b98133 }
+  .bubble[data-model="claude"] .bubble-card{ border-left:3px solid #f59e0b33 }
+  .bubble[data-model="gemini"] .bubble-card{ border-left:3px solid #4285f433 }
+  .bubble[data-model="grok"]   .bubble-card{ border-left:3px solid #11111133 }
+  .bubble[data-model="deepseek"] .bubble-card{ border-left:3px solid #8B5E3C33 }
+  .bubble[data-model="llama"] .bubble-card{ border-left:3px solid #9333EA33 }
 }
-.input-bar{padding:12px 14px;border-bottom:1px solid var(--border-2)}
-.input-container{display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--bg-secondary);border-radius:14px;padding:8px 10px}
+
+/* Apsauga nuo „gigantiškų“ SVG chate */
+.chat-area img[src$=".svg"]{max-width:40px;max-height:40px;width:auto;height:auto;object-fit:contain}
+
+/* =========================================================
+   BOTTOM INPUT (pririštas prie MAIN, nekerta sidebar)
+   ========================================================= */
+.bottom-section{
+  position:fixed; bottom:12px; z-index:300;
+  left: calc(var(--sidebar) + var(--gutter)); right: var(--gutter); width:auto; transform:none;
+  background:var(--bg-primary); backdrop-filter:blur(8px); border-radius:16px; box-shadow:var(--shadow-lg); border:0;
+}
+.input-bar{padding:12px 14px /* no bottom border */}
+.input-container{
+  display:flex; align-items:center; gap:8px; border-radius:14px; padding:8px 10px;
+  background:var(--bg-secondary); box-shadow:var(--neu-raise)
+}
 .message-input{flex:1;border:none;background:transparent;outline:none;max-height:110px;color:var(--text-primary);font-size:15px}
-.send-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.send-btn{
+  width:38px;height:38px;border-radius:50%; background:var(--accent); color:#fff;
+  display:flex;align-items:center;justify-content:center; box-shadow:var(--neu-raise)
+}
 .send-btn img{width:18px;height:18px;filter:invert(1)}
 .tools-bar{padding:7px 10px;display:flex;gap:6px;align-items:center;justify-content:center;overflow-x:auto;flex-wrap:wrap}
-.tool{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--bg-primary);border-radius:10px;padding:4px 7px;font-size:10.5px;cursor:pointer;color:var(--text-muted);white-space:nowrap;font-weight:600}
-.tool img{width:var(--icon-sm);height:var(--icon-sm)}
-.tool:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-ghost)}
+.tool{display:inline-flex;align-items:center;gap:5px;border-radius:10px;padding:4px 7px;font-size:10.5px;cursor:pointer;color:var(--text-muted);white-space:nowrap;font-weight:600;background:var(--bg-primary);box-shadow:var(--neu-raise)}
+.tool img{width:var(--icon-12);height:var(--icon-12)}
+.tool:hover{color:var(--accent);box-shadow:var(--neu-press)}
 
-/* apsauga nuo „gigantiškų“ SVG */
-.chat-area img[src$="video-plus.svg"],
-.chat-area img[src$="video-library.svg"],
-.chat-area img[src$="photo.svg"]{max-width:40px !important;height:auto !important}
+/* =========================================================
+   ICONS: tamsiai temai pašviesinti visus UI .svg
+   ========================================================= */
+:root{ --ui-icon-filter:none }
+[data-theme="dark"]{ --ui-icon-filter:brightness(0) invert(1) contrast(1.05) }
+[data-theme="dark"] .btn img,
+[data-theme="dark"] .tool img,
+[data-theme="dark"] .ping img,
+[data-theme="dark"] .lib-card img,
+[data-theme="dark"] .welcome-btn img,
+[data-theme="dark"] .avatar img,
+[data-theme="dark"] .send-btn img,
+[data-theme="dark"] .model-pill img,
+[data-theme="dark"] .popup-head h2 img,
+[data-theme="dark"] .popup-close img{ filter:var(--ui-icon-filter) }
 
-/* Select */
+/* =========================================================
+   URL POPUP (įsk. #auth) – švarus, neu kortelė
+   ========================================================= */
+.popup{position:fixed;inset:0;display:none;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:3000}
+.popup:target{display:block}
+.popup-body{position:absolute;inset:0;display:flex;flex-direction:column;max-width:min(1100px,92vw);margin:auto;padding:20px}
+.popup-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.popup-head h2{display:flex;align-items:center;gap:10px;color:#fff;font-size:20px;font-weight:800}
+.popup-head h2 img,.popup-close img{filter:invert(1)}
+.popup-close{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.08)}
+.popup-content{
+  flex:1;border-radius:16px;background:var(--bg-primary);color:var(--text-primary);padding:16px;overflow:auto;
+  box-shadow:var(--neu-raise); max-width:520px; margin:auto;
+}
+#auth .btn{background:var(--bg-secondary);box-shadow:var(--neu-raise)}
+#auth .btn:hover{box-shadow:var(--neu-press)}
+
+/* =========================================================
+   PROFILIO DROPDOWN
+   ========================================================= */
+.user-profile{position:relative;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;cursor:pointer;background:var(--bg-secondary);box-shadow:var(--neu-raise)}
+.user-avatar{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.user-name{font-weight:600;font-size:12px}
+.profile-dropdown{position:absolute;top:100%;right:0;margin-top:8px;min-width:320px;padding:8px;background:var(--bg-primary);border-radius:14px;box-shadow:var(--shadow-lg);opacity:0;visibility:hidden;transform:translateY(-6px);transition:.2s;max-height:70vh;overflow:auto}
+.user-profile:hover .profile-dropdown{opacity:1;visibility:visible;transform:translateY(0)}
+.dropdown-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:10px;color:var(--text-primary)}
+.dropdown-item:hover{background:var(--bg-secondary)}
+.dropdown-divider{height:1px;background:var(--border);margin:6px 0}
+.profile-controls{display:flex;gap:8px;margin-left:auto}
 .select{border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);border-radius:10px;padding:5px 7px;font-size:12px}
 
-/* URLiniai popupai (juodas fullscreen, vien CSS) */
-.popup{position:fixed;inset:0;display:none;background:#000;z-index:3000}
-.popup:target{display:block}
-.popup-body{position:absolute;inset:0;display:flex;flex-direction:column;max-width:1100px;margin:auto;padding:20px}
-.popup-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.popup-head h2{display:flex;align-items:center;gap:10px;color:#fff;font-size:20px;font-weight:700}
-.popup-head h2 img{width:18px;height:18px;filter:invert(1)}
-.popup-close{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06)}
-.popup-close img{width:14px;height:14px;filter:invert(1)}
-.popup-content{flex:1;border:1px solid rgba(255,255,255,.15);border-radius:14px;background:rgba(255,255,255,.05);color:#e8e8e8;padding:16px;overflow:auto}
-
-/* Helpers */
-.hidden{display:none !important}
-
-/* Mobile */
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:1400px){
+  .chat-area{padding-bottom:250px}
+}
+@media (max-width:1280px){
+  :root{ --sidebar:260px }
+}
 @media (max-width:1024px){
   .layout{grid-template-columns:0 1fr}
   .sidebar{position:fixed;left:-320px;top:66px;width:300px;height:calc(100vh - 66px);z-index:180;transition:left .25s ease;background:var(--bg-primary)}
   .sidebar.open{left:0}
-  .bottom-section{width:calc(100% - 20px);left:50%;transform:translateX(-50%)}
-  .chat-area{padding-bottom:250px}
-  .library-grid{grid-template-columns:repeat(2,1fr)}
-}
-/* ============ PATCH: UI polish & safeguards (2025-09-06) ============ */
-
-/* 0) Bendrai smulkesnė tipografija ir ikonų vienodinimas */
-:root{
-  --icon-10: 10px;
-  --icon-12: 12px;
-  --icon-14: 14px;
-  --ring-strong: 0 0 0 4px color-mix(in srgb, var(--accent) 24%, transparent);
-}
-.btn, .chip, .tool, .model-pill, .lib-card, .project-item, .welcome-btn {
-  font-weight: 500;           /* buvo 600 – prašei „kūdesnių“ raidžių */
-  letter-spacing: .1px;
-}
-.models-in-topbar img,
-.chip img,
-.tool img,
-.ping img,
-.project-item img,
-.welcome-btn img {
-  width: var(--icon-12);
-  height: var(--icon-12);
+  .bottom-section{left:var(--gutter);right:var(--gutter)}
+  .top-actions .mobile-toggle{display:inline-flex}
 }
 
-/* Bibliotekos kortelių piktogramos šiek tiek didesnės, bet ne „milžinai“ */
-.lib-card img { width: 30px; height: 30px; }
+/* =========================================================
+   SMULKŪS PRIEDAI
+   ========================================================= */
+.models-in-topbar img,.chip img,.tool img,.ping img,.project-item img,.welcome-btn img{width:var(--icon-12);height:var(--icon-12)}
+.library-grid .lib-card img{width:30px;height:30px}
+.hero-title{margin-top:6px}
 
-/* 1) Topbar: logotipas ir modelių juosta */
-.brand-icon{ width: 56px; height: auto; }   /* mažesnis, kad neliptų ant šonų */
-@media (min-width: 1280px){ .brand-icon{ width: 60px; } }
-
-.models-in-topbar { justify-content: center; }
-.model-pill{
-  padding: 6px 9px;
-  font-size: 11.5px;
-  border-radius: 999px;
-}
-.model-pill img{ width: var(--icon-14); height: var(--icon-14); }
-.model-pill:hover{ transform: translateY(-1px); }
-.model-pill.active{
-  background: var(--accent-ghost);
-  border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: var(--ring-strong);
-}
-.model-pill:focus-visible{
-  outline: none;
-  box-shadow: var(--ring-strong);
-}
-
-/* 2) Sidebar: chips dar ramesni ir vienodo dydžio */
-.chip{
-  padding: 6px 9px;
-  font-size: 11.5px;
-}
-.side-title{ font-size: 10px; letter-spacing: .45px; }
-
-/* 3) „Sveiki atvykę į paule“ – gradientas iš juodos į pastel violet */
-.hero-title{
-  background: linear-gradient(90deg, #0b0b0b 0%, var(--accent) 78%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-
-/* 4) Žinučių burbulai – saugikliai prieš milžiniškus SVG ir vienodas scroll */
-.msg-content{
-  max-height: 210px;
-  overflow: auto;
-  scrollbar-width: thin;
-}
-.msg-content::-webkit-scrollbar{ width: 6px; }
-.msg-content::-webkit-scrollbar-thumb{ background: var(--border); border-radius: 3px; }
-
-/* Visus SVG chate ribojam iki ikoninio dydžio (kad niekas „nesprogtų“) */
-.chat-area img[src$=".svg"]{
-  max-width: 40px !important;
-  max-height: 40px !important;
-  width: 40px !important;
-  height: auto !important;
-  object-fit: contain;
-}
-
-/* ir dar papildoma apsauga būtent probleminiams */
-.chat-area img[src$="video-plus.svg"],
-.chat-area img[src$="video-library.svg"],
-.chat-area img[src$="xAI.svg"],
-.chat-area img[src$="grok.svg"]{
-  max-width: 40px !important;
-  max-height: 40px !important;
-}
-
-/* 5) Apatinė įvesties zona – truputį daugiau erdvės chate */
-.chat-area{ padding-bottom: 250px; }  /* buvo ~230; kad tools neužliptų */
-.bottom-section{ z-index: 300; }      /* visad virš turinio */
-
-/* Įrankių juosta – smulkesnė tipografija ir ikonėlės */
-.tool{ font-size: 10.5px; }
-.tool img{ width: var(--icon-12); height: var(--icon-12); }
-
-/* 6) Aktyvumo blokai – vienodas tankis */
-.ping{ font-size: 11.5px; padding: 6px 8px; }
-
-/* 7) Accessible focus visiems „paspaudžiamiems“ elementams */
-a:focus-visible, button:focus-visible, .chip:focus-visible, .btn:focus-visible, .tool:focus-visible, .model-pill:focus-visible{
-  outline: none;
-  box-shadow: var(--ring-strong);
-}
-
-/* 8) URL popupai: maksimalus kontrastas ir švaresni kraštai */
-.popup{ background: #000; }
-.popup-content{
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.16);
-  border-radius: 16px;
-}
-
-/* 9) Tamsi tema – švelnesnės pastelės */
-[data-theme="dark"] .model-pill.active{
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-  color: #fff;
-}
-
-/* 10) Extra – jei naršyklė nepalaiko color-mix, vis dar atrodys gerai */
-@supports not (color: color-mix(in srgb, #000 50%, #fff 50%)){
-  .bubble[data-model="chatgpt"] .bubble-card{ border-left: 3px solid #10b98133; }
-  .bubble[data-model="claude"] .bubble-card{ border-left: 3px solid #f59e0b33; }
-  .bubble[data-model="gemini"] .bubble-card{ border-left: 3px solid #4285f433; }
-  .bubble[data-model="grok"]   .bubble-card{ border-left: 3px solid #11111133; }
-  .bubble[data-model="deepseek"] .bubble-card{ border-left: 3px solid #8B5E3C33; }
-  .bubble[data-model="llama"] .bubble-card{ border-left: 3px solid #9333EA33; }
-}
-/* =========================
-   Paule – papildymai (patch)
-   ========================= */
-
-/* topbar — „nepjaustyti“ hover, logotipo poslinkis ir +20% dydis */
-.topbar{
-  overflow: visible;              /* niekas „nepjausto“ hover */
-}
-.brand{ margin-left: clamp(40px, 8vw, 120px); }   /* ~5 cm desktop efektas */
-.brand-icon{ width: 82px; height: auto; }        /* +20% nuo 68px */
-
-/* modelių juosta viršuje */
-#modelsBar{
-  position: relative;
-  z-index: 201;
-  overflow: visible;
-  padding-block: 2px;
-}
-#modelsBar .model-pill{
-  line-height: 1;                 /* suvienodina vertikalų centravimą */
-  font-weight: 600;
-  height: 32px;
-}
-#modelsBar .model-pill img{
-  width: 16px; height: 16px;
-  padding: 2px;                   /* rėmelis ikonoms */
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg-primary);
-}
-
-/* bendresnis „įrėminti ikoną“ apdorojimas mažoms ikonoms */
-.chip img,
-.welcome-btn img,
-.tools-bar .tool img,
-.community-pings .ping img,
-.project-item img,
-.avatar img{
-  width: 16px; height: 16px;
-  padding: 2px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg-primary);
-  box-shadow: 0 1px 0 rgba(0,0,0,.03);
-}
-
-/* didesnėms kortelių ikonoms – švelnesnis rėmelis */
-.lib-card img{
-  width: 34px; height: 34px; object-fit: contain;
-  padding: 4px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--bg-secondary);
-}
-
-/* kairės pusės chip’ai – mažiau „bold“, mažesnės ikonos */
-.chip{ font-weight: 600; }
-.chip img{ width: 14px; height: 14px; padding: 2px; }
-
-/* „Bendruomenės“ juostelės – vienodas aukštis ir tarpai */
-.community-pings .ping{
-  min-height: 32px;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-}
-
-/* hero antraštė – gradientas iš juodos į pastel violet-blue */
-.hero-title{
-  background: linear-gradient(90deg, #0a0a0a 0%, var(--accent) 75%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-
-/* žinučių kortelės – ribotas aukštis + skrolas (vienoda visur) */
-.msg-content{
-  max-height: 210px;
-  overflow: auto;
-}
-.msg-content::-webkit-scrollbar{ width: 6px }
-.msg-content::-webkit-scrollbar-thumb{ background: var(--border); border-radius: 3px }
-
-/* apatinė įvestis – geresnis responsyvus plotis */
-#bottomSection[data-responsive]{
-  left: 50%;
-  transform: translateX(-50%);
-  width: clamp(520px, 60vw, 920px);      /* nesusiaurėja per daug */
-  max-width: 920px;
-}
-#messageInput{ font-size: 15px; }
-#sendBtn{ background: var(--accent); }
-
-/* įrankių juosta – mažesnės ikonos + lengvesnis tekstas */
-.tools-bar{ gap: 6px; }
-.tools-bar .tool{
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 8px;
-}
-.tools-bar .tool img{ width: 14px; height: 14px; }
-
-/* Sidebar ID’ai – jei reikės selektorių JS’ui, turim kur „kabintis“ */
-#sidebar{ contain: layout paint; }
-#communityPings{ contain: content; }
-#projectsList .project-item img{ width: 14px; height: 14px; }
-#historyList{ min-height: 20px; }
-
-/* Sveikinimo mygtukai – suvienodinti aukštį */
-.welcome-btn{
-  height: 36px;
-  display: inline-flex; align-items: center;
-}
-
-/* „nukirptų“ SVG apsauga chate (ikonos išlieka protingo dydžio) */
-.chat-area img[src$="video-plus.svg"],
-.chat-area img[src$="video-library.svg"],
-.chat-area img[src$="photo.svg"]{
-  max-width: 40px !important; height: auto !important;
-}
-
-/* Profilio dropdown – aiškesni select’ai */
-.profile-controls .select{
-  min-width: 88px;
-}
-
-/* Mobilūs pataisymai */
-@media (max-width: 1024px){
-  #bottomSection[data-responsive]{
-    width: calc(100% - 20px);
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  .brand{ margin-left: 16px; }         /* mažiau pastumiam logo */
-  .brand-icon{ width: 74px; }
-  .library-grid{ grid-template-columns: repeat(2, 1fr); }
-}
-/* ============ Layout fixes ============ */
-:root{
-  --sidebar: 300px;          /* kairės juostos bazinis plotis */
-  --gutter: 14px;
-}
-
-/* Topbar: mažesnis „Bendruomenė“ be įtakos kitiems .btn */
-.top-actions .btn{
-  font-size: 12px;
-  padding: 6px 9px;
-  line-height: 1.1;
-}
-.top-actions .btn img{ width: 12px; height: 12px; }
-
-/* Modelių juosta nekirptų hover */
-.topbar{ overflow: visible; }
-.models-in-topbar{ padding-block: 4px; }
-
-/* Grid su kintamuoju */
-.layout{
-  grid-template-columns: var(--sidebar) 1fr;
-}
-
-/* Sidebar su kintamuoju (kad būtų aišku naršyklei) */
-.sidebar{ width: var(--sidebar); }
-
-/* Welcome blokui truputį „kvėpavimo“ siauresniuose pločiuose */
-@media (max-width: 1360px){
-  .welcome{ min-height: 18vh; }
-}
-
-/* ============ Chat input centras pagal MAIN, o ne pagal langą ============ */
-/* prieš: left:50% ir width:calc(100% - 680px) → kirto sidebarą */
-/* dabar: skaičiuojam nuo var(--sidebar) ir clamp’inam plotį */
-.bottom-section{
-  left: calc(var(--sidebar) + (100% - var(--sidebar)) / 2);
-  transform: translateX(-50%);
-  width: clamp(420px, calc(100% - var(--sidebar) - 40px), 960px);
-}
-
-/* Šiek tiek mažesni įrankių labeliai ir ikonėlės */
-.tools-bar .tool{ font-size: 10.5px; padding: 4px 7px; }
-.tools-bar .tool img{ width: 12px; height: 12px; }
-
-/* Burbulų „scroll“ ribojimas lieka, bet truputį didesnė riba vid. ekranuose */
-@media (max-width: 1360px){
-  .msg-content{ max-height: 180px; }
-}
-
-/* ============ Breakpoint’ai ============ */
-/* 1280–1024: susiaurinam sidebar, perpiešiam input plotį */
-@media (max-width: 1280px){
-  :root{ --sidebar: 260px; }
-  .bottom-section{
-    left: calc(var(--sidebar) + (100% - var(--sidebar)) / 2);
-    width: clamp(380px, calc(100% - var(--sidebar) - 28px), 900px);
-  }
-  .brand-icon{ width: 76px; } /* truputį kuklesnis logotipas */
-}
-
-/* <=1024: jūsų turimas off-canvas; pritaikom input 100% pločiui */
-@media (max-width: 1024px){
-  .layout{ grid-template-columns: 0 1fr; }
-  .sidebar{ left:-320px; } /* kaip turite – palieku */
-  .bottom-section{
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 20px);
-  }
-  .top-actions .btn{ font-size: 11.5px; padding: 6px 8px; }
-}
-
-/* Smulkūs UI sulyginimai */
-.model-pill{ line-height: 1.1; }
-.hero-title{ margin-top: 6px; }
-
-/* =====================  FIXAI: LOGO, CHAT INPUT, MODAL  ===================== */
-
-/* LOGO: neleisti susitraukti, tik „stumti“ į dešinę, dydis pastovus */
-.brand{ margin-left: clamp(40px, 8vw, 120px); min-width: max-content; }
-.brand-icon{ width: 82px; height: auto; flex: 0 0 auto; } /* +20%, be shrink */
-
-/* jei buvo kažkur medijoje sumažintas .brand-icon – išjunk */
-@media (max-width: 99999px){ .brand-icon{ width: 82px; } }
-
-/* Chat įvestis – rišam prie pagrindinės srities:
-   vietoje fixed-centro per visą langą skaičiuojam LEFT/RIGHT nuo sidebar */
-:root{ --sidebar: 300px; --gutter: 14px; }  /* bazė (desktop) */
-.bottom-section{
-  position: fixed;
-  left: calc(var(--sidebar) + var(--gutter));
-  right: var(--gutter);
-  transform: none;
-  width: auto;                 /* leidžiam naršyklei paskaičiuoti */
-}
-
-/* Sidebar plotis per breakpointus ir atitinkamai perskaičiuotas input */
-@media (max-width: 1280px){
-  :root{ --sidebar: 260px; }
-}
-@media (max-width: 1024px){
-  :root{ --sidebar: 0px; }
-  .layout{ grid-template-columns: 0 1fr; }
-  .bottom-section{
-    left: var(--gutter);
-    right: var(--gutter);
-  }
-}
-
-/* „Bendruomenė“ viršuje truputį kuklesnė */
-.top-actions .btn{ font-size: 12px; padding: 6px 9px; line-height: 1.1; }
-.top-actions .btn img{ width: 12px; height: 12px; }
-
-/* Modelių juosta nekirptų hover (buvo nupjaunama viršuje) */
-.topbar{ overflow: visible; }
-.models-in-topbar{ padding-block: 4px; }
-
-/* Įrankių ikonų/užrašų slim versija (mažiau „rėkia“) */
-.tools-bar .tool{ font-size: 10.5px; padding: 4px 7px; }
-.tools-bar .tool img{ width: 12px; height: 12px; }
-
-/* ============ Login modal (UI) ============ */
-.modal{ position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
-        background: rgba(0,0,0,.45); z-index: 4000; }
-.modal.open{ display: flex; }
-.modal-card{
-  width: clamp(320px, 92vw, 420px);
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow-lg);
-  padding: 16px;
-}
-.modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-.modal-head h3{ font-size: 18px; font-weight: 800; }
-.modal-close{ width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
-              background: var(--bg-secondary); display:flex; align-items:center; justify-content:center; cursor: pointer; }
-.auth-grid{ display: grid; gap: 10px; margin-top: 8px; }
-.btn-auth{ display:flex; align-items:center; gap:8px; padding:10px 12px; border:1px solid var(--border);
-           border-radius: 12px; background: var(--bg-secondary); font-weight: 700; cursor:pointer; }
-.btn-auth img{ width: 16px; height: 16px; }
-.btn-auth.primary{ background: var(--accent); color:#fff; border-color: var(--accent); }
-.btn-auth:hover{ filter: brightness(0.98); }
-.form-row{ display:grid; gap:8px; }
-.input-auth{ border:1px solid var(--border); background: var(--bg-primary); color: var(--text-primary);
-             border-radius: 10px; padding: 10px 12px; }
-.note-auth{ font-size: 12px; color: var(--text-muted); }
-
-/* === Ikonų spalvos tema (UI ikonoms) === */
-:root{ --ui-icon-filter: none; }
-[data-theme="dark"]{ --ui-icon-filter: invert(1) brightness(1.15) contrast(0.95); }
-
-/* pritaikau tik UI ikonoms (nav-, tool-, photo/music/video), ping eilutėms, lib kortelėms */
-.btn img,
-.tool img,
-.ping img,
-.lib-card img,
-.welcome-btn img,
-.select + img,
-.avatar img,
-.message .bubble .msg-meta img,
-img[src*="/assets/icon/nav-"],
-img[src*="/assets/icon/tool-"],
-img[src*="/assets/icon/photo"],
-img[src*="/assets/icon/music"],
-img[src*="/assets/icon/video"]
-{ filter: var(--ui-icon-filter); }
-
-/* Statistika dropdown’e/skyde (kad nebūtų milžinai) */
-.stats-grid{
-  display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:8px;
-}
-.stat-chip{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:10px; padding:8px 10px; border:1px solid var(--border);
-  background:var(--bg-secondary); border-radius:10px; font-size:12px; font-weight:600;
-}
-.stat-chip img{ width:16px; height:16px; object-fit:contain; filter: var(--ui-icon-filter); }
-.stat-count{ color:var(--text-muted); font-weight:700; }
-
-/* === Modelių juosta: vienodo dydžio ikonėlės + prigesinti AUTO su :has === */
-.models-in-topbar{ overflow:visible; }
-.model-pill img{ width:14px; height:14px; }
-.models-in-topbar:has(.model-pill.active:not([data-model="auto"])) .model-pill[data-model="auto"]{
-  opacity:.45;
-}
-
-/* === Logotipo „plytelė“ (kad neplauktų baltame) ir niekad nemažėtų === */
-.brand{ display:flex; align-items:center; }
-.brand-icon{
-  width:82px; height:auto; flex:0 0 auto;
-  padding:6px 8px; border-radius:12px;
-  background:var(--bg-secondary); border:1px solid var(--border);
-}
-@media (max-width: 1100px){
-  .brand-icon{ width:82px; } /* stabdom automatinį mažinimą */
-}
-
-/* === Chat įvestis – „anti-kirtimo“ su kairiu sidebar mid pločiuose === */
-/* desktop */
-.bottom-section[data-responsive="true"]{
-  left: calc(300px + 50%);               /* 300px – sidebar plotis (žr. .layout) */
-  transform: translateX(-50%);
-  width: min(880px, calc(100% - 360px));  /* likusi erdvė – sidebar + paraštės */
-}
-/* ~1280px */
-@media (max-width: 1400px){
-  .bottom-section[data-responsive="true"]{
-    width: calc(100% - 360px);
-  }
-}
-/* planšetės/mobilus – sidebar slepiasi, įvestis centruojama */
-@media (max-width: 1024px){
-  .layout{ grid-template-columns: 0 1fr; }
-  .sidebar{ position:fixed; left:-320px; }
-  .bottom-section[data-responsive="true"]{
-    left:50%; transform:translateX(-50%); width: calc(100% - 24px);
-  }
-}
-
-/* === Bendruomenė mygtukas – mažiau rėksmingas ir LT pavadinimas === */
-.top-actions .btn[href*="/community"]{
-  font-weight:700;
-  letter-spacing:.1px;
-}
-
-/* === Mažesnis ženklo šriftas, vienodesnės kortelės kairėje === */
-.chip{ font-weight:600; font-size:12px; }
-.lib-card{ font-size:11px; }
-.ping{ font-size:12px; }
-
-/* === Sveiki atvykę antraštės gradientas – švelnesnis (light + dark) === */
-.hero-title{
-  background: linear-gradient(90deg, #0a0a0a 0%, var(--accent) 75%);
-  -webkit-background-clip:text; background-clip:text; color:transparent;
-}
-[data-theme="dark"] .hero-title{
-  background: linear-gradient(90deg, #ffffff 0%, var(--accent) 65%);
-  -webkit-background-clip:text; background-clip:text; color:transparent;
-}
-
-/* === „Nematoma juosta“ viršuje – saugumo rėžimas: nieko nekirpti hover’io === */
-.topbar{ overflow:visible; }
-
-/* === Profilio dropdown – visad tvarkingas ir neišsilieja === */
-.user-profile{ position:relative; }
-.user-profile .profile-dropdown{
-  max-height: 70vh; overflow:auto; min-width:320px;
-}
-.user-profile .profile-dropdown img{ filter: var(--ui-icon-filter); }
-
-/* === Estetika: aiškesnės kortelės kairėje (dainos/foto/video) === */
-.library-grid .lib-card{
-  align-items:center; text-align:center; gap:6px;
-}
-.library-grid .lib-card img{ width:34px; height:34px; }
-
-/* === Pavyzdinė žinutė – fiksuotas burbulo aukštis su scroll === */
-.msg-content{ max-height:210px; overflow:auto; }
-
-<!DOCTYPE html>
-<html lang="lt" data-theme="light">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Paule – Premium AI Chat</title>
-  <link rel="stylesheet" href="/assets/css/paule.css">
-</head>
-<body>
-
-  <!-- ===== TOPBAR ===== -->
-  <header class="topbar" data-no-clip="true">
-    <a class="brand brand--offset brand--xl" href="/">
-      <img class="brand-icon" src="/assets/icon/paule-logo.webp" alt="paule">
-    </a>
-
-    <nav class="models-in-topbar" aria-label="Modeliai" id="modelsBar">
-      <button class="model-pill active" data-model="auto" aria-pressed="true">
-        <img src="/assets/icon/ai-auto.svg" alt=""> Auto
-      </button>
-      <button class="model-pill" data-model="chatgpt">
-        <img src="/assets/icon/chatgpt.svg" alt=""> ChatGPT
-      </button>
-      <button class="model-pill" data-model="claude">
-        <img src="/assets/icon/claude-seeklogo.svg" alt=""> Claude
-      </button>
-      <button class="model-pill" data-model="gemini">
-        <img src="/assets/icon/gemini.svg" alt=""> Gemini
-      </button>
-      <button class="model-pill" data-model="grok">
-        <img src="/assets/icon/xAI.svg" alt=""> Grok
-      </button>
-      <button class="model-pill" data-model="deepseek">
-        <img src="/assets/icon/deepseek.svg" alt=""> DeepSeek
-      </button>
-      <button class="model-pill" data-model="llama">
-        <img src="/assets/icon/llama.svg" alt=""> Llama
-      </button>
-    </nav>
-
-    <div class="top-actions">
-      <a class="btn ghost" href="/community">
-        <img src="/assets/icon/nav-results.svg" alt=""> Bendruomenė
-      </a>
-      <button class="btn ghost" id="btnNewChat">
-        <img src="/assets/icon/nav-new-chat.svg" alt=""> Naujas pokalbis
-      </button>
-      <button class="btn ghost mobile-toggle" id="btnMobile">
-        <img src="/assets/icon/nav-menu.svg" alt=""> Meniu
-      </button>
-
-      <!-- kai prisijungta – rodom šitą, slepiam „Prisijungti“ -->
-      <div class="user-profile hidden" id="userProfile">
-        <div class="user-avatar">U</div>
-        <div class="user-name">Vartotojas</div>
-        <div class="profile-dropdown">
-          <div class="dropdown-item" style="cursor:default">
-            <img src="/assets/icon/nav-theme.svg" alt="">
-            <div class="profile-controls">
-              <select class="select" id="selTheme">
-                <option value="light">Šviesi</option>
-                <option value="dark">Tamsi</option>
-              </select>
-              <select class="select" id="selLang">
-                <option value="lt">LT</option>
-                <option value="en">EN</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="dropdown-divider"></div>
-          <div class="dropdown-item" style="cursor:default; flex-direction:column; align-items:flex-start;">
-            <div class="mini-title">Statistika</div>
-            <div class="stats-grid">
-              <div class="stat-chip"><span><img src="/assets/icon/chatgpt.svg" alt=""> GPT</span><span class="stat-count">87% (42)</span></div>
-              <div class="stat-chip"><span><img src="/assets/icon/claude-seeklogo.svg" alt=""> Claude</span><span class="stat-count">92% (38)</span></div>
-              <div class="stat-chip"><span><img src="/assets/icon/deepseek.svg" alt=""> DeepSeek</span><span class="stat-count">78% (25)</span></div>
-              <div class="stat-chip"><span><img src="/assets/icon/xAI.svg" alt=""> Grok</span><span class="stat-count">83% (19)</span></div>
-              <div class="stat-chip"><span><img src="/assets/icon/llama.svg" alt=""> Llama</span><span class="stat-count">95% (51)</span></div>
-              <div class="stat-chip"><span><img src="/assets/icon/gemini.svg" alt=""> Gemini</span><span class="stat-count">89% (34)</span></div>
-            </div>
-          </div>
-
-          <div class="dropdown-divider"></div>
-          <div class="dropdown-item" data-action="logout">
-            <img src="/assets/icon/logout.svg" alt=""> Atsijungti
-          </div>
-        </div>
-      </div>
-
-      <!-- NEW: Prisijungimas atidaromas CSS popupu #auth -->
-      <a class="btn ghost" id="btnLogin" href="#auth">
-        <img src="/assets/icon/user.svg" alt=""> Prisijungti
-      </a>
-      <!-- /NEW -->
-    </div>
-  </header>
-
-  <!-- ===== LAYOUT ===== -->
-  <div class="layout">
-    <!-- ===== SIDEBAR ===== -->
-    <aside class="sidebar" id="sidebar">
-
-      <!-- AI specialistai -->
-      <section class="side-section">
-        <div class="side-title">AI specialistai</div>
-        <div class="specialist-grid">
-          <a class="chip" href="#spec-sefas" data-route="/spec/sefas"><img src="/assets/icon/chef-knife.svg" alt=""> Šefas</a>
-          <a class="chip" href="#spec-marketing" data-route="/spec/marketing"><img src="/assets/icon/marketing-megaphone.svg" alt=""> Marketing</a>
-          <a class="chip" href="#spec-pardavimai" data-route="/spec/pardavimai"><img src="/assets/icon/sales-handshake.svg" alt=""> Pardavimai</a>
-          <a class="chip" href="#spec-verslas" data-route="/spec/verslas"><img src="/assets/icon/business-strategy.svg" alt=""> Verslas</a>
-          <a class="chip" href="#spec-finansai" data-route="/spec/finansai"><img src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
-          <a class="chip" href="#spec-keliones" data-route="/spec/keliones"><img src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
-          <a class="chip" href="#spec-renginiai" data-route="/spec/renginiai"><img src="/assets/icon/event-planning.svg" alt=""> Renginiai</a>
-          <a class="chip" href="/spec/goal.html" data-route="/spec/goal.html"><img src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
-          <a class="chip" href="#spec-teise" data-route="/spec/teisininkas"><img src="/assets/icon/legal-contract.svg" alt=""> Teisininkas</a>
-          <a class="chip" href="#spec-psichologas" data-route="/spec/psichologas"><img src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
-        </div>
-      </section>
-
-      <!-- Aktyvumas -->
-      <section class="side-section">
-        <div class="side-title">Aktyvumas</div>
-        <div class="community-pings" id="communityPings">
-          <div class="ping"><img src="/assets/icon/music.svg" alt=""> @Mantas įkėlė dainą „Vasaros vėjas“</div>
-          <div class="ping"><img src="/assets/icon/photo.svg" alt=""> @Ieva pridėjo 3 nuotraukas</div>
-          <div class="ping"><img src="/assets/icon/video-library.svg" alt=""> @Ruta publikavo „Reklama-15s“</div>
-        </div>
-      </section>
-
-      <!-- Mano biblioteka -->
-      <section class="side-section">
-        <div class="side-title"><a class="lib-link" href="/biblioteka#dainos">Dainos</a></div>
-        <div class="library-grid">
-          <a class="lib-card" href="/biblioteka#dainos"><img src="/assets/icon/music.svg" alt=""><span>„Vasaros vėjas“</span></a>
-          <a class="lib-card" href="/biblioteka#dainos"><img src="/assets/icon/music.svg" alt=""><span>„Nakties šviesos“</span></a>
-          <a class="lib-card" href="/biblioteka#dainos"><img src="/assets/icon/music.svg" alt=""><span>„Miesto pulsas“</span></a>
-        </div>
-      </section>
-
-      <section class="side-section">
-        <div class="side-title"><a class="lib-link" href="/biblioteka#nuotraukos">Nuotraukos</a></div>
-        <div class="library-grid">
-          <a class="lib-card" href="/biblioteka#nuotraukos"><img src="/assets/icon/photo.svg" alt=""><span>Produktas</span></a>
-          <a class="lib-card" href="/biblioteka#nuotraukos"><img src="/assets/icon/photo.svg" alt=""><span>Kampanija</span></a>
-          <a class="lib-card" href="/biblioteka#nuotraukos"><img src="/assets/icon/photo.svg" alt=""><span>Viršelis</span></a>
-        </div>
-      </section>
-
-      <section class="side-section">
-        <div class="side-title"><a class="lib-link" href="/biblioteka#video">Video</a></div>
-        <div class="library-grid">
-          <a class="lib-card" href="/biblioteka#video"><img src="/assets/icon/video-library.svg" alt=""><span>Reklama 15s</span></a>
-          <a class="lib-card" href="/biblioteka#video"><img src="/assets/icon/video-library.svg" alt=""><span>Pristatymas</span></a>
-          <a class="lib-card" href="/biblioteka#video"><img src="/assets/icon/video-library.svg" alt=""><span>Užkulisiai</span></a>
-        </div>
-      </section>
-
-      <!-- Projektai -->
-      <section class="side-section">
-        <div class="side-title">Projektai</div>
-        <div class="control-group" id="projectsList">
-          <div class="project-item" data-project="new">
-            <img src="/assets/icon/plus.svg" alt=""> Naujas projektas
-          </div>
-        </div>
-      </section>
-
-      <!-- Pokalbių istorija -->
-      <section class="side-section">
-        <div class="side-title">Pokalbių istorija</div>
-        <div class="control-group" id="historyList"></div>
-      </section>
-    </aside>
-
-    <!-- ===== MAIN ===== -->
-    <main class="main">
-      <div class="chat-area" id="chatArea">
-
-        <!-- Hero -->
-        <section class="welcome" id="welcome">
-          <h1 class="hero-title">Sveiki atvykę į <span>paule</span></h1>
-          <p>Pradėkite naują pokalbį arba pasirinkite modelį viršuje.</p>
-
-          <div class="welcome-actions">
-            <a class="welcome-btn" href="#spec-sefas"><img src="/assets/icon/chef-healthy-bowl.svg" alt=""> Kulinarijos patarimai</a>
-            <a class="welcome-btn" href="#spec-verslas"><img src="/assets/icon/business-finance.svg" alt=""> Verslo strategija</a>
-            <a class="welcome-btn" href="/spec/goal.html"><img src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
-          </div>
-
-          <div class="community-strip">
-            <div class="strip-item">Populiaru: „Miesto pulsas“ • 2.1k</div>
-            <div class="strip-item">Nauja: @Ieva įkėlė 3 nuotraukas</div>
-            <div class="strip-item">Konkursas: Geriausia daina rugsėjį</div>
-          </div>
-        </section>
-
-        <!-- Pavyzdinė žinutė -->
-        <article class="message">
-          <div class="avatar"><img src="/assets/icon/ai.svg" alt=""></div>
-          <div class="bubble" data-model="chatgpt">
-            <div class="bubble-card">
-              <div class="msg-content">
-                Sveiki! Kuo galiu padėti? Čia atsiras atsakymai. Šis blokas riboto aukščio ir scrollinasi, kad neišplėstų ekrano. … (turinys) …
-              </div>
-              <div class="msg-meta">
-                <span class="model-tag">ChatGPT</span>
-              </div>
-            </div>
-          </div>
-        </article>
-
-      </div>
-    </main>
-  </div>
-
-  <!-- ===== BOTTOM INPUT ===== -->
-  <div class="bottom-section after-message" id="bottomSection" data-responsive="true">
-    <div class="input-bar">
-      <div class="input-container">
-        <textarea class="message-input" id="messageInput" rows="1" placeholder="Žinutė specialistui…"></textarea>
-        <button class="send-btn" id="sendBtn" aria-label="Siųsti">
-          <img src="/assets/icon/arrow-top.svg" alt="">
-        </button>
-      </div>
-    </div>
-
-    <div class="tools-bar">
-      <div class="tool" data-tool="mindmap"><img src="/assets/icon/tool-mindmap.svg" alt=""> Mindmap</div>
-      <div class="tool" data-tool="photo"><img src="/assets/icon/tool-photo.svg" alt=""> Foto</div>
-      <div class="tool" data-tool="file"><img src="/assets/icon/tool-file.svg" alt=""> Failas</div>
-      <div class="tool" data-tool="song"><img src="/assets/icon/tool-music.svg" alt=""> Sukurti dainą</div>
-      <div class="tool" data-tool="video"><img src="/assets/icon/video-plus.svg" alt=""> Sukurti video</div>
-    </div>
-  </div>
-
-  <!-- ===== URLinis POPUP – pavyzdys (šefas) -->
-  <section class="popup" id="spec-sefas" aria-modal="true" role="dialog">
-    <div class="popup-body">
-      <header class="popup-head">
-        <h2><img src="/assets/icon/chef-knife.svg" alt=""> Šefas</h2>
-        <a class="popup-close" href="#" aria-label="Uždaryti"><img src="/assets/icon/nav-close.svg" alt=""></a>
-      </header>
-      <div class="popup-content">
-        Čia – šefui skirtas puslapis/popup. (Galima vėliau nukreipti į atskirą /spec/sefas.html.)
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== NEW: AUTH popup (CSS-only, be JS) ===== -->
-  <section class="popup" id="auth" aria-modal="true" role="dialog">
-    <div class="popup-body">
-      <header class="popup-head">
-        <h2><img src="/assets/icon/user.svg" alt=""> Prisijungti</h2>
-        <a class="popup-close" href="#" aria-label="Uždaryti"><img src="/assets/icon/nav-close.svg" alt=""></a>
-      </header>
-      <div class="popup-content" style="display:grid;gap:12px">
-        <a class="btn" href="/auth/login"><img src="/assets/icon/nav-login.svg" alt=""> Prisijungti el. paštu</a>
-        <a class="btn" href="/auth/register"><img src="/assets/icon/nav-user-add.svg" alt=""> Registruotis</a>
-        <a class="btn" href="/auth/google"><img src="/assets/icon/google.svg" alt=""> Prisijungti su Google</a>
-
-        <div class="dropdown-divider"></div>
-        <div class="mini-title">Tema ir kalba</div>
-        <div style="display:flex;gap:8px">
-          <select class="select" onchange="document.documentElement.setAttribute('data-theme', this.value)">
-            <option value="light">Šviesi</option>
-            <option value="dark">Tamsi</option>
-          </select>
-          <select class="select">
-            <option value="lt">LT</option>
-            <option value="en">EN</option>
-          </select>
-        </div>
-        <p style="color:#9aa0a8;font-size:12px">Pastaba: Google prisijungimas čia – nuoroda į backend maršrutą.</p>
-      </div>
-    </div>
-  </section>
-  <!-- /NEW -->
-
-  <script src="/assets/js/paule.js" defer></script>
-</body>
-</html>
 
