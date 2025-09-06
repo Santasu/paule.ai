@@ -7,18 +7,24 @@
   "functions": {
     "api/**/*.js": {
       "runtime": "nodejs20.x",
-      "memory": 512,
-      "maxDuration": 30
+      "memory": 1024,
+      "maxDuration": 60
     }
   },
 
   "rewrites": [
-    { "source": "/wp-json/augam/v1/stream",        "destination": "/api/stream" },
-    { "source": "/wp-json/augam/v1/models",        "destination": "/api/models" },
-    { "source": "/wp-json/augam/v1/diagnostics",   "destination": "/api/diagnostics" },
-    { "source": "/wp-json/augam/v1/flux/create",   "destination": "/api/flux/create" },
-    { "source": "/wp-json/augam/v1/runway/image",  "destination": "/api/runway/image" },
-    { "source": "/wp-json/augam/v1/runway/status", "destination": "/api/runway/status" }
+    { "source": "/wp-json/augam/v1/stream",         "destination": "/api/stream" },
+    { "source": "/wp-json/augam/v1/models",         "destination": "/api/models" },
+    { "source": "/wp-json/augam/v1/diagnostics",    "destination": "/api/diagnostics" },
+    { "source": "/wp-json/augam/v1/flux/create",    "destination": "/api/flux/create" },
+    { "source": "/wp-json/augam/v1/comic/create",   "destination": "/api/comic/create" },
+    { "source": "/wp-json/augam/v1/runway/image",   "destination": "/api/runway/image" },
+    { "source": "/wp-json/augam/v1/runway/status",  "destination": "/api/runway/status" },
+    { "source": "/wp-json/augam/v1/music/create",   "destination": "/api/music/create" },
+    { "source": "/wp-json/augam/v1/music/status",   "destination": "/api/music/status" },
+
+    { "source": "/api/paule/:path*",                "destination": "/api/:path*" },
+    { "source": "/api/augam/:path*",                "destination": "/api/:path*" }
   ],
 
   "headers": [
@@ -27,7 +33,27 @@
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
+    },
+    {
+      "source": "/api/stream",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "*" },
+        { "key": "X-Accel-Buffering", "value": "no" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "*" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
     }
   ]
 }
+
 
