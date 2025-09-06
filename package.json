@@ -1,12 +1,10 @@
 {
-  "name": "paule-ai-static",
+  "name": "paule.ai",
+  "version": "0.1.0",
   "private": true,
-  "version": "1.0.0",
-  "description": "Statinis PAULE.AI UI Vercel'ui (be Next.js)",
+  "license": "UNLICENSED",
   "scripts": {
-    "start": "serve -s ."
+    "build": "echo \"no build\""
   },
-  "devDependencies": {
-    "serve": "^14.2.1"
-  }
+  "engines": { "node": ">=20" }
 }
