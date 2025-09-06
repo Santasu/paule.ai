@@ -1,0 +1,456 @@
+
+<!DOCTYPE html>
+<html lang="lt" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Paule – Premium AI Chat</title>
+  <link rel="stylesheet" href="/assets/css/paule.css">
+
+  <!-- 🔧 PAULE konfigūracija (WP ⇄ Vercel jungiklis)
+       - DEFAULT: 'wp' (atitinka tavo PHP router’į /wp-json/paule/v1)
+       - Pakeisk į 'vercel' arba <html data-backend="vercel">, jei API bus /api/paule/v1
+  -->
+  <script id="paule-config">
+    (function () {
+      var htmlAttr = (document.documentElement.getAttribute('data-backend') || '').trim().toLowerCase();
+      var MODE = htmlAttr === 'vercel' ? 'vercel' : 'wp'; // <-- pakeisk į 'vercel' jei deployinsi į Vercel API
+
+      var restBase = MODE === 'vercel' ? '/api/paule/v1' : '/wp-json/paule/v1';
+
+      // Pilnas maršrutų žemėlapis (suderinta su tavo Router/Infra)
+      var routes = {
+        base: restBase,
+        stream:        restBase + '/stream',            // GET (SSE) | POST (mode=once)
+        models:        restBase + '/models',
+        diagnostics:   restBase + '/diagnostics',
+
+        comicCreate:   restBase + '/comic/create',      // = /flux/create
+        fluxCreate:    restBase + '/flux/create',
+        triptych:      restBase + '/image/triptych-series',
+
+        personaCreate: restBase + '/persona/create',
+        personaList:   restBase + '/persona/list',
+        personaSeries: restBase + '/persona/generate_series',
+
+        musicCreate:   restBase + '/music/create',
+        musicStatus:   restBase + '/music/status',      // ?task=...
+        musicCallback: restBase + '/music/callback',
+
+        chatHistory:   restBase + '/chat/history',      // ?chat_id=...
+        projectCreate: restBase + '/project/create',
+        projectList:   restBase + '/project/list',
+        projectChats:  restBase + '/project/chats',     // ?project_id=...
+
+        runwayImage:   restBase + '/runway/image',
+        runwayStatus:  restBase + '/runway/status',     // ?task_id=...
+        runwayVideoUpscale:         restBase + '/runway/video-upscale',
+        runwayCharacterPerformance: restBase + '/runway/character-performance',
+        runwayVideoToVideo:         restBase + '/runway/video-to-video',
+        runwayImageToVideo:         restBase + '/runway/image-to-video',
+        runwayTextVideo:            restBase + '/runway/text-video',
+        runwayTextVideoPipeline:    restBase + '/runway/text-video-pipeline',
+        runwayPipelineStatus:       restBase + '/runway/pipeline-status', // ?pipeline_id=...
+        runwayPing:                 restBase + '/runway/ping'
+      };
+
+      // Galutinė konfigūracija – ja naudosis /assets/js/paule.js
+      var CFG = {
+        mode: MODE,                      // 'wp' | 'vercel'
+        restBase: routes.base,
+        restStream: routes.stream,
+        restStreamSSE: routes.stream + '?mode=sse',
+        sseDefault: 1,
+
+        // Assetų bazės – kad niekur nereikėtų WP plugin kelių
+        pluginBase:   '/assets',
+        iconsBase:    '/assets/icon',
+        featuresBase: '/assets/features',
+
+        routes: routes,
+        version: 'paule-1.0.0'
+      };
+
+      // Standartinis vardas (naudok šitą)
+      window.PAULE_CONFIG = CFG;
+      // Suderinamumas su senesniu kodu
+      window.AUGAM_CONFIG = CFG;
+
+      // ✅ Legacy suderinamumas: jei senajame paule.js buvo „var API_BASE = ...“
+      try {
+        Object.defineProperty(window, 'API_BASE', {
+          configurable: true,
+          get: function(){ return CFG.restBase; },
+          set: function(_){} // ignoruojam perrašymą
+        });
+      } catch(e) {}
+      window.__SET_API_BASE__ = function (v) { /* jei reikėtų vėliau keisti */ };
+    })();
+  </script>
+
+  <!-- ✅ PAULE ⇄ AUGAM bridge (perrašo /augam/v1 į /paule/v1 ir perduoda konfigą) -->
+  <script id="paule-bridge">
+    (function(){
+      'use strict';
+      try {
+        var NS = 'paule';
+        var wpRoot = (window.wpApiSettings && window.wpApiSettings.root) || '/wp-json/';
+        var restBaseGuess = (wpRoot.replace(/\/+$/,'') + '/' + NS + '/v1');
+
+        // Jeigu būtų tik PAULE_CONFIG – padarom ir AUGAM_CONFIG (senam kodui)
+        if (window.PAULE_CONFIG && typeof window.PAULE_CONFIG === 'object') {
+          var pc = window.PAULE_CONFIG;
+          window.AUGAM_CONFIG = Object.assign({}, pc);
+
+          if (!AUGAM_CONFIG.restBase)        AUGAM_CONFIG.restBase        = pc.restBase        || restBaseGuess;
+          if (!AUGAM_CONFIG.restStream)      AUGAM_CONFIG.restStream      = pc.restStream      || (AUGAM_CONFIG.restBase + '/stream');
+          if (!AUGAM_CONFIG.restStreamSSE)   AUGAM_CONFIG.restStreamSSE   = pc.restStreamSSE   || (AUGAM_CONFIG.restBase + '/stream-sse');
+          if (!AUGAM_CONFIG.restModels)      AUGAM_CONFIG.restModels      = pc.restModels      || (AUGAM_CONFIG.restBase + '/models');
+          if (!AUGAM_CONFIG.restDiagnostics) AUGAM_CONFIG.restDiagnostics = pc.restDiagnostics || (AUGAM_CONFIG.restBase + '/diagnostics');
+
+          if (!AUGAM_CONFIG.pluginBase)      AUGAM_CONFIG.pluginBase      = pc.pluginBase      || '/assets';
+          if (!AUGAM_CONFIG.featuresBase)    AUGAM_CONFIG.featuresBase    = pc.featuresBase    || (AUGAM_CONFIG.pluginBase + '/features');
+          if (!AUGAM_CONFIG.iconsBase)       AUGAM_CONFIG.iconsBase       = pc.iconsBase       || (AUGAM_CONFIG.pluginBase + '/icon');
+        }
+
+        window.__NS = NS;
+        window.__FORCE_STREAM_ENDPOINT__ = (restBaseGuess.replace(/\/+$/,'') + '/stream');
+      } catch(e) { console.warn('[PAULE bridge] config warning:', e); }
+
+      // Perrašome URL'us, jei kur nors kode liko „/augam/v1“
+      try {
+        // EventSource (SSE)
+        if (window.EventSource) {
+          var OrigES = window.EventSource;
+          window.EventSource = function(url, opts){
+            try { url = String(url).replace(/\/augam\/v1(\/|$)/, '/paule/v1$1'); } catch(_){}
+            return new OrigES(url, opts);
+          };
+          window.EventSource.prototype = OrigES.prototype;
+        }
+        // fetch (POST fallback ir pan.)
+        if (window.fetch) {
+          var origFetch = window.fetch;
+          window.fetch = function(input, init){
+            try {
+              var u = (typeof input === 'string') ? input : (input && input.url);
+              if (u) {
+                var nu = String(u).replace(/\/augam\/v1(\/|$)/, '/paule/v1$1');
+                if (nu !== u) {
+                  if (typeof input === 'string') { input = nu; }
+                  else { input = new Request(nu, input); }
+                }
+              }
+            } catch(_){}
+            return origFetch(input, init);
+          };
+        }
+      } catch(e) { console.warn('[PAULE bridge] patch warning:', e); }
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- ===== TOPBAR ===== -->
+  <header class="topbar" data-no-clip="true">
+    <!-- Vienas logotipas: šviesi tema -> paule-logo.webp, tamsi -> paule-logo-b.svg -->
+    <a class="brand" href="/" aria-label="Paule">
+      <img id="brandLogo" class="brand-icon" src="/assets/icon/paule-logo.webp" alt="paule">
+    </a>
+
+    <nav class="models-in-topbar" aria-label="Modeliai" id="modelsBar">
+      <button class="model-pill active" data-model="auto" aria-pressed="true">
+        <img class="ui-icon" src="/assets/icon/ai-auto.svg" alt=""> Auto
+      </button>
+      <button class="model-pill" data-model="chatgpt">
+        <img class="ui-icon" src="/assets/icon/chatgpt.svg" alt=""> ChatGPT
+      </button>
+      <button class="model-pill" data-model="claude">
+        <img class="ui-icon" src="/assets/icon/claude-seeklogo.svg" alt=""> Claude
+      </button>
+      <button class="model-pill" data-model="gemini">
+        <img class="ui-icon" src="/assets/icon/gemini.svg" alt=""> Gemini
+      </button>
+      <button class="model-pill" data-model="grok">
+        <img class="ui-icon" src="/assets/icon/xAI.svg" alt=""> Grok
+      </button>
+      <button class="model-pill" data-model="deepseek">
+        <img class="ui-icon" src="/assets/icon/deepseek.svg" alt=""> DeepSeek
+      </button>
+      <button class="model-pill" data-model="llama">
+        <img class="ui-icon" src="/assets/icon/llama.svg" alt=""> Llama
+      </button>
+    </nav>
+
+    <div class="top-actions">
+      <a class="btn ghost" href="/community" role="button">
+        <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė
+      </a>
+      <button class="btn ghost" id="btnNewChat">
+        <img class="ui-icon" src="/assets/icon/nav-new-chat.svg" alt=""> Naujas pokalbis
+      </button>
+
+      <!-- PC – nerodome; Mobile – rodom (css media query) -->
+      <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)">
+        <img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu
+      </button>
+
+      <!-- Kai prisijungta -->
+      <div class="user-profile hidden" id="userProfile">
+        <div class="user-avatar">U</div>
+        <div class="user-name">Vartotojas</div>
+        <div class="profile-dropdown">
+          <div class="dropdown-item" style="cursor:default">
+            <img class="ui-icon" src="/assets/icon/nav-theme.svg" alt="">
+            <div class="profile-controls">
+              <select class="select" id="selTheme" aria-label="Tema">
+                <option value="light">Šviesi</option>
+                <option value="dark">Tamsi</option>
+              </select>
+              <select class="select" id="selLang" aria-label="Kalba">
+                <option value="lt">LT</option>
+                <option value="en">EN</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- BE linijų – jokio .dropdown-divider -->
+
+          <div class="dropdown-item" style="cursor:default; flex-direction:column; align-items:flex-start;">
+            <div class="mini-title">Statistika</div>
+            <div class="stats-grid">
+              <div class="stat-chip"><span><img class="ui-icon" src="/assets/icon/chatgpt.svg" alt=""> GPT</span><span class="stat-count">87% (42)</span></div>
+              <div class="stat-chip"><span><img class="ui-icon" src="/assets/icon/claude-seeklogo.svg" alt=""> Claude</span><span class="stat-count">92% (38)</span></div>
+              <div class="stat-chip"><span><img class="ui-icon" src="/assets/icon/deepseek.svg" alt=""> DeepSeek</span><span class="stat-count">78% (25)</span></div>
+              <div class="stat-chip"><span><img class="ui-icon" src="/assets/icon/xAI.svg" alt=""> Grok</span><span class="stat-count">83% (19)</span></div>
+              <div class="stat-chip"><span><img class="ui-icon" src="/assets/icon/llama.svg" alt=""> Llama</span><span class="stat-count">95% (51)</span></div>
+              <div class="stat-chip"><span><img class="ui-icon" src="/assets/icon/gemini.svg" alt=""> Gemini</span><span class="stat-count">89% (34)</span></div>
+            </div>
+          </div>
+
+          <div class="dropdown-item" data-action="logout">
+            <img class="ui-icon" src="/assets/icon/logout.svg" alt=""> Atsijungti
+          </div>
+        </div>
+      </div>
+
+      <!-- Prisijungti – CSS popup (#auth) -->
+      <a class="btn ghost" id="btnLogin" href="#auth" role="button">
+        <img class="ui-icon" src="/assets/icon/user.svg" alt=""> Prisijungti
+      </a>
+    </div>
+  </header>
+
+  <!-- ===== LAYOUT ===== -->
+  <div class="layout">
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+
+      <!-- AI specialistai -->
+      <section class="side-section">
+        <div class="side-title">AI specialistai</div>
+        <div class="specialist-grid">
+          <a class="chip" href="#spec-sefas" data-route="/spec/sefas"><img class="ui-icon" src="/assets/icon/chef-knife.svg" alt=""> Šefas</a>
+          <a class="chip" href="#spec-marketing" data-route="/spec/marketing"><img class="ui-icon" src="/assets/icon/marketing-megaphone.svg" alt=""> Marketing</a>
+          <a class="chip" href="#spec-pardavimai" data-route="/spec/pardavimai"><img class="ui-icon" src="/assets/icon/sales-handshake.svg" alt=""> Pardavimai</a>
+          <a class="chip" href="#spec-verslas" data-route="/spec/verslas"><img class="ui-icon" src="/assets/icon/business-strategy.svg" alt=""> Verslas</a>
+          <a class="chip" href="#spec-finansai" data-route="/spec/finansai"><img class="ui-icon" src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
+          <a class="chip" href="#spec-keliones" data-route="/spec/keliones"><img class="ui-icon" src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
+          <a class="chip" href="#spec-renginiai" data-route="/spec/renginiai"><img class="ui-icon" src="/assets/icon/event-planning.svg" alt=""> Renginiai</a>
+          <!-- Tikslų žemėlapis – nuoroda į atskirą puslapį -->
+          <a class="chip" href="/spec/goal.html" data-route="/spec/goal.html"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
+          <a class="chip" href="#spec-teise" data-route="/spec/teisininkas"><img class="ui-icon" src="/assets/icon/legal-contract.svg" alt=""> Teisininkas</a>
+          <a class="chip" href="#spec-psichologas" data-route="/spec/psichologas"><img class="ui-icon" src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
+        </div>
+      </section>
+
+      <!-- Aktyvumas -->
+      <section class="side-section">
+        <div class="side-title">Aktyvumas</div>
+        <div class="community-pings" id="communityPings">
+          <div class="ping"><img class="ui-icon" src="/assets/icon/music.svg" alt=""> @Mantas įkėlė dainą „Vasaros vėjas“</div>
+          <div class="ping"><img class="ui-icon" src="/assets/icon/photo.svg" alt=""> @Ieva pridėjo 3 nuotraukas</div>
+          <div class="ping"><img class="ui-icon" src="/assets/icon/video-library.svg" alt=""> @Ruta publikavo „Reklama-15s“</div>
+        </div>
+      </section>
+
+      <!-- Mano biblioteka -->
+      <section class="side-section">
+        <div class="side-title"><a class="lib-link" href="/biblioteka#dainos">Dainos</a></div>
+        <div class="library-grid">
+          <a class="lib-card" href="/biblioteka#dainos"><img class="ui-icon" src="/assets/icon/music.svg" alt=""><span>„Vasaros vėjas“</span></a>
+          <a class="lib-card" href="/biblioteka#dainos"><img class="ui-icon" src="/assets/icon/music.svg" alt=""><span>„Nakties šviesos“</span></a>
+          <a class="lib-card" href="/biblioteka#dainos"><img class="ui-icon" src="/assets/icon/music.svg" alt=""><span>„Miesto pulsas“</span></a>
+        </div>
+      </section>
+
+      <section class="side-section">
+        <div class="side-title"><a class="lib-link" href="/biblioteka#nuotraukos">Nuotraukos</a></div>
+        <div class="library-grid">
+          <a class="lib-card" href="/biblioteka#nuotraukos"><img class="ui-icon" src="/assets/icon/photo.svg" alt=""><span>Produktas</span></a>
+          <a class="lib-card" href="/biblioteka#nuotraukos"><img class="ui-icon" src="/assets/icon/photo.svg" alt=""><span>Kampanija</span></a>
+          <a class="lib-card" href="/biblioteka#nuotraukos"><img class="ui-icon" src="/assets/icon/photo.svg" alt=""><span>Viršelis</span></a>
+        </div>
+      </section>
+
+      <section class="side-section">
+        <div class="side-title"><a class="lib-link" href="/biblioteka#video">Video</a></div>
+        <div class="library-grid">
+          <a class="lib-card" href="/biblioteka#video"><img class="ui-icon" src="/assets/icon/video-library.svg" alt=""><span>Reklama 15s</span></a>
+          <a class="lib-card" href="/biblioteka#video"><img class="ui-icon" src="/assets/icon/video-library.svg" alt=""><span>Pristatymas</span></a>
+          <a class="lib-card" href="/biblioteka#video"><img class="ui-icon" src="/assets/icon/video-library.svg" alt=""><span>Užkulisiai</span></a>
+        </div>
+      </section>
+
+      <!-- Projektai -->
+      <section class="side-section">
+        <div class="side-title">Projektai</div>
+        <div class="control-group" id="projectsList">
+          <div class="project-item" data-project="new">
+            <img class="ui-icon" src="/assets/icon/plus.svg" alt=""> Naujas projektas
+          </div>
+        </div>
+      </section>
+
+      <!-- Pokalbių istorija -->
+      <section class="side-section">
+        <div class="side-title">Pokalbių istorija</div>
+        <div class="control-group" id="historyList"></div>
+      </section>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <main class="main">
+      <div class="chat-area" id="chatArea">
+
+        <!-- Hero -->
+        <section class="welcome" id="welcome">
+          <h1 class="hero-title">Sveiki atvykę į <span>paule</span></h1>
+          <p>Pradėkite naują pokalbį arba pasirinkite modelį viršuje.</p>
+
+          <div class="welcome-actions">
+            <a class="welcome-btn" href="#spec-sefas"><img class="ui-icon" src="/assets/icon/chef-healthy-bowl.svg" alt=""> Kulinarijos patarimai</a>
+            <a class="welcome-btn" href="#spec-verslas"><img class="ui-icon" src="/assets/icon/business-finance.svg" alt=""> Verslo strategija</a>
+            <a class="welcome-btn" href="/spec/goal.html"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
+          </div>
+
+          <div class="community-strip">
+            <div class="strip-item">Populiaru: „Miesto pulsas“ • 2.1k</div>
+            <div class="strip-item">Nauja: @Ieva įkėlė 3 nuotraukas</div>
+            <div class="strip-item">Konkursas: Geriausia daina rugsėjį</div>
+          </div>
+        </section>
+
+        <!-- Pavyzdinė žinutė -->
+        <article class="message">
+          <div class="avatar"><img class="ui-icon" src="/assets/icon/ai.svg" alt=""></div>
+          <div class="bubble" data-model="chatgpt">
+            <div class="bubble-card">
+              <div class="msg-content">
+                Sveiki! Kuo galiu padėti? Čia atsiras atsakymai. Šis blokas riboto aukščio ir scrollinasi, kad neišplėstų ekrano. … (turinys) …
+              </div>
+              <div class="msg-meta">
+                <span class="model-tag">ChatGPT</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ===== BOTTOM INPUT ===== -->
+  <div class="bottom-section after-message" id="bottomSection" data-responsive="true">
+    <div class="input-bar">
+      <div class="input-container">
+        <textarea class="message-input" id="messageInput" rows="1" placeholder="Žinutė specialistui…"></textarea>
+        <button class="send-btn" id="sendBtn" aria-label="Siųsti">
+          <img class="ui-icon" src="/assets/icon/arrow-top.svg" alt="">
+        </button>
+      </div>
+    </div>
+
+    <div class="tools-bar">
+      <div class="tool" data-tool="mindmap"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Mindmap</div>
+      <div class="tool" data-tool="photo"><img class="ui-icon" src="/assets/icon/tool-photo.svg" alt=""> Foto</div>
+      <div class="tool" data-tool="file"><img class="ui-icon" src="/assets/icon/tool-file.svg" alt=""> Failas</div>
+      <div class="tool" data-tool="song"><img class="ui-icon" src="/assets/icon/tool-music.svg" alt=""> Sukurti dainą</div>
+      <div class="tool" data-tool="video"><img class="ui-icon" src="/assets/icon/video-plus.svg" alt=""> Sukurti video</div>
+    </div>
+  </div>
+
+  <!-- ===== URL POPUP – pavyzdys (šefas) ===== -->
+  <section class="popup" id="spec-sefas" aria-modal="true" role="dialog">
+    <div class="popup-body">
+      <header class="popup-head">
+        <h2><img class="ui-icon" src="/assets/icon/chef-knife.svg" alt=""> Šefas</h2>
+        <a class="popup-close" href="#" aria-label="Uždaryti"><img class="ui-icon" src="/assets/icon/nav-close.svg" alt=""></a>
+      </header>
+      <div class="popup-content">
+        Čia – šefui skirtas puslapis/popup. (Galima vėliau nukreipti į atskirą /spec/sefas.html.)
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== AUTH popup (CSS-only) ===== -->
+  <section class="popup" id="auth" aria-modal="true" role="dialog">
+    <div class="popup-body">
+      <header class="popup-head">
+        <h2><img class="ui-icon" src="/assets/icon/user.svg" alt=""> Prisijungti</h2>
+        <a class="popup-close" href="#" aria-label="Uždaryti"><img class="ui-icon" src="/assets/icon/nav-close.svg" alt=""></a>
+      </header>
+      <div class="popup-content" style="display:grid;gap:12px">
+        <a class="btn" href="/auth/login"><img class="ui-icon" src="/assets/icon/nav-login.svg" alt=""> Prisijungti el. paštu</a>
+        <a class="btn" href="/auth/register"><img class="ui-icon" src="/assets/icon/nav-user-add.svg" alt=""> Registruotis</a>
+        <a class="btn" href="/auth/google"><img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti su Google</a>
+
+        <div class="mini-title">Tema ir kalba</div>
+        <div style="display:flex;gap:8px">
+          <select class="select" id="selThemeAuth" aria-label="Tema (modalas)">
+            <option value="light">Šviesi</option>
+            <option value="dark">Tamsi</option>
+          </select>
+          <select class="select" aria-label="Kalba (modalas)">
+            <option value="lt">LT</option>
+            <option value="en">EN</option>
+          </select>
+        </div>
+        <p style="color:#9aa0a8;font-size:12px">Pastaba: Google prisijungimas – nuoroda į backend maršrutą.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Minimal JS (tema ↔ logotipas, mobilus meniu) ===== -->
+  <script>
+    (function(){
+      const root = document.documentElement;
+      const logo = document.getElementById('brandLogo');
+      const sidebar = document.getElementById('sidebar');
+      const btnMobile = document.getElementById('btnMobile');
+      const selTheme = document.getElementById('selTheme');
+      const selThemeAuth = document.getElementById('selThemeAuth');
+
+      function updateLogo(){
+        const isDark = (root.getAttribute('data-theme') === 'dark');
+        logo.src = isDark ? '/assets/icon/paule-logo-b.svg' : '/assets/icon/paule-logo.webp';
+      }
+      updateLogo();
+
+      selTheme && selTheme.addEventListener('change', (e)=>{
+        root.setAttribute('data-theme', e.target.value); updateLogo();
+      });
+      selThemeAuth && selThemeAuth.addEventListener('change', (e)=>{
+        root.setAttribute('data-theme', e.target.value); updateLogo();
+      });
+
+      btnMobile && btnMobile.addEventListener('click', ()=>{
+        sidebar.classList.toggle('open');
+      });
+    })();
+  </script>
+
+  <!-- Tavo programinė logika – skaitys window.PAULE_CONFIG -->
+  <script src="/assets/js/paule.js" defer></script>
+</body>
+</html>
