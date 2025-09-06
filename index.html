@@ -49,7 +49,7 @@
         <img src="/assets/icon/nav-menu.svg" alt=""> Meniu
       </button>
 
-      <!-- kai prisijungta – rodom šitą, slepiam #btnLogin -->
+      <!-- kai prisijungta – rodom šitą, slepiam „Prisijungti“ -->
       <div class="user-profile hidden" id="userProfile">
         <div class="user-avatar">U</div>
         <div class="user-name">Vartotojas</div>
@@ -88,10 +88,11 @@
         </div>
       </div>
 
-      <!-- numatytai: matosi, kol neprisijungta -->
-      <button class="btn ghost" id="btnLogin">
+      <!-- NEW: Prisijungimas atidaromas CSS popupu #auth -->
+      <a class="btn ghost" id="btnLogin" href="#auth">
         <img src="/assets/icon/user.svg" alt=""> Prisijungti
-      </button>
+      </a>
+      <!-- /NEW -->
     </div>
   </header>
 
@@ -111,7 +112,6 @@
           <a class="chip" href="#spec-finansai" data-route="/spec/finansai"><img src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
           <a class="chip" href="#spec-keliones" data-route="/spec/keliones"><img src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
           <a class="chip" href="#spec-renginiai" data-route="/spec/renginiai"><img src="/assets/icon/event-planning.svg" alt=""> Renginiai</a>
-          <!-- SVARBU: tikslų žemėlapis veda į atskirą puslapį -->
           <a class="chip" href="/spec/goal.html" data-route="/spec/goal.html"><img src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
           <a class="chip" href="#spec-teise" data-route="/spec/teisininkas"><img src="/assets/icon/legal-contract.svg" alt=""> Teisininkas</a>
           <a class="chip" href="#spec-psichologas" data-route="/spec/psichologas"><img src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
@@ -185,7 +185,6 @@
           <div class="welcome-actions">
             <a class="welcome-btn" href="#spec-sefas"><img src="/assets/icon/chef-healthy-bowl.svg" alt=""> Kulinarijos patarimai</a>
             <a class="welcome-btn" href="#spec-verslas"><img src="/assets/icon/business-finance.svg" alt=""> Verslo strategija</a>
-            <!-- SVARBU: čia irgi /spec/goal.html -->
             <a class="welcome-btn" href="/spec/goal.html"><img src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
           </div>
 
@@ -248,77 +247,36 @@
     </div>
   </section>
 
-  <!-- ====== PRISIJUNGIMO MODALAS (nauja) ====== -->
-  <div class="modal" id="authModal" aria-hidden="true">
-    <div class="modal-card" role="dialog" aria-modal="true">
-      <div class="modal-head">
-        <h3>Prisijungti / Registruotis</h3>
-        <button class="modal-close" id="authClose" aria-label="Uždaryti">
-          <img src="/assets/icon/nav-close.svg" alt="">
-        </button>
-      </div>
+  <!-- ===== NEW: AUTH popup (CSS-only, be JS) ===== -->
+  <section class="popup" id="auth" aria-modal="true" role="dialog">
+    <div class="popup-body">
+      <header class="popup-head">
+        <h2><img src="/assets/icon/user.svg" alt=""> Prisijungti</h2>
+        <a class="popup-close" href="#" aria-label="Uždaryti"><img src="/assets/icon/nav-close.svg" alt=""></a>
+      </header>
+      <div class="popup-content" style="display:grid;gap:12px">
+        <a class="btn" href="/auth/login"><img src="/assets/icon/nav-login.svg" alt=""> Prisijungti el. paštu</a>
+        <a class="btn" href="/auth/register"><img src="/assets/icon/nav-user-add.svg" alt=""> Registruotis</a>
+        <a class="btn" href="/auth/google"><img src="/assets/icon/google.svg" alt=""> Prisijungti su Google</a>
 
-      <div class="auth-grid">
-        <button class="btn-auth" id="btnGoogle">
-          <img src="/assets/icon/google.svg" alt=""> Prisijungti su Google
-        </button>
-
-        <div class="form-row">
-          <input class="input-auth" type="email" placeholder="El. paštas">
-          <input class="input-auth" type="password" placeholder="Slaptažodis">
-          <button class="btn-auth primary" onclick="mockLoginSuccess()">Prisijungti</button>
+        <div class="dropdown-divider"></div>
+        <div class="mini-title">Tema ir kalba</div>
+        <div style="display:flex;gap:8px">
+          <select class="select" onchange="document.documentElement.setAttribute('data-theme', this.value)">
+            <option value="light">Šviesi</option>
+            <option value="dark">Tamsi</option>
+          </select>
+          <select class="select">
+            <option value="lt">LT</option>
+            <option value="en">EN</option>
+          </select>
         </div>
-
-        <p class="note-auth">Neturite paskyros? Įveskite el. paštą ir spauskite „Prisijungti“ – paskyra bus sukurta automatiškai.</p>
+        <p style="color:#9aa0a8;font-size:12px">Pastaba: Google prisijungimas čia – nuoroda į backend maršrutą.</p>
       </div>
     </div>
-  </div>
+  </section>
+  <!-- /NEW -->
 
-  <!-- išorinis JS -->
   <script src="/assets/js/paule.js" defer></script>
-
-  <!-- mini inline JS, kad veiktų net jeigu išoriniame dar nepakeista -->
-  <script>
-  (() => {
-    // Meniu (mobile / sidebar)
-    const btnMobile = document.getElementById('btnMobile');
-    const sidebar   = document.getElementById('sidebar');
-    btnMobile && sidebar && btnMobile.addEventListener('click', () => {
-      sidebar.classList.toggle('open');
-    });
-
-    // Prisijungimo modalas
-    const btnLogin  = document.getElementById('btnLogin');
-    const authModal = document.getElementById('authModal');
-    const authClose = document.getElementById('authClose');
-
-    function openAuth(){ authModal && authModal.classList.add('open'); }
-    function closeAuth(){ authModal && authModal.classList.remove('open'); }
-
-    btnLogin  && btnLogin .addEventListener('click', openAuth);
-    authClose && authClose.addEventListener('click', closeAuth);
-    authModal && authModal.addEventListener('click', (e)=>{ if(e.target === authModal) closeAuth(); });
-
-    // Tema iš profilio dropdown
-    const selTheme = document.getElementById('selTheme');
-    if (selTheme) {
-      selTheme.value = document.documentElement.getAttribute('data-theme') || 'light';
-      selTheme.addEventListener('change', (e)=> {
-        document.documentElement.setAttribute('data-theme', e.target.value);
-      });
-    }
-
-    // Demo login per Google
-    const btnGoogle = document.getElementById('btnGoogle');
-    window.mockLoginSuccess = function(name='Vartotojas'){
-      document.getElementById('userProfile')?.classList.remove('hidden');
-      document.getElementById('btnLogin')?.classList.add('hidden');
-      const nm = document.querySelector('#userProfile .user-name');
-      if (nm) nm.textContent = name;
-      closeAuth();
-    };
-    btnGoogle && btnGoogle.addEventListener('click', ()=> mockLoginSuccess('Google'));
-  })();
-  </script>
 </body>
 </html>
