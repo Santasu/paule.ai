@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="lt" data-theme="light">
 <head>
@@ -7,7 +8,7 @@
   <link rel="stylesheet" href="/assets/css/paule.css">
 
   <!-- 🔧 PAULE konfigūracija (WP ⇄ Vercel jungiklis)
-       - DEFAULT: 'wp' (atitinka tavo PHP router’į /wp-json/augam/v1)
+       - DEFAULT: 'wp' (atitinka tavo PHP router’į /wp-json/paule/v1)
        - Pakeisk į 'vercel' arba <html data-backend="vercel">, jei API bus /api/paule/v1
   -->
   <script id="paule-config">
@@ -15,9 +16,9 @@
       var htmlAttr = (document.documentElement.getAttribute('data-backend') || '').trim().toLowerCase();
       var MODE = htmlAttr === 'vercel' ? 'vercel' : 'wp'; // <-- pakeisk į 'vercel' jei deployinsi į Vercel API
 
-      var restBase = MODE === 'vercel' ? '/api/paule/v1' : '/wp-json/augam/v1';
+      var restBase = MODE === 'vercel' ? '/api/paule/v1' : '/wp-json/paule/v1';
 
-      // Pilnas maršrutų žemėlapis (suderinta su tavo Router/Infe
+      // Pilnas maršrutų žemėlapis (suderinta su tavo Router/Infra)
       var routes = {
         base: restBase,
         stream:        restBase + '/stream',            // GET (SSE) | POST (mode=once)
@@ -72,11 +73,10 @@
 
       // Standartinis vardas (naudok šitą)
       window.PAULE_CONFIG = CFG;
-      // Suderinamumas su anksčiau minėtu AUGAM_CONFIG
+      // Suderinamumas su senesniu kodu
       window.AUGAM_CONFIG = CFG;
 
       // ✅ Legacy suderinamumas: jei senajame paule.js buvo „var API_BASE = ...“
-      // Šituo užrakinam bazę, kad nekiltų „augam“ vs „paule“ konfliktų.
       try {
         Object.defineProperty(window, 'API_BASE', {
           configurable: true,
@@ -85,6 +85,67 @@
         });
       } catch(e) {}
       window.__SET_API_BASE__ = function (v) { /* jei reikėtų vėliau keisti */ };
+    })();
+  </script>
+
+  <!-- ✅ PAULE ⇄ AUGAM bridge (perrašo /augam/v1 į /paule/v1 ir perduoda konfigą) -->
+  <script id="paule-bridge">
+    (function(){
+      'use strict';
+      try {
+        var NS = 'paule';
+        var wpRoot = (window.wpApiSettings && window.wpApiSettings.root) || '/wp-json/';
+        var restBaseGuess = (wpRoot.replace(/\/+$/,'') + '/' + NS + '/v1');
+
+        // Jeigu būtų tik PAULE_CONFIG – padarom ir AUGAM_CONFIG (senam kodui)
+        if (window.PAULE_CONFIG && typeof window.PAULE_CONFIG === 'object') {
+          var pc = window.PAULE_CONFIG;
+          window.AUGAM_CONFIG = Object.assign({}, pc);
+
+          if (!AUGAM_CONFIG.restBase)        AUGAM_CONFIG.restBase        = pc.restBase        || restBaseGuess;
+          if (!AUGAM_CONFIG.restStream)      AUGAM_CONFIG.restStream      = pc.restStream      || (AUGAM_CONFIG.restBase + '/stream');
+          if (!AUGAM_CONFIG.restStreamSSE)   AUGAM_CONFIG.restStreamSSE   = pc.restStreamSSE   || (AUGAM_CONFIG.restBase + '/stream-sse');
+          if (!AUGAM_CONFIG.restModels)      AUGAM_CONFIG.restModels      = pc.restModels      || (AUGAM_CONFIG.restBase + '/models');
+          if (!AUGAM_CONFIG.restDiagnostics) AUGAM_CONFIG.restDiagnostics = pc.restDiagnostics || (AUGAM_CONFIG.restBase + '/diagnostics');
+
+          if (!AUGAM_CONFIG.pluginBase)      AUGAM_CONFIG.pluginBase      = pc.pluginBase      || '/assets';
+          if (!AUGAM_CONFIG.featuresBase)    AUGAM_CONFIG.featuresBase    = pc.featuresBase    || (AUGAM_CONFIG.pluginBase + '/features');
+          if (!AUGAM_CONFIG.iconsBase)       AUGAM_CONFIG.iconsBase       = pc.iconsBase       || (AUGAM_CONFIG.pluginBase + '/icon');
+        }
+
+        window.__NS = NS;
+        window.__FORCE_STREAM_ENDPOINT__ = (restBaseGuess.replace(/\/+$/,'') + '/stream');
+      } catch(e) { console.warn('[PAULE bridge] config warning:', e); }
+
+      // Perrašome URL'us, jei kur nors kode liko „/augam/v1“
+      try {
+        // EventSource (SSE)
+        if (window.EventSource) {
+          var OrigES = window.EventSource;
+          window.EventSource = function(url, opts){
+            try { url = String(url).replace(/\/augam\/v1(\/|$)/, '/paule/v1$1'); } catch(_){}
+            return new OrigES(url, opts);
+          };
+          window.EventSource.prototype = OrigES.prototype;
+        }
+        // fetch (POST fallback ir pan.)
+        if (window.fetch) {
+          var origFetch = window.fetch;
+          window.fetch = function(input, init){
+            try {
+              var u = (typeof input === 'string') ? input : (input && input.url);
+              if (u) {
+                var nu = String(u).replace(/\/augam\/v1(\/|$)/, '/paule/v1$1');
+                if (nu !== u) {
+                  if (typeof input === 'string') { input = nu; }
+                  else { input = new Request(nu, input); }
+                }
+              }
+            } catch(_){}
+            return origFetch(input, init);
+          };
+        }
+      } catch(e) { console.warn('[PAULE bridge] patch warning:', e); }
     })();
   </script>
 </head>
