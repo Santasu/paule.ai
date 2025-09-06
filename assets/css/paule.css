@@ -623,3 +623,116 @@ a:focus-visible, button:focus-visible, .chip:focus-visible, .btn:focus-visible, 
              border-radius: 10px; padding: 10px 12px; }
 .note-auth{ font-size: 12px; color: var(--text-muted); }
 
+/* === Ikonų spalvos tema (UI ikonoms) === */
+:root{ --ui-icon-filter: none; }
+[data-theme="dark"]{ --ui-icon-filter: invert(1) brightness(1.15) contrast(0.95); }
+
+/* pritaikau tik UI ikonoms (nav-, tool-, photo/music/video), ping eilutėms, lib kortelėms */
+.btn img,
+.tool img,
+.ping img,
+.lib-card img,
+.welcome-btn img,
+.select + img,
+.avatar img,
+.message .bubble .msg-meta img,
+img[src*="/assets/icon/nav-"],
+img[src*="/assets/icon/tool-"],
+img[src*="/assets/icon/photo"],
+img[src*="/assets/icon/music"],
+img[src*="/assets/icon/video"]
+{ filter: var(--ui-icon-filter); }
+
+/* Statistika dropdown’e/skyde (kad nebūtų milžinai) */
+.stats-grid{
+  display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:8px;
+}
+.stat-chip{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; padding:8px 10px; border:1px solid var(--border);
+  background:var(--bg-secondary); border-radius:10px; font-size:12px; font-weight:600;
+}
+.stat-chip img{ width:16px; height:16px; object-fit:contain; filter: var(--ui-icon-filter); }
+.stat-count{ color:var(--text-muted); font-weight:700; }
+
+/* === Modelių juosta: vienodo dydžio ikonėlės + prigesinti AUTO su :has === */
+.models-in-topbar{ overflow:visible; }
+.model-pill img{ width:14px; height:14px; }
+.models-in-topbar:has(.model-pill.active:not([data-model="auto"])) .model-pill[data-model="auto"]{
+  opacity:.45;
+}
+
+/* === Logotipo „plytelė“ (kad neplauktų baltame) ir niekad nemažėtų === */
+.brand{ display:flex; align-items:center; }
+.brand-icon{
+  width:82px; height:auto; flex:0 0 auto;
+  padding:6px 8px; border-radius:12px;
+  background:var(--bg-secondary); border:1px solid var(--border);
+}
+@media (max-width: 1100px){
+  .brand-icon{ width:82px; } /* stabdom automatinį mažinimą */
+}
+
+/* === Chat įvestis – „anti-kirtimo“ su kairiu sidebar mid pločiuose === */
+/* desktop */
+.bottom-section[data-responsive="true"]{
+  left: calc(300px + 50%);               /* 300px – sidebar plotis (žr. .layout) */
+  transform: translateX(-50%);
+  width: min(880px, calc(100% - 360px));  /* likusi erdvė – sidebar + paraštės */
+}
+/* ~1280px */
+@media (max-width: 1400px){
+  .bottom-section[data-responsive="true"]{
+    width: calc(100% - 360px);
+  }
+}
+/* planšetės/mobilus – sidebar slepiasi, įvestis centruojama */
+@media (max-width: 1024px){
+  .layout{ grid-template-columns: 0 1fr; }
+  .sidebar{ position:fixed; left:-320px; }
+  .bottom-section[data-responsive="true"]{
+    left:50%; transform:translateX(-50%); width: calc(100% - 24px);
+  }
+}
+
+/* === Bendruomenė mygtukas – mažiau rėksmingas ir LT pavadinimas === */
+.top-actions .btn[href*="/community"]{
+  font-weight:700;
+  letter-spacing:.1px;
+}
+
+/* === Mažesnis ženklo šriftas, vienodesnės kortelės kairėje === */
+.chip{ font-weight:600; font-size:12px; }
+.lib-card{ font-size:11px; }
+.ping{ font-size:12px; }
+
+/* === Sveiki atvykę antraštės gradientas – švelnesnis (light + dark) === */
+.hero-title{
+  background: linear-gradient(90deg, #0a0a0a 0%, var(--accent) 75%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+[data-theme="dark"] .hero-title{
+  background: linear-gradient(90deg, #ffffff 0%, var(--accent) 65%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+
+/* === „Nematoma juosta“ viršuje – saugumo rėžimas: nieko nekirpti hover’io === */
+.topbar{ overflow:visible; }
+
+/* === Profilio dropdown – visad tvarkingas ir neišsilieja === */
+.user-profile{ position:relative; }
+.user-profile .profile-dropdown{
+  max-height: 70vh; overflow:auto; min-width:320px;
+}
+.user-profile .profile-dropdown img{ filter: var(--ui-icon-filter); }
+
+/* === Estetika: aiškesnės kortelės kairėje (dainos/foto/video) === */
+.library-grid .lib-card{
+  align-items:center; text-align:center; gap:6px;
+}
+.library-grid .lib-card img{ width:34px; height:34px; }
+
+/* === Pavyzdinė žinutė – fiksuotas burbulo aukštis su scroll === */
+.msg-content{ max-height:210px; overflow:auto; }
+
+
