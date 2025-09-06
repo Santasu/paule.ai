@@ -475,3 +475,78 @@ a:focus-visible, button:focus-visible, .chip:focus-visible, .btn:focus-visible, 
   .brand-icon{ width: 74px; }
   .library-grid{ grid-template-columns: repeat(2, 1fr); }
 }
+/* ============ Layout fixes ============ */
+:root{
+  --sidebar: 300px;          /* kairės juostos bazinis plotis */
+  --gutter: 14px;
+}
+
+/* Topbar: mažesnis „Bendruomenė“ be įtakos kitiems .btn */
+.top-actions .btn{
+  font-size: 12px;
+  padding: 6px 9px;
+  line-height: 1.1;
+}
+.top-actions .btn img{ width: 12px; height: 12px; }
+
+/* Modelių juosta nekirptų hover */
+.topbar{ overflow: visible; }
+.models-in-topbar{ padding-block: 4px; }
+
+/* Grid su kintamuoju */
+.layout{
+  grid-template-columns: var(--sidebar) 1fr;
+}
+
+/* Sidebar su kintamuoju (kad būtų aišku naršyklei) */
+.sidebar{ width: var(--sidebar); }
+
+/* Welcome blokui truputį „kvėpavimo“ siauresniuose pločiuose */
+@media (max-width: 1360px){
+  .welcome{ min-height: 18vh; }
+}
+
+/* ============ Chat input centras pagal MAIN, o ne pagal langą ============ */
+/* prieš: left:50% ir width:calc(100% - 680px) → kirto sidebarą */
+/* dabar: skaičiuojam nuo var(--sidebar) ir clamp’inam plotį */
+.bottom-section{
+  left: calc(var(--sidebar) + (100% - var(--sidebar)) / 2);
+  transform: translateX(-50%);
+  width: clamp(420px, calc(100% - var(--sidebar) - 40px), 960px);
+}
+
+/* Šiek tiek mažesni įrankių labeliai ir ikonėlės */
+.tools-bar .tool{ font-size: 10.5px; padding: 4px 7px; }
+.tools-bar .tool img{ width: 12px; height: 12px; }
+
+/* Burbulų „scroll“ ribojimas lieka, bet truputį didesnė riba vid. ekranuose */
+@media (max-width: 1360px){
+  .msg-content{ max-height: 180px; }
+}
+
+/* ============ Breakpoint’ai ============ */
+/* 1280–1024: susiaurinam sidebar, perpiešiam input plotį */
+@media (max-width: 1280px){
+  :root{ --sidebar: 260px; }
+  .bottom-section{
+    left: calc(var(--sidebar) + (100% - var(--sidebar)) / 2);
+    width: clamp(380px, calc(100% - var(--sidebar) - 28px), 900px);
+  }
+  .brand-icon{ width: 76px; } /* truputį kuklesnis logotipas */
+}
+
+/* <=1024: jūsų turimas off-canvas; pritaikom input 100% pločiui */
+@media (max-width: 1024px){
+  .layout{ grid-template-columns: 0 1fr; }
+  .sidebar{ left:-320px; } /* kaip turite – palieku */
+  .bottom-section{
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 20px);
+  }
+  .top-actions .btn{ font-size: 11.5px; padding: 6px 8px; }
+}
+
+/* Smulkūs UI sulyginimai */
+.model-pill{ line-height: 1.1; }
+.hero-title{ margin-top: 6px; }
