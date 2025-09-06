@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="lt">
+<html lang="lt" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -8,14 +8,15 @@
 </head>
 <body>
 
-  <!-- TOP BAR (brand • modeliai • actions) -->
+  <!-- ===== TOPBAR ===== -->
   <header class="topbar">
-    <div class="brand">
+    <!-- Kairė: logotipas (mažas) -->
+    <a class="brand" href="/">
       <img class="brand-icon" src="/assets/icon/paule-logo.webp" alt="paule">
-    </div>
+    </a>
 
-    <!-- Modelių juosta viršuje -->
-    <nav class="models-in-topbar" aria-label="Modeliai">
+    <!-- Centras: AI modeliai (vienoje eilėje, sulygiuota aukštyje su mygtukais) -->
+    <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
       <button class="model-pill active" data-model="auto" aria-pressed="true">
         <img src="/assets/icon/ai-auto.svg" width="16" height="16" alt=""> Auto
       </button>
@@ -39,59 +40,50 @@
       </button>
     </nav>
 
+    <!-- Dešinė: veiksmai -->
     <div class="top-actions">
-      <a class="btn" href="#" id="btnCommunityTop">
+      <a class="btn ghost" href="/community">
         <img src="/assets/icon/nav-results.svg" width="16" height="16" alt=""> Community
       </a>
 
-      <button class="btn" id="btnNewChat">
-        <img src="/assets/icon/nav-new-chat.svg" width="16" height="16" alt="">
-        Naujas pokalbis
+      <button class="btn ghost" id="btnNewChat">
+        <img src="/assets/icon/nav-new-chat.svg" width="16" height="16" alt=""> Naujas pokalbis
       </button>
 
-      <button class="btn mobile-toggle" id="btnMobile">
-        <img src="/assets/icon/nav-menu.svg" width="16" height="16" alt="">
-        Meniu
+      <button class="btn ghost mobile-toggle" id="btnMobile">
+        <img src="/assets/icon/nav-menu.svg" width="16" height="16" alt=""> Meniu
       </button>
 
-      <button class="btn" id="btnLogin">
-        <img src="/assets/icon/user.svg" width="16" height="16" alt="">
-        Prisijungti
+      <!-- jei NEprisijungta -->
+      <button class="btn ghost" id="btnLogin">
+        <img src="/assets/icon/user.svg" width="16" height="16" alt=""> Prisijungti
       </button>
 
+      <!-- jei prisijungta – parodyk šitą vietoje "Prisijungti" -->
       <div class="user-profile hidden" id="userProfile">
-        <div class="user-avatar" id="userAvatar">U</div>
-        <div class="user-name" id="userName">Vartotojas</div>
+        <div class="user-avatar">U</div>
+        <div class="user-name">Vartotojas</div>
         <div class="profile-dropdown" id="profileDropdown">
-          <div class="dropdown-item" data-action="profile">
-            <img src="/assets/icon/user-profile.svg" width="16" height="16" alt="">
-            Profilis
-          </div>
-          <div class="dropdown-item" data-action="settings">
-            <img src="/assets/icon/settings.svg" width="16" height="16" alt="">
-            Nustatymai
-          </div>
-          <div class="dropdown-divider"></div>
-
-          <!-- Tema & kalba -->
           <div class="dropdown-item" style="cursor:default">
             <img src="/assets/icon/nav-theme.svg" width="16" height="16" alt="">
             <div style="display:flex; gap:8px; margin-left:auto;">
-              <select class="select" id="themeSelect">
+              <select class="select" id="themeSelect" onchange="document.documentElement.setAttribute('data-theme', this.value)">
                 <option value="light">Šviesi</option>
                 <option value="dark">Tamsi</option>
               </select>
               <select class="select" id="langSelect">
-                <option value="lt">Lietuvių</option>
-                <option value="en">English</option>
+                <option value="lt">LT</option>
+                <option value="en">EN</option>
               </select>
             </div>
           </div>
 
-          <!-- Statistika -->
+          <div class="dropdown-divider"></div>
+
+          <!-- Statistika profilyje -->
           <div class="dropdown-item" style="cursor:default; flex-direction:column; align-items:flex-start;">
-            <div style="font-weight:700; font-size:12px; color:var(--text-muted); margin-bottom:6px;">Statistika</div>
-            <div class="stats-grid" style="width:100%;">
+            <div class="mini-title">Statistika</div>
+            <div class="stats-grid">
               <div class="stat-chip"><span><img src="/assets/icon/chatgpt.svg" width="12" height="12" alt=""> GPT</span><span class="stat-count">87% (42)</span></div>
               <div class="stat-chip"><span><img src="/assets/icon/claude-seeklogo.svg" width="12" height="12" alt=""> Claude</span><span class="stat-count">92% (38)</span></div>
               <div class="stat-chip"><span><img src="/assets/icon/deepseek.svg" width="12" height="12" alt=""> DeepSeek</span><span class="stat-count">78% (25)</span></div>
@@ -110,67 +102,64 @@
     </div>
   </header>
 
+  <!-- ===== LAYOUT ===== -->
   <div class="layout">
 
-    <!-- SIDEBAR -->
+    <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
+
+      <!-- Bendruomenės aktyvumas -->
+      <section class="side-section">
+        <div class="side-title">Bendruomenės aktyvumas</div>
+        <div class="community-pings">
+          <div class="ping"><img src="/assets/icon/music.svg" width="14" height="14" alt=""> @Mantas įkėlė dainą „Vasaros vėjas“</div>
+          <div class="ping"><img src="/assets/icon/photo.svg" width="14" height="14" alt=""> @Ieva pridėjo 3 nuotraukas</div>
+          <div class="ping"><img src="/assets/icon/video-library.svg" width="14" height="14" alt=""> @Ruta publikavo „Reklama-15s“</div>
+        </div>
+      </section>
+
       <!-- AI specialistai -->
       <section class="side-section">
         <div class="side-title">AI specialistai</div>
         <div class="specialist-grid">
-          <div class="chip" data-spec="doctor"><img src="/assets/icon/medical-stethoscope.svg" width="14" height="14" alt=""> Daktaras</div>
           <div class="chip" data-spec="chef"><img src="/assets/icon/chef-knife.svg" width="14" height="14" alt=""> Šefas</div>
-          <div class="chip" data-spec="marketer"><img src="/assets/icon/marketing-megaphone.svg" width="14" height="14" alt=""> Marketing</div>
+          <div class="chip" data-spec="marketing"><img src="/assets/icon/marketing-megaphone.svg" width="14" height="14" alt=""> Marketing</div>
           <div class="chip" data-spec="sales"><img src="/assets/icon/sales-handshake.svg" width="14" height="14" alt=""> Pardavimai</div>
           <div class="chip" data-spec="business"><img src="/assets/icon/business-strategy.svg" width="14" height="14" alt=""> Verslas</div>
           <div class="chip" data-spec="finance"><img src="/assets/icon/finance-investment.svg" width="14" height="14" alt=""> Finansai</div>
           <div class="chip" data-spec="travel"><img src="/assets/icon/travel-map.svg" width="14" height="14" alt=""> Kelionės</div>
-          <div class="chip" data-spec="event"><img src="/assets/icon/event-planning.svg" width="14" height="14" alt=""> Renginiai</div>
-          <div class="chip" data-spec="artist"><img src="/assets/icon/art-palette.svg" width="14" height="14" alt=""> Menas</div>
+          <div class="chip" data-spec="events"><img src="/assets/icon/event-planning.svg" width="14" height="14" alt=""> Renginiai</div>
           <div class="chip" data-spec="hr"><img src="/assets/icon/hr-recruitment.svg" width="14" height="14" alt=""> HR</div>
-          <div class="chip" data-spec="lawyer"><img src="/assets/icon/legal-contract.svg" width="14" height="14" alt=""> Teisininkas</div>
-          <div class="chip" data-spec="psychologist"><img src="/assets/icon/psychology-brain.svg" width="14" height="14" alt=""> Psichologas</div>
+          <div class="chip" data-spec="law"><img src="/assets/icon/legal-contract.svg" width="14" height="14" alt=""> Teisininkas</div>
+          <div class="chip" data-spec="psych"><img src="/assets/icon/psychology-brain.svg" width="14" height="14" alt=""> Psichologas</div>
         </div>
       </section>
 
-      <!-- Mano biblioteka (rotuojamos mini kortelės) -->
+      <!-- Mano biblioteka (aktyvūs pavadinimai) -->
       <section class="side-section">
-        <div class="side-title">Mano biblioteka</div>
-
-        <div class="lib-block">
-          <div class="lib-heading"><img src="/assets/icon/music.svg" width="14" height="14" alt=""> Dainos</div>
-          <div class="thumb-rotator" data-rotate="5000">
-            <figure class="thumb is-active">
-              <img src="/assets/icon/placeholder.svg" alt="Daina 1">
-              <figcaption>„Vasaros vėjas“</figcaption>
-            </figure>
-            <figure class="thumb">
-              <img src="/assets/icon/placeholder.svg" alt="Daina 2">
-              <figcaption>„Nakties šviesos“</figcaption>
-            </figure>
-            <figure class="thumb">
-              <img src="/assets/icon/placeholder.svg" alt="Daina 3">
-              <figcaption>„Miesto pulsas“</figcaption>
-            </figure>
-          </div>
+        <div class="side-title"><a class="lib-link" href="/biblioteka#dainos">Dainos</a></div>
+        <div class="library-grid">
+          <a class="lib-card" href="/biblioteka#dainos"><img src="/assets/icon/music.svg" alt=""><span>„Vasaros vėjas“</span></a>
+          <a class="lib-card" href="/biblioteka#dainos"><img src="/assets/icon/music.svg" alt=""><span>„Nakties šviesos“</span></a>
+          <a class="lib-card" href="/biblioteka#dainos"><img src="/assets/icon/music.svg" alt=""><span>„Miesto pulsas“</span></a>
         </div>
+      </section>
 
-        <div class="lib-block">
-          <div class="lib-heading"><img src="/assets/icon/photo.svg" width="14" height="14" alt=""> Nuotraukos</div>
-          <div class="thumb-rotator" data-rotate="5000">
-            <figure class="thumb is-active"><img src="/assets/icon/placeholder.svg" alt="Foto 1"><figcaption>Cover 01</figcaption></figure>
-            <figure class="thumb"><img src="/assets/icon/placeholder.svg" alt="Foto 2"><figcaption>Hero</figcaption></figure>
-            <figure class="thumb"><img src="/assets/icon/placeholder.svg" alt="Foto 3"><figcaption>Produktas</figcaption></figure>
-          </div>
+      <section class="side-section">
+        <div class="side-title"><a class="lib-link" href="/biblioteka#nuotraukos">Nuotraukos</a></div>
+        <div class="library-grid">
+          <a class="lib-card" href="/biblioteka#nuotraukos"><img src="/assets/icon/photo.svg" alt=""><span>Produktas</span></a>
+          <a class="lib-card" href="/biblioteka#nuotraukos"><img src="/assets/icon/photo.svg" alt=""><span>Kampanija</span></a>
+          <a class="lib-card" href="/biblioteka#nuotraukos"><img src="/assets/icon/photo.svg" alt=""><span>Viršelis</span></a>
         </div>
+      </section>
 
-        <div class="lib-block">
-          <div class="lib-heading"><img src="/assets/icon/video-library.svg" width="14" height="14" alt=""> Video</div>
-          <div class="thumb-rotator" data-rotate="5000">
-            <figure class="thumb is-active"><img src="/assets/icon/placeholder.svg" alt="Video 1"><figcaption>Reklama</figcaption></figure>
-            <figure class="thumb"><img src="/assets/icon/placeholder.svg" alt="Video 2"><figcaption>Pristatymas</figcaption></figure>
-            <figure class="thumb"><img src="/assets/icon/placeholder.svg" alt="Video 3"><figcaption>Užkulisiai</figcaption></figure>
-          </div>
+      <section class="side-section">
+        <div class="side-title"><a class="lib-link" href="/biblioteka#video">Video</a></div>
+        <div class="library-grid">
+          <a class="lib-card" href="/biblioteka#video"><img src="/assets/icon/video-library.svg" alt=""><span>Reklama 15s</span></a>
+          <a class="lib-card" href="/biblioteka#video"><img src="/assets/icon/video-library.svg" alt=""><span>Pristatymas</span></a>
+          <a class="lib-card" href="/biblioteka#video"><img src="/assets/icon/video-library.svg" alt=""><span>Užkulisiai</span></a>
         </div>
       </section>
 
@@ -179,87 +168,107 @@
         <div class="side-title">Projektai</div>
         <div class="control-group" id="projectsList">
           <div class="project-item" data-project="new">
-            <img src="/assets/icon/plus.svg" width="14" height="14" alt="">
-            Naujas projektas
+            <img src="/assets/icon/plus.svg" width="14" height="14" alt=""> Naujas projektas
           </div>
         </div>
       </section>
 
-      <!-- Istorija -->
+      <!-- Pokalbių istorija -->
       <section class="side-section">
         <div class="side-title">Pokalbių istorija</div>
         <div class="control-group" id="historyList"></div>
       </section>
     </aside>
 
-    <!-- MAIN -->
+    <!-- ===== MAIN ===== -->
     <main class="main">
       <div class="chat-area" id="chatArea">
-        <section class="welcome">
-          <h1 class="welcome-title">
-            <span>Sveiki atvykę į</span>
-            <img class="logo-inline" src="/assets/icon/paule-logo.webp" alt="paule">
-          </h1>
+
+        <!-- HERO: didesnis logotipas vietoje mėlyno teksto -->
+        <section class="welcome" id="welcome">
+          <img class="hero-logo" src="/assets/icon/paule-logo.webp" alt="paule">
+          <h1>Sveiki atvykę į</h1>
           <p>Pradėkite naują pokalbį arba pasirinkite modelį viršuje.</p>
+
           <div class="welcome-actions">
-            <button class="welcome-btn" data-action="doctor">
-              <img src="/assets/icon/medical-heart-pulse.svg" width="16" height="16" alt="">
-              Sveikatos konsultacija
-            </button>
-            <button class="welcome-btn" data-action="chef">
-              <img src="/assets/icon/chef-healthy-bowl.svg" width="16" height="16" alt="">
-              Kulinarijos patarimai
-            </button>
-            <button class="welcome-btn" data-action="business">
-              <img src="/assets/icon/business-finance.svg" width="16" height="16" alt="">
-              Verslo strategija
-            </button>
+            <button class="welcome-btn"><img src="/assets/icon/medical-heart-pulse.svg" width="16" height="16" alt=""> Sveikatos konsultacija</button>
+            <button class="welcome-btn"><img src="/assets/icon/chef-healthy-bowl.svg" width="16" height="16" alt=""> Kulinarijos patarimai</button>
+            <button class="welcome-btn"><img src="/assets/icon/business-finance.svg" width="16" height="16" alt=""> Verslo strategija</button>
+          </div>
+
+          <!-- horizontali bendruomenės juosta -->
+          <div class="community-strip">
+            <div class="strip-item"><img src="/assets/icon/like.svg" onerror="this.style.display='none'" alt=""> Populiaru: „Miesto pulsas“ • 2.1k</div>
+            <div class="strip-item">Nauja: @Ieva įkėlė 3 nuotraukas</div>
+            <div class="strip-item">Konkursas: Geriausia daina rugsėjį</div>
           </div>
         </section>
+
+        <!-- Pavyzdinė žinutė — ribotas aukštis su scroll -->
+        <article class="message">
+          <div class="avatar"><img src="/assets/icon/ai.svg" alt=""></div>
+          <div class="bubble" data-model="chatgpt">
+            <div class="bubble-card">
+              <div class="msg-content">
+                Sveiki! Kuo galiu padėti? Čia atsiras atsakymai. Šis blokas riboto aukščio ir scrollinasi, kad neišplėstų ekrano.
+                <br>… (turinys) …
+              </div>
+              <div class="msg-meta">
+                <span class="model-tag">ChatGPT</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
       </div>
     </main>
   </div>
 
-  <!-- Bottom input -->
-  <section class="bottom-section initial-position" id="bottomSection">
+  <!-- ===== BOTTOM INPUT ===== -->
+  <div class="bottom-section after-message" id="bottomSection">
     <div class="input-bar">
       <div class="input-container">
         <textarea class="message-input" id="messageInput" rows="1" placeholder="Žinutė specialistui…"></textarea>
         <button class="send-btn" id="sendBtn" aria-label="Siųsti">
-          <img src="/assets/icon/arrow-top.svg" width="22" height="22" alt="">
+          <img src="/assets/icon/arrow-top.svg" alt="">
         </button>
       </div>
     </div>
+
     <div class="tools-bar">
-      <div class="tool" data-tool="mindmap"><img src="/assets/icon/tool-mindmap.svg" width="16" height="16" alt=""> Mindmap</div>
-      <div class="tool" data-tool="photo"><img src="/assets/icon/tool-photo.svg" width="16" height="16" alt=""> Foto</div>
-      <div class="tool" data-tool="file"><img src="/assets/icon/tool-file.svg" width="16" height="16" alt=""> Failas</div>
-      <div class="tool" data-tool="song"><img src="/assets/icon/tool-music.svg" width="16" height="16" alt=""> Sukurti dainą</div>
-      <div class="tool" data-tool="video"><img src="/assets/icon/video-plus.svg" width="16" height="16" alt=""> Sukurti video</div>
+      <div class="tool" data-tool="mindmap"><img src="/assets/icon/tool-mindmap.svg" alt=""> Mindmap</div>
+      <div class="tool" data-tool="photo"><img src="/assets/icon/tool-photo.svg" alt=""> Foto</div>
+      <div class="tool" data-tool="file"><img src="/assets/icon/tool-file.svg" alt=""> Failas</div>
+      <div class="tool" data-tool="song"><img src="/assets/icon/tool-music.svg" alt=""> Sukurti dainą</div>
+      <div class="tool" data-tool="video"><img src="/assets/icon/video-plus.svg" alt=""> Sukurti video</div>
     </div>
-  </section>
+  </div>
 
-  <!-- Paprastas rotatoriaus JS (tik šiam puslapiui) -->
-  <script>
-    document.querySelectorAll('.thumb-rotator').forEach(rot => {
-      const delay = parseInt(rot.dataset.rotate || '5000', 10);
-      const items = rot.querySelectorAll('.thumb');
-      let i = 0;
-      if(items.length <= 1) return;
-      setInterval(() => {
-        items[i].classList.remove('is-active');
-        i = (i + 1) % items.length;
-        items[i].classList.add('is-active');
-      }, delay);
-    });
+  <!-- Login modal karkasas (nekeistas) -->
+  <div class="modal-overlay" id="loginModalOverlay">
+    <div class="login-modal">
+      <button class="modal-close" id="closeLoginModal">×</button>
+      <div class="modal-header">
+        <div class="modal-title">Prisijungti prie Paule</div>
+        <div class="modal-subtitle">Prieiga prie visų AI įrankių</div>
+      </div>
+      <div class="login-form">
+        <button class="google-btn" id="googleLoginBtn">
+          <img src="/assets/icon/ai.svg" alt="" style="width:18px;height:18px"> Prisijungti su Google
+        </button>
+        <div class="divider"><span>arba</span></div>
+        <div class="form-group">
+          <label class="form-label">El. paštas</label>
+          <input type="email" class="form-input" id="loginEmail" placeholder="jusu@pastas.lt">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Slaptažodis</label>
+          <input type="password" class="form-input" id="loginPassword" placeholder="••••••••">
+        </div>
+        <button class="login-btn" id="loginSubmitBtn">Prisijungti</button>
+      </div>
+    </div>
+  </div>
 
-    // Profilio dropdown
-    const userProfile = document.getElementById('userProfile');
-    if(userProfile){
-      userProfile.addEventListener('click', () => {
-        userProfile.querySelector('.profile-dropdown').classList.toggle('active');
-      });
-    }
-  </script>
 </body>
 </html>
