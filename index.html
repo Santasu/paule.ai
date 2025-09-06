@@ -1,297 +1,245 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="lt">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PAULE.AI</title>
-  <meta name="description" content="Paule – greitas AI pokalbių UI su dalinamu URL, modelių juosta ir pilno ekrano modalais." />
-  <meta name="theme-color" content="#111111" />
-
-  <!-- Open Graph / Social -->
-  <meta property="og:title" content="PAULE.AI">
-  <meta property="og:description" content="Greitas AI pokalbių UI su dalinamu URL, modelių juosta ir pilno ekrano modalais.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://paule.ai/">
-  <meta property="og:image" content="/assets/icon/paule-logo.svg">
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="/assets/css/paule.css" />
-  <link rel="icon" href="/assets/icon/paule-logo.svg" type="image/svg+xml" />
-
-  <style>
-    /* Minimalus „safe“ fallback, jei /assets/css/paule.css kažkodėl neįsikeltų */
-    :root{--bg-primary:#fff;--text-primary:#111;--border:#e5e7eb;}
-    body{margin:0;background:var(--bg-primary);color:var(--text-primary);font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
-    .topbar{position:sticky;top:0;z-index:200;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;height:64px;padding:8px 14px;background:#fff;border-bottom:1px solid var(--border)}
-    .brand-icon{width:28px;height:28px;display:block}
-    .model-strip{display:flex;gap:8px;overflow:auto;padding:4px 0}
-    .model-tab{border:1px solid #e5e7eb;background:#f8fafc;color:#111;padding:8px 12px;border-radius:999px;font-weight:600;white-space:nowrap;cursor:pointer}
-    .main{display:grid;grid-template-rows:minmax(320px,48vh) 1fr;}
-    .layout{display:grid;grid-template-columns:320px 1fr;height:calc(100vh - 108px);overflow:hidden}
-    .sidebar{border-right:1px solid var(--border)}
-    .chat-area{padding:24px;overflow:auto}
-    .bottom-section{position:fixed;left:50%;transform:translateX(-50%);width:calc(100% - 680px);max-width:900px;background:#fff;border:1px solid var(--border);border-radius:12px;bottom:12px}
-    .input-bar{padding:16px;border-bottom:1px solid var(--border)}
-    .input-container{display:flex;gap:12px;border:1px solid var(--border);border-radius:14px;padding:12px}
-    .message-input{flex:1;border:0;background:transparent;outline:none;resize:none}
-    .send-btn{width:40px;height:40px;border-radius:50%;border:0;background:#3E46FF;color:#fff;cursor:pointer}
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;place-items:center;z-index:2000}
-    .modal-overlay.open{display:grid}
-    .modal{width:100vw;height:100vh;background:#fff;display:grid;grid-template-rows:auto 1fr}
-    .modal-head{display:flex;gap:12px;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
-    .modal-close{position:absolute;top:12px;right:12px;width:48px;height:48px;border-radius:50%;border:1px solid var(--border);background:rgba(0,0,0,.06);font-size:28px;cursor:pointer}
-    .modal-body{overflow:auto;padding:20px}
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Paule – AI Platforma</title>
+  <link rel="stylesheet" href="assets/css/paule.css" />
 </head>
-
-<body data-theme="light">
-  <noscript>Šiai svetainei reikalingas JavaScript. Įjunkite JavaScript naršyklėje.</noscript>
-
-  <!-- TOP BAR: logotipas + modelių juosta + veiksmai -->
-  <header class="topbar">
-    <a href="/" class="brand" aria-label="Paule">
-      <!-- LOGO (tik ikona be užrašo) -->
-      <img class="brand-icon" src="/assets/icon/paule-logo.svg" alt="Paule logo" />
-    </a>
-
-    <!-- Modelių juosta (vienoje linijoje su topbar) -->
-    <nav class="model-strip" aria-label="Model selector" role="tablist">
-      <button class="model-tab" data-model="paule">Paule</button>
-      <button class="model-tab" data-model="chatgpt">ChatGPT</button>
-      <button class="model-tab" data-model="claude">Claude</button>
-      <button class="model-tab" data-model="gemini">Gemini</button>
-      <button class="model-tab" data-model="grok">Grok</button>
-      <button class="model-tab" data-model="deepseek">DeepSeek</button>
-      <button class="model-tab" data-model="llama">Llama</button>
-    </nav>
-
-    <div class="top-actions">
-      <button class="btn btn-new-chat" id="newChatBtn" type="button">New chat</button>
+<body>
+  <!-- TOP BAR (PALIKTI ID NELIEČIANT JS) -->
+  <div class="topbar">
+    <div class="brand">
+      <img class="brand-icon" src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/paule-logo.webp" alt="Paule"/>
+      <span>Paule</span>
     </div>
-  </header>
+    <div class="top-actions">
+      <button class="btn btn-new-chat" id="btnNewChat">
+        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/nav-new-chat.svg" alt="" />
+        Naujas pokalbis
+      </button>
+      <button class="btn mobile-toggle" id="btnMobile">
+        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/nav-menu.svg" alt="" />
+        Meniu
+      </button>
 
-  <!-- NAV tarp Chat ir Community (pasirinktinai) -->
-  <div class="view-tabs" role="tablist">
-    <button class="view-tab is-active" data-view="chat"  type="button" aria-selected="true">Chat</button>
-    <button class="view-tab"          data-view="community" type="button">Community</button>
+      <!-- Prisijungimas (ID PALIKTI) -->
+      <button class="btn btn-login" id="btnLogin">
+        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/user.svg" alt="" />
+        Prisijungti
+      </button>
+
+      <!-- Vartotojas (ID PALIKTI) -->
+      <div class="user-profile hidden" id="userProfile">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-name" id="userName">Vartotojas</div>
+        <div class="profile-dropdown" id="profileDropdown">
+          <div class="dropdown-item" data-action="profile">
+            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/user.svg" alt="" />
+            Profilis
+          </div>
+          <div class="dropdown-item" data-action="settings">
+            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/settings.svg" alt="" />
+            Nustatymai
+          </div>
+          <div class="dropdown-item" data-action="theme">
+            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/nav-theme.svg" alt="" />
+            Tema
+          </div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" data-action="logout">
+            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/logout.svg" alt="" />
+            Atsijungti
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Pagrindinis karkasas -->
-  <main class="main">
-    <section class="layout">
-      <!-- Kairė: šoninė juosta -->
-      <aside class="sidebar" aria-label="Šoninė juosta">
-        <div class="side-section">
-          <div class="side-title">Greitos parinktys</div>
-          <div class="control-group">
-            <button class="chip active" type="button">Auto</button>
-            <button class="chip" type="button">Žinių paieška</button>
-            <button class="chip" type="button">Ekspertas</button>
+  <!-- LOGIN MODAL (ID PALIKTI) -->
+  <div class="modal-overlay" id="loginModalOverlay">
+    <div class="login-modal">
+      <button class="modal-close" id="closeLoginModal">×</button>
+      <div class="modal-header">
+        <div class="modal-title">Prisijungti prie Paule</div>
+        <div class="modal-subtitle">Prieiga prie AI įrankių</div>
+      </div>
+      <div class="login-form">
+        <button class="google-btn" id="googleLoginBtn">
+          <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
+          Prisijungti su Google
+        </button>
+        <div class="divider"><span>arba</span></div>
+        <div class="form-group">
+          <label class="form-label">El. paštas</label>
+          <input type="email" class="form-input" id="loginEmail" placeholder="jusu@pastas.lt">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Slaptažodis</label>
+          <input type="password" class="form-input" id="loginPassword" placeholder="••••••••">
+        </div>
+        <button class="login-btn" id="loginSubmitBtn">Prisijungti</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODEL BAR (ID PALIKTI, CENTRUOTA) -->
+  <div class="model-bar">
+    <div class="model-list" id="modelList">
+      <div class="model-pill active" data-model="augam-auto">
+        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/ai.svg" alt=""> Auto
+      </div>
+      <div class="model-pill" data-model="gpt-4o-mini">
+        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/chatgpt.svg" alt=""> ChatGPT
+      </div>
+      <div class="model-pill" data-model="claude-4-sonnet">
+        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/claude-seeklogo.svg" alt=""> Claude
+      </div>
+      <div class="model-pill" data-model="gemini-2.5-flash">
+        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/gemini.svg" alt=""> Gemini
+      </div>
+      <div class="model-pill" data-model="grok-4">
+        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/xAI.svg" alt=""> Grok
+      </div>
+      <div class="model-pill" data-model="deepseek-chat">
+        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/deepseek.svg" alt=""> DeepSeek
+      </div>
+      <div class="model-pill" data-model="meta-llama/Llama-4-Scout-17B-16E-Instruct">
+        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/llama.svg" alt=""> Llama
+      </div>
+    </div>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="layout">
+    <!-- SIDEBAR (ID PALIKTI) -->
+    <aside class="sidebar" id="sidebar">
+      <!-- Tema & kalba (chipTheme išlieka JS) -->
+      <div class="side-section">
+        <div class="side-title">Tema & Kalba</div>
+        <div class="control-row">
+          <div class="chip" id="chipTheme">
+            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/nav-theme.svg" alt="">
+            Tema
+          </div>
+          <select class="select" id="langSelect">
+            <option value="lt">LT</option>
+            <option value="en">EN</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- GALERIJOS – tik UI meniu (JS neliestas) -->
+      <div class="side-section">
+        <div class="side-title">Galerija</div>
+        <div class="control-group gallery-menu">
+          <div class="project-item">
+            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/photo.svg" alt=""> Foto
+          </div>
+          <div class="project-item">
+            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/music.svg" alt=""> Audio
+          </div>
+          <div class="project-item">
+            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/video.svg" alt=""> Video
+          </div>
+          <div class="project-item">
+            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/tool-mindmap.svg" alt=""> Mindmap
+          </div>
+          <div class="project-item">
+            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/lifemap.svg" alt=""> Lifemap
           </div>
         </div>
+      </div>
 
-        <div class="side-section">
-          <div class="side-title">Projektai</div>
-          <div class="project-item active">Pagrindinis</div>
-          <div class="project-item">Demo</div>
-          <div class="project-item">Idėjos</div>
+      <!-- AI Specialistai (ID PALIKTI) -->
+      <div class="side-section">
+        <div class="side-title">AI Specialistai</div>
+        <div class="specialist-grid" id="specialistGrid">
+          <!-- Palikti pavyzdžius su tais pačiais data-spec, kad veiktų esamas JS -->
+          <div class="chip" data-spec="doctor"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/medical-stethoscope.svg">Daktaras</div>
+          <div class="chip" data-spec="chef"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/chef-knife.svg">Šefas</div>
+          <div class="chip" data-spec="marketer"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/marketing-megaphone.svg">Marketing</div>
+          <div class="chip" data-spec="sales"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/sales-handshake.svg">Pardavimai</div>
+          <div class="chip" data-spec="business"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/business-strategy.svg">Verslas</div>
+          <div class="chip" data-spec="finance"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/finance-investment.svg">Finansai</div>
+          <div class="chip" data-spec="travel"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/travel-map.svg">Kelionės</div>
+          <div class="chip" data-spec="event"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/event-planning.svg">Renginiai</div>
+          <div class="chip" data-spec="artist"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/art-palette.svg">Menas</div>
+          <div class="chip" data-spec="hr"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/hr-recruitment.svg">HR</div>
+          <div class="chip" data-spec="lawyer"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/legal-contract.svg">Teisininkas</div>
+          <div class="chip" data-spec="psychologist"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/psychology-brain.svg">Psichologas</div>
         </div>
-      </aside>
+      </div>
 
-      <!-- Dešinė: chat dalis -->
-      <section class="main" aria-label="Pokalbio sritis">
-        <div class="chat-area" id="chatArea">
-          <div class="welcome">
-            <h1>Sveiki atvykę į Paule</h1>
-            <p>Pasirink modelį viršuje arba pradėk rašyti žinutę apačioje.</p>
-            <div class="welcome-actions">
-              <button class="welcome-btn" type="button" data-model="paule">Start with Paule</button>
-              <button class="welcome-btn" type="button" data-model="chatgpt">Try ChatGPT</button>
-            </div>
+      <!-- Projektai / istorija (ID PALIKTI) -->
+      <div class="side-section">
+        <div class="side-title">Projektai</div>
+        <div class="control-group" id="projectsList">
+          <div class="project-item" data-project="new">
+            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/plus.svg" alt=""> Naujas projektas
           </div>
         </div>
-      </section>
-    </section>
-
-    <!-- Community sritis (po chatu) -->
-    <section class="community-bar">
-      <div class="prize-banner">
-        <div>€1000 mėnesinis prizas už geriausią įrašą</div>
-        <button class="cta" type="button">Skaityti taisykles</button>
       </div>
 
-      <div class="stories">
-        <div class="story">Nauja</div>
-        <div class="story">Karšta</div>
-        <div class="story">Idėjos</div>
-        <div class="story">Klausimai</div>
+      <div class="side-section">
+        <div class="side-title">Pokalbių istorija</div>
+        <div class="control-group" id="historyList"></div>
       </div>
+    </aside>
 
-      <div class="community-feed">
-        <div class="feed-filters">
-          <button class="filter-pill is-active" type="button">Visi</button>
-          <button class="filter-pill" type="button">Tekstas</button>
-          <button class="filter-pill" type="button">Vaizdas</button>
-          <button class="filter-pill" type="button">Video</button>
-        </div>
-        <div class="feed-grid" id="feedGrid">
-          <!-- kortelių vieta -->
+    <!-- MAIN -->
+    <main class="main">
+      <div class="chat-area" id="chatArea">
+        <div class="welcome" id="welcome">
+          <h1>Sveiki atvykę į Paule</h1>
+          <p>Pasirink modelius viršuje arba pradėk rašyti žemiau.</p>
         </div>
       </div>
-    </section>
-  </main>
+    </main>
+  </div>
 
-  <!-- Apatinė įvedimo juosta -->
-  <div class="bottom-section after-message" id="bottomBar">
+  <!-- BOTTOM INPUT (ID PALIKTI) -->
+  <div class="bottom-section after-message" id="bottomSection">
     <div class="input-bar">
       <div class="input-container">
-        <textarea id="msgInput" class="message-input" rows="1" placeholder="Rašykite žinutę..."></textarea>
-        <button id="sendBtn" class="send-btn" type="button" aria-label="Siųsti">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 2L11 13"></path><path d="M22 2l-7 20-4-9-9-4 20-7z"></path></svg>
+        <textarea class="message-input" id="messageInput" rows="1" placeholder="Žinutė specialistui…"></textarea>
+        <button class="send-btn" id="sendBtn">
+          <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/arrow-top.svg" alt="">
         </button>
       </div>
     </div>
     <div class="tools-bar">
-      <button class="tool" type="button">📄 Santrauka</button>
-      <button class="tool" type="button">🔍 Paieška</button>
-      <button class="tool" type="button">🖼️ Vaizdas</button>
-      <button class="tool" type="button">🎵 Audio</button>
+      <div class="tool" data-tool="mindmap"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/tool-mindmap.svg">Mindmap</div>
+      <div class="tool" data-tool="photo"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/tool-photo.svg">Foto</div>
+      <div class="tool" data-tool="research"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/tool-research.svg">Tyrinėti</div>
+      <div class="tool" data-tool="think"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/think.svg">Mąstyti</div>
+      <div class="tool" data-tool="file"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/tool-file.svg">Failas</div>
+      <div class="tool" data-tool="song"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/tool-music.svg">Daina</div>
     </div>
   </div>
 
-  <!-- PILNO EKRANO MODALAS (naudojamas visiems modeliams) -->
-  <div id="modal-layer" class="modal-overlay" aria-hidden="true">
-    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <button class="modal-close" aria-label="Uždaryti" type="button">×</button>
-      <header class="modal-head">
-        <h2 id="modal-title">Modelis</h2>
-        <a id="modal-share" class="share-link" href="#" target="_blank" rel="noopener">Share</a>
-      </header>
-      <div id="modal-body" class="modal-body"><!-- turinys įkeliamas per JS --></div>
-    </section>
+  <!-- SPECIALIST OVERLAY (ID PALIKTI) -->
+  <div class="specialist-overlay" id="specialistOverlay">
+    <div class="specialist-header">
+      <div class="specialist-brand">
+        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/ai.svg" alt="Paule">
+        <span>Paule Specialistas</span>
+      </div>
+      <button class="specialist-close" id="closeSpecialistOverlay">×</button>
+    </div>
+    <div class="specialist-main">
+      <div class="specialist-avatar-large"><img id="specialistImage" src="" alt="Specialistas"></div>
+      <h1 class="specialist-title" id="specialistTitle">Specialistas</h1>
+      <p class="specialist-subtitle" id="specialistSubtitle">Jūsų asmeninis konsultantas</p>
+      <p class="specialist-description" id="specialistDescription">Pasirinkite temą arba užduokite klausimą.</p>
+      <div class="specialist-options" id="specialistOptions"></div>
+    </div>
   </div>
 
-  <!-- Pagrindinis UI skriptas (inline, kad „index.html su viskuo“) -->
-  <script>
-  (() => {
-    const qs  = (s, el=document) => el.querySelector(s);
-    const qsa = (s, el=document) => [...el.querySelectorAll(s)];
+  <!-- MOBILE OVERLAY (ID PALIKTI) -->
+  <div class="mobile-overlay" id="mobileOverlay"></div>
 
-    const layer     = qs('#modal-layer');
-    const modal     = layer?.querySelector('.modal');
-    const mTitle    = qs('#modal-title');
-    const mBody     = qs('#modal-body');
-    const mShare    = qs('#modal-share');
-    const btnClose  = qs('.modal-close');
-
-    const modelNames = {
-      paule:   'Paule (default)',
-      chatgpt: 'ChatGPT',
-      claude:  'Claude',
-      gemini:  'Gemini',
-      grok:    'Grok',
-      deepseek:'DeepSeek',
-      llama:   'Llama'
-    };
-
-    // Čia gali vėliau įdėti tikrą turinį kiekvienam modelio langui
-    const content = {
-      paule:   '<p>Numatytasis asistentas. Čia gali būti trumpas aprašas ar nustatymai.</p>',
-      chatgpt: '<p>ChatGPT integracija / instrukcijos.</p>',
-      claude:  '<p>Claude integracija / instrukcijos.</p>',
-      gemini:  '<p>Gemini integracija / instrukcijos.</p>',
-      grok:    '<p>Grok integracija / instrukcijos.</p>',
-      deepseek:'<p>DeepSeek integracija / instrukcijos.</p>',
-      llama:   '<p>Llama integracija / instrukcijos.</p>'
-    };
-
-    function urlFor(model){
-      const u = new URL(location.href);
-      if(model){ u.searchParams.set('m', model); }
-      else { u.searchParams.delete('m'); }
-      return u.toString();
-    }
-
-    function setActive(model){
-      qsa('.model-tab').forEach(b => b.classList.toggle('active', b.dataset.model === model));
-    }
-
-    function openModal(model){
-      const key = (model && modelNames[model]) ? model : 'paule';
-      modal?.setAttribute('data-model', key);
-      if(mTitle) mTitle.textContent = modelNames[key];
-      if(mBody)  mBody.innerHTML    = content[key] || '';
-      if(mShare) mShare.href        = urlFor(key);
-      layer?.classList.add('open');
-      history.pushState({ m:key }, '', urlFor(key));
-      setActive(key);
-    }
-
-    function closeModal(popState=false){
-      layer?.classList.remove('open');
-      if(!popState){ history.pushState({}, '', urlFor(null)); }
-      setActive(null);
-    }
-
-    // Modelių mygtukai
-    qsa('.model-tab').forEach(b => b.addEventListener('click', () => openModal(b.dataset.model)));
-
-    // Welcome veiksmas
-    qsa('.welcome-btn').forEach(b => b.addEventListener('click', () => openModal(b.dataset.model)));
-
-    // Uždarymai
-    btnClose?.addEventListener('click', () => closeModal());
-    layer?.addEventListener('click', (e) => { if(e.target === layer) closeModal(); });
-    window.addEventListener('keydown', (e) => { if(e.key === 'Escape' && layer.classList.contains('open')) closeModal(); });
-
-    // Naršyklės „Back/Forward“
-    window.addEventListener('popstate', () => {
-      const p = new URL(location.href).searchParams.get('m');
-      if(p){
-        // rodom atgal modalą be papildomo push
-        modal?.setAttribute('data-model', p);
-        mTitle.textContent = modelNames[p] || 'Modelis';
-        mBody.innerHTML = content[p] || '';
-        mShare.href  = urlFor(p);
-        layer.classList.add('open');
-        setActive(p);
-        history.replaceState({ m:p }, '', urlFor(p));
-      } else {
-        closeModal(true);
-      }
-    });
-
-    // Atidaryti iš URL (share)
-    const start = new URL(location.href).searchParams.get('m');
-    if(start){ requestAnimationFrame(() => openModal(start)); }
-
-    // Paprastas „send“ pavyzdys (tik UI)
-    const input = qs('#msgInput');
-    const send  = qs('#sendBtn');
-    const area  = qs('#chatArea');
-
-    function addMsg(text, who='user'){
-      const wrap = document.createElement('div');
-      wrap.className = 'message ' + (who==='user' ? 'user' : 'bot');
-      wrap.innerHTML = `
-        <div class="avatar">${who==='user' ? '🧑' : '🤖'}</div>
-        <div class="bubble">
-          <div class="bubble-card"><div class="msg-content">${text.replace(/</g,'&lt;')}</div></div>
-          <div class="msg-meta"><span>${new Date().toLocaleTimeString()}</span></div>
-        </div>`;
-      area?.appendChild(wrap);
-      area?.scrollTo({ top: area.scrollHeight, behavior:'smooth' });
-    }
-
-    send?.addEventListener('click', () => {
-      const v = (input?.value || '').trim();
-      if(!v) return;
-      addMsg(v,'user');
-      input.value = '';
-      setTimeout(() => addMsg('✅ Gavau: „' + v + '“ (demo atsakas).','bot'), 400);
-    });
-
-  })();
-  </script>
+  <!-- ČIA ĮSIRAŠYK SAVO ESAMĄ JS FAILĄ -->
+  <!-- <script src="assets/js/TAVO-ESAMAS-FAILAS.js"></script> -->
 </body>
 </html>
