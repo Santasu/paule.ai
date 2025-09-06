@@ -2,9 +2,6 @@
   "name": "paule.ai",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
-  "scripts": {
-    "build": "echo \"no build\""
-  },
-  "engines": { "node": ">=20" }
+  "scripts": { "build": "echo \"no build\"" },
+  "engines": { "node": ">=18" }
 }
