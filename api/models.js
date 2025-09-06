@@ -1,36 +1,19 @@
-// /api/models.js
-const { autoModel, cors } = require("../lib/ai");
+const { env, sendJSON, pickAutoModel, normalizeModelId, aliasOf } = require("./_utils");
 
-module.exports = async (req, res) => {
-  cors(res);
-  if (req.method === "OPTIONS") return res.status(200).end();
+module.exports = async (_req, res) => {
+  const avail = [];
+  if (env.TOGETHER)  avail.push(normalizeModelId("meta-llama/Llama-4-Scout-17B-16E-Instruct"));
+  if (env.OPENAI)    avail.push(normalizeModelId("gpt-4o-mini"));
+  if (env.ANTHROPIC) avail.push(normalizeModelId("claude-4-sonnet"));
+  if (env.XAI)       avail.push(normalizeModelId("grok-4"));
+  if (env.GOOGLE)    avail.push(normalizeModelId("gemini-2.5-flash"));
+  if (env.DEEPSEEK)  avail.push(normalizeModelId("deepseek-chat"));
 
-  const available = [];
-  if (process.env.TOGETHER_API_KEY) available.push("meta-llama/Llama-3.1-8B-Instruct-Turbo");
-  if (process.env.OPENAI_API_KEY)   available.push("gpt-4o-mini");
-  if (process.env.ANTHROPIC_API_KEY)available.push("claude-3-5-sonnet-20240620");
-  if (process.env.XAI_API_KEY)      available.push("grok-2-mini");
-  if (process.env.GOOGLE_API_KEY)   available.push("gemini-1.5-flash");
-  if (process.env.DEEPSEEK_API_KEY) available.push("deepseek-chat");
-
-  res.status(200).json({
+  const uniq = [...new Set(avail)];
+  sendJSON(res, 200, {
     ok: true,
     default_models: [{ id:"auto", alias:"Auto" }],
-    available: available.map(id=>({ id, alias: humanAlias(id) })),
-    aliases: { auto:"Auto" },
-    sse_enabled: true,
-    version: "paule-router-1.0.0"
+    available: uniq.map(m => ({ id:m, alias: aliasOf(m) })),
+    sse_enabled: true
   });
 };
-
-function humanAlias(id) {
-  const l = id.toLowerCase();
-  if (l.includes("gpt-4o")) return "ChatGPT 4o mini";
-  if (l.includes("gpt")) return "ChatGPT";
-  if (l.includes("claude")) return "Claude";
-  if (l.includes("gemini")) return "Gemini";
-  if (l.includes("grok")) return "Grok";
-  if (l.includes("llama")) return "Llama";
-  if (l.includes("deepseek")) return "DeepSeek";
-  return id;
-}
