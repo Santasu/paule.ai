@@ -1,12 +1,15 @@
 {
   "version": 2,
+  "framework": null,
   "cleanUrls": true,
   "trailingSlash": false,
 
   "functions": {
-    "runtime": "nodejs20.x",
-    "memory": 1024,
-    "maxDuration": 60
+    "api/**/*.js": {
+      "runtime": "nodejs20.x",
+      "memory": 1024,
+      "maxDuration": 60
+    }
   },
 
   "rewrites": [
@@ -34,14 +37,12 @@
     {
       "source": "/api/stream",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store" }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" }
+        { "key": "Access-Control-Allow-Origin",  "value": "*" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
+        { "key": "Cache-Control",                "value": "no-store" }
       ]
     }
   ]
 }
+
