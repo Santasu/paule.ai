@@ -9,12 +9,12 @@
 <body>
 
   <!-- ===== TOPBAR ===== -->
-  <header class="topbar">
-    <a class="brand" href="/">
+  <header class="topbar" data-no-clip="true">
+    <a class="brand brand--offset brand--xl" href="/">
       <img class="brand-icon" src="/assets/icon/paule-logo.webp" alt="paule">
     </a>
 
-    <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
+    <nav class="models-in-topbar" aria-label="Modeliai" id="modelsBar">
       <button class="model-pill active" data-model="auto" aria-pressed="true">
         <img src="/assets/icon/ai-auto.svg" alt=""> Auto
       </button>
@@ -40,7 +40,7 @@
 
     <div class="top-actions">
       <a class="btn ghost" href="/community">
-        <img src="/assets/icon/nav-results.svg" alt=""> Community
+        <img src="/assets/icon/nav-results.svg" alt=""> Bendruomenė
       </a>
       <button class="btn ghost" id="btnNewChat">
         <img src="/assets/icon/nav-new-chat.svg" alt=""> Naujas pokalbis
@@ -49,10 +49,7 @@
         <img src="/assets/icon/nav-menu.svg" alt=""> Meniu
       </button>
 
-      <!-- pakeisi “hidden” įjungus vartotoją -->
-      <button class="btn ghost" id="btnLogin">
-        <img src="/assets/icon/user.svg" alt=""> Prisijungti
-      </button>
+      <!-- kai prisijungta – rodom šitą, slepiam #btnLogin -->
       <div class="user-profile hidden" id="userProfile">
         <div class="user-avatar">U</div>
         <div class="user-name">Vartotojas</div>
@@ -60,11 +57,11 @@
           <div class="dropdown-item" style="cursor:default">
             <img src="/assets/icon/nav-theme.svg" alt="">
             <div class="profile-controls">
-              <select class="select" onchange="document.documentElement.setAttribute('data-theme', this.value)">
+              <select class="select" id="selTheme">
                 <option value="light">Šviesi</option>
                 <option value="dark">Tamsi</option>
               </select>
-              <select class="select">
+              <select class="select" id="selLang">
                 <option value="lt">LT</option>
                 <option value="en">EN</option>
               </select>
@@ -90,6 +87,11 @@
           </div>
         </div>
       </div>
+
+      <!-- numatytai: matosi, kol neprisijungta -->
+      <button class="btn ghost" id="btnLogin">
+        <img src="/assets/icon/user.svg" alt=""> Prisijungti
+      </button>
     </div>
   </header>
 
@@ -98,7 +100,7 @@
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
 
-      <!-- AI specialistai (visi – kaip URLiniai popupai) -->
+      <!-- AI specialistai -->
       <section class="side-section">
         <div class="side-title">AI specialistai</div>
         <div class="specialist-grid">
@@ -109,7 +111,8 @@
           <a class="chip" href="#spec-finansai" data-route="/spec/finansai"><img src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
           <a class="chip" href="#spec-keliones" data-route="/spec/keliones"><img src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
           <a class="chip" href="#spec-renginiai" data-route="/spec/renginiai"><img src="/assets/icon/event-planning.svg" alt=""> Renginiai</a>
-          <a class="chip" href="#spec-tikslu" data-route="/spec/tikslu-zemelapis"><img src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
+          <!-- SVARBU: tikslų žemėlapis veda į atskirą puslapį -->
+          <a class="chip" href="/spec/goal.html" data-route="/spec/goal.html"><img src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
           <a class="chip" href="#spec-teise" data-route="/spec/teisininkas"><img src="/assets/icon/legal-contract.svg" alt=""> Teisininkas</a>
           <a class="chip" href="#spec-psichologas" data-route="/spec/psichologas"><img src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
         </div>
@@ -118,7 +121,7 @@
       <!-- Aktyvumas -->
       <section class="side-section">
         <div class="side-title">Aktyvumas</div>
-        <div class="community-pings">
+        <div class="community-pings" id="communityPings">
           <div class="ping"><img src="/assets/icon/music.svg" alt=""> @Mantas įkėlė dainą „Vasaros vėjas“</div>
           <div class="ping"><img src="/assets/icon/photo.svg" alt=""> @Ieva pridėjo 3 nuotraukas</div>
           <div class="ping"><img src="/assets/icon/video-library.svg" alt=""> @Ruta publikavo „Reklama-15s“</div>
@@ -182,7 +185,8 @@
           <div class="welcome-actions">
             <a class="welcome-btn" href="#spec-sefas"><img src="/assets/icon/chef-healthy-bowl.svg" alt=""> Kulinarijos patarimai</a>
             <a class="welcome-btn" href="#spec-verslas"><img src="/assets/icon/business-finance.svg" alt=""> Verslo strategija</a>
-            <a class="welcome-btn" href="#spec-tikslu"><img src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
+            <!-- SVARBU: čia irgi /spec/goal.html -->
+            <a class="welcome-btn" href="/spec/goal.html"><img src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
           </div>
 
           <div class="community-strip">
@@ -212,7 +216,7 @@
   </div>
 
   <!-- ===== BOTTOM INPUT ===== -->
-  <div class="bottom-section after-message" id="bottomSection">
+  <div class="bottom-section after-message" id="bottomSection" data-responsive="true">
     <div class="input-bar">
       <div class="input-container">
         <textarea class="message-input" id="messageInput" rows="1" placeholder="Žinutė specialistui…"></textarea>
@@ -231,9 +235,7 @@
     </div>
   </div>
 
-  <!-- ===== URLiniai POPUPAI (juodas fullscreen) – :target be JS ===== -->
-
-  <!-- Šefas -->
+  <!-- ===== URLinis POPUP – paliekam pavyzdį šefui (tikslų popupą išėmiau, nes /spec/goal.html) -->
   <section class="popup" id="spec-sefas" aria-modal="true" role="dialog">
     <div class="popup-body">
       <header class="popup-head">
@@ -241,23 +243,11 @@
         <a class="popup-close" href="#" aria-label="Uždaryti"><img src="/assets/icon/nav-close.svg" alt=""></a>
       </header>
       <div class="popup-content">
-        Čia – šefui skirtas puslapis/popup. Galėsi pakeisti į atskirą HTML failą, o šitas CSS modalas leis turėti ir URL (`#spec-sefas`).
+        Čia – šefui skirtas puslapis/popup. (Galima vėliau nukreipti į atskirą /spec/sefas.html.)
       </div>
     </div>
   </section>
 
-  <!-- Tikslų žemėlapis -->
-  <section class="popup" id="spec-tikslu" aria-modal="true" role="dialog">
-    <div class="popup-body">
-      <header class="popup-head">
-        <h2><img src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</h2>
-        <a class="popup-close" href="#" aria-label="Uždaryti"><img src="/assets/icon/nav-close.svg" alt=""></a>
-      </header>
-      <div class="popup-content">
-        Čia atsidarys tavo turimas „Tikslų žemėlapio“ failas / UI. Fonas – juodas, per visą ekraną, fokusas į turinį.
-      </div>
-    </div>
-  </section>
-
+  <script src="/assets/js/paule.js" defer></script>
 </body>
 </html>
