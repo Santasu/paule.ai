@@ -1,5 +1,14 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/ui.html" }
+    { "source": "/", "destination": "/pages/index.html" },
+    { "source": "/assets/icon/:path*", "destination": "/assets/icon/placeholder.svg" }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
   ]
 }
