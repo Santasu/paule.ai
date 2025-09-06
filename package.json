@@ -1,9 +1,8 @@
 {
   "name": "paule.ai",
   "private": true,
-  "license": "MIT",
   "type": "commonjs",
-  "engines": { "node": ">=20" },
+  "engines": { "node": "20.x" },
   "scripts": {
     "build": "echo \"no build\""
   },
