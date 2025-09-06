@@ -1,266 +1,225 @@
-<!DOCTYPE html>
-<html lang="lt" data-theme="light">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Paule – Premium AI Chat</title>
-  <link rel="stylesheet" href="/assets/css/paule.css">
-</head>
-<body>
+/* =========================================================
+   Paule – Premium Chat UI (light / dark)
+   ========================================================= */
 
-  <!-- ===== TOPBAR ===== -->
-  <header class="topbar">
-    <a class="brand" href="/">
-      <img class="brand-icon" src="/assets/icon/paule-logo.webp" alt="paule">
-    </a>
+/* Reset */
+*{margin:0; padding:0; box-sizing:border-box}
+html,body{height:100%; min-height:100vh; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",system-ui,sans-serif; line-height:1.6; overflow:hidden}
+img,svg{max-width:100%; height:auto; display:block}
 
-    <!-- Modeliai centre, sulygiuota su mygtukais -->
-    <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
-      <button class="model-pill active" data-model="auto" aria-pressed="true">
-        <img src="/assets/icon/ai-auto.svg" width="16" height="16" alt=""> Auto
-      </button>
-      <button class="model-pill" data-model="chatgpt">
-        <img src="/assets/icon/chatgpt.svg" width="16" height="16" alt=""> ChatGPT
-      </button>
-      <button class="model-pill" data-model="claude">
-        <img src="/assets/icon/claude-seeklogo.svg" width="16" height="16" alt=""> Claude
-      </button>
-      <button class="model-pill" data-model="gemini">
-        <img src="/assets/icon/gemini.svg" width="16" height="16" alt=""> Gemini
-      </button>
-      <button class="model-pill" data-model="grok">
-        <img src="/assets/icon/xAI.svg" width="16" height="16" alt=""> Grok
-      </button>
-      <button class="model-pill" data-model="deepseek">
-        <img src="/assets/icon/deepseek.svg" width="16" height="16" alt=""> DeepSeek
-      </button>
-      <button class="model-pill" data-model="llama">
-        <img src="/assets/icon/llama.svg" width="16" height="16" alt=""> Llama
-      </button>
-    </nav>
+/* Palette (light) */
+:root{
+  --bg-primary:#ffffff;
+  --bg-secondary:#fafafa;
+  --bg-elev:#f5f5f6;
 
-    <div class="top-actions">
-      <a class="btn ghost" href="/community">
-        <img src="/assets/icon/nav-results.svg" width="16" height="16" alt=""> Community
-      </a>
-      <button class="btn ghost" id="btnNewChat">
-        <img src="/assets/icon/nav-new-chat.svg" width="16" height="16" alt=""> Naujas pokalbis
-      </button>
-      <button class="btn ghost mobile-toggle" id="btnMobile">
-        <img src="/assets/icon/nav-menu.svg" width="16" height="16" alt=""> Meniu
-      </button>
+  --text-primary:#111114;
+  --text-secondary:#4b4b50;
+  --text-muted:#8a8a90;
 
-      <!-- KEITIMASIS su prisijungimu (šablone palieku abu) -->
-      <button class="btn ghost" id="btnLogin">
-        <img src="/assets/icon/user.svg" width="16" height="16" alt=""> Prisijungti
-      </button>
+  --border:#e8e8ec;
+  --border-2:#f1f1f4;
 
-      <div class="user-profile hidden" id="userProfile">
-        <div class="user-avatar">U</div>
-        <div class="user-name">Vartotojas</div>
-        <div class="profile-dropdown">
-          <div class="dropdown-item" style="cursor:default">
-            <img src="/assets/icon/nav-theme.svg" width="16" height="16" alt="">
-            <div class="profile-controls">
-              <select class="select" onchange="document.documentElement.setAttribute('data-theme', this.value)">
-                <option value="light">Šviesi</option>
-                <option value="dark">Tamsi</option>
-              </select>
-              <select class="select">
-                <option value="lt">LT</option>
-                <option value="en">EN</option>
-              </select>
-            </div>
-          </div>
+  --accent:#6e6cf5;          /* pastel violet-blue */
+  --accent-ghost:#eef0ff;
+  --accent-hover:#5755ec;
 
-          <div class="dropdown-divider"></div>
-          <div class="dropdown-item" style="cursor:default; flex-direction:column; align-items:flex-start;">
-            <div class="mini-title">Statistika</div>
-            <div class="stats-grid">
-              <div class="stat-chip"><span><img src="/assets/icon/chatgpt.svg" width="12" height="12" alt=""> GPT</span><span class="stat-count">87% (42)</span></div>
-              <div class="stat-chip"><span><img src="/assets/icon/claude-seeklogo.svg" width="12" height="12" alt=""> Claude</span><span class="stat-count">92% (38)</span></div>
-              <div class="stat-chip"><span><img src="/assets/icon/deepseek.svg" width="12" height="12" alt=""> DeepSeek</span><span class="stat-count">78% (25)</span></div>
-              <div class="stat-chip"><span><img src="/assets/icon/xAI.svg" width="12" height="12" alt=""> Grok</span><span class="stat-count">83% (19)</span></div>
-              <div class="stat-chip"><span><img src="/assets/icon/llama.svg" width="12" height="12" alt=""> Llama</span><span class="stat-count">95% (51)</span></div>
-              <div class="stat-chip"><span><img src="/assets/icon/gemini.svg" width="12" height="12" alt=""> Gemini</span><span class="stat-count">89% (34)</span></div>
-            </div>
-          </div>
+  --radius:12px;
+  --shadow:0 1px 2px rgba(0,0,0,.05);
+  --shadow-lg:0 10px 30px rgba(0,0,0,.08);
+}
 
-          <div class="dropdown-divider"></div>
-          <div class="dropdown-item" data-action="logout">
-            <img src="/assets/icon/logout.svg" width="16" height="16" alt=""> Atsijungti
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
+/* Dark */
+[data-theme="dark"]{
+  --bg-primary:#0f1115;
+  --bg-secondary:#141720;
+  --bg-elev:#1a1f2b;
 
-  <!-- ===== LAYOUT ===== -->
-  <div class="layout">
+  --text-primary:#f3f4f6;
+  --text-secondary:#c8c9d1;
+  --text-muted:#9aa0aa;
 
-    <!-- ===== SIDEBAR ===== -->
-    <aside class="sidebar" id="sidebar">
+  --border:#2a3140;
+  --border-2:#202636;
 
-      <!-- AI specialistai -->
-      <section class="side-section">
-        <div class="side-title">AI specialistai</div>
-        <div class="specialist-grid">
-          <div class="chip" data-spec="chef"><img src="/assets/icon/chef-knife.svg" width="14" height="14" alt=""> Šefas</div>
-          <div class="chip" data-spec="marketing"><img src="/assets/icon/marketing-megaphone.svg" width="14" height="14" alt=""> Marketing</div>
-          <div class="chip" data-spec="sales"><img src="/assets/icon/sales-handshake.svg" width="14" height="14" alt=""> Pardavimai</div>
-          <div class="chip" data-spec="business"><img src="/assets/icon/business-strategy.svg" width="14" height="14" alt=""> Verslas</div>
-          <div class="chip" data-spec="finance"><img src="/assets/icon/finance-investment.svg" width="14" height="14" alt=""> Finansai</div>
-          <div class="chip" data-spec="travel"><img src="/assets/icon/travel-map.svg" width="14" height="14" alt=""> Kelionės</div>
-          <div class="chip" data-spec="events"><img src="/assets/icon/event-planning.svg" width="14" height="14" alt=""> Renginiai</div>
-          <div class="chip" data-spec="hr"><img src="/assets/icon/hr-recruitment.svg" width="14" height="14" alt=""> HR</div>
-          <div class="chip" data-spec="law"><img src="/assets/icon/legal-contract.svg" width="14" height="14" alt=""> Teisininkas</div>
-          <div class="chip" data-spec="psych"><img src="/assets/icon/psychology-brain.svg" width="14" height="14" alt=""> Psichologas</div>
-        </div>
-      </section>
+  --accent:#8a96ff;
+  --accent-ghost:#1b1f33;
+  --accent-hover:#a5afff;
+}
 
-      <!-- Aktyvumas (perkelta žemiau specialistų) -->
-      <section class="side-section">
-        <div class="side-title">Aktyvumas</div>
-        <div class="community-pings">
-          <div class="ping"><img src="/assets/icon/music.svg" width="14" height="14" alt=""> @Mantas įkėlė dainą „Vasaros vėjas“</div>
-          <div class="ping"><img src="/assets/icon/photo.svg" width="14" height="14" alt=""> @Ieva pridėjo 3 nuotraukas</div>
-          <div class="ping"><img src="/assets/icon/video-library.svg" width="14" height="14" alt=""> @Ruta publikavo „Reklama-15s“</div>
-        </div>
-      </section>
+body{background:var(--bg-primary); color:var(--text-primary)}
 
-      <!-- Mano biblioteka -->
-      <section class="side-section">
-        <div class="side-title"><a class="lib-link" href="/biblioteka#dainos">Dainos</a></div>
-        <div class="library-grid">
-          <a class="lib-card" href="/biblioteka#dainos"><img src="/assets/icon/music.svg" alt=""><span>„Vasaros vėjas“</span></a>
-          <a class="lib-card" href="/biblioteka#dainos"><img src="/assets/icon/music.svg" alt=""><span>„Nakties šviesos“</span></a>
-          <a class="lib-card" href="/biblioteka#dainos"><img src="/assets/icon/music.svg" alt=""><span>„Miesto pulsas“</span></a>
-        </div>
-      </section>
+/* ===== Topbar ===== */
+.topbar{
+  position:sticky; top:0; z-index:200;
+  display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px;
+  height:66px; padding:8px 16px; border-bottom:1px solid var(--border); background:var(--bg-primary);
+  backdrop-filter:blur(8px)
+}
+.brand-icon{ width:76px; height:auto } /* mažas viršuje */
+.models-in-topbar{ display:flex; gap:8px; justify-content:center; align-items:center; overflow-x:auto; scrollbar-width:thin }
+.models-in-topbar::-webkit-scrollbar{ height:6px }
+.models-in-topbar::-webkit-scrollbar-thumb{ background:var(--border); border-radius:3px }
 
-      <section class="side-section">
-        <div class="side-title"><a class="lib-link" href="/biblioteka#nuotraukos">Nuotraukos</a></div>
-        <div class="library-grid">
-          <a class="lib-card" href="/biblioteka#nuotraukos"><img src="/assets/icon/photo.svg" alt=""><span>Produktas</span></a>
-          <a class="lib-card" href="/biblioteka#nuotraukos"><img src="/assets/icon/photo.svg" alt=""><span>Kampanija</span></a>
-          <a class="lib-card" href="/biblioteka#nuotraukos"><img src="/assets/icon/photo.svg" alt=""><span>Viršelis</span></a>
-        </div>
-      </section>
+.model-pill{
+  border:1px solid var(--border);
+  background:var(--bg-secondary);
+  color:var(--text-primary);
+  padding:8px 12px; border-radius:999px; font-size:13px; font-weight:700;
+  display:inline-flex; align-items:center; gap:8px; cursor:pointer; transition:.15s ease; white-space:nowrap
+}
+.model-pill img{ width:16px; height:16px }
+.model-pill:hover{ transform:translateY(-1px); border-color:var(--accent); box-shadow:0 4px 12px rgba(62,70,255,.12) }
+.model-pill.active{ background:var(--accent-ghost); border-color:var(--accent); color:var(--accent) }
 
-      <section class="side-section">
-        <div class="side-title"><a class="lib-link" href="/biblioteka#video">Video</a></div>
-        <div class="library-grid">
-          <a class="lib-card" href="/biblioteka#video"><img src="/assets/icon/video-library.svg" alt=""><span>Reklama 15s</span></a>
-          <a class="lib-card" href="/biblioteka#video"><img src="/assets/icon/video-library.svg" alt=""><span>Pristatymas</span></a>
-          <a class="lib-card" href="/biblioteka#video"><img src="/assets/icon/video-library.svg" alt=""><span>Užkulisiai</span></a>
-        </div>
-      </section>
+.top-actions{ display:flex; gap:8px; align-items:center }
+.btn{
+  border:1px solid var(--border);
+  background:var(--bg-secondary);
+  color:var(--text-primary);
+  padding:8px 12px; border-radius:10px; font-weight:800; cursor:pointer; display:inline-flex; gap:8px; align-items:center; transition:.15s ease
+}
+.btn.ghost:hover{ border-color:var(--accent); color:var(--accent); background:var(--accent-ghost) }
 
-      <!-- Projektai -->
-      <section class="side-section">
-        <div class="side-title">Projektai</div>
-        <div class="control-group" id="projectsList">
-          <div class="project-item" data-project="new">
-            <img src="/assets/icon/plus.svg" width="14" height="14" alt=""> Naujas projektas
-          </div>
-        </div>
-      </section>
+/* Profile dropdown */
+.user-profile{ position:relative; display:flex; align-items:center; gap:8px; padding:6px 10px; border:1px solid var(--border); background:var(--bg-secondary); border-radius:10px; cursor:pointer }
+.user-avatar{ width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700 }
+.user-name{ font-weight:800; font-size:13px }
+.profile-dropdown{ position:absolute; top:100%; right:0; margin-top:8px; min-width:320px; padding:8px; background:var(--bg-primary); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow-lg); opacity:0; visibility:hidden; transform:translateY(-6px); transition:.2s }
+.user-profile:hover .profile-dropdown{ opacity:1; visibility:visible; transform:translateY(0) }
+.dropdown-item{ display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; color:var(--text-primary) }
+.dropdown-item:hover{ background:var(--bg-secondary) }
+.dropdown-divider{ height:1px; background:var(--border); margin:4px 0 }
+.profile-controls{ display:flex; gap:8px; margin-left:auto }
+.mini-title{ font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.3px; margin-bottom:6px }
 
-      <!-- Pokalbių istorija -->
-      <section class="side-section">
-        <div class="side-title">Pokalbių istorija</div>
-        <div class="control-group" id="historyList"></div>
-      </section>
-    </aside>
+/* ===== Layout ===== */
+.layout{ display:grid; grid-template-columns:300px 1fr; height:calc(100vh - 66px); overflow:hidden }
 
-    <!-- ===== MAIN ===== -->
-    <main class="main">
-      <div class="chat-area" id="chatArea">
+/* Sidebar */
+.sidebar{ border-right:1px solid var(--border); overflow:auto; background:var(--bg-primary) }
+.side-section{ padding:14px 16px; border-bottom:1px solid var(--border-2) }
+.side-title{ font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; font-weight:900 }
 
-        <!-- HERO su gradientiniu užrašu -->
-        <section class="welcome" id="welcome">
-          <h1 class="hero-title">Sveiki atvykę į <span>paule</span></h1>
-          <p>Pradėkite naują pokalbį arba pasirinkite modelį viršuje.</p>
+.specialist-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px }
+.chip{
+  background:var(--bg-secondary); padding:8px 10px; border-radius:10px; font-size:13px; cursor:pointer; color:var(--text-secondary);
+  border:1px solid var(--border); transition:.15s; display:flex; align-items:center; gap:8px; font-weight:800
+}
+.chip:hover{ color:var(--accent); border-color:var(--accent); background:var(--accent-ghost) }
 
-          <div class="welcome-actions">
-            <button class="welcome-btn"><img src="/assets/icon/medical-heart-pulse.svg" width="16" height="16" alt=""> Sveikatos konsultacija</button>
-            <button class="welcome-btn"><img src="/assets/icon/chef-healthy-bowl.svg" width="16" height="16" alt=""> Kulinarijos patarimai</button>
-            <button class="welcome-btn"><img src="/assets/icon/business-finance.svg" width="16" height="16" alt=""> Verslo strategija</button>
-          </div>
+/* Aktyvumas */
+.community-pings{ display:flex; flex-direction:column; gap:6px }
+.ping{ font-size:12px; color:var(--text-secondary); display:flex; gap:8px; align-items:center; padding:8px; border:1px dashed var(--border); border-radius:10px; background:var(--bg-secondary) }
 
-          <div class="community-strip">
-            <div class="strip-item">Populiaru: „Miesto pulsas“ • 2.1k</div>
-            <div class="strip-item">Nauja: @Ieva įkėlė 3 nuotraukas</div>
-            <div class="strip-item">Konkursas: Geriausia daina rugsėjį</div>
-          </div>
-        </section>
+/* Library */
+.lib-link{ color:var(--text-secondary); text-decoration:none; font-weight:900 }
+.lib-link:hover{ color:var(--accent) }
+.library-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px }
+.lib-card{
+  display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 6px; border:1px solid var(--border); border-radius:12px;
+  background:var(--bg-secondary); text-decoration:none; color:var(--text-secondary); font-size:11px; font-weight:900; transition:.15s
+}
+.lib-card img{ width:36px; height:36px; object-fit:contain }
+.lib-card:hover{ transform:translateY(-2px); border-color:var(--accent); color:var(--accent); background:var(--accent-ghost) }
 
-        <!-- Pavyzdinis burbulas (ribotas aukštis su scroll) -->
-        <article class="message">
-          <div class="avatar"><img src="/assets/icon/ai.svg" alt=""></div>
-          <div class="bubble" data-model="chatgpt">
-            <div class="bubble-card">
-              <div class="msg-content">
-                Sveiki! Kuo galiu padėti? Čia atsiras atsakymai. Šis blokas riboto aukščio ir scrollinasi, kad neišplėstų ekrano.
-                <br>… (turinys) …
-              </div>
-              <div class="msg-meta">
-                <span class="model-tag">ChatGPT</span>
-              </div>
-            </div>
-          </div>
-        </article>
+/* Projects + history */
+.project-item{ display:flex; align-items:center; gap:8px; padding:10px; border:1px solid var(--border); border-radius:10px; color:var(--text-secondary); cursor:pointer; font-weight:900 }
+.project-item:hover{ border-color:var(--accent); color:var(--accent); background:var(--accent-ghost) }
 
-      </div>
-    </main>
-  </div>
+/* ===== Main / Chat ===== */
+.main{ display:flex; flex-direction:column; overflow:hidden; background:var(--bg-primary) }
+.chat-area{ flex:1; overflow:auto; padding:20px; display:flex; flex-direction:column; gap:16px; padding-bottom:240px }
 
-  <!-- ===== BOTTOM INPUT ===== -->
-  <div class="bottom-section after-message" id="bottomSection">
-    <div class="input-bar">
-      <div class="input-container">
-        <textarea class="message-input" id="messageInput" rows="1" placeholder="Žinutė specialistui…"></textarea>
-        <button class="send-btn" id="sendBtn" aria-label="Siųsti">
-          <img src="/assets/icon/arrow-top.svg" alt="">
-        </button>
-      </div>
-    </div>
+/* Hero – gradientinis užrašas, jokio logotipo */
+.hero-title{
+  font-size:30px; line-height:1.2; margin:6px 0 6px; font-weight:900; text-align:center;
+  background:linear-gradient(90deg, #0b0b0b 0%, var(--accent) 70%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.hero-title span{ font-weight:900 }
+.welcome{ display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:26vh; text-align:center; margin-top:4px }
+.welcome p{ color:var(--text-secondary); margin-bottom:14px }
+.welcome-actions{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center }
+.welcome-btn{ padding:10px 16px; border:1px solid var(--border); background:var(--bg-secondary); color:var(--text-primary); border-radius:12px; cursor:pointer; font-size:13px; font-weight:900; display:flex; align-items:center; gap:8px }
+.welcome-btn:hover{ background:var(--accent-ghost); border-color:var(--accent); color:var(--accent) }
 
-    <div class="tools-bar">
-      <div class="tool" data-tool="mindmap"><img src="/assets/icon/tool-mindmap.svg" alt=""> Mindmap</div>
-      <div class="tool" data-tool="photo"><img src="/assets/icon/tool-photo.svg" alt=""> Foto</div>
-      <div class="tool" data-tool="file"><img src="/assets/icon/tool-file.svg" alt=""> Failas</div>
-      <div class="tool" data-tool="song"><img src="/assets/icon/tool-music.svg" alt=""> Sukurti dainą</div>
-      <div class="tool" data-tool="video"><img src="/assets/icon/video-plus.svg" alt=""> Sukurti video</div>
-    </div>
-  </div>
+/* Community horizontal bar */
+.community-strip{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; justify-content:center }
+.strip-item{ font-size:12px; color:var(--text-secondary); border:1px dashed var(--border); background:var(--bg-secondary); padding:6px 10px; border-radius:999px }
 
-  <!-- Login modal (nefunkcionalus šablone) -->
-  <div class="modal-overlay" id="loginModalOverlay">
-    <div class="login-modal">
-      <button class="modal-close" id="closeLoginModal">×</button>
-      <div class="modal-header">
-        <div class="modal-title">Prisijungti prie Paule</div>
-        <div class="modal-subtitle">Prieiga prie visų AI įrankių</div>
-      </div>
-      <div class="login-form">
-        <button class="google-btn" id="googleLoginBtn">
-          <img src="/assets/icon/ai.svg" alt="" style="width:18px;height:18px"> Prisijungti su Google
-        </button>
-        <div class="divider"><span>arba</span></div>
-        <div class="form-group">
-          <label class="form-label">El. paštas</label>
-          <input type="email" class="form-input" id="loginEmail" placeholder="jusu@pastas.lt">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Slaptažodis</label>
-          <input type="password" class="form-input" id="loginPassword" placeholder="••••••••">
-        </div>
-        <button class="login-btn" id="loginSubmitBtn">Prisijungti</button>
-      </div>
-    </div>
-  </div>
+/* Messages – ribotas aukštis su scroll burbuluose */
+.message{ display:flex; gap:12px; align-items:flex-start }
+.avatar{ width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; border:1px solid var(--border); background:var(--bg-secondary) }
+.avatar img{ width:18px; height:18px }
 
-</body>
-</html>
+.bubble{ flex:1; max-width:78% }
+.bubble-card{ background:var(--bg-secondary); border-radius:16px; padding:14px; border:1px solid var(--border) }
+.msg-content{ max-height:220px; overflow:auto; font-size:14px }
+.msg-content::-webkit-scrollbar{ width:6px }
+.msg-content::-webkit-scrollbar-thumb{ background:var(--border); border-radius:3px }
+.msg-meta{ display:flex; gap:8px; color:var(--text-muted); font-size:12px; margin-top:6px }
+.model-tag{ border:1px solid var(--border); background:var(--bg-elev); padding:3px 8px; border-radius:8px }
 
+/* Subtilūs „model tint“ */
+.bubble[data-model="chatgpt"] .bubble-card{ border-left:3px solid color-mix(in srgb, #10b981 50%, transparent) }
+.bubble[data-model="claude"] .bubble-card{ border-left:3px solid color-mix(in srgb, #f59e0b 50%, transparent) }
+.bubble[data-model="gemini"] .bubble-card{ border-left:3px solid color-mix(in srgb, #4285f4 50%, transparent) }
+.bubble[data-model="grok"] .bubble-card{ border-left:3px solid color-mix(in srgb, #111 40%, transparent) }
+.bubble[data-model="deepseek"] .bubble-card{ border-left:3px solid color-mix(in srgb, #8B5E3C 50%, transparent) }
+.bubble[data-model="llama"] .bubble-card{ border-left:3px solid color-mix(in srgb, #9333EA 50%, transparent) }
+
+/* ===== Bottom input ===== */
+.bottom-section{
+  position:fixed; left:50%; transform:translateX(-50%);
+  bottom:12px; width:calc(100% - 680px); max-width:900px;
+  background:var(--bg-primary); backdrop-filter:blur(8px);
+  border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow-lg); z-index:180
+}
+.input-bar{ padding:14px 16px; border-bottom:1px solid var(--border-2) }
+.input-container{ display:flex; align-items:center; gap:10px; border:1px solid var(--border); background:var(--bg-secondary); border-radius:16px; padding:10px 12px }
+.message-input{ flex:1; border:none; background:transparent; outline:none; max-height:120px; color:var(--text-primary); font-size:15px }
+.send-btn{ width:40px; height:40px; border-radius:50%; border:1px solid var(--border); background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer }
+.send-btn:hover{ filter:brightness(1.05) }
+.send-btn img{ width:20px; height:20px; filter:invert(1) }
+
+.tools-bar{ padding:8px 12px; display:flex; gap:6px; align-items:center; justify-content:center; overflow-x:auto; flex-wrap:wrap }
+.tool{ display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--bg-primary); border-radius:10px; padding:5px 8px; font-size:11px; cursor:pointer; color:var(--text-muted); white-space:nowrap; font-weight:800 }
+.tool img{ width:14px; height:14px }
+.tool:hover{ border-color:var(--accent); color:var(--accent); background:var(--accent-ghost) }
+
+/* — apsauga: jokie pavieniai SVG (pvz., video-plus) nebus gigantiški netyčia — */
+.chat-area img[src$="video-plus.svg"],
+.chat-area img[src$="video-library.svg"],
+.chat-area img[src$="photo.svg"]{ max-width:42px !important; height:auto !important }
+
+/* Misc */
+.hidden{ display:none !important }
+.select{ border:1px solid var(--border); background:var(--bg-secondary); color:var(--text-primary); border-radius:10px; padding:6px 8px; font-size:12px }
+
+/* Modal */
+.modal-overlay{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.6); z-index:2000 }
+.modal-overlay.active{ display:grid }
+.login-modal{ width:90%; max-width:420px; padding:24px; background:var(--bg-primary); border-radius:16px; box-shadow:var(--shadow-lg) }
+.modal-header{ text-align:center; margin-bottom:16px }
+.modal-title{ font-size:22px; font-weight:900 }
+.modal-subtitle{ color:var(--text-secondary); font-size:14px }
+.login-form{ display:flex; flex-direction:column; gap:12px }
+.form-group{ display:flex; flex-direction:column; gap:6px }
+.form-label{ font-size:13px; font-weight:900 }
+.form-input{ padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--bg-secondary); color:var(--text-primary) }
+.login-btn{ background:var(--accent); color:#fff; border:none; padding:12px; border-radius:12px; font-weight:900; cursor:pointer }
+.google-btn{ border:1px solid var(--border); background:#fff; color:#111; padding:10px 12px; border-radius:12px; display:flex; align-items:center; gap:10px; justify-content:center }
+.divider{ text-align:center; color:var(--text-muted); font-size:12px; margin:8px 0; position:relative }
+.divider::before{ content:''; position:absolute; top:50%; left:0; right:0; height:1px; background:var(--border) }
+.divider span{ background:var(--bg-primary); padding:0 10px }
+
+/* Mobile */
+@media (max-width:1024px){
+  .layout{ grid-template-columns:0 1fr }
+  .sidebar{ position:fixed; left:-320px; top:66px; width:300px; height:calc(100vh - 66px); z-index:180; transition:left .25s ease; background:var(--bg-primary) }
+  .sidebar.open{ left:0 }
+  .bottom-section{ width:calc(100% - 20px); left:50%; transform:translateX(-50%); }
+  .chat-area{ padding-bottom:260px }
+  .library-grid{ grid-template-columns:repeat(2,1fr) }
+}
