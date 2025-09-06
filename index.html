@@ -1,245 +1,272 @@
-<!DOCTYPE html>
-<html lang="lt">
+<!doctype html>
+<html lang="lt" data-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Paule – AI Platforma</title>
-  <link rel="stylesheet" href="assets/css/paule.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Paule</title>
+
+  <!-- S K I R T A S  F A I L A S -->
+  <link rel="stylesheet" href="/css/app.css" />
+
+  <!-- tavo JS – nekeičiu. Naudoja esamus ID/klases -->
+  <script defer src="/js/app.js"></script>
 </head>
 <body>
-  <!-- TOP BAR (PALIKTI ID NELIEČIANT JS) -->
-  <div class="topbar">
-    <div class="brand">
-      <img class="brand-icon" src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/paule-logo.webp" alt="Paule"/>
-      <span>Paule</span>
-    </div>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Meniu">☰</button>
+
+    <!-- LOGOTIPAS: tik ikona, be „Paule“ teksto šalia -->
+    <a href="/" class="brand" aria-label="Paule">
+      <img class="brand-icon brand-icon--xl" src="/assets/brand/paule-logo.svg" alt="Paule" />
+    </a>
+
+    <!-- Modelių juosta (viršuje – trumpa) -->
+    <nav class="model-strip" aria-label="Modeliai">
+      <button class="model-tab active" data-model="paule">Paule</button>
+      <button class="model-tab" data-model="chatgpt">ChatGPT</button>
+      <button class="model-tab" data-model="claude">Claude</button>
+      <button class="model-tab" data-model="gemini">Gemini</button>
+      <button class="model-tab" data-model="grok">Grok</button>
+      <button class="model-tab" data-model="deepseek">DeepSeek</button>
+      <button class="model-tab" data-model="llama">Llama</button>
+    </nav>
+
     <div class="top-actions">
-      <button class="btn btn-new-chat" id="btnNewChat">
-        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/nav-new-chat.svg" alt="" />
-        Naujas pokalbis
-      </button>
-      <button class="btn mobile-toggle" id="btnMobile">
-        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/nav-menu.svg" alt="" />
-        Meniu
-      </button>
+      <a href="/new" class="btn btn-new-chat" id="newChatBtn">
+        <img src="/assets/icon/star.svg" alt="" /> Naujas pokalbis
+      </a>
 
-      <!-- Prisijungimas (ID PALIKTI) -->
-      <button class="btn btn-login" id="btnLogin">
-        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/user.svg" alt="" />
-        Prisijungti
-      </button>
+      <!-- Prisijungimo mygtukas (rodomas kai useris nėra prisijungęs) -->
+      <button class="btn btn-login" id="openLogin">Prisijungti</button>
 
-      <!-- Vartotojas (ID PALIKTI) -->
+      <!-- User meniu (slepiamas kol neprisijungta) -->
       <div class="user-profile hidden" id="userProfile">
-        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-avatar" id="userAvatar">P</div>
         <div class="user-name" id="userName">Vartotojas</div>
-        <div class="profile-dropdown" id="profileDropdown">
-          <div class="dropdown-item" data-action="profile">
-            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/user.svg" alt="" />
-            Profilis
-          </div>
-          <div class="dropdown-item" data-action="settings">
-            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/settings.svg" alt="" />
-            Nustatymai
-          </div>
-          <div class="dropdown-item" data-action="theme">
-            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/nav-theme.svg" alt="" />
-            Tema
-          </div>
+        <div class="profile-dropdown" id="profileDropdown" role="menu">
+          <div class="dropdown-item" id="goProfile">Profilis</div>
+          <div class="dropdown-item" id="goSettings">Nustatymai</div>
           <div class="dropdown-divider"></div>
-          <div class="dropdown-item" data-action="logout">
-            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/logout.svg" alt="" />
-            Atsijungti
-          </div>
+          <div class="dropdown-item" id="logoutBtn">Atsijungti</div>
         </div>
       </div>
     </div>
+  </header>
+
+  <!-- TAB'ai: Chat | Community -->
+  <div class="view-tabs" role="tablist" aria-label="Perjungti vaizdą">
+    <button class="view-tab is-active" data-view="chat" role="tab" aria-selected="true">Chat</button>
+    <button class="view-tab" data-view="community" role="tab" aria-selected="false">Community</button>
   </div>
 
-  <!-- LOGIN MODAL (ID PALIKTI) -->
-  <div class="modal-overlay" id="loginModalOverlay">
-    <div class="login-modal">
-      <button class="modal-close" id="closeLoginModal">×</button>
-      <div class="modal-header">
-        <div class="modal-title">Prisijungti prie Paule</div>
-        <div class="modal-subtitle">Prieiga prie AI įrankių</div>
-      </div>
-      <div class="login-form">
-        <button class="google-btn" id="googleLoginBtn">
-          <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
-          Prisijungti su Google
-        </button>
-        <div class="divider"><span>arba</span></div>
-        <div class="form-group">
-          <label class="form-label">El. paštas</label>
-          <input type="email" class="form-input" id="loginEmail" placeholder="jusu@pastas.lt">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Slaptažodis</label>
-          <input type="password" class="form-input" id="loginPassword" placeholder="••••••••">
-        </div>
-        <button class="login-btn" id="loginSubmitBtn">Prisijungti</button>
-      </div>
+  <!-- MODEL BAR (apatinė, su „pill“ mygtukais) -->
+  <div class="model-bar" id="modelBar">
+    <div class="model-list">
+      <button class="model-pill active" data-model="augam-auto">Auto</button>
+      <button class="model-pill" data-model="gpt-4o-mini">ChatGPT</button>
+      <button class="model-pill" data-model="claude-4-sonnet">Claude</button>
+      <button class="model-pill" data-model="gemini-2.5-flash">Gemini</button>
+      <button class="model-pill" data-model="grok-4">Grok</button>
+      <button class="model-pill" data-model="deepseek-chat">DeepSeek</button>
+      <button class="model-pill" data-model="meta-llama/Llama-4-Scout-17B-16E-Instruct">Llama</button>
     </div>
   </div>
 
-  <!-- MODEL BAR (ID PALIKTI, CENTRUOTA) -->
-  <div class="model-bar">
-    <div class="model-list" id="modelList">
-      <div class="model-pill active" data-model="augam-auto">
-        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/ai.svg" alt=""> Auto
-      </div>
-      <div class="model-pill" data-model="gpt-4o-mini">
-        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/chatgpt.svg" alt=""> ChatGPT
-      </div>
-      <div class="model-pill" data-model="claude-4-sonnet">
-        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/claude-seeklogo.svg" alt=""> Claude
-      </div>
-      <div class="model-pill" data-model="gemini-2.5-flash">
-        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/gemini.svg" alt=""> Gemini
-      </div>
-      <div class="model-pill" data-model="grok-4">
-        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/xAI.svg" alt=""> Grok
-      </div>
-      <div class="model-pill" data-model="deepseek-chat">
-        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/deepseek.svg" alt=""> DeepSeek
-      </div>
-      <div class="model-pill" data-model="meta-llama/Llama-4-Scout-17B-16E-Instruct">
-        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/llama.svg" alt=""> Llama
-      </div>
-    </div>
-  </div>
-
-  <!-- LAYOUT -->
+  <!-- PAGRINDINIS MAKOETAS -->
   <div class="layout">
-    <!-- SIDEBAR (ID PALIKTI) -->
+    <!-- KAIRĖ ŠONINĖ JUOSTA -->
     <aside class="sidebar" id="sidebar">
-      <!-- Tema & kalba (chipTheme išlieka JS) -->
-      <div class="side-section">
+      <section class="side-section">
         <div class="side-title">Tema & Kalba</div>
-        <div class="control-row">
-          <div class="chip" id="chipTheme">
-            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/nav-theme.svg" alt="">
-            Tema
+        <div class="control-group">
+          <div class="control-row">
+            <img src="/assets/icon/moon.svg" alt="" width="16" height="16" />
+            <select class="select" id="themeSelect" aria-label="Tema">
+              <option value="light">Tema: Šviesi</option>
+              <option value="dark">Tema: Tamsi</option>
+            </select>
           </div>
-          <select class="select" id="langSelect">
-            <option value="lt">LT</option>
-            <option value="en">EN</option>
-          </select>
+          <div class="control-row">
+            <img src="/assets/icon/globe.svg" alt="" width="16" height="16" />
+            <select class="select" id="langSelect" aria-label="Kalba">
+              <option value="lt">Lietuvių</option>
+              <option value="en">English</option>
+            </select>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <!-- GALERIJOS – tik UI meniu (JS neliestas) -->
-      <div class="side-section">
+      <section class="side-section">
         <div class="side-title">Galerija</div>
-        <div class="control-group gallery-menu">
-          <div class="project-item">
-            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/photo.svg" alt=""> Foto
-          </div>
-          <div class="project-item">
-            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/music.svg" alt=""> Audio
-          </div>
-          <div class="project-item">
-            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/video.svg" alt=""> Video
-          </div>
-          <div class="project-item">
-            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/tool-mindmap.svg" alt=""> Mindmap
-          </div>
-          <div class="project-item">
-            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/lifemap.svg" alt=""> Lifemap
-          </div>
+        <div class="specialist-grid">
+          <button class="chip" data-tool="img">📷 Vaizdas</button>
+          <button class="chip" data-tool="file">📄 Failas</button>
+          <button class="chip" data-tool="audio">🎙️ Garso</button>
+          <button class="chip" data-tool="video">🎞️ Video</button>
         </div>
-      </div>
+      </section>
 
-      <!-- AI Specialistai (ID PALIKTI) -->
-      <div class="side-section">
-        <div class="side-title">AI Specialistai</div>
-        <div class="specialist-grid" id="specialistGrid">
-          <!-- Palikti pavyzdžius su tais pačiais data-spec, kad veiktų esamas JS -->
-          <div class="chip" data-spec="doctor"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/medical-stethoscope.svg">Daktaras</div>
-          <div class="chip" data-spec="chef"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/chef-knife.svg">Šefas</div>
-          <div class="chip" data-spec="marketer"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/marketing-megaphone.svg">Marketing</div>
-          <div class="chip" data-spec="sales"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/sales-handshake.svg">Pardavimai</div>
-          <div class="chip" data-spec="business"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/business-strategy.svg">Verslas</div>
-          <div class="chip" data-spec="finance"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/finance-investment.svg">Finansai</div>
-          <div class="chip" data-spec="travel"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/travel-map.svg">Kelionės</div>
-          <div class="chip" data-spec="event"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/event-planning.svg">Renginiai</div>
-          <div class="chip" data-spec="artist"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/art-palette.svg">Menas</div>
-          <div class="chip" data-spec="hr"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/hr-recruitment.svg">HR</div>
-          <div class="chip" data-spec="lawyer"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/legal-contract.svg">Teisininkas</div>
-          <div class="chip" data-spec="psychologist"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/psychology-brain.svg">Psichologas</div>
+      <section class="side-section">
+        <div class="side-title">Statistika</div>
+        <div class="stats-grid">
+          <button class="stat-chip"><span>Šiandien</span><span class="stat-count" id="statToday">0</span></button>
+          <button class="stat-chip"><span>Viso</span><span class="stat-count" id="statTotal">0</span></button>
         </div>
-      </div>
+      </section>
 
-      <!-- Projektai / istorija (ID PALIKTI) -->
-      <div class="side-section">
+      <section class="side-section">
         <div class="side-title">Projektai</div>
-        <div class="control-group" id="projectsList">
-          <div class="project-item" data-project="new">
-            <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/plus.svg" alt=""> Naujas projektas
-          </div>
-        </div>
-      </div>
-
-      <div class="side-section">
-        <div class="side-title">Pokalbių istorija</div>
-        <div class="control-group" id="historyList"></div>
-      </div>
+        <div class="project-item active">Bendras</div>
+        <div class="project-item">Paleidimas</div>
+      </section>
     </aside>
 
-    <!-- MAIN -->
+    <!-- DEŠINĖ – MAIN -->
     <main class="main">
-      <div class="chat-area" id="chatArea">
+      <!-- CHAT SRITIS -->
+      <section class="chat-area" id="chatArea" aria-live="polite">
         <div class="welcome" id="welcome">
           <h1>Sveiki atvykę į Paule</h1>
-          <p>Pasirink modelius viršuje arba pradėk rašyti žemiau.</p>
+          <p>Pradėkite naują pokalbį arba pasirinkite modelį viršuje.</p>
+          <div class="welcome-actions">
+            <button class="welcome-btn" id="quickStart1">📄 Santrauka</button>
+            <button class="welcome-btn" id="quickStart2">🧪 Užklausa</button>
+            <button class="welcome-btn" id="quickStart3">📊 Idėjos</button>
+          </div>
         </div>
-      </div>
+        <!-- Žinutės bus pridėtos čia per JS -->
+        <div id="messages"></div>
+      </section>
+
+      <!-- COMMUNITY JUOSTA (po chat) -->
+      <section class="community-bar" id="communityBar" hidden>
+        <div class="prize-banner">
+          <span>€1000 prizas už geriausią istoriją</span>
+          <button class="cta" id="joinContest">Dalyvauti</button>
+        </div>
+        <div class="stories" id="storiesRow">
+          <button class="story">#UX</button>
+          <button class="story">#Marketing</button>
+          <button class="story">#AI</button>
+          <button class="story">#Dev</button>
+        </div>
+      </section>
+
+      <!-- COMMUNITY FEED -->
+      <section class="community-feed" id="communityFeed" hidden>
+        <div class="feed-filters">
+          <button class="filter-pill is-active" data-filter="all">Visi</button>
+          <button class="filter-pill" data-filter="images">Vaizdai</button>
+          <button class="filter-pill" data-filter="audio">Audio</button>
+          <button class="filter-pill" data-filter="notes">Užrašai</button>
+        </div>
+        <div class="feed-grid" id="feedGrid"></div>
+      </section>
+
+      <!-- DEŠINĖ ŠONINĖ (nebūtina) -->
+      <aside class="rightbar" id="rightbar" hidden>
+        <div class="board">
+          <h4>Lyderių lentelė</h4>
+          <ol>
+            <li><strong>@milda</strong> <span>128</span></li>
+            <li><strong>@jonas</strong> <span>94</span></li>
+            <li><strong>@ieva</strong>  <span>76</span></li>
+          </ol>
+        </div>
+        <div class="notif">
+          <h4>Pranešimai</h4>
+          <p>Naujų pranešimų nėra.</p>
+        </div>
+      </aside>
     </main>
   </div>
 
-  <!-- BOTTOM INPUT (ID PALIKTI) -->
-  <div class="bottom-section after-message" id="bottomSection">
+  <!-- APAČIOS ĮVESTIS -->
+  <section class="bottom-section initial-position" id="composer">
     <div class="input-bar">
-      <div class="input-container">
-        <textarea class="message-input" id="messageInput" rows="1" placeholder="Žinutė specialistui…"></textarea>
-        <button class="send-btn" id="sendBtn">
-          <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/arrow-top.svg" alt="">
+      <div class="input-container" id="inputContainer">
+        <textarea class="message-input" id="messageInput" rows="1" placeholder="Žinutė specialistui…" aria-label="Žinutė"></textarea>
+        <button class="send-btn" id="sendBtn" aria-label="Siųsti">
+          <img src="/assets/icon/send.svg" alt="" />
         </button>
       </div>
     </div>
-    <div class="tools-bar">
-      <div class="tool" data-tool="mindmap"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/tool-mindmap.svg">Mindmap</div>
-      <div class="tool" data-tool="photo"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/tool-photo.svg">Foto</div>
-      <div class="tool" data-tool="research"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/tool-research.svg">Tyrinėti</div>
-      <div class="tool" data-tool="think"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/think.svg">Mąstyti</div>
-      <div class="tool" data-tool="file"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/tool-file.svg">Failas</div>
-      <div class="tool" data-tool="song"><img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/tool-music.svg">Daina</div>
+
+    <div class="tools-bar" id="toolsBar">
+      <button class="tool" data-tool="img-gen"><img src="/assets/icon/image.svg" alt="" /> Mi</button>
+      <button class="tool" data-tool="file-upload"><img src="/assets/icon/folder.svg" alt="" /> Fo</button>
+      <button class="tool" data-tool="lab"><img src="/assets/icon/lab.svg" alt="" /> Ty</button>
+      <button class="tool" data-tool="thinking"><img src="/assets/icon/think.svg" alt="" /> Mąstyti</button>
+      <button class="tool" data-tool="audio"><img src="/assets/icon/music.svg" alt="" /> Daina</button>
+    </div>
+  </section>
+
+  <!-- LOGIN MODAL (S L Ė P T A S  I Š  A N K S T O) -->
+  <div class="modal-overlay" id="loginOverlay" aria-hidden="true">
+    <div class="login-modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <button class="modal-close" id="loginClose" aria-label="Uždaryti">×</button>
+
+      <div class="modal-header">
+        <h2 class="modal-title" id="loginTitle">Prisijungti prie Paule</h2>
+        <p class="modal-subtitle">Prieiga prie AI įrankių</p>
+      </div>
+
+      <div class="login-form">
+        <button class="google-btn" id="googleLoginBtn">
+          <img src="/assets/icon/google.svg" alt="" width="18" height="18" />
+          Prisijungti su Google
+        </button>
+
+        <div class="divider"><span>arba</span></div>
+
+        <form id="loginForm" autocomplete="on">
+          <div class="form-group">
+            <label class="form-label" for="email">El. paštas</label>
+            <input class="form-input" type="email" id="email" name="email" autocomplete="email" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password">Slaptažodis</label>
+            <input class="form-input" type="password" id="password" name="password" autocomplete="current-password" required />
+          </div>
+          <button class="login-btn" id="loginBtn" type="submit">Prisijungti</button>
+        </form>
+      </div>
     </div>
   </div>
 
-  <!-- SPECIALIST OVERLAY (ID PALIKTI) -->
-  <div class="specialist-overlay" id="specialistOverlay">
-    <div class="specialist-header">
-      <div class="specialist-brand">
-        <img src="https://raw.githubusercontent.com/Santasu/paule.ai/main/assets/icon/ai.svg" alt="Paule">
-        <span>Paule Specialistas</span>
+  <!-- BENDRAS PILNO EKRANO MODALAS (naudoja .open klasę) -->
+  <div class="modal-overlay" id="genericModal" aria-hidden="true">
+    <div class="modal" data-model="paule" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-head">
+        <div id="modal-title">Dialogo pavadinimas</div>
+        <a href="#" class="share-link" target="_blank" rel="noopener">Dalintis</a>
       </div>
-      <button class="specialist-close" id="closeSpecialistOverlay">×</button>
+      <div class="modal-body" id="modalBody"></div>
+      <button class="modal-close" id="modalClose" aria-label="Uždaryti">×</button>
     </div>
+  </div>
+
+  <!-- SPECIALIST OVERLAY (paruošta, bet išjungta) -->
+  <section class="specialist-overlay" id="specialistOverlay" aria-hidden="true">
+    <header class="specialist-header">
+      <div class="specialist-brand">
+        <img src="/assets/brand/paule-logo.svg" alt="" width="20" height="20" /> Paule
+      </div>
+      <button class="specialist-close" id="specialistClose" aria-label="Uždaryti">✕</button>
+    </header>
     <div class="specialist-main">
-      <div class="specialist-avatar-large"><img id="specialistImage" src="" alt="Specialistas"></div>
-      <h1 class="specialist-title" id="specialistTitle">Specialistas</h1>
-      <p class="specialist-subtitle" id="specialistSubtitle">Jūsų asmeninis konsultantas</p>
-      <p class="specialist-description" id="specialistDescription">Pasirinkite temą arba užduokite klausimą.</p>
+      <div class="specialist-avatar-large">
+        <img src="/assets/avatars/paule.svg" alt="Paule" />
+      </div>
+      <h2 class="specialist-title">Paule specialistas</h2>
+      <p class="specialist-subtitle">Pagalba ir trumpi šablonai</p>
       <div class="specialist-options" id="specialistOptions"></div>
     </div>
-  </div>
+  </section>
 
-  <!-- MOBILE OVERLAY (ID PALIKTI) -->
-  <div class="mobile-overlay" id="mobileOverlay"></div>
-
-  <!-- ČIA ĮSIRAŠYK SAVO ESAMĄ JS FAILĄ -->
-  <!-- <script src="assets/js/TAVO-ESAMAS-FAILAS.js"></script> -->
+  <!-- ERROR TOAST -->
+  <div class="error-notification hidden" id="errorToast" role="status" aria-live="polite"></div>
 </body>
 </html>
