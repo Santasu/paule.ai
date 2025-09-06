@@ -10,11 +10,9 @@
 
   <!-- ===== TOPBAR ===== -->
   <header class="topbar" data-no-clip="true">
-    <a class="brand brand--offset brand--xl" href="/">
-      <!-- šviesiai temai -->
-      <img class="brand-icon brand-icon--light" src="/assets/icon/paule-logo.webp" alt="paule">
-      <!-- tamsiai temai (baltas) -->
-      <img class="brand-icon brand-icon--dark"  src="/assets/icon/paule-logo-b.svg" alt="paule">
+    <!-- Vienas logotipas: šviesi tema -> paule-logo.webp, tamsi -> paule-logo-b.svg -->
+    <a class="brand" href="/" aria-label="Paule">
+      <img id="brandLogo" class="brand-icon" src="/assets/icon/paule-logo.webp" alt="paule">
     </a>
 
     <nav class="models-in-topbar" aria-label="Modeliai" id="modelsBar">
@@ -42,17 +40,19 @@
     </nav>
 
     <div class="top-actions">
-      <a class="btn ghost" href="/community">
+      <a class="btn ghost" href="/community" role="button">
         <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė
       </a>
       <button class="btn ghost" id="btnNewChat">
         <img class="ui-icon" src="/assets/icon/nav-new-chat.svg" alt=""> Naujas pokalbis
       </button>
-      <button class="btn ghost mobile-toggle" id="btnMobile">
+
+      <!-- PC – nerodome; Mobile – rodom (css media query) -->
+      <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)">
         <img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu
       </button>
 
-      <!-- kai prisijungta – rodom šitą, slepiam „Prisijungti“ -->
+      <!-- Kai prisijungta -->
       <div class="user-profile hidden" id="userProfile">
         <div class="user-avatar">U</div>
         <div class="user-name">Vartotojas</div>
@@ -60,18 +60,19 @@
           <div class="dropdown-item" style="cursor:default">
             <img class="ui-icon" src="/assets/icon/nav-theme.svg" alt="">
             <div class="profile-controls">
-              <select class="select" id="selTheme">
+              <select class="select" id="selTheme" aria-label="Tema">
                 <option value="light">Šviesi</option>
                 <option value="dark">Tamsi</option>
               </select>
-              <select class="select" id="selLang">
+              <select class="select" id="selLang" aria-label="Kalba">
                 <option value="lt">LT</option>
                 <option value="en">EN</option>
               </select>
             </div>
           </div>
 
-          <div class="dropdown-divider"></div>
+          <!-- BE linijų – jokio .dropdown-divider -->
+
           <div class="dropdown-item" style="cursor:default; flex-direction:column; align-items:flex-start;">
             <div class="mini-title">Statistika</div>
             <div class="stats-grid">
@@ -84,15 +85,14 @@
             </div>
           </div>
 
-          <div class="dropdown-divider"></div>
           <div class="dropdown-item" data-action="logout">
             <img class="ui-icon" src="/assets/icon/logout.svg" alt=""> Atsijungti
           </div>
         </div>
       </div>
 
-      <!-- Prisijungimas – CSS popup (#auth) -->
-      <a class="btn ghost" id="btnLogin" href="#auth">
+      <!-- Prisijungti – CSS popup (#auth) -->
+      <a class="btn ghost" id="btnLogin" href="#auth" role="button">
         <img class="ui-icon" src="/assets/icon/user.svg" alt=""> Prisijungti
       </a>
     </div>
@@ -114,6 +114,7 @@
           <a class="chip" href="#spec-finansai" data-route="/spec/finansai"><img class="ui-icon" src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
           <a class="chip" href="#spec-keliones" data-route="/spec/keliones"><img class="ui-icon" src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
           <a class="chip" href="#spec-renginiai" data-route="/spec/renginiai"><img class="ui-icon" src="/assets/icon/event-planning.svg" alt=""> Renginiai</a>
+          <!-- Tikslų žemėlapis – nuoroda į atskirą puslapį -->
           <a class="chip" href="/spec/goal.html" data-route="/spec/goal.html"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
           <a class="chip" href="#spec-teise" data-route="/spec/teisininkas"><img class="ui-icon" src="/assets/icon/legal-contract.svg" alt=""> Teisininkas</a>
           <a class="chip" href="#spec-psichologas" data-route="/spec/psichologas"><img class="ui-icon" src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
@@ -236,7 +237,7 @@
     </div>
   </div>
 
-  <!-- ===== URLinis POPUP – pavyzdys (šefas) -->
+  <!-- ===== URL POPUP – pavyzdys (šefas) ===== -->
   <section class="popup" id="spec-sefas" aria-modal="true" role="dialog">
     <div class="popup-body">
       <header class="popup-head">
@@ -261,22 +262,50 @@
         <a class="btn" href="/auth/register"><img class="ui-icon" src="/assets/icon/nav-user-add.svg" alt=""> Registruotis</a>
         <a class="btn" href="/auth/google"><img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti su Google</a>
 
-        <div class="dropdown-divider"></div>
         <div class="mini-title">Tema ir kalba</div>
         <div style="display:flex;gap:8px">
-          <select class="select" onchange="document.documentElement.setAttribute('data-theme', this.value)">
+          <select class="select" id="selThemeAuth" aria-label="Tema (modalas)">
             <option value="light">Šviesi</option>
             <option value="dark">Tamsi</option>
           </select>
-          <select class="select">
+          <select class="select" aria-label="Kalba (modalas)">
             <option value="lt">LT</option>
             <option value="en">EN</option>
           </select>
         </div>
-        <p style="color:#9aa0a8;font-size:12px">Pastaba: Google prisijungimas čia – nuoroda į backend maršrutą.</p>
+        <p style="color:#9aa0a8;font-size:12px">Pastaba: Google prisijungimas – nuoroda į backend maršrutą.</p>
       </div>
     </div>
   </section>
+
+  <!-- ===== Minimal JS (tema ↔ logotipas, mobilus meniu) ===== -->
+  <script>
+    (function(){
+      const root = document.documentElement;
+      const logo = document.getElementById('brandLogo');
+      const sidebar = document.getElementById('sidebar');
+      const btnMobile = document.getElementById('btnMobile');
+      const selTheme = document.getElementById('selTheme');
+      const selThemeAuth = document.getElementById('selThemeAuth');
+
+      function updateLogo(){
+        const isDark = (root.getAttribute('data-theme') === 'dark');
+        logo.src = isDark ? '/assets/icon/paule-logo-b.svg' : '/assets/icon/paule-logo.webp';
+      }
+      updateLogo();
+
+      selTheme && selTheme.addEventListener('change', (e)=>{
+        root.setAttribute('data-theme', e.target.value); updateLogo();
+      });
+      selThemeAuth && selThemeAuth.addEventListener('change', (e)=>{
+        root.setAttribute('data-theme', e.target.value); updateLogo();
+      });
+
+      btnMobile && btnMobile.addEventListener('click', ()=>{
+        sidebar.classList.toggle('open');
+      });
+    })();
+  </script>
 
   <script src="/assets/js/paule.js" defer></script>
 </body>
