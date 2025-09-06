@@ -1,37 +1,36 @@
-// /api/flux/create.js
+const { env, readBody, sendJSON } = require("../_utils");
+
 module.exports = async (req, res) => {
-  if (req.method === "OPTIONS") return res.status(200).end();
-  if (!process.env.TOGETHER_API_KEY) return res.status(400).json({ ok:false, error:"TOGETHER_KEY_MISSING" });
+  if (req.method !== "POST") return sendJSON(res, 405, { ok:false, error:"METHOD_NOT_ALLOWED" });
+  if (!env.TOGETHER) return sendJSON(res, 400, { ok:false, error:"TOGETHER_KEY_MISSING" });
 
-  const b = req.method === "POST" ? (req.body || {}) : {};
-  const prompt = String(b.prompt || "");
-  const style  = String(b.style  || "3d_1950s_realistic");
-  const panels = parseInt(b.panels || 1, 10);
+  const p = await readBody(req);
+  const prompt = String(p.prompt || "").trim();
+  const panels = Number(p.panels || 1);
+  const style  = String(p.style || "3d_1950s_realistic");
 
-  if (!prompt) return res.status(400).json({ ok:false, error:"PROMPT_MISSING" });
+  if (!prompt) return sendJSON(res, 400, { ok:false, error:"PROMPT_MISSING" });
 
   const prompt_full = panels > 1
     ? `Sukurk ${style} komiksą su ${panels} kadrais. Tema: ${prompt}`
     : prompt;
 
-  const size = "1024x1024";
-  const [w,h] = size.split("x").map(n=>parseInt(n,10)||1024);
+  const size = String(process.env.COMIC_IMAGE_SIZE || "1024x1024");
+  const [w,h] = size.split("x").map(x=>parseInt(x,10)).filter(Boolean);
+  const model = "black-forest-labs/FLUX.1-schnell";
 
-  const r = await fetch("https://api.together.xyz/v1/images/generations", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.TOGETHER_API_KEY}`,
-      "Content-Type": "application/json"
+  const r = await fetch("https://api.together.xyz/v1/images/generations",{
+    method:"POST",
+    headers:{
+      "Authorization":`Bearer ${env.TOGETHER}`,
+      "Content-Type":"application/json"
     },
-    body: JSON.stringify({
-      model: "black-forest-labs/FLUX.1-schnell",
-      prompt: prompt_full, width: w, height: h, n: 1, response_format: "url"
-    })
+    body: JSON.stringify({ model, prompt:prompt_full, width:w||1024, height:h||1024, n:1, response_format:"url" })
   });
-
-  const j = await r.json();
+  const j = await r.json().catch(()=> ({}));
   const url = j?.data?.[0]?.url || "";
-  if (!url) return res.status(502).json({ ok:false, error: j?.error?.message || "Image generation failed", raw:j });
 
-  res.status(200).json({ ok:true, model:"black-forest-labs/FLUX.1-schnell", prompt_used:prompt_full, image_url:url, image_size:`${w}x${h}` });
+  if (!url) return sendJSON(res, 502, { ok:false, error: j?.error?.message || "Image generation failed", raw:j });
+
+  sendJSON(res, 200, { ok:true, model, prompt_used: prompt_full, image_url:url, image_size:`${w||1024}x${h||1024}` });
 };
