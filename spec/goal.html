@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Paule • Tikslų sistema</title>
+
+  <!-- Favikonas (nebūtina) -->
+  <link rel="icon" href="/assets/icon/paule-logo.webp" />
+
+  <!-- React + Babel (UMD) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Tailwind (tik šiam puslapiui) -->
+  <script id="tailwind" src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+
+  <style>
+    /* Minimalus karkasas, kad atrodytų kaip Paule */
+    :root{ --ring: rgba(62,70,255,.25); }
+    html,body{ height:100%; }
+    body{ background:#f6f7fb; }
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 16px; background:rgba(255,255,255,.9);
+      border-bottom:1px solid #eee; backdrop-filter:blur(10px);
+    }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:700; }
+    .brand img{ height:22px; width:auto; display:block; }
+    .top-actions a{
+      display:inline-flex; align-items:center; gap:6px; padding:8px 12px;
+      border:1px solid #eee; border-radius:10px; font-weight:600; font-size:14px;
+    }
+    .top-actions a:hover{ border-color:#cfd4ff; box-shadow:0 0 0 4px var(--ring); }
+    /* izoliacija šio puslapio UI */
+    #ugs *{ box-sizing:border-box }
+    #ugs .btn{ transition:.2s; cursor:pointer }
+    #ugs .btn:hover{ transform:translateY(-1px) }
+    #ugs .input{ transition:.2s }
+    #ugs .input:focus{ transform:scale(1.02) }
+    #ugs .mindmap-node{ transition:.3s; user-select:none }
+    #ugs .mindmap-node:hover{ transform:scale(1.05) }
+    #ugs .goal-card{ transition:.3s }
+    #ugs .goal-card:hover{ transform:translateY(-4px) }
+    #ugs .task-item{ transition:.2s }
+    #ugs .task-item:hover{ transform:translateX(4px) }
+    .notification-toast{ animation:slideInRight .3s ease-out }
+    @keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  </style>
+</head>
+
+<body>
+  <!-- Viršutinė juosta -->
+  <div class="topbar">
+    <a class="brand" href="/" title="Grįžti į pradinį">
+      <img src="/assets/icon/paule-logo.webp" alt="paule" />
+      <span>paule</span>
+    </a>
+    <div class="top-actions">
+      <a href="/community.html">Community</a>
+      <a href="/" aria-label="Atgal">Grįžti</a>
+    </div>
+  </div>
+
+  <!-- Programos konteineris -->
+  <main id="ugs" class="min-h-[calc(100vh-56px)] flex flex-col dark:bg-gray-900">
+    <div id="ugs-root" class="container mx-auto px-4 py-8"></div>
+  </main>
+
+  <!-- UGS programa (adaptuota iš tavo kodo) -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useCallback } = React;
+
+    /* Util */
+    const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 11);
+    const fmt = d => new Date(d).toLocaleDateString('lt-LT');
+    const overdue = t => t.dueDate && (new Date(t.dueDate) < new Date()) && !t.completed;
+
+    /* Storage */
+    const K = { V:'ugs-vision-v2', G:'ugs-goals-v2', T:'ugs-tasks-v2', M:'ugs-mindmap-v2', D:'ugs-daily-v2', TH:'ugs-theme-v2' };
+    const store = {
+      get:(k,def=null)=>{ try{const v=localStorage.getItem(k); return v?JSON.parse(v):def }catch{ return def } },
+      set:(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)) }catch{} }
+    };
+
+    /* Mini komponentai */
+    const Ring = ({progress, size=56})=>{
+      const r=(size-8)/2, c=2*Math.PI*r, off=c-(progress/100)*c;
+      return(
+        <div className="relative inline-flex items-center justify-center">
+          <svg width={size} height={size} className="-rotate-90">
+            <circle cx={size/2} cy={size/2} r={r} stroke="currentColor" strokeWidth="4" fill="none" className="text-gray-200 dark:text-gray-700"/>
+            <circle cx={size/2} cy={size/2} r={r} stroke="currentColor" strokeWidth="4" fill="none"
+              strokeDasharray={c} strokeDashoffset={off} className="text-blue-600" style={{transition:'stroke-dashoffset .5s'}}/>
+          </svg>
+          <span className="absolute text-xs font-semibold">{Math.round(progress)}%</span>
+        </div>
+      );
+    };
+    const Badge = ({p})=>{
+      const map={high:['bg-red-100 text-red-800','Aukštas'],medium:['bg-yellow-100 text-yellow-800','Vidutinis'],low:['bg-green-100 text-green-800','Žemas']};
+      const [cls,txt]=map[p]||map.medium; return <span className={`px-2 py-1 rounded-full text-xs ${cls}`}>{txt}</span>;
+    };
+    const Toast = ({n,onClose})=>{
+      const map={success:['✅','bg-green-500'],error:['❌','bg-red-500'],warning:['⚠️','bg-yellow-500'],info:['ℹ️','bg-blue-500']};
+      const [ico,bg]=map[n.type]||map.info;
+      useEffect(()=>{const t=setTimeout(onClose,5000); return ()=>clearTimeout(t)},[onClose]);
+      return(
+        <div className={`notification-toast ${bg} text-white p-3 rounded-lg shadow-lg mb-2 flex items-center justify-between min-w-72`}>
+          <div className="flex items-center gap-3"><span className="text-lg">{ico}</span><span>{n.message}</span></div>
+          <button onClick={onClose} className="ml-3">✕</button>
+        </div>
+      );
+    };
+    const Tab = ({id,icon,label,active,onPick,dark}) => (
+      <button onClick={()=>onPick(id)}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg btn ${active?'bg-blue-600 text-white shadow':
+          (dark?'bg-gray-700 text-gray-200 hover:bg-gray-600':'bg-white text-gray-600 hover:bg-blue-50')}`}>
+        <span>{icon}</span><span className="font-medium">{label}</span>
+      </button>
+    );
+
+    /* App */
+    const App = () => {
+      const [tab,setTab] = useState('dashboard');
+      const [dark,setDark] = useState(()=>store.get(K.TH,true));
+      const [vision,setVision] = useState(()=>store.get(K.V,''));
+      const [goals,setGoals] = useState(()=>store.get(K.G,[]));
+      const [tasks,setTasks] = useState(()=>store.get(K.T,[]));
+      const [mind,setMind]   = useState(()=>store.get(K.M,[{id:1,text:'Mano Ateities Vizija',x:400,y:200,isCenter:true}]));
+      const [daily,setDaily] = useState(()=>store.get(K.D,['']));
+      const [ai,setAI] = useState(false);
+      const [toasts,setToasts] = useState([]);
+
+      /* persist */
+      useEffect(()=>store.set(K.TH,dark),[dark]);
+      useEffect(()=>store.set(K.V,vision),[vision]);
+      useEffect(()=>store.set(K.G,goals),[goals]);
+      useEffect(()=>store.set(K.T,tasks),[tasks]);
+      useEffect(()=>store.set(K.M,mind),[mind]);
+      useEffect(()=>store.set(K.D,daily),[daily]);
+
+      /* dark class ant #ugs */
+      useEffect(()=>{ document.getElementById('ugs')?.classList.toggle('dark',dark); },[dark]);
+
+      const notify = (msg,type='info') => setToasts(t=>[...t,{id:genId(),message:msg,type}]);
+      const rm = id => setToasts(t=>t.filter(x=>x.id!==id));
+
+      /* mock AI */
+      const aiCall = async (q) => {
+        setAI(true); await new Promise(r=>setTimeout(r,1100));
+        setAI(false);
+        if(q==='vision') return 'Mano vizija: kurti vertę, būti sveikam, stiprūs santykiai ir finansinė laisvė.';
+        if(q==='goals') return [
+          {title:'10 000€ / mėn. pajamos',description:'Skaitmeninis produktas',category:'finance',priority:'high'},
+          {title:'-10 kg',description:'Sportas + mityba',category:'health',priority:'medium'},
+        ];
+        if(q==='tasks') return [
+          {title:'Parašyti verslo planą',estimatedMins:60,priority:'high'},
+          {title:'Treniruotė',estimatedMins:90,priority:'medium'},
+        ];
+        return [];
+      };
+
+      /* CRUD helpers */
+      const addGoal = () => setGoals(g=>[...g,{id:genId(),title:'',description:'',category:'personal',priority:'medium',deadline:'',progress:0,created:fmt(new Date())}]);
+      const updGoal = (id,f,v) => setGoals(g=>g.map(x=>x.id===id?{...x,[f]:v}:x));
+      const delGoal = id => { setTasks(t=>t.filter(x=>x.goalId!==id)); setGoals(g=>g.filter(x=>x.id!==id)); notify('Tikslas pašalintas','info'); };
+
+      const addTask = (data={}) => setTasks(t=>[...t,{id:genId(),title:'',completed:false,priority:'medium',goalId:null,dueDate:'',estimatedMins:30,created:new Date().toISOString().slice(0,10),...data}]);
+      const updTask = (id,f,v) => setTasks(t=>t.map(x=>{
+        if(x.id!==id) return x;
+        const u={...x,[f]:v};
+        if(f==='completed'&&v&&x.goalId){ setTimeout(()=>setGoals(gs=>gs.map(g=>g.id===x.goalId?{...g,progress:Math.min(100,(g.progress||0)+10)}:g)),0); }
+        return u;
+      }));
+      const delTask = id => setTasks(t=>t.filter(x=>x.id!==id));
+
+      const stats = useMemo(()=>{
+        const done = tasks.filter(t=>t.completed).length;
+        const rate = tasks.length? Math.round(done/tasks.length*100) : 0;
+        const avg  = goals.length? Math.round(goals.reduce((s,g)=>s+(g.progress||0),0)/goals.length):0;
+        const today = new Date().toISOString().slice(0,10);
+        return {
+          completionRate:rate,
+          averageProgress:avg,
+          todayTasks:tasks.filter(t=>t.dueDate===today).length,
+          overdueTasks:tasks.filter(overdue).length
+        };
+      },[tasks,goals]);
+
+      return (
+        <div className="min-h-[70vh]">
+          {/* toasts */}
+          <div className="fixed top-4 right-4 z-50 space-y-2">
+            {toasts.map(n=><Toast key={n.id} n={n} onClose={()=>rm(n.id)}/>)}
+          </div>
+
+          {/* header */}
+          <div className="text-center mb-6">
+            <div className="flex flex-col lg:flex-row justify-between items-center gap-4 mb-2">
+              <form onSubmit={(e)=>{e.preventDefault(); const v=e.target.q.value.trim(); if(!v) return; addTask({title:v}); e.target.reset();}}
+                    className="order-2 lg:order-1 flex gap-2 w-full max-w-md">
+                <input name="q" placeholder="Greita užduotis…"
+                       className={`flex-1 p-3 rounded-lg border input ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300 text-gray-900'}`}/>
+                <button className="bg-blue-600 text-white px-5 rounded-lg btn">Pridėti</button>
+              </form>
+
+              <h1 className={`order-1 lg:order-2 text-3xl font-bold ${dark?'text-white':'text-gray-800'}`}>🎯 Ultimate Goal System</h1>
+
+              <div className="order-3 flex items-center gap-3">
+                <button onClick={async()=>{
+                  if(!vision.trim()) return notify('Pirmiau įrašykite viziją!','warning');
+                  const data = await aiCall('goals');
+                  const created = data.map(g=>({id:genId(),title:g.title,description:g.description,category:g.category,priority:g.priority,deadline:'',progress:0,created:fmt(new Date())}));
+                  setGoals(g=>[...g,...created]); notify(`Sukurti ${created.length} tikslai!`,'success');
+                }} disabled={ai} className="bg-gradient-to-r from-purple-500 to-blue-500 text-white p-3 rounded-lg btn">{ai?'🔄':'✨'}</button>
+                <button onClick={()=>setDark(!dark)} className={`p-3 rounded-lg btn ${dark?'bg-gray-700 text-yellow-400':'bg-gray-200 text-gray-700'}`}>{dark?'☀️':'🌙'}</button>
+              </div>
+            </div>
+            <p className={`${dark?'text-gray-300':'text-gray-600'}`}>Jūsų kelias į sėkmę prasideda čia</p>
+          </div>
+
+          {/* tabs */}
+          <div className="flex flex-wrap justify-center gap-2 mb-6">
+            {[
+              ['dashboard','📊','Ataskaitos'],
+              ['vision','⭐','Vizija'],
+              ['goals','🎯','Tikslai'],
+              ['tasks','✅','Užduotys'],
+              ['mindmap','🧠','Žemėlapis'],
+              ['daily','📅','Dienos planas'],
+            ].map(([id,ico,label])=>(
+              <Tab key={id} id={id} icon={ico} label={label} active={tab===id} onPick={setTab} dark={dark}/>
+            ))}
+          </div>
+
+          {/* content */}
+          <div className="animate-[slideUp_.25s_ease-out]">
+            {/* Dashboard */}
+            {tab==='dashboard' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+                <div className={`${dark?'bg-gray-800 text-white':'bg-white'} rounded-xl shadow p-6 goal-card`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div><h3 className="text-lg font-semibold">Tikslai</h3></div>
+                    <Ring progress={stats.averageProgress}/>
+                  </div>
+                  <div className="text-2xl font-bold text-blue-600">{stats.averageProgress}%</div>
+                  <p className="text-sm text-gray-500">Vidutinis progresas</p>
+                </div>
+                <div className={`${dark?'bg-gray-800 text-white':'bg-white'} rounded-xl shadow p-6 goal-card`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div><h3 className="text-lg font-semibold">Užduotys</h3></div>
+                    <Ring progress={stats.completionRate}/>
+                  </div>
+                  <div className="text-2xl font-bold text-green-600">{stats.completionRate}%</div>
+                  <p className="text-sm text-gray-500">Įvykdyta</p>
+                </div>
+                <div className={`${dark?'bg-gray-800 text-white':'bg-white'} rounded-xl shadow p-6 goal-card`}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-3 bg-orange-100 rounded-lg"><span className="text-xl text-orange-600">📅</span></div>
+                    <div><h3 className="text-lg font-semibold">Šiandien</h3></div>
+                  </div>
+                  <div className="text-2xl font-bold text-orange-600">{stats.todayTasks}</div>
+                  <p className="text-sm text-gray-500">Šiandienos užduotys</p>
+                </div>
+                <div className={`${dark?'bg-gray-800 text-white':'bg-white'} rounded-xl shadow p-6 goal-card`}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className={`p-3 rounded-lg ${stats.overdueTasks>0?'bg-red-100':'bg-purple-100'}`}>
+                      <span className={`text-xl ${stats.overdueTasks>0?'text-red-600':'text-purple-600'}`}>{stats.overdueTasks>0?'⚠️':'🎯'}</span>
+                    </div>
+                    <div><h3 className="text-lg font-semibold">Vėluoja</h3></div>
+                  </div>
+                  <div className={`text-2xl font-bold ${stats.overdueTasks>0?'text-red-600':'text-purple-600'}`}>{stats.overdueTasks}</div>
+                  <p className="text-sm text-gray-500">{stats.overdueTasks>0?'Reikia dėmesio':'Viskas gerai!'}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Vision */}
+            {tab==='vision' && (
+              <div className={`${dark?'bg-gray-800':'bg-white'} rounded-xl shadow p-6`}>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className={`text-2xl font-bold ${dark?'text-white':'text-gray-800'} flex items-center gap-3`}><span>⭐</span>Mano Vizija</h2>
+                  <button onClick={async()=>{
+                    if(!vision.trim()) return notify('Pirmiau įrašykite viziją!','warning');
+                    const v = await aiCall('vision'); setVision(v); notify('Vizija patobulinta!','success');
+                  }} disabled={ai||!vision.trim()} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 btn">
+                    {ai?'🔄':'✨'} AI Pagalba
+                  </button>
+                </div>
+                <textarea value={vision} onChange={e=>setVision(e.target.value)}
+                  placeholder="Aprašykite savo viziją…"
+                  className={`w-full h-56 p-4 rounded-lg border input ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300 text-gray-900'}`}/>
+              </div>
+            )}
+
+            {/* Goals */}
+            {tab==='goals' && (
+              <div className="space-y-5">
+                <div className="flex justify-between items-center">
+                  <h2 className={`text-2xl font-bold ${dark?'text-white':'text-gray-800'} flex items-center gap-3`}><span>🎯</span>Mano Tikslai</h2>
+                  <div className="flex gap-2">
+                    <button onClick={async()=>{
+                      if(!vision.trim()) return notify('Pirmiau įrašykite viziją!','warning');
+                      const data = await aiCall('goals');
+                      const created = data.map(g=>({id:genId(),title:g.title,description:g.description,category:g.category,priority:g.priority,deadline:'',progress:0,created:fmt(new Date())}));
+                      setGoals(g=>[...g,...created]); notify(`Sukurti ${created.length} tikslai!`,'success');
+                    }} disabled={ai} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 btn">✨ AI Tikslai</button>
+                    <button onClick={addGoal} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 btn">➕ Pridėti tikslą</button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {goals.map(g=>(
+                    <div key={g.id} className={`${dark?'bg-gray-800':'bg-white'} rounded-xl shadow p-5 goal-card`}>
+                      <div className="flex justify-between items-start mb-3">
+                        <input value={g.title} onChange={e=>updGoal(g.id,'title',e.target.value)}
+                          placeholder="Tikslo pavadinimas"
+                          className={`text-lg font-semibold bg-transparent border-none outline-none w-full ${dark?'text-white':'text-gray-800'}`}/>
+                        <button onClick={()=>delGoal(g.id)} className="text-red-500 hover:text-red-700 ml-2">✕</button>
+                      </div>
+                      <textarea value={g.description} onChange={e=>updGoal(g.id,'description',e.target.value)}
+                        placeholder="Tikslo aprašymas…"
+                        className={`w-full h-20 p-2 rounded-lg text-sm mb-3 border input ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}/>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <select value={g.category} onChange={e=>updGoal(g.id,'category',e.target.value)}
+                            className={`p-2 rounded-lg text-sm border ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}>
+                            <option value="personal">Asmeninis</option><option value="career">Karjera</option>
+                            <option value="health">Sveikata</option><option value="finance">Finansai</option>
+                            <option value="education">Išsilavinimas</option>
+                          </select>
+                          <select value={g.priority} onChange={e=>updGoal(g.id,'priority',e.target.value)}
+                            className={`p-2 rounded-lg text-sm border ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}>
+                            <option value="low">Žemas</option><option value="medium">Vidutinis</option><option value="high">Aukštas</option>
+                          </select>
+                        </div>
+
+                        <input type="date" value={g.deadline} onChange={e=>updGoal(g.id,'deadline',e.target.value)}
+                          className={`w-full p-2 rounded-lg text-sm border ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}/>
+
+                        <div>
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm text-gray-500">Progresas</span>
+                            <span className={`text-sm font-medium ${dark?'text-white':'text-gray-800'}`}>{g.progress||0}%</span>
+                          </div>
+                          <div className={`w-full rounded-full h-2 ${dark?'bg-gray-700':'bg-gray-200'}`}>
+                            <div className="bg-blue-600 h-2 rounded-full transition-all" style={{width:(g.progress||0)+'%'}}></div>
+                          </div>
+                          <input type="range" min="0" max="100" value={g.progress||0}
+                            onChange={e=>updGoal(g.id,'progress',parseInt(e.target.value))} className="w-full mt-2"/>
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                          <Badge p={g.priority}/>
+                          <span className="text-xs text-gray-500">Sukurta: {g.created}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {goals.length===0 && (
+                  <div className="text-center py-10">
+                    <div className="text-6xl mb-3">🎯</div>
+                    <p className={`${dark?'text-gray-300':'text-gray-600'} mb-3`}>Dar nėra tikslų</p>
+                    <button onClick={async()=>{
+                      if(!vision.trim()) return notify('Pirmiau įrašykite viziją!','warning');
+                      const data = await aiCall('goals');
+                      const created = data.map(g=>({id:genId(),title:g.title,description:g.description,category:g.category,priority:g.priority,deadline:'',progress:0,created:fmt(new Date())}));
+                      setGoals(g=>[...g,...created]); notify(`Sukurti ${created.length} tikslai!`,'success');
+                    }} className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 btn">✨ Sukurti tikslus su AI</button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tasks */}
+            {tab==='tasks' && (
+              <div className="space-y-5">
+                <div className="flex justify-between items-center">
+                  <h2 className={`text-2xl font-bold ${dark?'text-white':'text-gray-800'} flex items-center gap-3`}><span>✅</span>Mano Užduotys</h2>
+                  <div className="flex gap-2">
+                    <button onClick={async()=>{
+                      const data = await aiCall('tasks');
+                      const today = new Date().toISOString().slice(0,10);
+                      const list = data.map(t=>({id:genId(),title:t.title,completed:false,priority:t.priority||'medium',goalId:goals[0]?.id||null,dueDate:today,estimatedMins:t.estimatedMins||45,created:today,aiSuggested:true}));
+                      setTasks(x=>[...x,...list]); notify(`Sukurtos ${list.length} užduotys!`,'success');
+                    }} disabled={ai} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 btn">✨ AI Užduotys</button>
+                    <button onClick={()=>addTask()} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 btn">➕ Pridėti užduotį</button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {tasks.map(t=>{
+                    const g = goals.find(x=>x.id===t.goalId);
+                    const late = overdue(t);
+                    return (
+                      <div key={t.id} className={`${dark?'bg-gray-800':'bg-white'} rounded-xl shadow p-4 task-item ${t.completed?'opacity-75':''} ${late?'border-l-4 border-red-500':''}`}>
+                        <div className="flex items-start gap-4">
+                          <button onClick={()=>updTask(t.id,'completed',!t.completed)}
+                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1 ${t.completed?'bg-green-600 border-green-600 text-white':'border-gray-300 hover:border-green-500'}`}>
+                            {t.completed?'✓':''}
+                          </button>
+                          <div className="flex-1 space-y-2">
+                            <input value={t.title} onChange={e=>updTask(t.id,'title',e.target.value)}
+                              placeholder="Užduoties pavadinimas"
+                              className={`w-full bg-transparent border-none outline-none text-lg ${t.completed?'line-through text-gray-500':(dark?'text-white':'text-gray-800')}`}/>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                              <select value={t.goalId||''} onChange={e=>updTask(t.id,'goalId',e.target.value||null)}
+                                className={`p-2 rounded text-sm border ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}>
+                                <option value="">Nėra tikslo</option>
+                                {goals.map(x=><option key={x.id} value={x.id}>{x.title||'Nepavadintas tikslas'}</option>)}
+                              </select>
+                              <select value={t.priority} onChange={e=>updTask(t.id,'priority',e.target.value)}
+                                className={`p-2 rounded text-sm border ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}>
+                                <option value="low">Žemas</option><option value="medium">Vidutinis</option><option value="high">Aukštas</option>
+                              </select>
+                              <input type="date" value={t.dueDate} onChange={e=>updTask(t.id,'dueDate',e.target.value)}
+                                className={`p-2 rounded text-sm border ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}/>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              {g && <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">📋 {g.title}</span>}
+                              {t.aiSuggested && <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">✨ AI</span>}
+                              {late && <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">⚠️ Vėluoja</span>}
+                              <Badge p={t.priority}/>
+                            </div>
+                          </div>
+                          <button onClick={()=>delTask(t.id)} className="text-red-500 hover:text-red-700">✕</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Mind map */}
+            {tab==='mindmap' && (
+              <div className={`${dark?'bg-gray-800':'bg-white'} rounded-xl shadow p-6`}>
+                <h2 className={`text-2xl font-bold ${dark?'text-white':'text-gray-800'} flex items-center gap-3 mb-5`}><span>🧠</span>Ateities Žemėlapis</h2>
+                <div className={`relative rounded-lg h-96 border-2 border-dashed ${dark?'bg-gray-700 border-gray-500':'bg-purple-50 border-gray-300'}`}>
+                  {mind.map(n=>(
+                    <div key={n.id}
+                      className={`mindmap-node absolute -translate-x-1/2 -translate-y-1/2 rounded-lg shadow px-4 py-2 ${n.isCenter?'bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold':(dark?'bg-gray-600 text-white':'bg-white text-gray-800')}`}
+                      style={{left:n.x+'px',top:n.y+'px'}}>
+                      <input value={n.text} onChange={e=>setMind(m=>m.map(x=>x.id===n.id?{...x,text:e.target.value}:x))}
+                             className="bg-transparent border-none outline-none text-center min-w-20" placeholder="Įveskite idėją"/>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <button onClick={()=>setMind(m=>[...m,{id:genId(),text:'Nauja idėja',x:200+Math.random()*400,y:100+Math.random()*200,isCenter:false}])}
+                          className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 btn">➕ Pridėti mazgą</button>
+                </div>
+              </div>
+            )}
+
+            {/* Daily */}
+            {tab==='daily' && (
+              <div className={`${dark?'bg-gray-800':'bg-white'} rounded-xl shadow p-6`}>
+                <div className="flex justify-between items-center mb-5">
+                  <h2 className={`text-2xl font-bold ${dark?'text-white':'text-gray-800'} flex items-center gap-3`}><span>📅</span>Šios Dienos Planas</h2>
+                  <button onClick={async()=>{
+                    const data = await aiCall('tasks');
+                    const today = new Date().toISOString().slice(0,10);
+                    const list = data.map(t=>({id:genId(),title:t.title,completed:false,priority:t.priority||'medium',goalId:goals[0]?.id||null,dueDate:today,estimatedMins:t.estimatedMins||45,created:today,aiSuggested:true}));
+                    setTasks(x=>[...x,...list]); notify(`Sukurtos ${list.length} užduotys!`,'success');
+                  }} disabled={ai} className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 btn">✨ Generuoti užduotis</button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className={`text-lg font-semibold mb-3 ${dark?'text-white':'text-gray-800'}`}>🎯 Šiandienos užduotys</h3>
+                    <div className="space-y-3">
+                      {tasks.filter(t=>t.dueDate===new Date().toISOString().slice(0,10)).map(t=>(
+                        <div key={t.id} className={`${dark?'bg-gray-700':'bg-gray-50'} p-4 rounded-lg`}>
+                          <div className="flex items-center gap-3">
+                            <button onClick={()=>updTask(t.id,'completed',!t.completed)}
+                              className={`w-5 h-5 rounded border-2 flex items-center justify-center ${t.completed?'bg-green-600 border-green-600 text-white':'border-gray-300 hover:border-orange-500'}`}>{t.completed?'✓':''}</button>
+                            <div className="flex-1">
+                              <h4 className={`font-medium ${dark?'text-white':'text-gray-800'} ${t.completed?'line-through opacity-60':''}`}>{t.title}</h4>
+                              <div className="flex items-center gap-2 mt-1"><Badge p={t.priority}/>{t.aiSuggested&&<span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs rounded-full">✨ AI</span>}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {tasks.filter(t=>t.dueDate===new Date().toISOString().slice(0,10)).length===0 && (
+                        <div className={`${dark?'text-gray-400':'text-gray-500'} text-center py-8`}><div className="text-4xl mb-2">📝</div><p>Šiandien nėra suplanuotų užduočių</p></div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className={`text-lg font-semibold mb-3 ${dark?'text-white':'text-gray-800'}`}>🎯 Dienos prioritetai</h3>
+                    <div className="space-y-3">
+                      {daily.map((v,i)=>(
+                        <div key={i} className="flex items-center gap-3">
+                          <span className="w-8 h-8 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-sm font-bold">{i+1}</span>
+                          <input value={v} onChange={e=>{const n=[...daily]; n[i]=e.target.value; setDaily(n)}}
+                            placeholder="Įveskite prioritetą"
+                            className={`flex-1 p-3 rounded-lg border input ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}/>
+                          {daily.length>1 && <button onClick={()=>setDaily(daily.filter((_,idx)=>idx!==i))} className="text-red-500 hover:text-red-700">✕</button>}
+                        </div>
+                      ))}
+                      <button onClick={()=>setDaily([...daily,''])} className="text-orange-600 hover:text-orange-700 text-sm font-medium">➕ Pridėti prioritetą</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('ugs-root')).render(<App />);
+  </script>
+</body>
+</html>
