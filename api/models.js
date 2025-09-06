@@ -1,6 +1,7 @@
 const { env, sendJSON, pickAutoModel, normalizeModelId, aliasOf } = require("./_utils");
+const { withCORS } = require("../lib/cors"); // <- kelias iš api/ į lib/
 
-module.exports = async (_req, res) => {
+async function handler(_req, res) {
   const avail = [];
   if (env.TOGETHER)  avail.push(normalizeModelId("meta-llama/Llama-4-Scout-17B-16E-Instruct"));
   if (env.OPENAI)    avail.push(normalizeModelId("gpt-4o-mini"));
@@ -10,10 +11,12 @@ module.exports = async (_req, res) => {
   if (env.DEEPSEEK)  avail.push(normalizeModelId("deepseek-chat"));
 
   const uniq = [...new Set(avail)];
-  sendJSON(res, 200, {
+  return sendJSON(res, 200, {
     ok: true,
-    default_models: [{ id:"auto", alias:"Auto" }],
-    available: uniq.map(m => ({ id:m, alias: aliasOf(m) })),
+    default_models: [{ id: "auto", alias: "Auto" }],
+    available: uniq.map(m => ({ id: m, alias: aliasOf(m) })),
     sse_enabled: true
   });
-};
+}
+
+module.exports = withCORS(handler);
