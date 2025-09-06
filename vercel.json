@@ -1,16 +1,14 @@
 {
   "version": 2,
-  "framework": null,
   "cleanUrls": true,
   "trailingSlash": false,
-
   "functions": {
     "api/**/*.js": {
+      "runtime": "nodejs22.x",
       "memory": 1024,
       "maxDuration": 60
     }
   },
-
   "rewrites": [
     { "source": "/wp-json/augam/v1/stream",        "destination": "/api/stream" },
     { "source": "/wp-json/augam/v1/models",        "destination": "/api/models" },
@@ -20,12 +18,8 @@
     { "source": "/wp-json/augam/v1/runway/image",  "destination": "/api/runway/image" },
     { "source": "/wp-json/augam/v1/runway/status", "destination": "/api/runway/status" },
     { "source": "/wp-json/augam/v1/music/create",  "destination": "/api/music/create" },
-    { "source": "/wp-json/augam/v1/music/status",  "destination": "/api/music/status" },
-
-    { "source": "/api/paule/:path*", "destination": "/api/:path*" },
-    { "source": "/api/augam/:path*", "destination": "/api/:path*" }
+    { "source": "/wp-json/augam/v1/music/status",  "destination": "/api/music/status" }
   ],
-
   "headers": [
     {
       "source": "/assets/(.*)",
@@ -37,9 +31,9 @@
       "source": "/api/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Origin",  "value": "*" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With" },
         { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
-        { "key": "Cache-Control",                "value": "no-store" }
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With" },
+        { "key": "Cache-Control", "value": "no-store" }
       ]
     }
   ]
