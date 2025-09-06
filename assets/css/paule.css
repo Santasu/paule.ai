@@ -592,3 +592,19 @@ UTILITIES / ERRORS
   border-radius:8px; border:1px solid #fecaca; max-width:320px; font-size:14px;
   box-shadow:0 4px 12px rgba(239,68,68,.15);
 }
+/* ===== Paule logotipo mastelis ir topbar aukštis ===== */
+.topbar{
+  height:auto;               /* kad tilptų 3,5 cm logotipas */
+  min-height:64px;
+  padding:10px 20px;
+}
+.brand{ gap:10px; }
+.brand-icon{
+  width:3.5cm;               /* ~132px */
+  height:auto;
+  display:block;
+}
+
+/* Model bar – centruotas viršuje (jau yra), tik truputį glaudžiau */
+.model-bar{ justify-content:center; padding:10px 16px; }
+.model-list{ gap:10px; }
