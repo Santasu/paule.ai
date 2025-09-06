@@ -340,3 +340,138 @@ a:focus-visible, button:focus-visible, .chip:focus-visible, .btn:focus-visible, 
   .bubble[data-model="deepseek"] .bubble-card{ border-left: 3px solid #8B5E3C33; }
   .bubble[data-model="llama"] .bubble-card{ border-left: 3px solid #9333EA33; }
 }
+/* =========================
+   Paule – papildymai (patch)
+   ========================= */
+
+/* topbar — „nepjaustyti“ hover, logotipo poslinkis ir +20% dydis */
+.topbar{
+  overflow: visible;              /* niekas „nepjausto“ hover */
+}
+.brand{ margin-left: clamp(40px, 8vw, 120px); }   /* ~5 cm desktop efektas */
+.brand-icon{ width: 82px; height: auto; }        /* +20% nuo 68px */
+
+/* modelių juosta viršuje */
+#modelsBar{
+  position: relative;
+  z-index: 201;
+  overflow: visible;
+  padding-block: 2px;
+}
+#modelsBar .model-pill{
+  line-height: 1;                 /* suvienodina vertikalų centravimą */
+  font-weight: 600;
+  height: 32px;
+}
+#modelsBar .model-pill img{
+  width: 16px; height: 16px;
+  padding: 2px;                   /* rėmelis ikonoms */
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-primary);
+}
+
+/* bendresnis „įrėminti ikoną“ apdorojimas mažoms ikonoms */
+.chip img,
+.welcome-btn img,
+.tools-bar .tool img,
+.community-pings .ping img,
+.project-item img,
+.avatar img{
+  width: 16px; height: 16px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  box-shadow: 0 1px 0 rgba(0,0,0,.03);
+}
+
+/* didesnėms kortelių ikonoms – švelnesnis rėmelis */
+.lib-card img{
+  width: 34px; height: 34px; object-fit: contain;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+}
+
+/* kairės pusės chip’ai – mažiau „bold“, mažesnės ikonos */
+.chip{ font-weight: 600; }
+.chip img{ width: 14px; height: 14px; padding: 2px; }
+
+/* „Bendruomenės“ juostelės – vienodas aukštis ir tarpai */
+.community-pings .ping{
+  min-height: 32px;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+/* hero antraštė – gradientas iš juodos į pastel violet-blue */
+.hero-title{
+  background: linear-gradient(90deg, #0a0a0a 0%, var(--accent) 75%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* žinučių kortelės – ribotas aukštis + skrolas (vienoda visur) */
+.msg-content{
+  max-height: 210px;
+  overflow: auto;
+}
+.msg-content::-webkit-scrollbar{ width: 6px }
+.msg-content::-webkit-scrollbar-thumb{ background: var(--border); border-radius: 3px }
+
+/* apatinė įvestis – geresnis responsyvus plotis */
+#bottomSection[data-responsive]{
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(520px, 60vw, 920px);      /* nesusiaurėja per daug */
+  max-width: 920px;
+}
+#messageInput{ font-size: 15px; }
+#sendBtn{ background: var(--accent); }
+
+/* įrankių juosta – mažesnės ikonos + lengvesnis tekstas */
+.tools-bar{ gap: 6px; }
+.tools-bar .tool{
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+}
+.tools-bar .tool img{ width: 14px; height: 14px; }
+
+/* Sidebar ID’ai – jei reikės selektorių JS’ui, turim kur „kabintis“ */
+#sidebar{ contain: layout paint; }
+#communityPings{ contain: content; }
+#projectsList .project-item img{ width: 14px; height: 14px; }
+#historyList{ min-height: 20px; }
+
+/* Sveikinimo mygtukai – suvienodinti aukštį */
+.welcome-btn{
+  height: 36px;
+  display: inline-flex; align-items: center;
+}
+
+/* „nukirptų“ SVG apsauga chate (ikonos išlieka protingo dydžio) */
+.chat-area img[src$="video-plus.svg"],
+.chat-area img[src$="video-library.svg"],
+.chat-area img[src$="photo.svg"]{
+  max-width: 40px !important; height: auto !important;
+}
+
+/* Profilio dropdown – aiškesni select’ai */
+.profile-controls .select{
+  min-width: 88px;
+}
+
+/* Mobilūs pataisymai */
+@media (max-width: 1024px){
+  #bottomSection[data-responsive]{
+    width: calc(100% - 20px);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .brand{ margin-left: 16px; }         /* mažiau pastumiam logo */
+  .brand-icon{ width: 74px; }
+  .library-grid{ grid-template-columns: repeat(2, 1fr); }
+}
