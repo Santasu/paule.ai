@@ -2168,34 +2168,6 @@
     });
   });
 
-  // === Meniu (mobile/off-canvas) ===
-const btnMobile = document.getElementById('btnMobile');
-const sidebar   = document.getElementById('sidebar');
-if (btnMobile && sidebar) {
-  btnMobile.addEventListener('click', () => {
-    sidebar.classList.toggle('open');         // jūsų CSS jau turi .sidebar.open
-  });
-}
-
-// === Prisijungti modalas ===
-const btnLogin   = document.getElementById('btnLogin');
-const authModal  = document.getElementById('authModal');
-const authClose  = document.getElementById('authClose');
-
-function openAuth(){ authModal?.classList.add('open'); }
-function closeAuth(){ authModal?.classList.remove('open'); }
-
-btnLogin?.addEventListener('click', openAuth);
-authClose?.addEventListener('click', closeAuth);
-authModal?.addEventListener('click', (e)=>{ if(e.target === authModal) closeAuth(); });
-
-// (pasirinktinai) po sėkmingo login – parodyti profilį
-function mockLoginSuccess(name='Vartotojas'){
-  document.getElementById('userProfile')?.classList.remove('hidden');
-  document.getElementById('btnLogin')?.classList.add('hidden');
-  closeAuth();
-}
-// document.getElementById('btnGoogle')?.addEventListener('click', mockLoginSuccess);
 
 
   // Viešas API (galėsi kviesti iš kitur)
