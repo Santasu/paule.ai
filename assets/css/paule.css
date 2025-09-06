@@ -550,3 +550,76 @@ a:focus-visible, button:focus-visible, .chip:focus-visible, .btn:focus-visible, 
 /* Smulkūs UI sulyginimai */
 .model-pill{ line-height: 1.1; }
 .hero-title{ margin-top: 6px; }
+
+/* =====================  FIXAI: LOGO, CHAT INPUT, MODAL  ===================== */
+
+/* LOGO: neleisti susitraukti, tik „stumti“ į dešinę, dydis pastovus */
+.brand{ margin-left: clamp(40px, 8vw, 120px); min-width: max-content; }
+.brand-icon{ width: 82px; height: auto; flex: 0 0 auto; } /* +20%, be shrink */
+
+/* jei buvo kažkur medijoje sumažintas .brand-icon – išjunk */
+@media (max-width: 99999px){ .brand-icon{ width: 82px; } }
+
+/* Chat įvestis – rišam prie pagrindinės srities:
+   vietoje fixed-centro per visą langą skaičiuojam LEFT/RIGHT nuo sidebar */
+:root{ --sidebar: 300px; --gutter: 14px; }  /* bazė (desktop) */
+.bottom-section{
+  position: fixed;
+  left: calc(var(--sidebar) + var(--gutter));
+  right: var(--gutter);
+  transform: none;
+  width: auto;                 /* leidžiam naršyklei paskaičiuoti */
+}
+
+/* Sidebar plotis per breakpointus ir atitinkamai perskaičiuotas input */
+@media (max-width: 1280px){
+  :root{ --sidebar: 260px; }
+}
+@media (max-width: 1024px){
+  :root{ --sidebar: 0px; }
+  .layout{ grid-template-columns: 0 1fr; }
+  .bottom-section{
+    left: var(--gutter);
+    right: var(--gutter);
+  }
+}
+
+/* „Bendruomenė“ viršuje truputį kuklesnė */
+.top-actions .btn{ font-size: 12px; padding: 6px 9px; line-height: 1.1; }
+.top-actions .btn img{ width: 12px; height: 12px; }
+
+/* Modelių juosta nekirptų hover (buvo nupjaunama viršuje) */
+.topbar{ overflow: visible; }
+.models-in-topbar{ padding-block: 4px; }
+
+/* Įrankių ikonų/užrašų slim versija (mažiau „rėkia“) */
+.tools-bar .tool{ font-size: 10.5px; padding: 4px 7px; }
+.tools-bar .tool img{ width: 12px; height: 12px; }
+
+/* ============ Login modal (UI) ============ */
+.modal{ position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+        background: rgba(0,0,0,.45); z-index: 4000; }
+.modal.open{ display: flex; }
+.modal-card{
+  width: clamp(320px, 92vw, 420px);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 16px;
+}
+.modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.modal-head h3{ font-size: 18px; font-weight: 800; }
+.modal-close{ width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
+              background: var(--bg-secondary); display:flex; align-items:center; justify-content:center; cursor: pointer; }
+.auth-grid{ display: grid; gap: 10px; margin-top: 8px; }
+.btn-auth{ display:flex; align-items:center; gap:8px; padding:10px 12px; border:1px solid var(--border);
+           border-radius: 12px; background: var(--bg-secondary); font-weight: 700; cursor:pointer; }
+.btn-auth img{ width: 16px; height: 16px; }
+.btn-auth.primary{ background: var(--accent); color:#fff; border-color: var(--accent); }
+.btn-auth:hover{ filter: brightness(0.98); }
+.form-row{ display:grid; gap:8px; }
+.input-auth{ border:1px solid var(--border); background: var(--bg-primary); color: var(--text-primary);
+             border-radius: 10px; padding: 10px 12px; }
+.note-auth{ font-size: 12px; color: var(--text-muted); }
+
