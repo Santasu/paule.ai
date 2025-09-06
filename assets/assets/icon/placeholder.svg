@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128">
+  <rect width="100%" height="100%" fill="#e5e7eb"/>
+  <circle cx="64" cy="64" r="28" fill="#9ca3af"/>
+  <text x="64" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#ffffff">ICON</text>
+</svg>
