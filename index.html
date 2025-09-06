@@ -5,6 +5,88 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Paule – Premium AI Chat</title>
   <link rel="stylesheet" href="/assets/css/paule.css">
+
+  <!-- 🔧 PAULE konfigūracija (WP ⇄ Vercel jungiklis)
+       - DEFAULT: 'wp' (atitinka tavo PHP router’į /wp-json/augam/v1)
+       - Pakeisk į 'vercel' arba <html data-backend="vercel">, jei API bus /api/paule/v1
+  -->
+  <script id="paule-config">
+    (function () {
+      var htmlAttr = (document.documentElement.getAttribute('data-backend') || '').trim().toLowerCase();
+      var MODE = htmlAttr === 'vercel' ? 'vercel' : 'wp'; // <-- pakeisk į 'vercel' jei deployinsi į Vercel API
+
+      var restBase = MODE === 'vercel' ? '/api/paule/v1' : '/wp-json/augam/v1';
+
+      // Pilnas maršrutų žemėlapis (suderinta su tavo Router/Infe
+      var routes = {
+        base: restBase,
+        stream:        restBase + '/stream',            // GET (SSE) | POST (mode=once)
+        models:        restBase + '/models',
+        diagnostics:   restBase + '/diagnostics',
+
+        comicCreate:   restBase + '/comic/create',      // = /flux/create
+        fluxCreate:    restBase + '/flux/create',
+        triptych:      restBase + '/image/triptych-series',
+
+        personaCreate: restBase + '/persona/create',
+        personaList:   restBase + '/persona/list',
+        personaSeries: restBase + '/persona/generate_series',
+
+        musicCreate:   restBase + '/music/create',
+        musicStatus:   restBase + '/music/status',      // ?task=...
+        musicCallback: restBase + '/music/callback',
+
+        chatHistory:   restBase + '/chat/history',      // ?chat_id=...
+        projectCreate: restBase + '/project/create',
+        projectList:   restBase + '/project/list',
+        projectChats:  restBase + '/project/chats',     // ?project_id=...
+
+        runwayImage:   restBase + '/runway/image',
+        runwayStatus:  restBase + '/runway/status',     // ?task_id=...
+        runwayVideoUpscale:         restBase + '/runway/video-upscale',
+        runwayCharacterPerformance: restBase + '/runway/character-performance',
+        runwayVideoToVideo:         restBase + '/runway/video-to-video',
+        runwayImageToVideo:         restBase + '/runway/image-to-video',
+        runwayTextVideo:            restBase + '/runway/text-video',
+        runwayTextVideoPipeline:    restBase + '/runway/text-video-pipeline',
+        runwayPipelineStatus:       restBase + '/runway/pipeline-status', // ?pipeline_id=...
+        runwayPing:                 restBase + '/runway/ping'
+      };
+
+      // Galutinė konfigūracija – ja naudosis /assets/js/paule.js
+      var CFG = {
+        mode: MODE,                      // 'wp' | 'vercel'
+        restBase: routes.base,
+        restStream: routes.stream,
+        restStreamSSE: routes.stream + '?mode=sse',
+        sseDefault: 1,
+
+        // Assetų bazės – kad niekur nereikėtų WP plugin kelių
+        pluginBase:   '/assets',
+        iconsBase:    '/assets/icon',
+        featuresBase: '/assets/features',
+
+        routes: routes,
+        version: 'paule-1.0.0'
+      };
+
+      // Standartinis vardas (naudok šitą)
+      window.PAULE_CONFIG = CFG;
+      // Suderinamumas su anksčiau minėtu AUGAM_CONFIG
+      window.AUGAM_CONFIG = CFG;
+
+      // ✅ Legacy suderinamumas: jei senajame paule.js buvo „var API_BASE = ...“
+      // Šituo užrakinam bazę, kad nekiltų „augam“ vs „paule“ konfliktų.
+      try {
+        Object.defineProperty(window, 'API_BASE', {
+          configurable: true,
+          get: function(){ return CFG.restBase; },
+          set: function(_){} // ignoruojam perrašymą
+        });
+      } catch(e) {}
+      window.__SET_API_BASE__ = function (v) { /* jei reikėtų vėliau keisti */ };
+    })();
+  </script>
 </head>
 <body>
 
@@ -307,7 +389,7 @@
     })();
   </script>
 
+  <!-- Tavo programinė logika – skaitys window.PAULE_CONFIG -->
   <script src="/assets/js/paule.js" defer></script>
 </body>
 </html>
-
