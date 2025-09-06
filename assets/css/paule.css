@@ -211,3 +211,132 @@ body{background:var(--bg-primary);color:var(--text-primary)}
   .chat-area{padding-bottom:250px}
   .library-grid{grid-template-columns:repeat(2,1fr)}
 }
+/* ============ PATCH: UI polish & safeguards (2025-09-06) ============ */
+
+/* 0) Bendrai smulkesnė tipografija ir ikonų vienodinimas */
+:root{
+  --icon-10: 10px;
+  --icon-12: 12px;
+  --icon-14: 14px;
+  --ring-strong: 0 0 0 4px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+.btn, .chip, .tool, .model-pill, .lib-card, .project-item, .welcome-btn {
+  font-weight: 500;           /* buvo 600 – prašei „kūdesnių“ raidžių */
+  letter-spacing: .1px;
+}
+.models-in-topbar img,
+.chip img,
+.tool img,
+.ping img,
+.project-item img,
+.welcome-btn img {
+  width: var(--icon-12);
+  height: var(--icon-12);
+}
+
+/* Bibliotekos kortelių piktogramos šiek tiek didesnės, bet ne „milžinai“ */
+.lib-card img { width: 30px; height: 30px; }
+
+/* 1) Topbar: logotipas ir modelių juosta */
+.brand-icon{ width: 56px; height: auto; }   /* mažesnis, kad neliptų ant šonų */
+@media (min-width: 1280px){ .brand-icon{ width: 60px; } }
+
+.models-in-topbar { justify-content: center; }
+.model-pill{
+  padding: 6px 9px;
+  font-size: 11.5px;
+  border-radius: 999px;
+}
+.model-pill img{ width: var(--icon-14); height: var(--icon-14); }
+.model-pill:hover{ transform: translateY(-1px); }
+.model-pill.active{
+  background: var(--accent-ghost);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: var(--ring-strong);
+}
+.model-pill:focus-visible{
+  outline: none;
+  box-shadow: var(--ring-strong);
+}
+
+/* 2) Sidebar: chips dar ramesni ir vienodo dydžio */
+.chip{
+  padding: 6px 9px;
+  font-size: 11.5px;
+}
+.side-title{ font-size: 10px; letter-spacing: .45px; }
+
+/* 3) „Sveiki atvykę į paule“ – gradientas iš juodos į pastel violet */
+.hero-title{
+  background: linear-gradient(90deg, #0b0b0b 0%, var(--accent) 78%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* 4) Žinučių burbulai – saugikliai prieš milžiniškus SVG ir vienodas scroll */
+.msg-content{
+  max-height: 210px;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+.msg-content::-webkit-scrollbar{ width: 6px; }
+.msg-content::-webkit-scrollbar-thumb{ background: var(--border); border-radius: 3px; }
+
+/* Visus SVG chate ribojam iki ikoninio dydžio (kad niekas „nesprogtų“) */
+.chat-area img[src$=".svg"]{
+  max-width: 40px !important;
+  max-height: 40px !important;
+  width: 40px !important;
+  height: auto !important;
+  object-fit: contain;
+}
+
+/* ir dar papildoma apsauga būtent probleminiams */
+.chat-area img[src$="video-plus.svg"],
+.chat-area img[src$="video-library.svg"],
+.chat-area img[src$="xAI.svg"],
+.chat-area img[src$="grok.svg"]{
+  max-width: 40px !important;
+  max-height: 40px !important;
+}
+
+/* 5) Apatinė įvesties zona – truputį daugiau erdvės chate */
+.chat-area{ padding-bottom: 250px; }  /* buvo ~230; kad tools neužliptų */
+.bottom-section{ z-index: 300; }      /* visad virš turinio */
+
+/* Įrankių juosta – smulkesnė tipografija ir ikonėlės */
+.tool{ font-size: 10.5px; }
+.tool img{ width: var(--icon-12); height: var(--icon-12); }
+
+/* 6) Aktyvumo blokai – vienodas tankis */
+.ping{ font-size: 11.5px; padding: 6px 8px; }
+
+/* 7) Accessible focus visiems „paspaudžiamiems“ elementams */
+a:focus-visible, button:focus-visible, .chip:focus-visible, .btn:focus-visible, .tool:focus-visible, .model-pill:focus-visible{
+  outline: none;
+  box-shadow: var(--ring-strong);
+}
+
+/* 8) URL popupai: maksimalus kontrastas ir švaresni kraštai */
+.popup{ background: #000; }
+.popup-content{
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 16px;
+}
+
+/* 9) Tamsi tema – švelnesnės pastelės */
+[data-theme="dark"] .model-pill.active{
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: #fff;
+}
+
+/* 10) Extra – jei naršyklė nepalaiko color-mix, vis dar atrodys gerai */
+@supports not (color: color-mix(in srgb, #000 50%, #fff 50%)){
+  .bubble[data-model="chatgpt"] .bubble-card{ border-left: 3px solid #10b98133; }
+  .bubble[data-model="claude"] .bubble-card{ border-left: 3px solid #f59e0b33; }
+  .bubble[data-model="gemini"] .bubble-card{ border-left: 3px solid #4285f433; }
+  .bubble[data-model="grok"]   .bubble-card{ border-left: 3px solid #11111133; }
+  .bubble[data-model="deepseek"] .bubble-card{ border-left: 3px solid #8B5E3C33; }
+  .bubble[data-model="llama"] .bubble-card{ border-left: 3px solid #9333EA33; }
+}
