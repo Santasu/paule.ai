@@ -1,154 +1,297 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="lt">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PAULE.AI – Premium AI Chat Platform</title>
-  <link rel="stylesheet" href="assets/css/paule.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PAULE.AI</title>
+  <meta name="description" content="Paule – greitas AI pokalbių UI su dalinamu URL, modelių juosta ir pilno ekrano modalais." />
+  <meta name="theme-color" content="#111111" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:title" content="PAULE.AI">
+  <meta property="og:description" content="Greitas AI pokalbių UI su dalinamu URL, modelių juosta ir pilno ekrano modalais.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://paule.ai/">
+  <meta property="og:image" content="/assets/icon/paule-logo.svg">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/css/paule.css" />
+  <link rel="icon" href="/assets/icon/paule-logo.svg" type="image/svg+xml" />
+
+  <style>
+    /* Minimalus „safe“ fallback, jei /assets/css/paule.css kažkodėl neįsikeltų */
+    :root{--bg-primary:#fff;--text-primary:#111;--border:#e5e7eb;}
+    body{margin:0;background:var(--bg-primary);color:var(--text-primary);font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+    .topbar{position:sticky;top:0;z-index:200;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;height:64px;padding:8px 14px;background:#fff;border-bottom:1px solid var(--border)}
+    .brand-icon{width:28px;height:28px;display:block}
+    .model-strip{display:flex;gap:8px;overflow:auto;padding:4px 0}
+    .model-tab{border:1px solid #e5e7eb;background:#f8fafc;color:#111;padding:8px 12px;border-radius:999px;font-weight:600;white-space:nowrap;cursor:pointer}
+    .main{display:grid;grid-template-rows:minmax(320px,48vh) 1fr;}
+    .layout{display:grid;grid-template-columns:320px 1fr;height:calc(100vh - 108px);overflow:hidden}
+    .sidebar{border-right:1px solid var(--border)}
+    .chat-area{padding:24px;overflow:auto}
+    .bottom-section{position:fixed;left:50%;transform:translateX(-50%);width:calc(100% - 680px);max-width:900px;background:#fff;border:1px solid var(--border);border-radius:12px;bottom:12px}
+    .input-bar{padding:16px;border-bottom:1px solid var(--border)}
+    .input-container{display:flex;gap:12px;border:1px solid var(--border);border-radius:14px;padding:12px}
+    .message-input{flex:1;border:0;background:transparent;outline:none;resize:none}
+    .send-btn{width:40px;height:40px;border-radius:50%;border:0;background:#3E46FF;color:#fff;cursor:pointer}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;place-items:center;z-index:2000}
+    .modal-overlay.open{display:grid}
+    .modal{width:100vw;height:100vh;background:#fff;display:grid;grid-template-rows:auto 1fr}
+    .modal-head{display:flex;gap:12px;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+    .modal-close{position:absolute;top:12px;right:12px;width:48px;height:48px;border-radius:50%;border:1px solid var(--border);background:rgba(0,0,0,.06);font-size:28px;cursor:pointer}
+    .modal-body{overflow:auto;padding:20px}
+  </style>
 </head>
-<body>
-  <div class="topbar">
-    <div class="brand">
-      <img class="brand-icon" src="assets/icon/ai.svg" alt="PAULE"/>
-      <span>PAULE</span>
-    </div>
+
+<body data-theme="light">
+  <noscript>Šiai svetainei reikalingas JavaScript. Įjunkite JavaScript naršyklėje.</noscript>
+
+  <!-- TOP BAR: logotipas + modelių juosta + veiksmai -->
+  <header class="topbar">
+    <a href="/" class="brand" aria-label="Paule">
+      <!-- LOGO (tik ikona be užrašo) -->
+      <img class="brand-icon" src="/assets/icon/paule-logo.svg" alt="Paule logo" />
+    </a>
+
+    <!-- Modelių juosta (vienoje linijoje su topbar) -->
+    <nav class="model-strip" aria-label="Model selector" role="tablist">
+      <button class="model-tab" data-model="paule">Paule (default)</button>
+      <button class="model-tab" data-model="chatgpt">ChatGPT</button>
+      <button class="model-tab" data-model="claude">Claude</button>
+      <button class="model-tab" data-model="gemini">Gemini</button>
+      <button class="model-tab" data-model="grok">Grok</button>
+      <button class="model-tab" data-model="deepseek">DeepSeek</button>
+      <button class="model-tab" data-model="llama">Llama</button>
+    </nav>
+
     <div class="top-actions">
-      <button class="btn" id="btnNewChat">
-        <img src="assets/icon/nav-new-chat.svg" alt="" style="width:16px;height:16px">
-        Naujas pokalbis
-      </button>
-      <button class="btn mobile-toggle" id="btnMobile">
-        <img src="assets/icon/nav-menu.svg" alt="" style="width:16px;height:16px">
-        Meniu
-      </button>
-      <button class="btn btn-login" id="btnLogin">
-        <img src="assets/icon/user.svg" alt="" style="width:16px;height:16px">
-        Prisijungti
-      </button>
-      <div class="user-profile hidden" id="userProfile" style="display:none"></div>
+      <button class="btn btn-new-chat" id="newChatBtn" type="button">New chat</button>
     </div>
+  </header>
+
+  <!-- NAV tarp Chat ir Community (pasirinktinai) -->
+  <div class="view-tabs" role="tablist">
+    <button class="view-tab is-active" data-view="chat"  type="button" aria-selected="true">Chat</button>
+    <button class="view-tab"          data-view="community" type="button">Community</button>
   </div>
 
-  <div class="model-bar">
-    <div class="model-list" id="modelList">
-      <div class="model-pill active" data-model="paule">
-        <img src="assets/icon/ai.svg" alt="" style="width:16px;height:16px"> Paule (default)
-      </div>
-      <div class="model-pill" data-model="gpt"><img src="assets/icon/chatgpt.svg" alt="" style="width:16px;height:16px"> ChatGPT</div>
-      <div class="model-pill" data-model="claude"><img src="assets/icon/claude-seeklogo.svg" alt="" style="width:16px;height:16px"> Claude</div>
-      <div class="model-pill" data-model="gemini"><img src="assets/icon/gemini.svg" alt="" style="width:16px;height:16px"> Gemini</div>
-      <div class="model-pill" data-model="grok"><img src="assets/icon/xAI.svg" alt="" style="width:16px;height:16px"> Grok</div>
-      <div class="model-pill" data-model="deepseek"><img src="assets/icon/deepseek.svg" alt="" style="width:16px;height:16px"> DeepSeek</div>
-      <div class="model-pill" data-model="llama"><img src="assets/icon/llama.svg" alt="" style="width:16px;height:16px"> Llama</div>
-    </div>
-  </div>
-
-  <div class="layout">
-    <aside class="sidebar" id="sidebar">
-      <div class="side-section">
-        <div class="side-title">Tema & Kalba</div>
-        <div class="control-group">
-          <div class="control-row">
-            <div class="chip" id="chipTheme"><img src="assets/icon/nav-theme.svg" alt="" style="width:14px;height:14px">Tema</div>
-            <select class="select" id="langSelect"><option value="lt">LT</option><option value="en">EN</option></select>
+  <!-- Pagrindinis karkasas -->
+  <main class="main">
+    <section class="layout">
+      <!-- Kairė: šoninė juosta -->
+      <aside class="sidebar" aria-label="Šoninė juosta">
+        <div class="side-section">
+          <div class="side-title">Greitos parinktys</div>
+          <div class="control-group">
+            <button class="chip active" type="button">Auto</button>
+            <button class="chip" type="button">Žinių paieška</button>
+            <button class="chip" type="button">Ekspertas</button>
           </div>
         </div>
-      </div>
 
-      <div class="side-section">
-        <div class="side-title">AI Specialistai</div>
-        <div class="specialist-grid" id="specialistGrid">
-          <div class="chip" data-spec="doctor"><img src="assets/icon/medical-stethoscope.svg" style="width:14px;height:14px">Daktaras</div>
-          <div class="chip" data-spec="chef"><img src="assets/icon/chef-knife.svg" style="width:14px;height:14px">Šefas</div>
-          <div class="chip" data-spec="marketer"><img src="assets/icon/marketing-megaphone.svg" style="width:14px;height:14px">Marketing</div>
-          <div class="chip" data-spec="sales"><img src="assets/icon/sales-handshake.svg" style="width:14px;height:14px">Pardavimai</div>
-          <div class="chip" data-spec="business"><img src="assets/icon/business-strategy.svg" style="width:14px;height:14px">Verslas</div>
-          <div class="chip" data-spec="finance"><img src="assets/icon/finance-investment.svg" style="width:14px;height:14px">Finansai</div>
-          <div class="chip" data-spec="travel"><img src="assets/icon/travel-map.svg" style="width:14px;height:14px">Kelionės</div>
-          <div class="chip" data-spec="event"><img src="assets/icon/event-planning.svg" style="width:14px;height:14px">Renginiai</div>
-          <div class="chip" data-spec="artist"><img src="assets/icon/art-palette.svg" style="width:14px;height:14px">Menas</div>
-          <div class="chip" data-spec="hr"><img src="assets/icon/hr-recruitment.svg" style="width:14px;height:14px">HR</div>
-          <div class="chip" data-spec="lawyer"><img src="assets/icon/legal-contract.svg" style="width:14px;height:14px">Teisininkas</div>
-          <div class="chip" data-spec="psychologist"><img src="assets/icon/psychology-brain.svg" style="width:14px;height:14px">Psichologas</div>
+        <div class="side-section">
+          <div class="side-title">Projektai</div>
+          <div class="project-item active">Pagrindinis</div>
+          <div class="project-item">Demo</div>
+          <div class="project-item">Idėjos</div>
         </div>
-      </div>
+      </aside>
 
-      <div class="side-section"><div class="side-title">Projektai</div><div class="project-item chip" data-project="new"><img src="assets/icon/plus.svg" style="width:14px;height:14px">Naujas projektas</div></div>
-      <div class="side-section"><div class="side-title">Pokalbių istorija</div><div class="control-group" id="historyList"></div></div>
-      <div class="side-section">
-        <div class="side-title">Statistika</div>
-        <div class="stats-grid">
-          <div class="chip" onclick="showModelStats('gpt')"><img src="assets/icon/ai-chatgpt.svg" style="width:12px;height:12px"> GPT <span class="stat-count" data-model="gpt">87% (42)</span></div>
-          <div class="chip" onclick="showModelStats('claude')"><img src="assets/icon/ai-claude.svg" style="width:12px;height:12px"> Claude <span class="stat-count" data-model="claude">92% (38)</span></div>
-          <div class="chip" onclick="showModelStats('deepseek')"><img src="assets/icon/ai-deepseek.svg" style="width:12px;height:12px"> DeepSeek <span class="stat-count" data-model="deepseek">78% (25)</span></div>
-          <div class="chip" onclick="showModelStats('grok')"><img src="assets/icon/ai-grok.svg" style="width:12px;height:12px"> Grok <span class="stat-count" data-model="grok">83% (19)</span></div>
-          <div class="chip" onclick="showModelStats('llama')"><img src="assets/icon/ai-llama.svg" style="width:12px;height:12px"> Llama <span class="stat-count" data-model="llama">95% (51)</span></div>
-          <div class="chip" onclick="showModelStats('gemini')"><img src="assets/icon/ai-gemini.svg" style="width:12px;height:12px"> Gemini <span class="stat-count" data-model="gemini">89% (34)</span></div>
-        </div>
-      </div>
-    </aside>
-
-    <main class="main">
-      <div class="chat-area" id="chatArea">
-        <div class="welcome" id="welcome">
-          <h1>Kaip galiu padėti šiandien?</h1>
-          <p>Pasirinkite AI specialistą kairėje – atsidarys jo <b>kortelė</b> ir pokalbis vyks joje. Viršuje galite keisti modelį; pagal nutylėjimą – <b>Paule</b>.</p>
-          <div class="welcome-actions">
-            <button class="welcome-btn" data-action="doctor"><img src="assets/icon/medical-heart-pulse.svg" style="width:16px;height:16px"> Sveikatos konsultacija</button>
-            <button class="welcome-btn" data-action="chef"><img src="assets/icon/chef-healthy-bowl.svg" style="width:16px;height:16px"> Kulinarijos patarimai</button>
-            <button class="welcome-btn" data-action="business"><img src="assets/icon/business-finance.svg" style="width:16px;height:16px"> Verslo strategija</button>
+      <!-- Dešinė: chat dalis -->
+      <section class="main" aria-label="Pokalbio sritis">
+        <div class="chat-area" id="chatArea">
+          <div class="welcome">
+            <h1>Sveiki atvykę į Paule</h1>
+            <p>Pasirink modelį viršuje arba pradėk rašyti žinutę apačioje.</p>
+            <div class="welcome-actions">
+              <button class="welcome-btn" type="button" data-model="paule">Start with Paule</button>
+              <button class="welcome-btn" type="button" data-model="chatgpt">Try ChatGPT</button>
+            </div>
           </div>
         </div>
+      </section>
+    </section>
+
+    <!-- Community sritis (po chatu) -->
+    <section class="community-bar">
+      <div class="prize-banner">
+        <div>€1000 mėnesinis prizas už geriausią įrašą</div>
+        <button class="cta" type="button">Skaityti taisykles</button>
       </div>
-    </main>
-  </div>
 
-  <div class="mobile-overlay" id="mobileOverlay"></div>
+      <div class="stories">
+        <div class="story">Nauja</div>
+        <div class="story">Karšta</div>
+        <div class="story">Idėjos</div>
+        <div class="story">Klausimai</div>
+      </div>
 
-  <div class="bottom-section initial-position" id="bottomSection">
+      <div class="community-feed">
+        <div class="feed-filters">
+          <button class="filter-pill is-active" type="button">Visi</button>
+          <button class="filter-pill" type="button">Tekstas</button>
+          <button class="filter-pill" type="button">Vaizdas</button>
+          <button class="filter-pill" type="button">Video</button>
+        </div>
+        <div class="feed-grid" id="feedGrid">
+          <!-- kortelių vieta -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Apatinė įvedimo juosta -->
+  <div class="bottom-section after-message" id="bottomBar">
     <div class="input-bar">
       <div class="input-container">
-        <textarea class="message-input" id="messageInput" rows="1" placeholder="Žinutė specialistui…"></textarea>
-        <button class="send-btn" id="sendBtn"><img src="assets/icon/arrow-top.svg" alt=""></button>
+        <textarea id="msgInput" class="message-input" rows="1" placeholder="Rašykite žinutę..."></textarea>
+        <button id="sendBtn" class="send-btn" type="button" aria-label="Siųsti">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 2L11 13"></path><path d="M22 2l-7 20-4-9-9-4 20-7z"></path></svg>
+        </button>
       </div>
     </div>
-    <div class="tools-bar" style="display:flex;gap:8px;padding:0 10px 10px 10px">
-      <div class="tool chip" data-tool="mindmap"><img src="assets/icon/tool-mindmap.svg" alt="">Mindmap</div>
-      <div class="tool chip" data-tool="photo"><img src="assets/icon/tool-photo.svg" alt="">Foto</div>
-      <div class="tool chip" data-tool="research"><img src="assets/icon/tool-research.svg" alt="">Tyrinėti</div>
-      <div class="tool chip" data-tool="think"><img src="assets/icon/think.svg" alt="">Mąstyti</div>
-      <div class="tool chip" data-tool="file"><img src="assets/icon/tool-file.svg" alt="">Failas</div>
-      <div class="tool chip" data-tool="song"><img src="assets/icon/tool-music.svg" alt="">Sukurti dainą</div>
+    <div class="tools-bar">
+      <button class="tool" type="button">📄 Santrauka</button>
+      <button class="tool" type="button">🔍 Paieška</button>
+      <button class="tool" type="button">🖼️ Vaizdas</button>
+      <button class="tool" type="button">🎵 Audio</button>
     </div>
   </div>
 
-  <div class="specialist-overlay" id="specialistOverlay">
-    <div class="specialist-main">
-      <div class="specialist-header">
-        <div class="specialist-brand"><img src="assets/icon/ai.svg" style="width:24px;height:24px"><span>Atrink specialistą</span></div>
-        <button class="btn" id="closeSpecialistOverlay">Uždaryti</button>
-      </div>
-      <div class="specialist-options" id="specialistOptions"></div>
-    </div>
+  <!-- PILNO EKRANO MODALAS (naudojamas visiems modeliams) -->
+  <div id="modal-layer" class="modal-overlay" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" aria-label="Uždaryti" type="button">×</button>
+      <header class="modal-head">
+        <h2 id="modal-title">Modelis</h2>
+        <a id="modal-share" class="share-link" href="#" target="_blank" rel="noopener">Share</a>
+      </header>
+      <div id="modal-body" class="modal-body"><!-- turinys įkeliamas per JS --></div>
+    </section>
   </div>
 
-  <div class="modal-overlay" id="loginModalOverlay">
-    <div class="login-modal">
-      <button class="modal-close" id="closeLoginModal">×</button>
-      <div class="modal-header">
-        <div class="modal-title">Prisijungti</div>
-        <div class="modal-subtitle">Demo – be tikro auth (stub)</div>
-      </div>
-      <form class="login-form" onsubmit="return false;">
-        <div class="form-group"><label class="form-label">El. paštas</label><input type="email" class="form-input" placeholder="you@example.com"></div>
-        <div class="form-group"><label class="form-label">Slaptažodis</label><input type="password" class="form-input" placeholder="••••••••"></div>
-        <button class="login-btn" type="button">Prisijungti</button>
-        <div class="divider"><span>arba</span></div>
-        <button class="google-btn" type="button">Login su Google</button>
-      </form>
-    </div>
-  </div>
+  <!-- Pagrindinis UI skriptas (inline, kad „index.html su viskuo“) -->
+  <script>
+  (() => {
+    const qs  = (s, el=document) => el.querySelector(s);
+    const qsa = (s, el=document) => [...el.querySelectorAll(s)];
 
-  <script src="assets/js/paule-ui.js" defer></script>
+    const layer     = qs('#modal-layer');
+    const modal     = layer?.querySelector('.modal');
+    const mTitle    = qs('#modal-title');
+    const mBody     = qs('#modal-body');
+    const mShare    = qs('#modal-share');
+    const btnClose  = qs('.modal-close');
+
+    const modelNames = {
+      paule:   'Paule (default)',
+      chatgpt: 'ChatGPT',
+      claude:  'Claude',
+      gemini:  'Gemini',
+      grok:    'Grok',
+      deepseek:'DeepSeek',
+      llama:   'Llama'
+    };
+
+    // Čia gali vėliau įdėti tikrą turinį kiekvienam modelio langui
+    const content = {
+      paule:   '<p>Numatytasis asistentas. Čia gali būti trumpas aprašas ar nustatymai.</p>',
+      chatgpt: '<p>ChatGPT integracija / instrukcijos.</p>',
+      claude:  '<p>Claude integracija / instrukcijos.</p>',
+      gemini:  '<p>Gemini integracija / instrukcijos.</p>',
+      grok:    '<p>Grok integracija / instrukcijos.</p>',
+      deepseek:'<p>DeepSeek integracija / instrukcijos.</p>',
+      llama:   '<p>Llama integracija / instrukcijos.</p>'
+    };
+
+    function urlFor(model){
+      const u = new URL(location.href);
+      if(model){ u.searchParams.set('m', model); }
+      else { u.searchParams.delete('m'); }
+      return u.toString();
+    }
+
+    function setActive(model){
+      qsa('.model-tab').forEach(b => b.classList.toggle('active', b.dataset.model === model));
+    }
+
+    function openModal(model){
+      const key = (model && modelNames[model]) ? model : 'paule';
+      modal?.setAttribute('data-model', key);
+      if(mTitle) mTitle.textContent = modelNames[key];
+      if(mBody)  mBody.innerHTML    = content[key] || '';
+      if(mShare) mShare.href        = urlFor(key);
+      layer?.classList.add('open');
+      history.pushState({ m:key }, '', urlFor(key));
+      setActive(key);
+    }
+
+    function closeModal(popState=false){
+      layer?.classList.remove('open');
+      if(!popState){ history.pushState({}, '', urlFor(null)); }
+      setActive(null);
+    }
+
+    // Modelių mygtukai
+    qsa('.model-tab').forEach(b => b.addEventListener('click', () => openModal(b.dataset.model)));
+
+    // Welcome veiksmas
+    qsa('.welcome-btn').forEach(b => b.addEventListener('click', () => openModal(b.dataset.model)));
+
+    // Uždarymai
+    btnClose?.addEventListener('click', () => closeModal());
+    layer?.addEventListener('click', (e) => { if(e.target === layer) closeModal(); });
+    window.addEventListener('keydown', (e) => { if(e.key === 'Escape' && layer.classList.contains('open')) closeModal(); });
+
+    // Naršyklės „Back/Forward“
+    window.addEventListener('popstate', () => {
+      const p = new URL(location.href).searchParams.get('m');
+      if(p){
+        // rodom atgal modalą be papildomo push
+        modal?.setAttribute('data-model', p);
+        mTitle.textContent = modelNames[p] || 'Modelis';
+        mBody.innerHTML = content[p] || '';
+        mShare.href  = urlFor(p);
+        layer.classList.add('open');
+        setActive(p);
+        history.replaceState({ m:p }, '', urlFor(p));
+      } else {
+        closeModal(true);
+      }
+    });
+
+    // Atidaryti iš URL (share)
+    const start = new URL(location.href).searchParams.get('m');
+    if(start){ requestAnimationFrame(() => openModal(start)); }
+
+    // Paprastas „send“ pavyzdys (tik UI)
+    const input = qs('#msgInput');
+    const send  = qs('#sendBtn');
+    const area  = qs('#chatArea');
+
+    function addMsg(text, who='user'){
+      const wrap = document.createElement('div');
+      wrap.className = 'message ' + (who==='user' ? 'user' : 'bot');
+      wrap.innerHTML = `
+        <div class="avatar">${who==='user' ? '🧑' : '🤖'}</div>
+        <div class="bubble">
+          <div class="bubble-card"><div class="msg-content">${text.replace(/</g,'&lt;')}</div></div>
+          <div class="msg-meta"><span>${new Date().toLocaleTimeString()}</span></div>
+        </div>`;
+      area?.appendChild(wrap);
+      area?.scrollTo({ top: area.scrollHeight, behavior:'smooth' });
+    }
+
+    send?.addEventListener('click', () => {
+      const v = (input?.value || '').trim();
+      if(!v) return;
+      addMsg(v,'user');
+      input.value = '';
+      setTimeout(() => addMsg('✅ Gavau: „' + v + '“ (demo atsakas).','bot'), 400);
+    });
+
+  })();
+  </script>
 </body>
 </html>
