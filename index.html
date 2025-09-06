@@ -1,373 +1,379 @@
-<!doctype html>
-<html lang="lt" data-theme="light">
+<!DOCTYPE html>
+<html lang="lt">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Paule</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Paule — Premium AI Chat</title>
 
-  <!-- Pagrindinis stilius -->
-  <link rel="stylesheet" href="./assets/css/paule.css?v=20250906" />
+  <!-- CSS -->
+  <link rel="preload" href="/assets/css/paule.css?v=4" as="style">
+  <link rel="stylesheet" href="/assets/css/paule.css?v=4">
+
+  <!-- JS (ID’ų nekeičiu) -->
+  <script defer src="/assets/js/paule.js?v=4"></script>
 </head>
 <body>
-
-  <!-- =========================
-       TOP BAR
-  ========================== -->
-  <header class="topbar" id="topbar">
-    <button class="btn mobile-toggle" id="btnSidebarToggle" aria-label="Meniu">
-      <img src="assets/icon/nav-menu.svg" alt="Meniu" width="18" height="18" />
-    </button>
-
-    <a class="brand" href="./" aria-label="Paule">
-      <!-- Didelis logotipas (4–5 cm ~ ~160–190px) -->
-      <img class="brand-icon" src="assets/icon/paule-logo.webp" alt="Paule logotipas" style="width:180px;height:auto;" />
-      <!-- nerašom teksto „Paule“, kad nesidubliuotų su logotipu -->
-    </a>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand">
+      <!-- logotipas su tekstu „paule“, be papildomo <span> -->
+      <img class="brand-icon" src="/assets/icon/paule-logo.webp" alt="Paule">
+    </div>
 
     <div class="top-actions">
-      <a id="btnNewChat" class="btn btn-new-chat" href="#" title="Naujas pokalbis">
-        <img src="assets/icon/nav-new-chat.svg" alt="" width="16" height="16" />
+      <button class="btn btn-new-chat" id="btnNewChat">
+        <img src="/assets/icon/nav-new-chat.svg" alt="" style="width:16px;height:16px">
         Naujas pokalbis
-      </a>
+      </button>
 
-      <button id="btnLogin" class="btn btn-login" type="button">
-        <img src="assets/icon/nav-share.svg" alt="" width="16" height="16" />
+      <button class="btn mobile-toggle" id="btnMobile">
+        <img src="/assets/icon/nav-menu.svg" alt="" style="width:16px;height:16px">
+        Meniu
+      </button>
+
+      <!-- Prisijungimo mygtukas -->
+      <button class="btn btn-login" id="btnLogin">
+        <img src="/assets/icon/user.svg" alt="" style="width:16px;height:16px">
         Prisijungti
       </button>
 
-      <!-- Vartotojo meniu (paslėptas kol neprisijungta) -->
-      <div class="user-profile hidden" id="profileMenuBtn" aria-haspopup="true" aria-expanded="false">
-        <div class="user-avatar" id="profileAvatar">P</div>
-        <div class="user-name" id="profileName">Paule</div>
+      <!-- Profilis (kai prisijungęs) -->
+      <div class="user-profile hidden" id="userProfile">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-name" id="userName">Vartotojas</div>
         <div class="profile-dropdown" id="profileDropdown">
-          <div class="dropdown-item">
-            <img src="assets/icon/user-profile.svg" alt="" width="16" height="16" />
+          <div class="dropdown-item" data-action="profile">
+            <img src="/assets/icon/user.svg" alt="" style="width:16px;height:16px">
             Profilis
           </div>
-          <div class="dropdown-item">
-            <img src="assets/icon/settings.svg" alt="" width="16" height="16" />
+          <div class="dropdown-item" data-action="settings">
+            <img src="/assets/icon/settings.svg" alt="" style="width:16px;height:16px">
             Nustatymai
           </div>
+          <div class="dropdown-item" data-action="theme">
+            <img src="/assets/icon/nav-theme.svg" alt="" style="width:16px;height:16px">
+            Tema
+          </div>
           <div class="dropdown-divider"></div>
-          <div class="dropdown-item" id="btnLogout">
-            <img src="assets/icon/logout.svg" alt="" width="16" height="16" />
+          <div class="dropdown-item" data-action="logout">
+            <img src="/assets/icon/logout.svg" alt="" style="width:16px;height:16px">
             Atsijungti
           </div>
         </div>
       </div>
     </div>
-  </header>
-
-  <!-- Perjungiklis Chat | Community -->
-  <div class="view-tabs" id="viewTabs">
-    <button class="view-tab is-active" data-view="chat">Chat</button>
-    <button class="view-tab" data-view="community">Community</button>
   </div>
 
-  <!-- Modelių juosta (vienintelė) -->
-  <nav class="model-bar" id="modelBar">
-    <div class="model-list" id="modelList">
-      <button class="model-pill active" data-model="augam-auto">
-        <img src="assets/icon/ai-auto.svg" alt="" width="16" height="16" /> Auto
-      </button>
-      <button class="model-pill" data-model="chatgpt">
-        <img src="assets/icon/ai-chatgpt.svg" alt="" width="16" height="16" /> ChatGPT
-      </button>
-      <button class="model-pill" data-model="claude">
-        <img src="assets/icon/ai-claude.svg" alt="" width="16" height="16" /> Claude
-      </button>
-      <button class="model-pill" data-model="gemini">
-        <img src="assets/icon/ai-gemini.svg" alt="" width="16" height="16" /> Gemini
-      </button>
-      <button class="model-pill" data-model="grok">
-        <img src="assets/icon/ai-grok.svg" alt="" width="16" height="16" /> Grok
-      </button>
-      <button class="model-pill" data-model="deepseek">
-        <img src="assets/icon/ai-deepseek.svg" alt="" width="16" height="16" /> DeepSeek
-      </button>
-      <button class="model-pill" data-model="llama">
-        <img src="assets/icon/ai-llama.svg" alt="" width="16" height="16" /> Llama
-      </button>
-    </div>
-  </nav>
+  <!-- LOGIN MODAL -->
+  <div class="modal-overlay" id="loginModalOverlay">
+    <div class="login-modal">
+      <button class="modal-close" id="closeLoginModal">×</button>
+      <div class="modal-header">
+        <div class="modal-title">Prisijungti prie Paule</div>
+        <div class="modal-subtitle">Prieiga prie AI įrankių</div>
+      </div>
 
-  <!-- =========================
-       LAYOUT (Sidebar + Main)
-  ========================== -->
-  <div class="layout">
-    <!-- ===== Sidebar ===== -->
-    <aside class="sidebar" id="sidebar">
-      <!-- Nustatymai -->
-      <section class="side-section">
-        <div class="side-title">Nustatymai</div>
-        <div class="control-group">
-          <div class="control-row">
-            <button class="chip is-active" id="modeChat">
-              <img src="assets/icon/nav-chat.svg" alt="" width="14" height="14" /> Chat
-            </button>
-            <button class="chip" id="modeCommunity">
-              <img src="assets/icon/nav-results.svg" alt="" width="14" height="14" /> Community
-            </button>
-          </div>
+      <div class="login-form">
+        <button class="google-btn" id="googleLoginBtn">
+          <img src="/assets/icon/ai.svg" alt="" style="width:20px;height:20px">
+          Prisijungti su Google
+        </button>
+
+        <div class="divider"><span>arba</span></div>
+
+        <div class="form-group">
+          <label class="form-label">El. paštas</label>
+          <input type="email" class="form-input" id="loginEmail" placeholder="jusu@pastas.lt">
         </div>
-      </section>
 
-      <!-- Tema & Kalba -->
-      <section class="side-section">
+        <div class="form-group">
+          <label class="form-label">Slaptažodis</label>
+          <input type="password" class="form-input" id="loginPassword" placeholder="••••••••">
+        </div>
+
+        <button class="login-btn" id="loginSubmitBtn">Prisijungti</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODEL BAR -->
+  <div class="model-bar">
+    <div class="model-list" id="modelList">
+      <div class="model-pill active" data-model="augam-auto">
+        <img src="/assets/icon/ai-auto.svg" alt="" style="width:16px;height:16px">
+        Auto
+      </div>
+      <div class="model-pill" data-model="gpt-4o-mini">
+        <img src="/assets/icon/chatgpt.svg" alt="" style="width:16px;height:16px">
+        ChatGPT
+      </div>
+      <div class="model-pill" data-model="claude-4-sonnet">
+        <img src="/assets/icon/claude-seeklogo.svg" alt="" style="width:16px;height:16px">
+        Claude
+      </div>
+      <div class="model-pill" data-model="gemini-2.5-flash">
+        <img src="/assets/icon/gemini.svg" alt="" style="width:16px;height:16px">
+        Gemini
+      </div>
+      <div class="model-pill" data-model="grok-4">
+        <img src="/assets/icon/xAI.svg" alt="" style="width:16px;height:16px">
+        Grok
+      </div>
+      <div class="model-pill" data-model="deepseek-chat">
+        <img src="/assets/icon/deepseek.svg" alt="" style="width:16px;height:16px">
+        DeepSeek
+      </div>
+      <div class="model-pill" data-model="meta-llama/Llama-4-Scout-17B-16E-Instruct">
+        <img src="/assets/icon/llama.svg" alt="" style="width:16px;height:16px">
+        Llama
+      </div>
+      <!-- Naujas “Paule” modelis (po Llama) -->
+      <div class="model-pill" data-model="paule">
+        <img src="/assets/icon/ai-ai.svg" alt="" style="width:16px;height:16px">
+        Paule
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE OVERLAY -->
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+
+  <!-- LAYOUT -->
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="side-section">
         <div class="side-title">Tema & Kalba</div>
         <div class="control-group">
-          <label class="control-row">
-            Tema:
-            <select class="select" id="themeSelect">
-              <option value="light" selected>Šviesi</option>
-              <option value="dark">Tamsi</option>
-            </select>
-          </label>
-          <label class="control-row">
-            Kalba:
+          <div class="control-row">
+            <div class="chip" id="chipTheme">
+              <img src="/assets/icon/nav-theme.svg" alt="" style="width:14px;height:14px">
+              Tema
+            </div>
             <select class="select" id="langSelect">
-              <option value="lt" selected>Lietuvių</option>
-              <option value="en">English</option>
+              <option value="lt">LT</option>
+              <option value="en">EN</option>
             </select>
-          </label>
+          </div>
         </div>
-      </section>
+      </div>
 
-      <!-- Galerija -->
-      <section class="side-section">
-        <div class="side-title">Galerija</div>
-        <div class="control-row stories" id="galleryTags">
-          <button class="story"><img src="assets/icon/photo.svg" alt="" width="14" height="14" /> Vaizdas</button>
-          <button class="story"><img src="assets/icon/tool-file.svg" alt="" width="14" height="14" /> Failas</button>
-          <button class="story"><img src="assets/icon/tool-research.svg" alt="" width="14" height="14" /> Tyrimai</button>
-          <button class="story"><img src="assets/icon/mindmap.svg" alt="" width="14" height="14" /> Mindmap</button>
-          <button class="story"><img src="assets/icon/tool-music.svg" alt="" width="14" height="14" /> Audio</button>
+      <div class="side-section">
+        <div class="side-title">AI Specialistai</div>
+        <div class="specialist-grid" id="specialistGrid">
+          <div class="chip" data-spec="doctor">
+            <img src="/assets/icon/medical-stethoscope.svg" alt="" style="width:14px;height:14px">
+            Daktaras
+          </div>
+          <div class="chip" data-spec="chef">
+            <img src="/assets/icon/chef-knife.svg" alt="" style="width:14px;height:14px">
+            Šefas
+          </div>
+          <div class="chip" data-spec="marketer">
+            <img src="/assets/icon/marketing-megaphone.svg" alt="" style="width:14px;height:14px">
+            Marketing
+          </div>
+          <div class="chip" data-spec="sales">
+            <img src="/assets/icon/sales-handshake.svg" alt="" style="width:14px;height:14px">
+            Pardavimai
+          </div>
+          <div class="chip" data-spec="business">
+            <img src="/assets/icon/business-strategy.svg" alt="" style="width:14px;height:14px">
+            Verslas
+          </div>
+          <div class="chip" data-spec="finance">
+            <img src="/assets/icon/finance-investment.svg" alt="" style="width:14px;height:14px">
+            Finansai
+          </div>
+          <div class="chip" data-spec="travel">
+            <img src="/assets/icon/travel-map.svg" alt="" style="width:14px;height:14px">
+            Kelionės
+          </div>
+          <div class="chip" data-spec="event">
+            <img src="/assets/icon/event-planning.svg" alt="" style="width:14px;height:14px">
+            Renginiai
+          </div>
+          <div class="chip" data-spec="artist">
+            <img src="/assets/icon/art-palette.svg" alt="" style="width:14px;height:14px">
+            Menas
+          </div>
+          <div class="chip" data-spec="hr">
+            <img src="/assets/icon/hr-recruitment.svg" alt="" style="width:14px;height:14px">
+            HR
+          </div>
+          <div class="chip" data-spec="lawyer">
+            <img src="/assets/icon/legal-contract.svg" alt="" style="width:14px;height:14px">
+            Teisininkas
+          </div>
+          <div class="chip" data-spec="psychologist">
+            <img src="/assets/icon/psychology-brain.svg" alt="" style="width:14px;height:14px">
+            Psichologas
+          </div>
         </div>
-      </section>
+      </div>
 
-      <!-- Statistika -->
-      <section class="side-section">
+      <div class="side-section">
+        <div class="side-title">Projektai</div>
+        <div class="control-group" id="projectsList">
+          <div class="project-item" data-project="new">
+            <img src="/assets/icon/plus.svg" alt="" style="width:14px;height:14px">
+            Naujas projektas
+          </div>
+        </div>
+      </div>
+
+      <div class="side-section">
+        <div class="side-title">Pokalbių istorija</div>
+        <div class="control-group" id="historyList"></div>
+      </div>
+
+      <div class="side-section">
         <div class="side-title">Statistika</div>
         <div class="stats-grid">
-          <button class="stat-chip"><span>Žinutės</span><span class="stat-count" id="statMsgs">0</span></button>
-          <button class="stat-chip"><span>Failai</span><span class="stat-count" id="statFiles">0</span></button>
-          <button class="stat-chip"><span>Projektai</span><span class="stat-count" id="statProjects">0</span></button>
-          <button class="stat-chip"><span>Eksportai</span><span class="stat-count" id="statExports">0</span></button>
+          <div class="stat-chip" onclick="showModelStats('gpt')">
+            <img src="/assets/icon/ai-chatgpt.svg" alt="" style="width:12px;height:12px">
+            GPT <span class="stat-count" data-model="gpt">87% (42)</span>
+          </div>
+          <div class="stat-chip" onclick="showModelStats('claude')">
+            <img src="/assets/icon/ai-claude.svg" alt="" style="width:12px;height:12px">
+            Claude <span class="stat-count" data-model="claude">92% (38)</span>
+          </div>
+          <div class="stat-chip" onclick="showModelStats('deepseek')">
+            <img src="/assets/icon/ai-deepseek.svg" alt="" style="width:12px;height:12px">
+            DeepSeek <span class="stat-count" data-model="deepseek">78% (25)</span>
+          </div>
+          <div class="stat-chip" onclick="showModelStats('grok')">
+            <img src="/assets/icon/ai-grok.svg" alt="" style="width:12px;height:12px">
+            Grok <span class="stat-count" data-model="grok">83% (19)</span>
+          </div>
+          <div class="stat-chip" onclick="showModelStats('llama')">
+            <img src="/assets/icon/ai-llama.svg" alt="" style="width:12px;height:12px">
+            Llama <span class="stat-count" data-model="llama">95% (51)</span>
+          </div>
+          <div class="stat-chip" onclick="showModelStats('gemini')">
+            <img src="/assets/icon/ai-gemini.svg" alt="" style="width:12px;height:12px">
+            Gemini <span class="stat-count" data-model="gemini">89% (34)</span>
+          </div>
         </div>
-      </section>
-
-      <!-- Projektai -->
-      <section class="side-section">
-        <div class="side-title">Projektai</div>
-        <div class="control-group">
-          <div class="project-item active">
-            <img src="assets/icon/compare.svg" alt="" width="16" height="16" /> Pagrindinis
-          </div>
-          <div class="project-item">
-            <img src="assets/icon/video-library.svg" alt="" width="16" height="16" /> Video
-          </div>
-          <div class="project-item">
-            <img src="assets/icon/marketing-content.svg" alt="" width="16" height="16" /> Marketingas
-          </div>
-        </div>
-      </section>
+      </div>
     </aside>
 
-    <!-- ===== Main ===== -->
+    <!-- MAIN -->
     <main class="main">
-      <!-- Chat zona -->
-      <section class="chat-area" id="chatArea">
-        <div class="welcome">
-          <img src="assets/icon/ai.svg" alt="AI" width="64" height="64" style="opacity:.7;margin-bottom:12px;" />
-          <h1>Sveiki atvykę į Paule</h1>
-          <p>Pradėkite naują pokalbį arba pasirinkite modelį viršuje.</p>
-
-          <!-- AI specialistai (atskira juosta) -->
-          <div class="welcome-actions" id="specialistChips">
-            <button class="welcome-btn">
-              <img src="assets/icon/tool-research.svg" alt="" width="18" height="18" /> Santrauka
+      <div class="chat-area" id="chatArea">
+        <div class="welcome" id="welcome">
+          <h1>Kaip galiu padėti šiandien?</h1>
+          <p>Pasirinkite AI specialistą kairėje arba pradėkite pokalbį žemiau. Galite rinktis vieną ar kelis modelius viršuje.</p>
+          <div class="welcome-actions">
+            <button class="welcome-btn" data-action="doctor">
+              <img src="/assets/icon/medical-heart-pulse.svg" alt="" style="width:16px;height:16px">
+              Sveikatos konsultacija
             </button>
-            <button class="welcome-btn">
-              <img src="assets/icon/mindmap.svg" alt="" width="18" height="18" /> Užklausa
+            <button class="welcome-btn" data-action="chef">
+              <img src="/assets/icon/chef-healthy-bowl.svg" alt="" style="width:16px;height:16px">
+              Kulinarijos patarimai
             </button>
-            <button class="welcome-btn">
-              <img src="assets/icon/tool-file.svg" alt="" width="18" height="18" /> Idėjos
-            </button>
-            <button class="welcome-btn">
-              <img src="assets/icon/photo.svg" alt="" width="18" height="18" /> Vaizdas
-            </button>
-            <button class="welcome-btn">
-              <img src="assets/icon/tool-research.svg" alt="" width="18" height="18" /> Tyrimai
-            </button>
-            <button class="welcome-btn">
-              <img src="assets/icon/ai-ethics.svg" alt="" width="18" height="18" /> Mąstyti
-            </button>
-            <button class="welcome-btn">
-              <img src="assets/icon/tool-music.svg" alt="" width="18" height="18" /> Audio
+            <button class="welcome-btn" data-action="business">
+              <img src="/assets/icon/business-finance.svg" alt="" style="width:16px;height:16px">
+              Verslo strategija
             </button>
           </div>
         </div>
-
-        <!-- Pavyzdinė žinutė -->
-        <article class="message" id="msgWelcome">
-          <div class="avatar"><img src="assets/icon/ai.svg" alt="" /></div>
-          <div class="bubble" data-model="augam-auto">
-            <div class="bubble-card">
-              <div class="msg-content">
-                Sveiki! Kuo galiu padėti?
-              </div>
-              <div class="msg-meta">
-                <span class="model-tag">Auto</span>
-                <span class="typing" id="typingDots" style="display:none;">
-                  <span></span><span></span><span></span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </article>
-      </section>
-
-      <!-- Community dalis (paslėpta iki perjungimo) -->
-      <section class="community-bar hidden" id="communityBar">
-        <div class="prize-banner">
-          <span>€1000 prizas: geriausias AI projektas</span>
-          <button class="cta" id="btnPrize">Dalyvauti</button>
-        </div>
-      </section>
-      <section class="community-feed hidden" id="communityFeed">
-        <div class="feed-filters">
-          <button class="filter-pill is-active">Visi</button>
-          <button class="filter-pill">Tekstas</button>
-          <button class="filter-pill">Vaizdas</button>
-          <button class="filter-pill">Audio</button>
-        </div>
-        <div class="feed-grid" id="feedGrid">
-          <!-- kortelės generuojamos per JS -->
-        </div>
-      </section>
+      </div>
     </main>
   </div>
 
-  <!-- =========================
-       APATINĖ ĮVESTIS
-  ========================== -->
-  <section class="bottom-section initial-position" id="bottomSection">
+  <!-- BOTTOM INPUT -->
+  <div class="bottom-section initial-position" id="bottomSection">
     <div class="input-bar">
       <div class="input-container">
-        <textarea id="messageInput" class="message-input" rows="1" placeholder="Žinutė specialistui…"></textarea>
-        <button id="sendBtn" class="send-btn" aria-label="Siųsti">
-          <img src="assets/icon/mobile-send.svg" alt="" width="22" height="22" />
+        <textarea class="message-input" id="messageInput" rows="1" placeholder="Žinutė specialistui…"></textarea>
+        <button class="send-btn" id="sendBtn">
+          <img src="/assets/icon/arrow-top.svg" alt="">
         </button>
       </div>
     </div>
-    <div class="tools-bar" id="toolsBar">
-      <button class="tool"><img src="assets/icon/tool-file.svg" alt="" width="14" height="14" /> Failas</button>
-      <button class="tool"><img src="assets/icon/photo.svg" alt="" width="14" height="14" /> Vaizdas</button>
-      <button class="tool"><img src="assets/icon/tool-research.svg" alt="" width="14" height="14" /> Tyrimas</button>
-      <button class="tool"><img src="assets/icon/mindmap.svg" alt="" width="14" height="14" /> Mindmap</button>
-      <button class="tool"><img src="assets/icon/tool-code.svg" alt="" width="14" height="14" /> Kodas</button>
-      <button class="tool"><img src="assets/icon/tool-music.svg" alt="" width="14" height="14" /> Audio</button>
-    </div>
-  </section>
 
-  <!-- =========================
-       LOGIN MODAL
-  ========================== -->
-  <div class="modal-overlay" id="loginModal">
-    <div class="login-modal modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-      <button class="modal-close" id="loginClose" aria-label="Uždaryti">×</button>
-      <div class="modal-header">
-        <div class="modal-title" id="loginTitle">Prisijungti prie Paule</div>
-        <div class="modal-subtitle">Prieiga prie AI įrankių</div>
+    <div class="tools-bar">
+      <div class="tool" data-tool="mindmap">
+        <img src="/assets/icon/tool-mindmap.svg" alt="">
+        Mindmap
       </div>
-      <div class="login-form">
-        <button class="google-btn" id="btnGoogleLogin">
-          <!-- Neturim Google brando SVG — paliekam tekstinį variantą -->
-          Prisijungti su Google
-        </button>
-        <div class="divider"><span>arba</span></div>
-        <div class="form-group">
-          <label class="form-label" for="email">El. paštas</label>
-          <input class="form-input" id="email" type="email" placeholder="jusu@pastas.lt" />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="password">Slaptažodis</label>
-          <input class="form-input" id="password" type="password" />
-        </div>
-        <button class="login-btn" id="btnEmailLogin">Prisijungti</button>
+      <div class="tool" data-tool="photo">
+        <img src="/assets/icon/tool-photo.svg" alt="">
+        Foto
+      </div>
+      <div class="tool" data-tool="research">
+        <img src="/assets/icon/tool-research.svg" alt="">
+        Tyrinėti
+      </div>
+      <div class="tool" data-tool="think">
+        <img src="/assets/icon/think.svg" alt="">
+        Mąstyti
+      </div>
+      <div class="tool" data-tool="file">
+        <img src="/assets/icon/tool-file.svg" alt="">
+        Failas
+      </div>
+      <div class="tool" data-tool="song">
+        <img src="/assets/icon/tool-music.svg" alt="">
+        Sukurti dainą
       </div>
     </div>
   </div>
 
-  <!-- =========================
-       SPECIALIST OVERLAY
-  ========================== -->
+  <!-- SPECIALIST OVERLAY -->
   <div class="specialist-overlay" id="specialistOverlay">
     <div class="specialist-header">
       <div class="specialist-brand">
-        <img src="assets/icon/ai.svg" alt="" width="20" height="20" />
-        Paule specialistas
+        <img src="/assets/icon/ai.svg" alt="Paule" style="width:24px;height:24px">
+        <span>Paule specialistas</span>
       </div>
-      <button class="specialist-close" id="specialistClose" aria-label="Uždaryti">×</button>
+      <button class="specialist-close" id="closeSpecialistOverlay">×</button>
     </div>
-    <div class="specialist-main">
-      <div class="specialist-avatar-large">
-        <img src="assets/icon/ai.svg" alt="Specialistas" />
-      </div>
-      <h2 class="specialist-title">Pasirinkite užduotį</h2>
-      <p class="specialist-subtitle">Pagalba ir trumpi šablonai</p>
 
-      <div class="specialist-options">
-        <div class="specialist-option" data-task="summary">
-          <span class="specialist-option-icon"> </span>
-          <div class="specialist-option-title">Santrauka</div>
-          <div class="specialist-option-desc">Greita teksto santrauka.</div>
-        </div>
-        <div class="specialist-option" data-task="research">
-          <div class="specialist-option-title">Tyrimai</div>
-          <div class="specialist-option-desc">Rink informacijos taškus.</div>
-        </div>
-        <div class="specialist-option" data-task="mindmap">
-          <div class="specialist-option-title">Mindmap</div>
-          <div class="specialist-option-desc">Idėjų struktūra.</div>
-        </div>
-        <div class="specialist-option" data-task="image">
-          <div class="specialist-option-title">Vaizdas</div>
-          <div class="specialist-option-desc">Paveikslėliai ir iliustracijos.</div>
-        </div>
+    <div class="specialist-main">
+      <div class="specialist-avatar-large" id="specialistAvatarLarge">
+        <img id="specialistImage" src="" alt="Specialistas">
       </div>
+
+      <h1 class="specialist-title" id="specialistTitle">Specialistas</h1>
+      <p class="specialist-subtitle" id="specialistSubtitle">Jūsų asmeninis konsultantas</p>
+      <p class="specialist-description" id="specialistDescription">
+        Pasirinkite temą arba užduokite klausimą tiesiai. Aš padėsiu jums rasti geriausią sprendimą.
+      </p>
+
+      <div class="specialist-options" id="specialistOptions"></div>
     </div>
   </div>
 
-  <!-- =========================
-       MOBILE BOTTOM BAR
-  ========================== -->
-  <nav class="mobile-bottom-bar" id="mobileBar">
-    <button class="mobile-icon active">
-      <img src="assets/icon/nav-chat.svg" alt="" />
-      <span>Chat</span>
-    </button>
-    <button class="mobile-icon">
-      <img src="assets/icon/nav-results.svg" alt="" />
-      <span>Rezultatai</span>
-    </button>
-    <button class="mobile-icon" id="mobileNewChat">
-      <img src="assets/icon/nav-new-chat.svg" alt="" />
-      <span>Naujas</span>
-    </button>
-    <button class="mobile-icon">
-      <img src="assets/icon/nav-settings.svg" alt="" />
-      <span>Nustatymai</span>
-    </button>
-    <button class="mobile-icon" id="mobileTheme">
-      <img src="assets/icon/nav-theme.svg" alt="" />
-      <span>Tema</span>
-    </button>
-  </nav>
-
-  <!-- =========================
-       JS
-  ========================== -->
-  <script defer src="./assets/js/paule.js?v=20250906"></script>
+  <!-- MOBILE BOTTOM BAR -->
+  <div class="mobile-bottom-bar">
+    <div class="mobile-icon" data-mobile-tool="mindmap">
+      <img src="/assets/icon/mindmap.svg" alt="">
+      <span>Mind</span>
+    </div>
+    <div class="mobile-icon" data-mobile-tool="photo">
+      <img src="/assets/icon/photo.svg" alt="">
+      <span>Foto</span>
+    </div>
+    <div class="mobile-icon" data-mobile-tool="research">
+      <img src="/assets/icon/reserch.svg" alt="">
+      <span>Tyrim</span>
+    </div>
+    <div class="mobile-icon" data-mobile-tool="think">
+      <img src="/assets/icon/think.svg" alt="">
+      <span>Mąst</span>
+    </div>
+    <div class="mobile-icon" data-mobile-tool="file">
+      <img src="/assets/icon/tools.svg" alt="">
+      <span>Fail</span>
+    </div>
+    <div class="mobile-icon" data-mobile-tool="song">
+      <img src="/assets/icon/music.svg" alt="">
+      <span>Daina</span>
+    </div>
+  </div>
 </body>
 </html>
+
