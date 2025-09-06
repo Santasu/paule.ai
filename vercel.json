@@ -1,11 +1,33 @@
 {
+  "version": 2,
   "framework": null,
   "cleanUrls": true,
   "trailingSlash": false,
+
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs20.x",
+      "memory": 512,
+      "maxDuration": 30
+    }
+  },
+
+  "rewrites": [
+    { "source": "/wp-json/augam/v1/stream",        "destination": "/api/stream" },
+    { "source": "/wp-json/augam/v1/models",        "destination": "/api/models" },
+    { "source": "/wp-json/augam/v1/diagnostics",   "destination": "/api/diagnostics" },
+    { "source": "/wp-json/augam/v1/flux/create",   "destination": "/api/flux/create" },
+    { "source": "/wp-json/augam/v1/runway/image",  "destination": "/api/runway/image" },
+    { "source": "/wp-json/augam/v1/runway/status", "destination": "/api/runway/status" }
+  ],
+
   "headers": [
     {
       "source": "/assets/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
     }
   ]
 }
+
