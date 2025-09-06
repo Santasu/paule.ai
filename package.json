@@ -1,10 +1,10 @@
 {
-  "name": "paule.ai",
+  "name": "paule-ai",
   "private": true,
-  "type": "commonjs",
-  "engines": { "node": "20.x" },
   "scripts": {
     "build": "echo \"no build\""
   },
-  "dependencies": {}
+  "engines": {
+    "node": "22.x"
+  }
 }
