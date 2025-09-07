@@ -1,19 +1,18 @@
-const getEnv = require('./_lib/env');
+// api/models.js
+const { ENV, availableModels } = require('./_utils/env');
 
-function normalizeModelId(id){ return String(id).trim(); }
-
-module.exports = (req, res) => {
-  const env = getEnv();
-
-  const avail = [];
-  if (env.TOGETHER)  avail.push(normalizeModelId("meta-llama/Llama-4-Scout-17B-16E-Instruct"));
-  if (env.OPENAI)    avail.push(normalizeModelId("gpt-4o-mini"));
-  if (env.ANTHROPIC) avail.push(normalizeModelId("claude-4-sonnet"));
-  if (env.XAI)       avail.push(normalizeModelId("grok-4"));
-  if (env.GOOGLE)    avail.push(normalizeModelId("gemini-2.5-flash"));
-  if (env.DEEPSEEK)  avail.push(normalizeModelId("deepseek-chat"));
-
-  res.setHeader('Content-Type', 'application/json');
-  res.status(200).end(JSON.stringify({ ok:true, available: avail }));
+module.exports = async (req, res) => {
+  res.setHeader('Content-Type','application/json; charset=utf-8');
+  res.status(200).json({
+    ok: true,
+    brand: 'Paule AI',
+    default: 'paule-ai',
+    models: availableModels(),
+    env_present: {
+      OPENAI: ENV.OPENAI, ANTHROPIC: ENV.ANTHROPIC, GOOGLE: ENV.GOOGLE, XAI: ENV.XAI,
+      DEEPSEEK: ENV.DEEPSEEK, TOGETHER: ENV.TOGETHER, RUNWAY: ENV.RUNWAY, SUNO: ENV.SUNO,
+      FLUX: ENV.FLUX, ADMIN_TOKEN_SET: ENV.ADMIN_TOKEN_SET, VERCEL_API_TOKEN: ENV.VERCEL_API_TOKEN,
+      VERCEL_PROJECT_ID: ENV.VERCEL_PROJECT_ID
+    }
+  });
 };
-
