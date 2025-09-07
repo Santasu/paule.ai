@@ -1,10 +1,10 @@
 {
-  "name": "paule-ai",
+  "name": "paule.ai",
   "private": true,
   "scripts": {
     "build": "echo \"no build\""
   },
   "engines": {
-    "node": "22.x"
+    "node": "20.x"
   }
 }
