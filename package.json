@@ -2,12 +2,12 @@
   "name": "paule-ai",
   "private": true,
   "version": "1.0.0",
-  "description": "Paule – Vercel app",
+  "description": "Paule on Vercel",
   "engines": { "node": "22.x" },
   "scripts": {
     "dev": "vercel dev",
-    "start": "node server.js",
-    "build": "echo \"no build step\""
+    "build": "echo \"no build step\"",
+    "start": "node server.js"
   },
   "license": "UNLICENSED"
 }
