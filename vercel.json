@@ -6,7 +6,7 @@
     { "src": "public/**/*", "use": "@vercel/static" }
   ],
   "routes": [
-    // --- PAULE API (abiem prefiksais) ---
+  
     { "src": "^/api/paule/v1/stream$",        "dest": "/api/stream.js" },
     { "src": "^/api/paule/v1/models$",        "dest": "/api/models.js" },
     { "src": "^/api/paule/v1/diagnostics$",   "dest": "/api/diagnostics.js" },
@@ -27,7 +27,7 @@
     { "src": "^/wp-json/paule/v1/music/create$",  "dest": "/api/music/create.js" },
     { "src": "^/wp-json/paule/v1/music/status$",  "dest": "/api/music/status.js" },
 
-    // --- statiniai failai / SPA fallback ---
+
     { "src": "^/$", "dest": "/public/index.html" },
     { "src": "^(?!/api)(.*)$", "dest": "/public$1" }
   ]
