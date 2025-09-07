@@ -1,8 +1,12 @@
-const { env, sendJSON, pickAutoModel, normalizeModelId, aliasOf } = require("./_utils");
-const { withCORS } = require("../lib/cors"); // <- kelias iš api/ į lib/
+// api/models.js
+const { FLAGS, ALLOWED_ORIGIN } = require("../lib/env");
 
-async function handler(_req, res) {
+const normalizeModelId = (id) => String(id); // paliekam kaip yra
+
+function availableModels() {
+  const env = FLAGS;
   const avail = [];
+
   if (env.TOGETHER)  avail.push(normalizeModelId("meta-llama/Llama-4-Scout-17B-16E-Instruct"));
   if (env.OPENAI)    avail.push(normalizeModelId("gpt-4o-mini"));
   if (env.ANTHROPIC) avail.push(normalizeModelId("claude-4-sonnet"));
@@ -10,13 +14,15 @@ async function handler(_req, res) {
   if (env.GOOGLE)    avail.push(normalizeModelId("gemini-2.5-flash"));
   if (env.DEEPSEEK)  avail.push(normalizeModelId("deepseek-chat"));
 
-  const uniq = [...new Set(avail)];
-  return sendJSON(res, 200, {
-    ok: true,
-    default_models: [{ id: "auto", alias: "Auto" }],
-    available: uniq.map(m => ({ id: m, alias: aliasOf(m) })),
-    sse_enabled: true
-  });
+  return avail;
 }
 
-module.exports = withCORS(handler); 
+module.exports = async (_req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGIN || "*");
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+
+  res.status(200).json({
+    ok: true,
+    available: availableModels()
+  });
+};
