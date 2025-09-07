@@ -13,17 +13,7 @@
   },
 
   "rewrites": [
-    { "source": "/wp-json/augam/v1/stream",        "destination": "/api/stream" },
-    { "source": "/wp-json/augam/v1/models",        "destination": "/api/models" },
-    { "source": "/wp-json/augam/v1/diagnostics",   "destination": "/api/diagnostics" },
-    { "source": "/wp-json/augam/v1/flux/create",   "destination": "/api/flux/create" },
-    { "source": "/wp-json/augam/v1/comic/create",  "destination": "/api/comic/create" },
-    { "source": "/wp-json/augam/v1/runway/image",  "destination": "/api/runway/image" },
-    { "source": "/wp-json/augam/v1/runway/status", "destination": "/api/runway/status" },
-    { "source": "/wp-json/augam/v1/music/create",  "destination": "/api/music/create" },
-    { "source": "/wp-json/augam/v1/music/status",  "destination": "/api/music/status" },
-
-    { "source": "/api/paule/:path*", "destination": "/api/:path*" }
+    { "source": "/wp-json/paule/v1/:path*", "destination": "/api/:path*" }
   ],
 
   "headers": [
