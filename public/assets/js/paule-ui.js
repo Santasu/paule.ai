@@ -2,7 +2,7 @@
    Paule – Premium Chat (Vercel)
    Pagrindinis UI/transporto klientas be WP, be „augam“.
    API bazė ir maršrutai imami iš window.PAULE_CONFIG (žr. index.html).
-   ======================================================================= */
+   ======================================================================= */ 
 (function () {
   'use strict';
 
