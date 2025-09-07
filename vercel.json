@@ -12,10 +12,6 @@
     }
   },
 
-  "rewrites": [
-    { "source": "/wp-json/paule/v1/:path*", "destination": "/api/:path*" }
-  ],
-
   "headers": [
     {
       "source": "/assets/(.*)",
