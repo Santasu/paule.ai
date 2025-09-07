@@ -1,6 +1,5 @@
-
 <!DOCTYPE html>
-<html lang="lt" data-theme="light">
+<html lang="lt" data-theme="light" data-backend="vercel">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -54,7 +53,7 @@
         runwayPing:                 restBase + '/runway/ping'
       };
 
-      // Galutinė konfigūracija – ja naudosis /assets/js/paule.js
+      // Galutinė konfigūracija – ja naudosis /assets/js/paule-ui.js
       var CFG = {
         mode: MODE,                      // 'wp' | 'vercel'
         restBase: routes.base,
@@ -199,7 +198,7 @@
       <div class="user-profile hidden" id="userProfile">
         <div class="user-avatar">U</div>
         <div class="user-name">Vartotojas</div>
-        <div class="profile-dropdown">
+        <div class="profile-dropdown" id="profileDropdown">
           <div class="dropdown-item" style="cursor:default">
             <img class="ui-icon" src="/assets/icon/nav-theme.svg" alt="">
             <div class="profile-controls">
@@ -319,6 +318,9 @@
       </section>
     </aside>
 
+    <!-- 🔳 mobilus užtemdymas (naudojamas JS) -->
+    <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true"></div>
+
     <!-- ===== MAIN ===== -->
     <main class="main">
       <div class="chat-area" id="chatArea">
@@ -428,6 +430,7 @@
       const logo = document.getElementById('brandLogo');
       const sidebar = document.getElementById('sidebar');
       const btnMobile = document.getElementById('btnMobile');
+      const overlay = document.getElementById('mobileOverlay');
       const selTheme = document.getElementById('selTheme');
       const selThemeAuth = document.getElementById('selThemeAuth');
 
@@ -444,13 +447,21 @@
         root.setAttribute('data-theme', e.target.value); updateLogo();
       });
 
-      btnMobile && btnMobile.addEventListener('click', ()=>{
-        sidebar.classList.toggle('open');
+      // Mobilus meniu tik jei dar nepakrautas pagrindinis klientas (kad nebūtų dvigubo toggle)
+      if (!window.PauleMain && btnMobile) {
+        btnMobile.addEventListener('click', ()=>{
+          sidebar.classList.toggle('open');
+          overlay && overlay.classList.toggle('active');
+        });
+      }
+      overlay && overlay.addEventListener('click', ()=>{
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
       });
     })();
   </script>
 
   <!-- Tavo programinė logika – skaitys window.PAULE_CONFIG -->
-  <script src="/assets/js/paule.js" defer></script>
+  <script src="/assets/js/paule-ui.js" defer></script>
 </body>
 </html>
