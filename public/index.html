@@ -6,41 +6,37 @@
   <title>Paule – Premium AI Chat</title>
   <link rel="stylesheet" href="/assets/css/paule.css">
 
-  <!-- 🔧 PAULE konfigūracija (WP ⇄ Vercel jungiklis)
-       - DEFAULT: 'wp' (atitinka tavo PHP router’į /wp-json/paule/v1)
-       - Pakeisk į 'vercel' arba <html data-backend="vercel">, jei API bus /api/paule/v1
-  -->
+  <!-- 🔧 PAULE konfigūracija (VERCEL režimas: /api/* maršrutai) -->
   <script id="paule-config">
     (function () {
       var htmlAttr = (document.documentElement.getAttribute('data-backend') || '').trim().toLowerCase();
-      var MODE = htmlAttr === 'vercel' ? 'vercel' : 'wp'; // <-- pakeisk į 'vercel' jei deployinsi į Vercel API
+      var MODE = htmlAttr === 'vercel' ? 'vercel' : 'wp'; // paliekam jungiklį, bet default mūsų atveju "vercel"
 
-      var restBase = MODE === 'vercel' ? '/api/paule/v1' : '/wp-json/paule/v1';
+      // 👉 Plokščias API be /paule/v1
+      var restBase = MODE === 'vercel' ? '/api' : '/wp-json/paule/v1';
 
-      // Pilnas maršrutų žemėlapis (suderinta su tavo Router/Infra)
       var routes = {
         base: restBase,
         stream:        restBase + '/stream',            // GET (SSE) | POST (mode=once)
         models:        restBase + '/models',
         diagnostics:   restBase + '/diagnostics',
 
-        comicCreate:   restBase + '/comic/create',      // = /flux/create
+        // vaizdai
+        comicCreate:   restBase + '/comic/create',      // alias į flux
         fluxCreate:    restBase + '/flux/create',
         triptych:      restBase + '/image/triptych-series',
 
+        // (jei ateity darysi personas/projektus — palikau kaip rezervą)
         personaCreate: restBase + '/persona/create',
         personaList:   restBase + '/persona/list',
         personaSeries: restBase + '/persona/generate_series',
 
+        // muzika
         musicCreate:   restBase + '/music/create',
         musicStatus:   restBase + '/music/status',      // ?task=...
         musicCallback: restBase + '/music/callback',
 
-        chatHistory:   restBase + '/chat/history',      // ?chat_id=...
-        projectCreate: restBase + '/project/create',
-        projectList:   restBase + '/project/list',
-        projectChats:  restBase + '/project/chats',     // ?project_id=...
-
+        // runway
         runwayImage:   restBase + '/runway/image',
         runwayStatus:  restBase + '/runway/status',     // ?task_id=...
         runwayVideoUpscale:         restBase + '/runway/video-upscale',
@@ -53,88 +49,66 @@
         runwayPing:                 restBase + '/runway/ping'
       };
 
-      // Galutinė konfigūracija – ja naudosis /assets/js/paule-ui.js
       var CFG = {
         mode: MODE,                      // 'wp' | 'vercel'
         restBase: routes.base,
         restStream: routes.stream,
+        // kai kurie klientai naudoja /stream-sse – čia leidžiam suderinamumą
         restStreamSSE: routes.stream + '?mode=sse',
         sseDefault: 1,
 
-        // Assetų bazės – kad niekur nereikėtų WP plugin kelių
         pluginBase:   '/assets',
         iconsBase:    '/assets/icon',
         featuresBase: '/assets/features',
 
         routes: routes,
-        version: 'paule-1.0.0'
+        version: 'paule-1.0.1'
       };
 
-      // Standartinis vardas (naudok šitą)
       window.PAULE_CONFIG = CFG;
-      // Suderinamumas su senesniu kodu
-      window.AUGAM_CONFIG = CFG;
+      window.AUGAM_CONFIG = CFG; // legacy suderinamumas
 
-      // ✅ Legacy suderinamumas: jei senajame paule.js buvo „var API_BASE = ...“
       try {
         Object.defineProperty(window, 'API_BASE', {
           configurable: true,
           get: function(){ return CFG.restBase; },
-          set: function(_){} // ignoruojam perrašymą
+          set: function(_){} // ignoruojam
         });
       } catch(e) {}
       window.__SET_API_BASE__ = function (v) { /* jei reikėtų vėliau keisti */ };
     })();
   </script>
 
-  <!-- ✅ PAULE ⇄ AUGAM bridge (perrašo /augam/v1 į /paule/v1 ir perduoda konfigą) -->
+  <!-- ✅ PAULE bridge: jei kur nors dar liko /augam/v1 ar /paule/v1, perrašom į /api -->
   <script id="paule-bridge">
     (function(){
       'use strict';
       try {
-        var NS = 'paule';
-        var wpRoot = (window.wpApiSettings && window.wpApiSettings.root) || '/wp-json/';
-        var restBaseGuess = (wpRoot.replace(/\/+$/,'') + '/' + NS + '/v1');
+        var restBase = (window.PAULE_CONFIG && window.PAULE_CONFIG.restBase) || '/api';
 
-        // Jeigu būtų tik PAULE_CONFIG – padarom ir AUGAM_CONFIG (senam kodui)
-        if (window.PAULE_CONFIG && typeof window.PAULE_CONFIG === 'object') {
-          var pc = window.PAULE_CONFIG;
-          window.AUGAM_CONFIG = Object.assign({}, pc);
-
-          if (!AUGAM_CONFIG.restBase)        AUGAM_CONFIG.restBase        = pc.restBase        || restBaseGuess;
-          if (!AUGAM_CONFIG.restStream)      AUGAM_CONFIG.restStream      = pc.restStream      || (AUGAM_CONFIG.restBase + '/stream');
-          if (!AUGAM_CONFIG.restStreamSSE)   AUGAM_CONFIG.restStreamSSE   = pc.restStreamSSE   || (AUGAM_CONFIG.restBase + '/stream-sse');
-          if (!AUGAM_CONFIG.restModels)      AUGAM_CONFIG.restModels      = pc.restModels      || (AUGAM_CONFIG.restBase + '/models');
-          if (!AUGAM_CONFIG.restDiagnostics) AUGAM_CONFIG.restDiagnostics = pc.restDiagnostics || (AUGAM_CONFIG.restBase + '/diagnostics');
-
-          if (!AUGAM_CONFIG.pluginBase)      AUGAM_CONFIG.pluginBase      = pc.pluginBase      || '/assets';
-          if (!AUGAM_CONFIG.featuresBase)    AUGAM_CONFIG.featuresBase    = pc.featuresBase    || (AUGAM_CONFIG.pluginBase + '/features');
-          if (!AUGAM_CONFIG.iconsBase)       AUGAM_CONFIG.iconsBase       = pc.iconsBase       || (AUGAM_CONFIG.pluginBase + '/icon');
-        }
-
-        window.__NS = NS;
-        window.__FORCE_STREAM_ENDPOINT__ = (restBaseGuess.replace(/\/+$/,'') + '/stream');
-      } catch(e) { console.warn('[PAULE bridge] config warning:', e); }
-
-      // Perrašome URL'us, jei kur nors kode liko „/augam/v1“
-      try {
-        // EventSource (SSE)
+        // EventSource
         if (window.EventSource) {
           var OrigES = window.EventSource;
           window.EventSource = function(url, opts){
-            try { url = String(url).replace(/\/augam\/v1(\/|$)/, '/paule/v1$1'); } catch(_){}
+            try {
+              url = String(url)
+                .replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/, '/api$1')
+                .replace(/\/(?:augam|paule)\/v1(\/|$)/, '/api$1');
+            } catch(_){}
             return new OrigES(url, opts);
           };
           window.EventSource.prototype = OrigES.prototype;
         }
-        // fetch (POST fallback ir pan.)
+        // fetch
         if (window.fetch) {
           var origFetch = window.fetch;
           window.fetch = function(input, init){
             try {
               var u = (typeof input === 'string') ? input : (input && input.url);
               if (u) {
-                var nu = String(u).replace(/\/augam\/v1(\/|$)/, '/paule/v1$1');
+                var nu = String(u)
+                  .replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/, '/api$1')
+                  .replace(/\/(?:augam|paule)\/v1(\/|$)/, '/api$1');
                 if (nu !== u) {
                   if (typeof input === 'string') { input = nu; }
                   else { input = new Request(nu, input); }
@@ -144,21 +118,26 @@
             return origFetch(input, init);
           };
         }
-      } catch(e) { console.warn('[PAULE bridge] patch warning:', e); }
+
+        window.__FORCE_STREAM_ENDPOINT__ = restBase.replace(/\/+$/,'') + '/stream';
+      } catch(e) { console.warn('[PAULE bridge] warning:', e); }
     })();
   </script>
 </head>
 <body>
 
+  <!-- Mobilus overlay (JS tikisi #mobileOverlay) -->
+  <div id="mobileOverlay" class="mobile-overlay" style="display:none;"></div>
+
   <!-- ===== TOPBAR ===== -->
   <header class="topbar" data-no-clip="true">
-    <!-- Vienas logotipas: šviesi tema -> paule-logo.webp, tamsi -> paule-logo-b.svg -->
     <a class="brand" href="/" aria-label="Paule">
       <img id="brandLogo" class="brand-icon" src="/assets/icon/paule-logo.webp" alt="paule">
     </a>
 
-    <nav class="models-in-topbar" aria-label="Modeliai" id="modelsBar">
-      <button class="model-pill active" data-model="auto" aria-pressed="true">
+    <!-- Modelių juosta (JS ieško #modelList) -->
+    <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
+      <button class="model-pill active" data-model="augam-auto" aria-pressed="true">
         <img class="ui-icon" src="/assets/icon/ai-auto.svg" alt=""> Auto
       </button>
       <button class="model-pill" data-model="chatgpt">
@@ -189,15 +168,14 @@
         <img class="ui-icon" src="/assets/icon/nav-new-chat.svg" alt=""> Naujas pokalbis
       </button>
 
-      <!-- PC – nerodome; Mobile – rodom (css media query) -->
       <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)">
         <img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu
       </button>
 
       <!-- Kai prisijungta -->
       <div class="user-profile hidden" id="userProfile">
-        <div class="user-avatar">U</div>
-        <div class="user-name">Vartotojas</div>
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-name" id="userName">Vartotojas</div>
         <div class="profile-dropdown" id="profileDropdown">
           <div class="dropdown-item" style="cursor:default">
             <img class="ui-icon" src="/assets/icon/nav-theme.svg" alt="">
@@ -212,8 +190,6 @@
               </select>
             </div>
           </div>
-
-          <!-- BE linijų – jokio .dropdown-divider -->
 
           <div class="dropdown-item" style="cursor:default; flex-direction:column; align-items:flex-start;">
             <div class="mini-title">Statistika</div>
@@ -233,8 +209,8 @@
         </div>
       </div>
 
-      <!-- Prisijungti – CSS popup (#auth) -->
-      <a class="btn ghost" id="btnLogin" href="#auth" role="button">
+      <!-- Prisijungti – CSS popup (#loginModalOverlay) -->
+      <a class="btn ghost" id="btnLogin" href="#loginModalOverlay" role="button">
         <img class="ui-icon" src="/assets/icon/user.svg" alt=""> Prisijungti
       </a>
     </div>
@@ -244,22 +220,20 @@
   <div class="layout">
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
-
       <!-- AI specialistai -->
       <section class="side-section">
         <div class="side-title">AI specialistai</div>
-        <div class="specialist-grid">
-          <a class="chip" href="#spec-sefas" data-route="/spec/sefas"><img class="ui-icon" src="/assets/icon/chef-knife.svg" alt=""> Šefas</a>
-          <a class="chip" href="#spec-marketing" data-route="/spec/marketing"><img class="ui-icon" src="/assets/icon/marketing-megaphone.svg" alt=""> Marketing</a>
-          <a class="chip" href="#spec-pardavimai" data-route="/spec/pardavimai"><img class="ui-icon" src="/assets/icon/sales-handshake.svg" alt=""> Pardavimai</a>
-          <a class="chip" href="#spec-verslas" data-route="/spec/verslas"><img class="ui-icon" src="/assets/icon/business-strategy.svg" alt=""> Verslas</a>
-          <a class="chip" href="#spec-finansai" data-route="/spec/finansai"><img class="ui-icon" src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
-          <a class="chip" href="#spec-keliones" data-route="/spec/keliones"><img class="ui-icon" src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
-          <a class="chip" href="#spec-renginiai" data-route="/spec/renginiai"><img class="ui-icon" src="/assets/icon/event-planning.svg" alt=""> Renginiai</a>
-          <!-- Tikslų žemėlapis – nuoroda į atskirą puslapį -->
-          <a class="chip" href="/spec/goal.html" data-route="/spec/goal.html"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
-          <a class="chip" href="#spec-teise" data-route="/spec/teisininkas"><img class="ui-icon" src="/assets/icon/legal-contract.svg" alt=""> Teisininkas</a>
-          <a class="chip" href="#spec-psichologas" data-route="/spec/psichologas"><img class="ui-icon" src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
+        <div class="specialist-grid" id="specialistGrid">
+          <a class="chip" href="#spec-sefas" data-route="/spec/sefas" data-spec="sefas"><img class="ui-icon" src="/assets/icon/chef-knife.svg" alt=""> Šefas</a>
+          <a class="chip" href="#spec-marketing" data-route="/spec/marketing" data-spec="marketing"><img class="ui-icon" src="/assets/icon/marketing-megaphone.svg" alt=""> Marketing</a>
+          <a class="chip" href="#spec-pardavimai" data-route="/spec/pardavimai" data-spec="pardavimai"><img class="ui-icon" src="/assets/icon/sales-handshake.svg" alt=""> Pardavimai</a>
+          <a class="chip" href="#spec-verslas" data-route="/spec/verslas" data-spec="verslas"><img class="ui-icon" src="/assets/icon/business-strategy.svg" alt=""> Verslas</a>
+          <a class="chip" href="#spec-finansai" data-route="/spec/finansai" data-spec="finansai"><img class="ui-icon" src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
+          <a class="chip" href="#spec-keliones" data-route="/spec/keliones" data-spec="keliones"><img class="ui-icon" src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
+          <a class="chip" href="#spec-renginiai" data-route="/spec/renginiai" data-spec="renginiai"><img class="ui-icon" src="/assets/icon/event-planning.svg" alt=""> Renginiai</a>
+          <a class="chip" href="/spec/goal.html" data-route="/spec/goal.html" data-spec="goal"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
+          <a class="chip" href="#spec-teise" data-route="/spec/teisininkas" data-spec="teisininkas"><img class="ui-icon" src="/assets/icon/legal-contract.svg" alt=""> Teisininkas</a>
+          <a class="chip" href="#spec-psichologas" data-route="/spec/psichologas" data-spec="psichologas"><img class="ui-icon" src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
         </div>
       </section>
 
@@ -317,9 +291,6 @@
         <div class="control-group" id="historyList"></div>
       </section>
     </aside>
-
-    <!-- 🔳 mobilus užtemdymas (naudojamas JS) -->
-    <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true"></div>
 
     <!-- ===== MAIN ===== -->
     <main class="main">
@@ -396,16 +367,15 @@
   </section>
 
   <!-- ===== AUTH popup (CSS-only) ===== -->
-  <section class="popup" id="auth" aria-modal="true" role="dialog">
+  <section class="popup" id="loginModalOverlay" aria-modal="true" role="dialog">
     <div class="popup-body">
       <header class="popup-head">
         <h2><img class="ui-icon" src="/assets/icon/user.svg" alt=""> Prisijungti</h2>
-        <a class="popup-close" href="#" aria-label="Uždaryti"><img class="ui-icon" src="/assets/icon/nav-close.svg" alt=""></a>
+        <a class="popup-close" href="#" aria-label="Uždaryti" id="closeLoginModal"><img class="ui-icon" src="/assets/icon/nav-close.svg" alt=""></a>
       </header>
       <div class="popup-content" style="display:grid;gap:12px">
-        <a class="btn" href="/auth/login"><img class="ui-icon" src="/assets/icon/nav-login.svg" alt=""> Prisijungti el. paštu</a>
-        <a class="btn" href="/auth/register"><img class="ui-icon" src="/assets/icon/nav-user-add.svg" alt=""> Registruotis</a>
-        <a class="btn" href="/auth/google"><img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti su Google</a>
+        <a class="btn" id="loginSubmitBtn" href="#"><img class="ui-icon" src="/assets/icon/nav-login.svg" alt=""> Prisijungti el. paštu</a>
+        <a class="btn" id="googleLoginBtn" href="#"><img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti su Google</a>
 
         <div class="mini-title">Tema ir kalba</div>
         <div style="display:flex;gap:8px">
@@ -418,7 +388,7 @@
             <option value="en">EN</option>
           </select>
         </div>
-        <p style="color:#9aa0a8;font-size:12px">Pastaba: Google prisijungimas – nuoroda į backend maršrutą.</p>
+        <p style="color:#9aa0a8;font-size:12px">Pastaba: mygtukai demo režimu – backend prisijungimo nenaudojam.</p>
       </div>
     </div>
   </section>
@@ -430,9 +400,9 @@
       const logo = document.getElementById('brandLogo');
       const sidebar = document.getElementById('sidebar');
       const btnMobile = document.getElementById('btnMobile');
-      const overlay = document.getElementById('mobileOverlay');
       const selTheme = document.getElementById('selTheme');
       const selThemeAuth = document.getElementById('selThemeAuth');
+      const mobileOverlay = document.getElementById('mobileOverlay');
 
       function updateLogo(){
         const isDark = (root.getAttribute('data-theme') === 'dark');
@@ -447,21 +417,21 @@
         root.setAttribute('data-theme', e.target.value); updateLogo();
       });
 
-      // Mobilus meniu tik jei dar nepakrautas pagrindinis klientas (kad nebūtų dvigubo toggle)
-      if (!window.PauleMain && btnMobile) {
-        btnMobile.addEventListener('click', ()=>{
-          sidebar.classList.toggle('open');
-          overlay && overlay.classList.toggle('active');
-        });
-      }
-      overlay && overlay.addEventListener('click', ()=>{
+      btnMobile && btnMobile.addEventListener('click', ()=>{
+        sidebar.classList.toggle('open');
+        if (mobileOverlay) {
+          const open = sidebar.classList.contains('open');
+          mobileOverlay.style.display = open ? 'block' : 'none';
+        }
+      });
+      mobileOverlay && mobileOverlay.addEventListener('click', ()=>{
         sidebar.classList.remove('open');
-        overlay.classList.remove('active');
+        mobileOverlay.style.display = 'none';
       });
     })();
   </script>
 
-  <!-- Tavo programinė logika – skaitys window.PAULE_CONFIG -->
+  <!-- Tavo programinė logika – skaito window.PAULE_CONFIG -->
   <script src="/assets/js/paule-ui.js" defer></script>
 </body>
 </html>
