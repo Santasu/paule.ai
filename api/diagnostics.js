@@ -1,31 +1,29 @@
-// api/diagnostics.js  (CommonJS)
-const { snapshot, ALLOWED_ORIGIN } = require("../lib/env");
+const getEnv = require('./_lib/env');
 
-// Paprasta CORS kontrole, jei reikia
-function setCors(res) {
-  res.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGIN || "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-}
+module.exports = (req, res) => {
+  const env = getEnv();
+  const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
+  const proto = (req.headers['x-forwarded-proto'] || 'https');
 
-module.exports = async (req, res) => {
-  try {
-    if (req.method === "OPTIONS") {
-      setCors(res); return res.status(200).end();
-    }
-    setCors(res);
+  const baseA = `${proto}://${host}/api/paule/v1`;
+  const baseW = `${proto}://${host}/wp-json/paule/v1`;
 
-    // NEGRĄŽINAME tikrų rakto reikšmių, tik true/false:
-    const env = snapshot();
-
-    // minimalus „gyvybės“ atsakymas
-    res.status(200).json({
-      ok: true,
-      runtime: "node",
-      node: process.version,
-      env
-    });
-  } catch (e) {
-    res.status(500).json({ ok: false, error: String(e && e.message || e) });
-  }
+  res.setHeader('Content-Type', 'application/json');
+  res.status(200).end(JSON.stringify({
+    ok: true,
+    message: "Paule diagnostics",
+    endpoints: {
+      models_api: [`${baseA}/models`, `${baseW}/models`],
+      stream_api: [`${baseA}/stream`, `${baseW}/stream`],
+      media: {
+        flux_create: [`${baseA}/flux/create`, `${baseW}/flux/create`],
+        comic_create:[`${baseA}/comic/create`,`${baseW}/comic/create`],
+        runway_image:[`${baseA}/runway/image`,`${baseW}/runway/image`],
+        runway_status:[`${baseA}/runway/status`,`${baseW}/runway/status`],
+        music_create:[`${baseA}/music/create`,`${baseW}/music/create`],
+        music_status:[`${baseA}/music/status`,`${baseW}/music/status`]
+      }
+    },
+    env_present: env._mask
+  }));
 };
