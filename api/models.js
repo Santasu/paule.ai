@@ -19,4 +19,4 @@ async function handler(_req, res) {
   });
 }
 
-module.exports = withCORS(handler);
+module.exports = withCORS(handler); 
