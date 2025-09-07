@@ -1,13 +1,12 @@
 {
-  "name": "paule-ai",
+  "name": "paule.ai",
   "private": true,
   "version": "1.0.0",
   "description": "Paule on Vercel",
   "engines": { "node": "22.x" },
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo \"no build step\"",
-    "start": "node server.js"
+    "build": "echo \"no build step\""
   },
   "license": "UNLICENSED"
 }
