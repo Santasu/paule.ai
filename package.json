@@ -1,16 +1,16 @@
 {
   "name": "paule-ai",
-  "private": true,
   "version": "1.0.0",
-  "description": "Paule AI — static + serverless (Vercel)",
+  "description": "Paule AI – Vercel AI Chat",
+  "main": "index.js",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo \"no build step\"",
-    "start": "vercel dev"
+    "build": "echo 'Static build – nothing to do'"
   },
+  "dependencies": {},
   "engines": {
-    "node": "22.x"
-  }
+    "node": "20.x"
+  },
+  "type": "commonjs"
 }
 
 
