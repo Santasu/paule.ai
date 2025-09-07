@@ -1,4 +1,4 @@
-// Bendros pagalbinės funkcijos (Vercel Serverless, Node.js)
+// Bendros pagalbinės funkcijos (Vercel Serverless, Node.js) 
 // .env kintamieji (į Vercel Project Settings → Environment Variables):
 // OPENAI_API_KEY, TOGETHER_API_KEY, ANTHROPIC_API_KEY, GOOGLE_API_KEY, XAI_API_KEY, DEEPSEEK_API_KEY
 // RUNWAY_API_KEY, RUNWAY_API_BASE (opt, default https://api.runwayml.com/v1)
