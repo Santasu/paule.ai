@@ -1,13 +1,31 @@
-const { env, sendJSON } = require("./_utils");
+// api/diagnostics.js  (CommonJS)
+const { snapshot, ALLOWED_ORIGIN } = require("../lib/env");
 
-module.exports = async (_req, res) => {
-  // Lengva diagnostika – tik raktų buvimas (be brangių ping’ų)
-  sendJSON(res, 200, {
-    ok: true,
-    services: {
-      together: { ok: !!env.TOGETHER },
-      suno:     { ok: !!env.SUNO_KEY },
-      runway:   { ok: !!env.RUNWAY_KEY }
+// Paprasta CORS kontrole, jei reikia
+function setCors(res) {
+  res.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGIN || "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+}
+
+module.exports = async (req, res) => {
+  try {
+    if (req.method === "OPTIONS") {
+      setCors(res); return res.status(200).end();
     }
-  }); 
+    setCors(res);
+
+    // NEGRĄŽINAME tikrų rakto reikšmių, tik true/false:
+    const env = snapshot();
+
+    // minimalus „gyvybės“ atsakymas
+    res.status(200).json({
+      ok: true,
+      runtime: "node",
+      node: process.version,
+      env
+    });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e && e.message || e) });
+  }
 };
