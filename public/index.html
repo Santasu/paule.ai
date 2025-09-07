@@ -10,9 +10,9 @@
   <script id="paule-config">
     (function () {
       var htmlAttr = (document.documentElement.getAttribute('data-backend') || '').trim().toLowerCase();
-      var MODE = htmlAttr === 'vercel' ? 'vercel' : 'wp'; // paliekam jungiklį, bet default mūsų atveju "vercel"
+      var MODE = htmlAttr === 'vercel' ? 'vercel' : 'wp';
 
-      // 👉 Plokščias API be /paule/v1
+      // 👉 Vercel'e – plokščias /api
       var restBase = MODE === 'vercel' ? '/api' : '/wp-json/paule/v1';
 
       var routes = {
@@ -21,39 +21,34 @@
         models:        restBase + '/models',
         diagnostics:   restBase + '/diagnostics',
 
-        // vaizdai
         comicCreate:   restBase + '/comic/create',      // alias į flux
         fluxCreate:    restBase + '/flux/create',
         triptych:      restBase + '/image/triptych-series',
 
-        // (jei ateity darysi personas/projektus — palikau kaip rezervą)
         personaCreate: restBase + '/persona/create',
         personaList:   restBase + '/persona/list',
         personaSeries: restBase + '/persona/generate_series',
 
-        // muzika
         musicCreate:   restBase + '/music/create',
-        musicStatus:   restBase + '/music/status',      // ?task=...
+        musicStatus:   restBase + '/music/status',
         musicCallback: restBase + '/music/callback',
 
-        // runway
         runwayImage:   restBase + '/runway/image',
-        runwayStatus:  restBase + '/runway/status',     // ?task_id=...
+        runwayStatus:  restBase + '/runway/status',
         runwayVideoUpscale:         restBase + '/runway/video-upscale',
         runwayCharacterPerformance: restBase + '/runway/character-performance',
         runwayVideoToVideo:         restBase + '/runway/video-to-video',
         runwayImageToVideo:         restBase + '/runway/image-to-video',
         runwayTextVideo:            restBase + '/runway/text-video',
         runwayTextVideoPipeline:    restBase + '/runway/text-video-pipeline',
-        runwayPipelineStatus:       restBase + '/runway/pipeline-status', // ?pipeline_id=...
+        runwayPipelineStatus:       restBase + '/runway/pipeline-status',
         runwayPing:                 restBase + '/runway/ping'
       };
 
       var CFG = {
-        mode: MODE,                      // 'wp' | 'vercel'
+        mode: MODE,
         restBase: routes.base,
         restStream: routes.stream,
-        // kai kurie klientai naudoja /stream-sse – čia leidžiam suderinamumą
         restStreamSSE: routes.stream + '?mode=sse',
         sseDefault: 1,
 
@@ -66,7 +61,7 @@
       };
 
       window.PAULE_CONFIG = CFG;
-      window.AUGAM_CONFIG = CFG; // legacy suderinamumas
+      window.AUGAM_CONFIG = CFG;
 
       try {
         Object.defineProperty(window, 'API_BASE', {
@@ -75,18 +70,18 @@
           set: function(_){} // ignoruojam
         });
       } catch(e) {}
-      window.__SET_API_BASE__ = function (v) { /* jei reikėtų vėliau keisti */ };
+      window.__SET_API_BASE__ = function (v) { /* optional */ };
     })();
   </script>
 
-  <!-- ✅ PAULE bridge: jei kur nors dar liko /augam/v1 ar /paule/v1, perrašom į /api -->
+  <!-- ✅ Bridge: /wp-json/*/v1 ir /paule/v1 /augam/v1 → /api -->
   <script id="paule-bridge">
     (function(){
       'use strict';
       try {
         var restBase = (window.PAULE_CONFIG && window.PAULE_CONFIG.restBase) || '/api';
 
-        // EventSource
+        // EventSource (SSE)
         if (window.EventSource) {
           var OrigES = window.EventSource;
           window.EventSource = function(url, opts){
@@ -99,7 +94,8 @@
           };
           window.EventSource.prototype = OrigES.prototype;
         }
-        // fetch
+
+        // fetch()
         if (window.fetch) {
           var origFetch = window.fetch;
           window.fetch = function(input, init){
@@ -110,8 +106,7 @@
                   .replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/, '/api$1')
                   .replace(/\/(?:augam|paule)\/v1(\/|$)/, '/api$1');
                 if (nu !== u) {
-                  if (typeof input === 'string') { input = nu; }
-                  else { input = new Request(nu, input); }
+                  input = (typeof input === 'string') ? nu : new Request(nu, input);
                 }
               }
             } catch(_){}
@@ -126,7 +121,7 @@
 </head>
 <body>
 
-  <!-- Mobilus overlay (JS tikisi #mobileOverlay) -->
+  <!-- Mobilus overlay (uždaro šoninę) -->
   <div id="mobileOverlay" class="mobile-overlay" style="display:none;"></div>
 
   <!-- ===== TOPBAR ===== -->
@@ -135,10 +130,10 @@
       <img id="brandLogo" class="brand-icon" src="/assets/icon/paule-logo.webp" alt="paule">
     </a>
 
-    <!-- Modelių juosta (JS ieško #modelList) -->
-    <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
-      <button class="model-pill active" data-model="augam-auto" aria-pressed="true">
-        <img class="ui-icon" src="/assets/icon/ai-auto.svg" alt=""> Auto
+    <!-- Paliekam istorinį ID #modelsBar, kad seni skriptai rastų -->
+    <nav class="models-in-topbar" aria-label="Modeliai" id="modelsBar">
+      <button class="model-pill active" data-model="auto" aria-pressed="true">
+        <img class="ui-icon" src="/assets/icon/ai-auto.svg" alt=""> Paule
       </button>
       <button class="model-pill" data-model="chatgpt">
         <img class="ui-icon" src="/assets/icon/chatgpt.svg" alt=""> ChatGPT
@@ -220,6 +215,7 @@
   <div class="layout">
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
+
       <!-- AI specialistai -->
       <section class="side-section">
         <div class="side-title">AI specialistai</div>
@@ -296,15 +292,37 @@
     <main class="main">
       <div class="chat-area" id="chatArea">
 
-        <!-- Hero -->
+        <!-- Hero – NAUJAS -->
         <section class="welcome" id="welcome">
-          <h1 class="hero-title">Sveiki atvykę į <span>paule</span></h1>
-          <p>Pradėkite naują pokalbį arba pasirinkite modelį viršuje.</p>
+          <h1 class="hero-title">KAIP GALIU PADĖTI ŠIANDIEN?</h1>
+          <p>Pasirinkite AI specialistą kairėje arba pradėkite pokalbį žemiau. Viršuje galite rinktis vieną ar kelis modelius. 👇</p>
 
-          <div class="welcome-actions">
-            <a class="welcome-btn" href="#spec-sefas"><img class="ui-icon" src="/assets/icon/chef-healthy-bowl.svg" alt=""> Kulinarijos patarimai</a>
-            <a class="welcome-btn" href="#spec-verslas"><img class="ui-icon" src="/assets/icon/business-finance.svg" alt=""> Verslo strategija</a>
-            <a class="welcome-btn" href="/spec/goal.html"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
+          <!-- 6 centrinės kortelės -->
+          <div class="welcome-grid">
+            <a class="welcome-card" href="#" data-action="song">
+              <img src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?q=80&w=800" alt="">
+              <b>Sukurti dainą</b><span>Žodžiai + muzika</span>
+            </a>
+            <a class="welcome-card" href="#" data-action="song-photo">
+              <img src="https://images.unsplash.com/photo-1461783470468-78df4f0b1f0f?q=80&w=800" alt="">
+              <b>Daina iš foto</b><span>Įkvėpta vaizdo</span>
+            </a>
+            <a class="welcome-card" href="#" data-action="photo">
+              <img src="https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=800" alt="">
+              <b>Sukurti nuotrauką</b><span>Produkto ar viršelio</span>
+            </a>
+            <a class="welcome-card" href="#" data-action="mindmap">
+              <img src="https://images.unsplash.com/photo-1516387938699-a93567ec168e?q=80&w=800" alt="">
+              <b>Minčių žemėlapis</b><span>Idėjų struktūra</span>
+            </a>
+            <a class="welcome-card" href="/spec/goal.html">
+              <img src="https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?q=80&w=800" alt="">
+              <b>Įgyvendinti tikslus</b><span>UGS sistema</span>
+            </a>
+            <a class="welcome-card" href="#" data-action="video">
+              <img src="https://images.unsplash.com/photo-1511782323680-7f607c7f2324?q=80&w=800" alt="">
+              <b>Sukurti video</b><span>Runway pipeline</span>
+            </a>
           </div>
 
           <div class="community-strip">
@@ -314,20 +332,7 @@
           </div>
         </section>
 
-        <!-- Pavyzdinė žinutė -->
-        <article class="message">
-          <div class="avatar"><img class="ui-icon" src="/assets/icon/ai.svg" alt=""></div>
-          <div class="bubble" data-model="chatgpt">
-            <div class="bubble-card">
-              <div class="msg-content">
-                Sveiki! Kuo galiu padėti? Čia atsiras atsakymai. Šis blokas riboto aukščio ir scrollinasi, kad neišplėstų ekrano. … (turinys) …
-              </div>
-              <div class="msg-meta">
-                <span class="model-tag">ChatGPT</span>
-              </div>
-            </div>
-          </div>
-        </article>
+        <!-- (demo burbulo neberodome) -->
 
       </div>
     </main>
@@ -350,6 +355,8 @@
       <div class="tool" data-tool="file"><img class="ui-icon" src="/assets/icon/tool-file.svg" alt=""> Failas</div>
       <div class="tool" data-tool="song"><img class="ui-icon" src="/assets/icon/tool-music.svg" alt=""> Sukurti dainą</div>
       <div class="tool" data-tool="video"><img class="ui-icon" src="/assets/icon/video-plus.svg" alt=""> Sukurti video</div>
+      <!-- Naujas įrankis -->
+      <div class="tool" data-tool="goals"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų sistema</div>
     </div>
   </div>
 
@@ -393,7 +400,7 @@
     </div>
   </section>
 
-  <!-- ===== Minimal JS (tema ↔ logotipas, mobilus meniu) ===== -->
+  <!-- ===== Minimal JS (tema ↔ logotipas, mobilus, enter, kortelės) ===== -->
   <script>
     (function(){
       const root = document.documentElement;
@@ -403,6 +410,8 @@
       const selTheme = document.getElementById('selTheme');
       const selThemeAuth = document.getElementById('selThemeAuth');
       const mobileOverlay = document.getElementById('mobileOverlay');
+      const msgInput = document.getElementById('messageInput');
+      const sendBtn = document.getElementById('sendBtn');
 
       function updateLogo(){
         const isDark = (root.getAttribute('data-theme') === 'dark');
@@ -417,6 +426,7 @@
         root.setAttribute('data-theme', e.target.value); updateLogo();
       });
 
+      // Mobilus meniu
       btnMobile && btnMobile.addEventListener('click', ()=>{
         sidebar.classList.toggle('open');
         if (mobileOverlay) {
@@ -427,6 +437,39 @@
       mobileOverlay && mobileOverlay.addEventListener('click', ()=>{
         sidebar.classList.remove('open');
         mobileOverlay.style.display = 'none';
+      });
+
+      // Enter → siųsti
+      if (msgInput) {
+        msgInput.addEventListener('keydown', function(e){
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            // Jei yra globali sendMessage – kviečiam; jei ne – imituojam mygtuko paspaudimą
+            if (window.sendMessage) { window.sendMessage(); }
+            else if (sendBtn) { sendBtn.click(); }
+          }
+        });
+      }
+
+      // 6 „hero“ kortelių click'ai
+      function bindWelcomeCards(){
+        var arr = document.querySelectorAll('.welcome-grid .welcome-card');
+        for (var i = 0; i < arr.length; i++) {
+          arr[i].addEventListener('click', function (e) {
+            var a = e.currentTarget.getAttribute('data-action');
+            if (a === 'song') { e.preventDefault(); document.querySelector('.tool[data-tool="song"]')?.click(); }
+            else if (a === 'song-photo') { e.preventDefault(); document.querySelector('.tool[data-tool="song"]')?.click(); }
+            else if (a === 'photo') { e.preventDefault(); document.querySelector('.tool[data-tool="photo"]')?.click(); }
+            else if (a === 'mindmap') { e.preventDefault(); document.querySelector('.tool[data-tool="mindmap"]')?.click(); }
+            else if (a === 'video') { e.preventDefault(); document.querySelector('.tool[data-tool="video"]')?.click(); }
+          });
+        }
+      }
+      bindWelcomeCards();
+
+      // Įrankis „Tikslų sistema“
+      document.querySelector('.tool[data-tool="goals"]')?.addEventListener('click', function(){
+        window.open('/spec/goal.html', '_blank');
       });
     })();
   </script>
