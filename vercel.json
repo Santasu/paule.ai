@@ -1,15 +1,11 @@
 {
   "version": 2,
   "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs22.x"
-    }
+    "api/**/*.js": { "runtime": "nodejs22.x" }
   },
   "rewrites": [
-    { "source": "/api/paule/v1/models",        "destination": "/api/models.js" },
-    { "source": "/api/paule/v1/diagnostics",   "destination": "/api/diagnostics.js" },
-    { "source": "/api/paule/v1/stream",        "destination": "/api/stream.js" },
-    { "source": "/api/paule/v1/admin/status",  "destination": "/api/admin/status.js" },
-    { "source": "/api/paule/v1/admin/set",     "destination": "/api/admin/set-secret.js" }
+    { "source": "/api/paule/v1/models",      "destination": "/api/models.js" },
+    { "source": "/api/paule/v1/diagnostics", "destination": "/api/diagnostics.js" },
+    { "source": "/api/paule/v1/stream",      "destination": "/api/stream.js" }
   ]
 }
