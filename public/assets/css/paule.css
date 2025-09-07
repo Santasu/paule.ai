@@ -308,3 +308,76 @@ a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.too
 .library-grid .lib-card img{width:30px;height:30px}
 .hero-title{margin-top:6px}
 
+/* ---------- Top actions: vienodas dydis + be pabraukimo ---------- */
+.top-actions .btn,
+.top-actions a.btn,
+.top-actions a.btn:link,
+.top-actions a.btn:visited{
+  text-decoration: none;
+  font-size: 12.5px;         /* tokia pati visiems trims */
+  line-height: 1;
+  padding: 8px 12px;         /* kad vizualiai sutaptų aukštis */
+}
+
+/* jeigu kur nors anchor paveldi pabraukimą, išjunk tik .btn kontekste */
+.btn { text-decoration: none; }
+
+/* ---------- HERO: 6 kortelės gražioje gardelėje ---------- */
+.welcome { padding-top: 8px; }
+.welcome-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap:14px;
+  width:min(1100px, 98%);
+  margin:12px auto 4px;
+}
+.welcome-card{
+  position:relative;
+  display:block;
+  border-radius:16px;
+  overflow:hidden;
+  background:var(--bg-secondary);
+  box-shadow:var(--neu-raise);
+  text-decoration:none;
+  transform:translateZ(0); /* geresnė animacija */
+}
+.welcome-card img{
+  width:100%;
+  height:160px;
+  object-fit:cover;
+  display:block;
+}
+.welcome-card::after{
+  content:"";
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0) 55%);
+  pointer-events:none;
+}
+.welcome-card b{
+  position:absolute; left:12px; bottom:22px;
+  color:#fff; font-size:15px; font-weight:800; letter-spacing:.2px;
+}
+.welcome-card span{
+  position:absolute; left:12px; bottom:8px;
+  color:#fff; font-size:12px; opacity:.95;
+}
+.welcome-card:hover{ transform:translateY(-2px); box-shadow:var(--neu-press); }
+
+/* Tamsiai temai — truputį ryškesnė plėvelė */
+[data-theme="dark"] .welcome-card::after{ background:linear-gradient(to top, rgba(0,0,0,.65), rgba(0,0,0,0) 60%); }
+
+/* ---------- Smulkūs pataisymai ---------- */
+/* Bendruomenės nuoroda viršuje tikrai be pabraukimo */
+.top-actions a { text-decoration: none; }
+
+/* Laikyk žemiau adaptaciją mobilui */
+@media (max-width: 900px){
+  .welcome-grid{ grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+  .welcome-card img{ height:150px; }
+}
+@media (max-width: 520px){
+  .welcome-grid{ grid-template-columns: 1fr; }
+  .welcome-card img{ height:180px; }
+}
+
+
