@@ -9,5 +9,5 @@ module.exports = async (_req, res) => {
       suno:     { ok: !!env.SUNO_KEY },
       runway:   { ok: !!env.RUNWAY_KEY }
     }
-  });
+  }); 
 };
