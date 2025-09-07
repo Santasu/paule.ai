@@ -1,3 +1,11 @@
 {
-  "engines": { "node": "22.x" }
+  "name": "paule-ai",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "dev": "vercel dev"
+  }
 }
