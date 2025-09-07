@@ -1,11 +1,20 @@
 {
   "version": 2,
-  "functions": {
-    "api/**/*.js": { "runtime": "nodejs22.x" }
-  },
-  "rewrites": [
-    { "source": "/api/paule/v1/models",      "destination": "/api/models.js" },
-    { "source": "/api/paule/v1/diagnostics", "destination": "/api/diagnostics.js" },
-    { "source": "/api/paule/v1/stream",      "destination": "/api/stream.js" }
+  "framework": null,
+  "builds": [
+    { "src": "api/**/*.js", "use": "@vercel/node" },
+    { "src": "public/**/*", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/wp-json/paule/v1/stream", "dest": "/api/stream.js" },
+    { "src": "/wp-json/paule/v1/models", "dest": "/api/models.js" },
+    { "src": "/wp-json/paule/v1/diagnostics", "dest": "/api/diagnostics.js" },
+    { "src": "/wp-json/paule/v1/flux/create", "dest": "/api/flux/create.js" },
+    { "src": "/wp-json/paule/v1/comic/create", "dest": "/api/comic/create.js" },
+    { "src": "/wp-json/paule/v1/runway/image", "dest": "/api/runway/image.js" },
+    { "src": "/wp-json/paule/v1/runway/status", "dest": "/api/runway/status.js" },
+    { "src": "/wp-json/paule/v1/music/create", "dest": "/api/music/create.js" },
+    { "src": "/wp-json/paule/v1/music/status", "dest": "/api/music/status.js" },
+    { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
