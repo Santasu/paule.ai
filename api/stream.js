@@ -1,61 +1,60 @@
-// GET -> SSE; POST -> once JSON. Čia ECHO stubas, kad galėtum patikrinti UI.
-
-function sse(res) {
-  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders?.();
-}
-
-function sendEvent(res, type, payload) {
-  if (type) res.write(`event: ${type}\n`);
-  res.write(`data: ${JSON.stringify(payload)}\n\n`);
-}
+// api/stream.js
+const { ENV } = require('./_utils/env');
 
 module.exports = async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const mode = (url.searchParams.get('mode') || req.body?.mode || '').toLowerCase();
+  res.setHeader('Content-Type','text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control','no-cache, no-transform');
+  res.setHeader('Connection','keep-alive');
 
-  if (req.method === 'GET' && mode !== 'once') {
-    // SSE
-    sse(res);
-    const chat_id = `chat_${Date.now()}`;
-    const message = url.searchParams.get('message') || 'Sveikas, Paule!';
-    const model = url.searchParams.get('models') || 'auto';
+  const url = new URL(req.url, 'http://localhost');
+  const message = (url.searchParams.get('message') || 'Labas').slice(0, 2000);
+  const model = (url.searchParams.get('model') || url.searchParams.get('models') || 'paule-ai');
 
-    sendEvent(res, 'start', { chat_id });
-    sendEvent(res, 'model_init', { model, panel: model, chat_id });
+  const chat_id = 'chat_' + Date.now();
+  const send = (event, data) => res.write(`event: ${event}\n` + `data: ${JSON.stringify(data)}\n\n`);
 
-    let i = 0;
-    const parts = [`Atsakymas apie: "${message}"`, " – viskas veikia ✅"];
-    const t = setInterval(() => {
-      if (i < parts.length) {
-        sendEvent(res, 'delta', { model, panel: model, text: parts[i] });
-        i++;
-      } else {
-        clearInterval(t);
-        sendEvent(res, 'answer', { model, panel: model, text: parts.join('') });
-        sendEvent(res, 'model_done', { model, panel: model });
-        sendEvent(res, 'done', { ok: true, chat_id });
-        res.end();
-      }
-    }, 350);
-    return;
-  }
+  send('start', { chat_id });
+  send('model_init', { model, panel:'auto', chat_id });
 
-  // POST mode=once
   try {
-    const body = typeof req.body === 'object' ? req.body : JSON.parse(req.body || '{}');
-    const txt = body.message || 'No message';
-    const model = body.models || body.model || 'auto';
-    res.setHeader('Content-Type', 'application/json');
-    res.status(200).end(JSON.stringify({
-      ok: true,
-      chat_id: `chat_${Date.now()}`,
-      answers: [{ model, text: `Atsakymas (once): ${txt}` }]
-    }));
+    let text = '';
+
+    // „Paule AI“ = Together Llama, jei turim raktą; kitaip – lokalus bandomasis ats.
+    if (ENV.TOGETHER && (model === 'paule-ai' || model === 'auto' || model.includes('llama'))) {
+      const togetherModel = 'meta-llama/Llama-3.3-70B-Instruct-Turbo'; // greitas/pigus default
+      const r = await fetch('https://api.together.xyz/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.TOGETHER_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: togetherModel,
+          messages: [
+            { role:'system', content:'Tu esi „Paule AI“ (Lietuvoje sukurtas, 2025-05-02). Atsakinėk trumpai ir aiškiai.' },
+            { role:'user', content: message }
+          ],
+          temperature: 0.7,
+          max_tokens: 400
+        })
+      });
+      const j = await r.json();
+      text = j?.choices?.[0]?.message?.content || '';
+      if (!text) throw new Error('Together API grąžino tuščią atsakymą');
+    } else {
+      text = `Atsakymas apie: "${message}" – viskas veikia ✅`;
+    }
+
+    // „Srautink“ keliais gabaliukais
+    for (const part of (text.match(/.{1,120}/g) || [text])) {
+      send('delta', { model, panel:'auto', text: part });
+    }
+    send('answer', { model, panel:'auto', text });
+    send('model_done', { model, panel:'auto' });
+    send('done', { ok:true, chat_id });
+    res.end();
   } catch (e) {
-    res.status(400).end(JSON.stringify({ ok:false, error: e.message }));
+    send('error', { ok:false, error: e.message });
+    res.end();
   }
 };
-
