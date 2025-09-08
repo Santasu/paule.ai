@@ -602,3 +602,36 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 [data-theme="dark"] .bubble-card{ box-shadow:0 22px 60px rgba(0,0,0,.55), 0 4px 16px rgba(0,0,0,.35); }
 
 /* ========================================================================== */
+
+/* =================== PAULE: APPEND PATCH (įklijuok į patį galą) =================== */
+
+/* 1) Logo – fiksuotas dydis abiem temoms (vienodas) */
+.topbar .brand { min-width: 2.7cm }
+.topbar .brand-icon{ width:2.7cm !important; height:auto !important; display:block !important; object-fit:contain }
+.topbar img, .topbar svg{ max-height: calc(var(--topbar-h) - 16px) }
+
+/* 2) NEBALINTI NUOTRAUKŲ tamsioje temoje (baliname tik .ui-icon) */
+:root{ --ui-icon-filter:none }
+[data-theme="dark"] .ui-icon{ filter: invert(1) brightness(1.1) contrast(1.05) }
+[data-theme="dark"] img:not(.ui-icon){ filter:none !important }              /* guard globaliai */
+.lib-card img, .welcome-card img, .library-grid img, .thumb img{ filter:none !important }
+
+/* 3) Kairės miniatiūros – didesnės ir aiškiai centruotos (jei dar kur mažos) */
+.library-grid.thumbs .lib-card img{ width:100% !important; height:96px !important; object-fit:cover; object-position:center; border-radius:12px }
+
+/* 4) Chat vieta – 3 cm nuo viršaus (jei buvo užrašyta kitaip) */
+#chatArea{ padding-top: calc(3cm + 6px) !important }
+
+/* 5) Žinučių tekstas ryškesnis; vartotojo burbulas – maksimaliai į dešinę */
+.msg-content{ color: var(--text-primary) !important }
+.message.user{ flex-direction:row-reverse }
+.message.user .bubble{ margin-left:auto }          /* prispaudimas prie krašto */
+
+/* 6) Tema mygtukas – mobile paslepiam (tema – mobile meniu viduje) */
+@media (max-width:1024px){
+  #btnTheme, .theme-anchor{ display:none !important }
+}
+
+/* 7) Modelių juosta – saugus plotis centre, kad neliptų ant hero */
+.models-in-topbar{ max-width: min(1100px, calc(100vw - 2.7cm - 360px)); margin-inline:auto }
+
