@@ -1,10 +1,85 @@
+
 <!DOCTYPE html>
 <html lang="lt" data-theme="light" data-backend="vercel">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Paule – Premium AI Chat</title>
+
+  <!-- Pagrindinis CSS -->
   <link rel="stylesheet" href="/assets/css/paule.css">
+
+  <!-- ===== PAULE: CSS PATCH (mobile/header/chat) – dedamas po pagr. CSS ===== -->
+  <style>
+  /* Vienodas didesnis logotipas (PC light buvo mažesnis) */
+  :root { --logo-w: 3cm; --topbar-h: 66px; }
+  .topbar .brand { min-width: var(--logo-w); }
+  .topbar .brand-icon{ width:var(--logo-w)!important; height:auto!important; object-fit:contain; display:block!important; }
+  .topbar img, .topbar svg{ max-height: calc(var(--topbar-h) - 16px); }
+
+  /* Tamsioje temoje NEDAŽOME nuotraukų, baliname tik UI ikonėles */
+  :root{ --ui-icon-filter:none }
+  [data-theme="dark"] .ui-icon{ filter: invert(1) brightness(1.08) contrast(1.05); }
+  [data-theme="dark"] img:not(.ui-icon){ filter:none !important; }
+
+  /* Kairės bibliotekos miniatiūros – didesnės, centruotos */
+  .library-grid.thumbs .lib-card img{
+    width:100% !important; height:96px !important; object-fit:cover; object-position:center; border-radius:12px;
+  }
+
+  /* Modelių juosta – visada aktyvi, horizontaliai scroll’inama */
+  .models-in-topbar{ gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+  /* Topbar – sluoksniavimas */
+  .topbar{ position:sticky; top:0; left:0; right:0; z-index:1000; }
+
+  /* Chat vieta – pakankamas tarpas viršuje; mažesniuose ekranuose – mažinam */
+  #chatArea{ padding-top: calc(3cm + 6px) !important; z-index:1; }
+  @media (max-height: 750px){ #chatArea{ padding-top: 24px !important; } }
+
+  /* Vartotojo burbulas – tik burbulas prie dešinio krašto */
+  .message.user{ flex-direction:row-reverse; }
+  .message.user .bubble{ margin-left:auto; }
+
+  /* Bottom input visada virš turinio (bet žemiau stalčiaus) */
+  .bottom-section{ z-index:1100; padding-bottom:max(10px, env(safe-area-inset-bottom)); }
+
+  /* MOBILE: 2 eilučių header – 1) logo+actions, 2) modeliai; bendruomenė/tema slepiami */
+  @media (max-width: 768px){
+    .topbar{
+      grid-template-areas:
+        "brand actions"
+        "models models";
+      grid-template-columns:auto 1fr;
+      height:auto; padding-bottom:10px; row-gap:8px;
+    }
+    .brand{ grid-area:brand }
+    .models-in-topbar{ grid-area:models; display:flex!important; max-width:100%; }
+    .top-actions{ grid-area:actions; justify-content:flex-end }
+    .top-actions [data-nav="community"], .theme-anchor{ display:none!important; }
+  }
+
+  /* MOBILE: stalčius (sidebar) – tikras off-canvas su overlay */
+  @media (max-width:1024px){
+    .layout{ grid-template-columns:0 1fr !important; }
+    .sidebar{
+      display:block!important;
+      position:fixed; top:var(--topbar-h); left:-320px;
+      width:300px; height:calc(100vh - var(--topbar-h));
+      background:var(--bg-primary); border-right:1px solid var(--border);
+      box-shadow:0 18px 60px rgba(0,0,0,.14); z-index:1350;
+      transition:left .25s ease; overflow:auto;
+    }
+    .sidebar.open{ left:0; }
+    .drawer-overlay{
+      position:fixed; inset:0; background:rgba(0,0,0,.35);
+      opacity:0; visibility:hidden; pointer-events:none; transition:.2s; z-index:1200;
+    }
+    .drawer-overlay.show{ opacity:1; visibility:visible; pointer-events:auto; }
+    .mobile-only{ display:block!important; }
+    .bottom-section{ left:var(--gutter)!important; right:var(--gutter)!important; }
+  }
+  </style>
 
   <!-- 🔧 PAULE konfigūracija -->
   <script>
@@ -123,7 +198,7 @@
     <!-- ===== SIDEBAR (naudojamas kaip stalčius mobile) ===== -->
     <aside class="sidebar" id="sidebar">
       <!-- „Bendruomenė“ ir Tema – MOBILE tik šitas blokas matomas -->
-      <section class="side-section mobile-only">
+      <section class="side-section mobile-only" style="display:none">
         <a class="project-item" href="/community"><img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė</a>
         <div class="control-group" style="display:flex;gap:8px;margin-top:8px">
           <button class="chip" data-set-theme="light"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Šviesi</button>
@@ -293,15 +368,15 @@
       const themeDropdown=document.getElementById('themeDropdown');
       const logo=document.getElementById('brandLogo');
 
+      /* LOGO pagal temą (reaguoja ir po „Naujas pokalbis“) */
       function setLogoByTheme(){
         const dark = root.getAttribute('data-theme') === 'dark';
         logo.src = dark ? '/assets/icon/paule-logo-dark.webp' : '/assets/icon/paule-logo.webp';
       }
       setLogoByTheme();
-      // Reaguojame į tema keitimą per MutationObserver (kad „Naujas pokalbis“ nekeistų)
       new MutationObserver(setLogoByTheme).observe(root,{attributes:true,attributeFilter:['data-theme']});
 
-      // Tema dropdown (PC)
+      /* Tema dropdown (PC) */
       btnTheme?.addEventListener('click', (e)=>{ e.preventDefault(); themeDropdown?.classList.toggle('open'); loginDropdown?.classList.remove('open'); });
       themeDropdown?.addEventListener('click', (e)=>{
         const b=e.target.closest('[data-theme]'); if(!b) return;
@@ -309,19 +384,19 @@
         themeDropdown.classList.remove('open');
       });
 
-      // Tema mygtukai MOBILE stalčiuje
+      /* Tema mygtukai MOBILE stalčiuje */
       sidebar.addEventListener('click', (e)=>{
         const t=e.target.closest('[data-set-theme]'); if(!t) return;
         root.setAttribute('data-theme', t.getAttribute('data-set-theme')); setLogoByTheme();
       });
 
-      // Login dropdown
+      /* Login dropdown */
       btnLogin?.addEventListener('click', (e)=>{ e.preventDefault(); loginDropdown?.classList.toggle('open'); themeDropdown?.classList.remove('open'); });
       document.addEventListener('click', (e)=>{
         if(!e.target.closest('.login-anchor')){ loginDropdown?.classList.remove('open'); themeDropdown?.classList.remove('open'); }
       });
 
-      // Mobile stalčius
+      /* Mobile stalčius */
       function openDrawer(){
         sidebar.classList.add('open'); overlay.classList.add('show');
         document.body.style.overflow='hidden';
@@ -333,25 +408,45 @@
       btnMobile?.addEventListener('click', openDrawer);
       overlay?.addEventListener('click', closeDrawer);
 
-      // Enter → siųsti
+      /* Enter → siųsti */
       msgInput?.addEventListener('keydown', function(e){
         if (e.key==='Enter' && !e.shiftKey){
           e.preventDefault();
-          if(window.sendMessage) window.sendMessage(); else sendBtn?.click();
+          sendBtn?.click();
         }
       });
 
-      // Hero kortelės -> įrankiai
+      /* Siųsti: uždarom stalčių ir darom fallback, jei nėra window.sendMessage */
+      sendBtn?.addEventListener('click', ()=>{
+        if(sidebar.classList.contains('open')) closeDrawer();
+
+        if(typeof window.sendMessage === 'function'){ window.sendMessage(); return; }
+
+        // Fallback – kad telefone UI „neužlinktų“
+        const val=(msgInput?.value||'').trim(); if(!val) return;
+        const area=document.getElementById('chatArea');
+        const wrap=document.createElement('div'); wrap.className='message user';
+        wrap.innerHTML = `
+          <div class="avatar"><img class="ui-icon" src="/assets/icon/user.svg" alt=""></div>
+          <div class="bubble" data-model="auto">
+            <div class="bubble-card">
+              <div class="msg-content">${val.replace(/</g,'&lt;')}</div>
+              <div class="msg-meta"><span class="model-tag">Jūs</span><span>just now</span></div>
+            </div>
+          </div>`;
+        area?.appendChild(wrap);
+        msgInput.value='';
+        area?.scrollTo({top: area.scrollHeight, behavior:'smooth'});
+      });
+
+      /* Hero kortelės -> įrankiai */
       document.querySelectorAll('.welcome-grid .welcome-card').forEach(card=>{
         card.addEventListener('click', e=>{
           const a=card.getAttribute('data-action'); e.preventDefault();
-          const map={song:'[data-tool="song"]', 'song-photo':'[data-tool="song"]', photo:'[data-tool="photo"]', mindmap:'[data-tool="mindmap"]', video:'[data-tool="video"]'};
+          const map={song:'[data-tool="song"]','song-photo':'[data-tool="song"]',photo:'[data-tool="photo"]',mindmap:'[data-tool="mindmap"]',video:'[data-tool="video"]'};
           const sel=map[a]; if(sel) document.querySelector(sel)?.click();
         });
       });
-
-      // Apsauga: jei stalčius atidarytas – siuntimas neveiks (uždengta). Uždaryk prieš siųsdamas.
-      sendBtn?.addEventListener('click', ()=>{ if(sidebar.classList.contains('open')) closeDrawer(); });
     })();
   </script>
 
