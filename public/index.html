@@ -6,33 +6,75 @@
   <title>Paule – Premium AI Chat</title>
   <link rel="stylesheet" href="/assets/css/paule.css">
 
+  <!-- Greiti UI override'ai (kol neperkelta į CSS) -->
+  <style>
+    /* Top modelių juosta – didesnės ikonos ir lygiuotė */
+    .models-in-topbar .model-pill .ui-icon{width:28px;height:28px;margin-right:8px;display:inline-block;vertical-align:middle}
+    .models-in-topbar .model-pill{gap:8px}
+
+    /* Įvedimo juosta – siaurinam ir auginam */
+    .bottom-section{padding:8px 12px}
+    .bottom-section .input-bar{max-width:1100px;margin:0 auto}
+    .message-input{
+      min-height:56px; max-height:40vh; overflow:auto; resize:none;
+      line-height:1.5; padding:12px 14px;
+    }
+
+    /* Sprendimų juosta (Ginčas/Teisėjas/Kompromisas) */
+    .decision-bar{position:sticky; top:72px; z-index:5; display:flex; gap:10px; justify-content:center; margin:8px 0 14px}
+    .decision-chip{
+      display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px;
+      border:1px solid var(--border); background:var(--bg-primary); cursor:pointer; user-select:none;
+      box-shadow:0 6px 24px rgba(0,0,0,.06);
+      transition:transform .15s ease, box-shadow .15s ease;
+    }
+    .decision-chip:hover{transform:translateY(-1px); box-shadow:0 10px 30px rgba(0,0,0,.10)}
+    .decision-chip img{width:18px;height:18px}
+    .decision-bar.boom .decision-chip{animation:pop .25s ease}
+    @keyframes pop{0%{transform:scale(.98)}100%{transform:scale(1)}}
+
+    /* Login dropdown */
+    .login-dropdown{position:absolute; right:12px; top:48px; background:var(--bg-primary); border:1px solid var(--border);
+      border-radius:12px; padding:10px; box-shadow:0 12px 40px rgba(0,0,0,.15); width:240px; display:none}
+    .login-dropdown.open{display:block}
+    .login-dropdown .btn{width:100%; display:flex; gap:8px; align-items:center; justify-content:center}
+    .login-anchor{position:relative}
+
+    /* Bibliotekos thumbs */
+    .library-grid{grid-template-columns:repeat(3,1fr); gap:10px}
+    .lib-card.thumb{display:flex; flex-direction:column; gap:6px}
+    .lib-card.thumb img{width:100%; height:70px; object-fit:cover; border-radius:12px; border:1px solid var(--border)}
+
+    /* Specialisto overlay */
+    .spec-overlay{position:fixed; inset:0; background:#000; opacity:.92; display:none; z-index:1000}
+    .spec-overlay.open{display:block}
+    .spec-overlay .close-tip{position:absolute; inset:auto 0 0 0; color:#fff; text-align:center; padding:18px; opacity:.7}
+
+    /* Hero kortelių img saugikliai */
+    .welcome-card img{object-fit:cover}
+  </style>
+
   <!-- 🔧 PAULE konfigūracija (VERCEL režimas: /api/* maršrutai) -->
   <script id="paule-config">
     (function () {
       var htmlAttr = (document.documentElement.getAttribute('data-backend') || '').trim().toLowerCase();
       var MODE = htmlAttr === 'vercel' ? 'vercel' : 'wp';
-
-      // 👉 Vercel'e – plokščias /api
       var restBase = MODE === 'vercel' ? '/api' : '/wp-json/paule/v1';
 
       var routes = {
         base: restBase,
-        stream:        restBase + '/stream',            // GET (SSE) | POST (mode=once)
+        stream:        restBase + '/stream',
         models:        restBase + '/models',
         diagnostics:   restBase + '/diagnostics',
-
-        comicCreate:   restBase + '/comic/create',      // alias į flux
+        comicCreate:   restBase + '/comic/create',
         fluxCreate:    restBase + '/flux/create',
         triptych:      restBase + '/image/triptych-series',
-
         personaCreate: restBase + '/persona/create',
         personaList:   restBase + '/persona/list',
         personaSeries: restBase + '/persona/generate_series',
-
         musicCreate:   restBase + '/music/create',
         musicStatus:   restBase + '/music/status',
         musicCallback: restBase + '/music/callback',
-
         runwayImage:   restBase + '/runway/image',
         runwayStatus:  restBase + '/runway/status',
         runwayVideoUpscale:         restBase + '/runway/video-upscale',
@@ -49,16 +91,13 @@
         mode: MODE,
         restBase: routes.base,
         restStream: routes.stream,
-        // BUVO: restStreamSSE: routes.stream + '?mode=sse',
-        restStreamSSE: routes.stream,   // <— paliekam švarų /api/stream
+        restStreamSSE: routes.stream,   // švarus /api/stream
         sseDefault: 1,
-
         pluginBase:   '/assets',
         iconsBase:    '/assets/icon',
         featuresBase: '/assets/features',
-
         routes: routes,
-        version: 'paule-1.0.1'
+        version: 'paule-1.0.2'
       };
 
       window.PAULE_CONFIG = CFG;
@@ -66,37 +105,29 @@
 
       try {
         Object.defineProperty(window, 'API_BASE', {
-          configurable: true,
-          get: function(){ return CFG.restBase; },
-          set: function(_){} // ignoruojam
+          configurable: true, get: function(){ return CFG.restBase; }, set: function(_){}
         });
       } catch(e) {}
       window.__SET_API_BASE__ = function (v) { /* optional */ };
     })();
   </script>
 
-  <!-- ✅ Bridge: /wp-json/*/v1 ir /paule/v1 /augam/v1 → /api -->
+  <!-- ✅ Bridge WP->/api -->
   <script id="paule-bridge">
     (function(){
       'use strict';
       try {
         var restBase = (window.PAULE_CONFIG && window.PAULE_CONFIG.restBase) || '/api';
-
-        // EventSource (SSE)
         if (window.EventSource) {
           var OrigES = window.EventSource;
           window.EventSource = function(url, opts){
-            try {
-              url = String(url)
-                .replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/, '/api$1')
-                .replace(/\/(?:augam|paule)\/v1(\/|$)/, '/api$1');
-            } catch(_){}
+            try { url = String(url)
+              .replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/, '/api$1')
+              .replace(/\/(?:augam|paule)\/v1(\/|$)/, '/api$1'); } catch(_){}
             return new OrigES(url, opts);
           };
           window.EventSource.prototype = OrigES.prototype;
         }
-
-        // fetch()
         if (window.fetch) {
           var origFetch = window.fetch;
           window.fetch = function(input, init){
@@ -106,15 +137,12 @@
                 var nu = String(u)
                   .replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/, '/api$1')
                   .replace(/\/(?:augam|paule)\/v1(\/|$)/, '/api$1');
-                if (nu !== u) {
-                  input = (typeof input === 'string') ? nu : new Request(nu, input);
-                }
+                if (nu !== u) input = (typeof input === 'string') ? nu : new Request(nu, input);
               }
             } catch(_){}
             return origFetch(input, init);
           };
         }
-
         window.__FORCE_STREAM_ENDPOINT__ = restBase.replace(/\/+$/,'') + '/stream';
       } catch(e) { console.warn('[PAULE bridge] warning:', e); }
     })();
@@ -122,39 +150,30 @@
 </head>
 <body>
 
+  <!-- Juodas overlay specialisto atidarymui -->
+  <div id="specOverlay" class="spec-overlay"><div class="close-tip">Bakstelėkite uždaryti</div></div>
+
   <!-- Mobilus overlay (uždaro šoninę) -->
   <div id="mobileOverlay" class="mobile-overlay" style="display:none;"></div>
 
   <!-- ===== TOPBAR ===== -->
   <header class="topbar" data-no-clip="true">
     <a class="brand" href="/" aria-label="Paule">
-      <!-- prašei naudoti šį logotipą -->
+      <!-- Dark logotipas -->
       <img id="brandLogo" class="brand-icon" src="/assets/icon/paule-logo-b.webp" alt="paule">
     </a>
 
-    <!-- 🆔 PERRINKTA Į modelList (kad sutaptų su JS) -->
+    <!-- 🆔 modelList -->
     <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
       <button class="model-pill active" data-model="auto" aria-pressed="true">
         <img class="ui-icon" src="/assets/icon/paule-icon.webp" alt=""> Paule
       </button>
-      <button class="model-pill" data-model="chatgpt">
-        <img class="ui-icon" src="/assets/icon/chatgpt.svg" alt=""> ChatGPT
-      </button>
-      <button class="model-pill" data-model="claude">
-        <img class="ui-icon" src="/assets/icon/claude-seeklogo.svg" alt=""> Claude
-      </button>
-      <button class="model-pill" data-model="gemini">
-        <img class="ui-icon" src="/assets/icon/gemini.svg" alt=""> Gemini
-      </button>
-      <button class="model-pill" data-model="grok">
-        <img class="ui-icon" src="/assets/icon/xAI.svg" alt=""> Grok
-      </button>
-      <button class="model-pill" data-model="deepseek">
-        <img class="ui-icon" src="/assets/icon/deepseek.svg" alt=""> DeepSeek
-      </button>
-      <button class="model-pill" data-model="llama">
-        <img class="ui-icon" src="/assets/icon/llama.svg" alt=""> Llama
-      </button>
+      <button class="model-pill" data-model="chatgpt"><img class="ui-icon" src="/assets/icon/chatgpt.svg" alt=""> ChatGPT</button>
+      <button class="model-pill" data-model="claude"><img class="ui-icon" src="/assets/icon/claude-seeklogo.svg" alt=""> Claude</button>
+      <button class="model-pill" data-model="gemini"><img class="ui-icon" src="/assets/icon/gemini.svg" alt=""> Gemini</button>
+      <button class="model-pill" data-model="grok"><img class="ui-icon" src="/assets/icon/xAI.svg" alt=""> Grok</button>
+      <button class="model-pill" data-model="deepseek"><img class="ui-icon" src="/assets/icon/deepseek.svg" alt=""> DeepSeek</button>
+      <button class="model-pill" data-model="llama"><img class="ui-icon" src="/assets/icon/llama.svg" alt=""> Llama</button>
     </nav>
 
     <div class="top-actions">
@@ -168,6 +187,17 @@
       <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)">
         <img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu
       </button>
+
+      <!-- Prisijungimas – dropdown -->
+      <div class="login-anchor">
+        <button class="btn ghost" id="btnLogin">
+          <img class="ui-icon" src="/assets/icon/user.svg" alt=""> Prisijungti
+        </button>
+        <div class="login-dropdown" id="loginDropdown">
+          <a class="btn" id="googleLoginBtn" href="#"><img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti su Google</a>
+          <a class="btn" id="emailLoginBtn" href="#"><img class="ui-icon" src="/assets/icon/nav-login.svg" alt=""> Prisijungti el. paštu</a>
+        </div>
+      </div>
 
       <!-- Kai prisijungta -->
       <div class="user-profile hidden" id="userProfile">
@@ -187,29 +217,11 @@
               </select>
             </div>
           </div>
-
-          <div class="dropdown-item" style="cursor:default; flex-direction:column; align-items:flex-start;">
-            <div class="mini-title">Statistika</div>
-            <div class="stats-grid">
-              <div class="stat-chip"><span><img class="ui-icon" src="/assets/icon/chatgpt.svg" alt=""> GPT</span><span class="stat-count">87% (42)</span></div>
-              <div class="stat-chip"><span><img class="ui-icon" src="/assets/icon/claude-seeklogo.svg" alt=""> Claude</span><span class="stat-count">92% (38)</span></div>
-              <div class="stat-chip"><span><img class="ui-icon" src="/assets/icon/deepseek.svg" alt=""> DeepSeek</span><span class="stat-count">78% (25)</span></div>
-              <div class="stat-chip"><span><img class="ui-icon" src="/assets/icon/xAI.svg" alt=""> Grok</span><span class="stat-count">83% (19)</span></div>
-              <div class="stat-chip"><span><img class="ui-icon" src="/assets/icon/llama.svg" alt=""> Llama</span><span class="stat-count">95% (51)</span></div>
-              <div class="stat-chip"><span><img class="ui-icon" src="/assets/icon/gemini.svg" alt=""> Gemini</span><span class="stat-count">89% (34)</span></div>
-            </div>
-          </div>
-
           <div class="dropdown-item" data-action="logout">
             <img class="ui-icon" src="/assets/icon/logout.svg" alt=""> Atsijungti
           </div>
         </div>
       </div>
-
-      <!-- Prisijungti – CSS popup (#loginModalOverlay) -->
-      <a class="btn ghost" id="btnLogin" href="#loginModalOverlay" role="button">
-        <img class="ui-icon" src="/assets/icon/user.svg" alt=""> Prisijungti
-      </a>
     </div>
   </header>
 
@@ -217,7 +229,6 @@
   <div class="layout">
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
-
       <!-- AI specialistai -->
       <section class="side-section">
         <div class="side-title">AI specialistai</div>
@@ -245,31 +256,31 @@
         </div>
       </section>
 
-      <!-- Mano biblioteka -->
+      <!-- Mano biblioteka (auto-feed) -->
       <section class="side-section">
         <div class="side-title"><a class="lib-link" href="/biblioteka#dainos">Dainos</a></div>
-        <div class="library-grid">
-          <a class="lib-card" href="/biblioteka#dainos"><img class="ui-icon" src="/assets/icon/music.svg" alt=""><span>„Vasaros vėjas“</span></a>
-          <a class="lib-card" href="/biblioteka#dainos"><img class="ui-icon" src="/assets/icon/music.svg" alt=""><span>„Nakties šviesos“</span></a>
-          <a class="lib-card" href="/biblioteka#dainos"><img class="ui-icon" src="/assets/icon/music.svg" alt=""><span>„Miesto pulsas“</span></a>
+        <div class="library-grid" id="songsFeed">
+          <a class="lib-card thumb"><img src="/assets/hero/music.webp" alt=""><span>„Vasaros vėjas“</span></a>
+          <a class="lib-card thumb"><img src="/assets/hero/music.webp" alt=""><span>„Nakties šviesos“</span></a>
+          <a class="lib-card thumb"><img src="/assets/hero/music.webp" alt=""><span>„Miesto pulsas“</span></a>
         </div>
       </section>
 
       <section class="side-section">
         <div class="side-title"><a class="lib-link" href="/biblioteka#nuotraukos">Nuotraukos</a></div>
-        <div class="library-grid">
-          <a class="lib-card" href="/biblioteka#nuotraukos"><img class="ui-icon" src="/assets/icon/photo.svg" alt=""><span>Produktas</span></a>
-          <a class="lib-card" href="/biblioteka#nuotraukos"><img class="ui-icon" src="/assets/icon/photo.svg" alt=""><span>Kampanija</span></a>
-          <a class="lib-card" href="/biblioteka#nuotraukos"><img class="ui-icon" src="/assets/icon/photo.svg" alt=""><span>Viršelis</span></a>
+        <div class="library-grid" id="photosFeed">
+          <a class="lib-card thumb"><img src="/assets/hero/photo.webp" alt=""><span>Produktas</span></a>
+          <a class="lib-card thumb"><img src="/assets/hero/photo.webp" alt=""><span>Kampanija</span></a>
+          <a class="lib-card thumb"><img src="/assets/hero/photo.webp" alt=""><span>Viršelis</span></a>
         </div>
       </section>
 
       <section class="side-section">
         <div class="side-title"><a class="lib-link" href="/biblioteka#video">Video</a></div>
-        <div class="library-grid">
-          <a class="lib-card" href="/biblioteka#video"><img class="ui-icon" src="/assets/icon/video-library.svg" alt=""><span>Reklama 15s</span></a>
-          <a class="lib-card" href="/biblioteka#video"><img class="ui-icon" src="/assets/icon/video-library.svg" alt=""><span>Pristatymas</span></a>
-          <a class="lib-card" href="/biblioteka#video"><img class="ui-icon" src="/assets/icon/video-library.svg" alt=""><span>Užkulisiai</span></a>
+        <div class="library-grid" id="videosFeed">
+          <a class="lib-card thumb"><img src="/assets/hero/video.webp" alt=""><span>Reklama 15s</span></a>
+          <a class="lib-card thumb"><img src="/assets/hero/video.webp" alt=""><span>Pristatymas</span></a>
+          <a class="lib-card thumb"><img src="/assets/hero/video.webp" alt=""><span>Užkulisiai</span></a>
         </div>
       </section>
 
@@ -294,12 +305,18 @@
     <main class="main">
       <div class="chat-area" id="chatArea">
 
-        <!-- Hero – NAUJAS -->
+        <!-- Sprendimų juosta (užpildoma JS po pirmo atsakymo) -->
+        <div id="decisionBar" class="decision-bar" style="display:none">
+          <div class="decision-chip" data-mode="debate"><img src="/assets/icon/ai.svg" alt=""> AI ginčas</div>
+          <div class="decision-chip" data-mode="judge"><img src="/assets/icon/legal-contract.svg" alt=""> Teisėjas</div>
+          <div class="decision-chip" data-mode="compromise"><img src="/assets/icon/compromise.svg" onerror="this.src='/assets/icon/ai.svg'" alt=""> Kompromisas</div>
+        </div>
+
+        <!-- Hero -->
         <section class="welcome" id="welcome">
           <h1 class="hero-title">KAIP GALIU PADĖTI ŠIANDIEN?</h1>
           <p>Pasirinkite AI specialistą kairėje arba pradėkite pokalbį žemiau. Viršuje galite rinktis vieną ar kelis modelius. 👇</p>
 
-          <!-- 6 centrinės kortelės (lokalios nuotraukos) -->
           <div class="welcome-grid">
             <a class="welcome-card" href="#" data-action="song">
               <img src="/assets/hero/music.webp" alt="">
@@ -355,89 +372,39 @@
       <div class="tool" data-tool="file"><img class="ui-icon" src="/assets/icon/tool-file.svg" alt=""> Failas</div>
       <div class="tool" data-tool="song"><img class="ui-icon" src="/assets/icon/tool-music.svg" alt=""> Sukurti dainą</div>
       <div class="tool" data-tool="video"><img class="ui-icon" src="/assets/icon/video-plus.svg" alt=""> Sukurti video</div>
-      <!-- Naujas įrankis -->
       <div class="tool" data-tool="goals"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų sistema</div>
     </div>
   </div>
 
-  <!-- ===== URL POPUP – pavyzdys (šefas) ===== -->
-  <section class="popup" id="spec-sefas" aria-modal="true" role="dialog">
-    <div class="popup-body">
-      <header class="popup-head">
-        <h2><img class="ui-icon" src="/assets/icon/chef-knife.svg" alt=""> Šefas</h2>
-        <a class="popup-close" href="#" aria-label="Uždaryti"><img class="ui-icon" src="/assets/icon/nav-close.svg" alt=""></a>
-      </header>
-      <div class="popup-content">
-        Čia – šefui skirtas puslapis/popup. (Galima vėliau nukreipti į atskirą /spec/sefas.html.)
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== AUTH popup (CSS-only) ===== -->
-  <section class="popup" id="loginModalOverlay" aria-modal="true" role="dialog">
-    <div class="popup-body">
-      <header class="popup-head">
-        <h2><img class="ui-icon" src="/assets/icon/user.svg" alt=""> Prisijungti</h2>
-        <a class="popup-close" href="#" aria-label="Uždaryti" id="closeLoginModal"><img class="ui-icon" src="/assets/icon/nav-close.svg" alt=""></a>
-      </header>
-      <div class="popup-content" style="display:grid;gap:12px">
-        <a class="btn" id="loginSubmitBtn" href="#"><img class="ui-icon" src="/assets/icon/nav-login.svg" alt=""> Prisijungti el. paštu</a>
-        <a class="btn" id="googleLoginBtn" href="#"><img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti su Google</a>
-
-        <div class="mini-title">Tema ir kalba</div>
-        <div style="display:flex;gap:8px">
-          <select class="select" id="selThemeAuth" aria-label="Tema (modalas)">
-            <option value="light">Šviesi</option>
-            <option value="dark">Tamsi</option>
-          </select>
-          <select class="select" aria-label="Kalba (modalas)">
-            <option value="lt">LT</option>
-            <option value="en">EN</option>
-          </select>
-        </div>
-        <p style="color:#9aa0a8;font-size:12px">Pastaba: mygtukai demo režimu – backend prisijungimo nenaudojam.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== Minimal JS (tema ↔ logotipas, mobilus, enter, kortelės) ===== -->
+  <!-- Minimal JS (tema, mobilus, enter, kortelės, login dropdown, overlay) -->
   <script>
     (function(){
       const root = document.documentElement;
       const logo = document.getElementById('brandLogo');
       const sidebar = document.getElementById('sidebar');
       const btnMobile = document.getElementById('btnMobile');
-      const selTheme = document.getElementById('selTheme');
-      const selThemeAuth = document.getElementById('selThemeAuth');
       const mobileOverlay = document.getElementById('mobileOverlay');
       const msgInput = document.getElementById('messageInput');
       const sendBtn = document.getElementById('sendBtn');
+      const btnLogin = document.getElementById('btnLogin');
+      const loginDropdown = document.getElementById('loginDropdown');
+      const specOverlay = document.getElementById('specOverlay');
 
       function updateLogo(){
         const isDark = (root.getAttribute('data-theme') === 'dark');
+        // dark – b versija, light – paprasta
         logo.src = isDark ? '/assets/icon/paule-logo-b.webp' : '/assets/icon/paule-logo.webp';
       }
       updateLogo();
 
-      selTheme && selTheme.addEventListener('change', (e)=>{
-        root.setAttribute('data-theme', e.target.value); updateLogo();
-      });
-      selThemeAuth && selThemeAuth.addEventListener('change', (e)=>{
-        root.setAttribute('data-theme', e.target.value); updateLogo();
-      });
+      document.getElementById('selTheme')?.addEventListener('change', e=>{ root.setAttribute('data-theme', e.target.value); updateLogo(); });
 
       // Mobilus meniu
-      btnMobile && btnMobile.addEventListener('click', ()=>{
+      btnMobile?.addEventListener('click', ()=>{
         sidebar.classList.toggle('open');
-        if (mobileOverlay) {
-          const open = sidebar.classList.contains('open');
-          mobileOverlay.style.display = open ? 'block' : 'none';
-        }
+        mobileOverlay && (mobileOverlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none');
       });
-      mobileOverlay && mobileOverlay.addEventListener('click', ()=>{
-        sidebar.classList.remove('open');
-        mobileOverlay.style.display = 'none';
-      });
+      mobileOverlay?.addEventListener('click', ()=>{ sidebar.classList.remove('open'); mobileOverlay.style.display='none'; });
 
       // Enter → siųsti
       if (msgInput) {
@@ -450,7 +417,7 @@
         });
       }
 
-      // 6 „hero“ kortelių click'ai
+      // Hero kortelės
       function bindWelcomeCards(){
         var arr = document.querySelectorAll('.welcome-grid .welcome-card');
         for (var i = 0; i < arr.length; i++) {
@@ -466,14 +433,23 @@
       }
       bindWelcomeCards();
 
-      // Įrankis „Tikslų sistema“
-      document.querySelector('.tool[data-tool="goals"]')?.addEventListener('click', function(){
-        window.open('/spec/goal.html', '_blank');
+      // Login dropdown
+      btnLogin?.addEventListener('click', (e)=>{ e.preventDefault(); loginDropdown?.classList.toggle('open'); });
+      document.addEventListener('click', (e)=>{
+        if (!e.target.closest('.login-anchor')) loginDropdown?.classList.remove('open');
       });
+
+      // Specialisto overlay
+      document.getElementById('specialistGrid')?.addEventListener('click', (e)=>{
+        const chip = e.target.closest('[data-route]'); if (!chip) return;
+        e.preventDefault();
+        specOverlay?.classList.add('open');
+      });
+      specOverlay?.addEventListener('click', ()=> specOverlay.classList.remove('open'));
     })();
   </script>
 
-  <!-- Tavo programinė logika – skaito window.PAULE_CONFIG -->
+  <!-- Pagrindinė logika -->
   <script src="/assets/js/paule-ui.js" defer></script>
 </body>
 </html>
