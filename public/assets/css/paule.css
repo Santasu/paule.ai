@@ -1,7 +1,7 @@
 /* =========================================================
    Paule – Premium Chat UI
    Šviesi / tamsi tema, mažesnės ikonėlės, soft 3D (neumorph),
-   borderless layout, responsive bottom input (nesikerta su sidebar)
+   borderless layout, responsive bottom input
    ========================================================= */
 
 /* ---------- Reset ---------- */
@@ -67,7 +67,13 @@ img,svg{max-width:100%;height:auto;display:block}
 }
 
 /* ---------- Bazė ---------- */
-body{background:var(--bg-primary);color:var(--text-primary);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",system-ui,sans-serif;line-height:1.55;overflow:hidden}
+body{
+  background:var(--bg-primary);
+  color:var(--text-primary);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",system-ui,sans-serif;
+  line-height:1.55;
+  overflow:hidden;
+}
 a,button,.btn,.chip,.tool,.model-pill,.lib-card,.project-item{transition:.15s ease}
 button{background:none;border:0;color:inherit;cursor:pointer}
 .hidden{display:none !important}
@@ -83,18 +89,14 @@ a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.too
   display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:10px;
   height:66px; padding:8px 14px;
   background:var(--bg-primary); backdrop-filter:blur(8px);
-  /* be linijos viršuje */
   border-bottom:0;
   overflow:visible;
 }
 
-/* Logotipas – vienas, be rėmelių; auto swap pagal temą.
-   Jei paliksi .webp – tamsiai temai pritaikys invert filtrą. */
+/* Logotipas (inline SVG) */
 .brand{display:flex;align-items:center}
-.brand-icon{width:72px;height:auto;padding:0;border:0;background:transparent}
-.brand-icon{content:url("/assets/icon/paule-logo-w.svg")}
-[data-theme="dark"] .brand-icon{content:url("/assets/icon/paule-logo-b.svg")}
-[data-theme="dark"] .brand-icon[src$=".webp"]{filter:brightness(0) invert(1)} /* fallback jei nepakeisi failo */
+.brand .logo-svg{width:2.7cm;height:auto;display:block;color:var(--text-primary)}
+[data-theme="dark"] .brand .logo-svg{color:#fff}
 
 /* Modelių juosta */
 .models-in-topbar{display:flex;gap:6px;justify-content:center;align-items:center;overflow-x:auto;scrollbar-width:thin;padding-block:2px}
@@ -104,10 +106,9 @@ a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.too
   padding:6px 9px; font-size:11.5px; border-radius:999px; white-space:nowrap;
   color:var(--text-primary); background:var(--bg-secondary); box-shadow:var(--neu-raise);
 }
-.model-pill img{width:13px;height:13px}
+.model-pill img{width:13px;height:13px}            /* mažesnės viršuje */
 .model-pill:hover{transform:translateY(-1px)}
 .model-pill.active{background:var(--accent-ghost); color:var(--accent); box-shadow:var(--neu-press)}
-/* „Auto“ prigesinti, kai aktyvus kitas */
 .models-in-topbar:has(.model-pill.active:not([data-model="auto"])) .model-pill[data-model="auto"]{opacity:.45}
 
 /* Dešinė */
@@ -115,7 +116,6 @@ a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.too
 .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:10px;font-weight:600;background:var(--bg-secondary);color:var(--text-primary);box-shadow:var(--neu-raise)}
 .btn img{width:var(--icon-12);height:var(--icon-12)}
 .btn:hover{box-shadow:var(--neu-press)}
-/* „Meniu“ desktop’e slepiam – mobile rodysim */
 .top-actions .mobile-toggle{display:none}
 
 /* =========================================================
@@ -124,10 +124,9 @@ a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.too
 .layout{display:grid;grid-template-columns:var(--sidebar) 1fr;height:calc(100vh - 66px);overflow:hidden}
 .sidebar{
   overflow:auto;background:var(--bg-primary);
-  /* be linijos kairėje */
   border-right:0;
 }
-.side-section{padding:12px 14px /* be border-bottom */}
+.side-section{padding:12px 14px}
 .side-title{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;font-weight:700}
 .specialist-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 
@@ -164,6 +163,8 @@ a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.too
    ========================================================= */
 .main{display:flex;flex-direction:column;overflow:hidden;background:var(--bg-primary)}
 .chat-area{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:14px;padding-bottom:250px}
+#chatArea{padding-top:3cm} /* 3 cm žemyn nuo viršaus */
+
 .hero-title{
   font-size:28px;line-height:1.2;margin:6px 0 6px;font-weight:800;text-align:center;
   background:linear-gradient(90deg,#0a0a0a 0%,var(--accent) 75%);-webkit-background-clip:text;background-clip:text;color:transparent
@@ -184,8 +185,13 @@ a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.too
 /* Žinutės */
 .message{display:flex;gap:10px;align-items:flex-start}
 .avatar{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--bg-secondary);box-shadow:var(--neu-raise)}
-.avatar img{width:16px;height:16px}
-.bubble{flex:1;max-width:78%}
+.avatar img{width:14px;height:14px}               /* mažesnės prie burbulų */
+
+/* Vartotojo žinutės – į dešinę */
+.message.user{justify-content:flex-end;flex-direction:row-reverse}
+.message.user .avatar{margin-left:8px;margin-right:0}
+.message.user .bubble-card{background:var(--bg-secondary);box-shadow:var(--neu-raise)}
+.message .bubble{flex:1;max-width:78%}
 .bubble-card{background:var(--bg-secondary);border-radius:14px;padding:12px;box-shadow:var(--neu-raise)}
 .msg-content{max-height:210px;overflow:auto;font-size:14px}
 .msg-content::-webkit-scrollbar{width:6px}
@@ -214,14 +220,28 @@ a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.too
 .chat-area img[src$=".svg"]{max-width:40px;max-height:40px;width:auto;height:auto;object-fit:contain}
 
 /* =========================================================
-   BOTTOM INPUT (pririštas prie MAIN, nekerta sidebar)
+   Sprendimų juosta (Ginčas / Teisėjas / Kompromisas)
+   ========================================================= */
+.decision-bar{position:sticky;top:72px;z-index:5;display:flex;gap:10px;justify-content:center;margin:8px 0 14px}
+.decision-chip{
+  display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid var(--border);
+  background:var(--bg-primary);cursor:pointer;user-select:none;box-shadow:0 6px 24px rgba(0,0,0,.06);
+  transition:transform .15s ease,box-shadow .15s ease
+}
+.decision-chip:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(0,0,0,.10)}
+.decision-chip img{width:18px;height:18px}
+.decision-bar.boom .decision-chip{animation:pop .25s ease}
+@keyframes pop{0%{transform:scale(.98)}100%{transform:scale(1)}}
+
+/* =========================================================
+   BOTTOM INPUT (nekerta sidebar)
    ========================================================= */
 .bottom-section{
   position:fixed; bottom:12px; z-index:300;
-  left: calc(var(--sidebar) + var(--gutter)); right: var(--gutter); width:auto; transform:none;
+  left: calc(var(--sidebar) + var(--gutter)); right: var(--gutter); width:auto;
   background:var(--bg-primary); backdrop-filter:blur(8px); border-radius:16px; box-shadow:var(--shadow-lg); border:0;
 }
-.input-bar{padding:12px 14px /* no bottom border */}
+.input-bar{padding:12px 14px}
 .input-container{
   display:flex; align-items:center; gap:8px; border-radius:14px; padding:8px 10px;
   background:var(--bg-secondary); box-shadow:var(--neu-raise)
@@ -254,7 +274,7 @@ a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.too
 [data-theme="dark"] .popup-close img{ filter:var(--ui-icon-filter) }
 
 /* =========================================================
-   URL POPUP (įsk. #auth) – švarus, neu kortelė
+   URL POPUP – neu kortelė
    ========================================================= */
 .popup{position:fixed;inset:0;display:none;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:3000}
 .popup:target{display:block}
@@ -267,8 +287,6 @@ a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.too
   flex:1;border-radius:16px;background:var(--bg-primary);color:var(--text-primary);padding:16px;overflow:auto;
   box-shadow:var(--neu-raise); max-width:520px; margin:auto;
 }
-#auth .btn{background:var(--bg-secondary);box-shadow:var(--neu-raise)}
-#auth .btn:hover{box-shadow:var(--neu-press)}
 
 /* =========================================================
    PROFILIO DROPDOWN
@@ -283,6 +301,51 @@ a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.too
 .dropdown-divider{height:1px;background:var(--border);margin:6px 0}
 .profile-controls{display:flex;gap:8px;margin-left:auto}
 .select{border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);border-radius:10px;padding:5px 7px;font-size:12px}
+
+/* =========================================================
+   HERO: 6 kortelės
+   ========================================================= */
+.welcome { padding-top: 8px; }
+.welcome-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap:14px;
+  width:min(1100px, 98%);
+  margin:12px auto 4px;
+}
+.welcome-card{
+  position:relative;
+  display:block;
+  border-radius:16px;
+  overflow:hidden;
+  background:var(--bg-secondary);
+  box-shadow:var(--neu-raise);
+  text-decoration:none;
+  transform:translateZ(0);
+}
+.welcome-card img{
+  width:100%;
+  height:160px;
+  object-fit:cover;
+  display:block;
+  object-position:center 60%;
+}
+.welcome-card::after{
+  content:"";
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0) 55%);
+  pointer-events:none;
+}
+.welcome-card b{
+  position:absolute; left:12px; bottom:22px;
+  color:#fff; font-size:15px; font-weight:800; letter-spacing:.2px;
+}
+.welcome-card span{
+  position:absolute; left:12px; bottom:8px;
+  color:#fff; font-size:12px; opacity:.95;
+}
+.welcome-card:hover{ transform:translateY(-2px); box-shadow:var(--neu-press); }
+[data-theme="dark"] .welcome-card::after{ background:linear-gradient(to top, rgba(0,0,0,.65), rgba(0,0,0,0) 60%); }
 
 /* =========================================================
    RESPONSIVE
@@ -300,77 +363,6 @@ a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.too
   .bottom-section{left:var(--gutter);right:var(--gutter)}
   .top-actions .mobile-toggle{display:inline-flex}
 }
-
-/* =========================================================
-   SMULKŪS PRIEDAI
-   ========================================================= */
-.models-in-topbar img,.chip img,.tool img,.ping img,.project-item img,.welcome-btn img{width:var(--icon-12);height:var(--icon-12)}
-.library-grid .lib-card img{width:30px;height:30px}
-.hero-title{margin-top:6px}
-
-/* ---------- Top actions: vienodas dydis + be pabraukimo ---------- */
-.top-actions .btn,
-.top-actions a.btn,
-.top-actions a.btn:link,
-.top-actions a.btn:visited{
-  text-decoration: none;
-  font-size: 12.5px;         /* tokia pati visiems trims */
-  line-height: 1;
-  padding: 8px 12px;         /* kad vizualiai sutaptų aukštis */
-}
-
-/* jeigu kur nors anchor paveldi pabraukimą, išjunk tik .btn kontekste */
-.btn { text-decoration: none; }
-
-/* ---------- HERO: 6 kortelės gražioje gardelėje ---------- */
-.welcome { padding-top: 8px; }
-.welcome-grid{
-  display:grid;
-  grid-template-columns: repeat(3, minmax(220px, 1fr));
-  gap:14px;
-  width:min(1100px, 98%);
-  margin:12px auto 4px;
-}
-.welcome-card{
-  position:relative;
-  display:block;
-  border-radius:16px;
-  overflow:hidden;
-  background:var(--bg-secondary);
-  box-shadow:var(--neu-raise);
-  text-decoration:none;
-  transform:translateZ(0); /* geresnė animacija */
-}
-.welcome-card img{
-  width:100%;
-  height:160px;
-  object-fit:cover;
-  display:block;
-}
-.welcome-card::after{
-  content:"";
-  position:absolute; inset:0;
-  background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0) 55%);
-  pointer-events:none;
-}
-.welcome-card b{
-  position:absolute; left:12px; bottom:22px;
-  color:#fff; font-size:15px; font-weight:800; letter-spacing:.2px;
-}
-.welcome-card span{
-  position:absolute; left:12px; bottom:8px;
-  color:#fff; font-size:12px; opacity:.95;
-}
-.welcome-card:hover{ transform:translateY(-2px); box-shadow:var(--neu-press); }
-
-/* Tamsiai temai — truputį ryškesnė plėvelė */
-[data-theme="dark"] .welcome-card::after{ background:linear-gradient(to top, rgba(0,0,0,.65), rgba(0,0,0,0) 60%); }
-
-/* ---------- Smulkūs pataisymai ---------- */
-/* Bendruomenės nuoroda viršuje tikrai be pabraukimo */
-.top-actions a { text-decoration: none; }
-
-/* Laikyk žemiau adaptaciją mobilui */
 @media (max-width: 900px){
   .welcome-grid{ grid-template-columns: repeat(2, minmax(160px, 1fr)); }
   .welcome-card img{ height:150px; }
@@ -380,4 +372,18 @@ a:focus-visible,button:focus-visible,.chip:focus-visible,.btn:focus-visible,.too
   .welcome-card img{ height:180px; }
 }
 
-
+/* =========================================================
+   SMULKŪS PRIEDAI
+   ========================================================= */
+/* Bendruomenės nuoroda viršuje be pabraukimo */
+.top-actions a { text-decoration: none; }
+/* Vienodi mygtukų dydžiai */
+.top-actions .btn,
+.top-actions a.btn,
+.top-actions a.btn:link,
+.top-actions a.btn:visited{
+  text-decoration: none;
+  font-size: 12.5px;
+  line-height: 1;
+  padding: 8px 12px;
+}
