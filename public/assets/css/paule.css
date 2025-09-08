@@ -1,5 +1,5 @@
 /* =========================================================
-   Paule – Premium Chat UI (v2)
+   Paule – Premium Chat UI css (v2)
    Šviesi / tamsi tema · stabilus header/sidebar · 3cm chat offset
    ========================================================= */
 
@@ -483,4 +483,123 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 }
 
 /* ======= END HOTFIX ======= */
+
+/* ===================== PAULE: PATCH (UI stabilizacija) ===================== */
+
+/* Topbar: visada viršuje, aiškus sluoksniavimas */
+.topbar{ position:sticky; top:0; z-index:1000; }
+
+/* Logotipas – fiksuotas dydis (2.7 cm) abiem temoms */
+.brand .brand-icon{ width:2.7cm; height:auto; display:block; object-fit:contain; }
+
+/* Modelių juosta – mobilui privalomas horizont. scroll */
+.models-in-topbar{ gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.models-in-topbar .model-pill{ padding:6px 10px; font-weight:700; }
+.models-in-topbar .ui-icon{ width:13px; height:13px; }
+
+/* Kairės bibliotekos miniatiūros – truputį didesnės ir centruotos */
+.lib-card.thumb{ align-items:center; }
+.lib-card.thumb img{ width:100%; height:92px; object-fit:cover; object-position:center; border-radius:12px; }
+.lib-card.thumb span{ text-align:center; }
+
+/* Chat vieta: jokio 3cm atitraukimo; tvarkingos paraštės */
+#chatArea{ padding-top:12px; }
+
+/* Burbulai – aiškesnis tekstas abiem temoms */
+.msg-content{ color:var(--text-primary); }
+[data-theme="dark"] .msg-content{ color:var(--text-primary); }
+
+/* Vartotojo žinutės – prie dešinio krašto (tik burbulas) */
+.message{ display:flex; gap:10px; align-items:flex-start; }
+.message .bubble{ flex:1; max-width:78%; }
+.message.user{ flex-direction:row-reverse; }
+.message.user .bubble{ margin-left:auto; }
+.message.user .avatar{ margin-left:8px; }
+
+/* Avataro ikonėlės mažesnės (švariau) */
+.avatar img{ width:14px; height:14px; }
+
+/* Įvedimo laukelio tekstas/placeholder abiem temoms gerai matomas */
+.message-input{ color:var(--text-primary); }
+.message-input::placeholder{ color:var(--text-secondary); opacity:.85; }
+[data-theme="dark"] .message-input::placeholder{ color:#cfd5e3; opacity:.75; }
+
+/* Tamsioje temoje – automatinis ikonų „balinimas“ */
+:root{ --ui-icon-filter:none; }
+[data-theme="dark"]{ --ui-icon-filter: invert(1) brightness(1.1) contrast(1.05) saturate(0); }
+.ui-icon{ filter:var(--ui-icon-filter); }
+
+/* „Neumorph“ – šiek tiek daugiau gylio */
+:root{
+  --shadow-lg: 0 16px 60px rgba(0,0,0,.14);
+  --neu-raise: 8px 8px 22px rgba(0,0,0,.10), -8px -8px 22px rgba(255,255,255,.70);
+  --neu-press: inset 8px 8px 18px rgba(0,0,0,.12), inset -8px -8px 18px rgba(255,255,255,.70);
+}
+[data-theme="dark"]{
+  --shadow-lg: 0 22px 70px rgba(0,0,0,.55);
+  --neu-raise: 10px 10px 26px rgba(0,0,0,.60), -10px -10px 26px rgba(255,255,255,.06);
+  --neu-press: inset 10px 10px 22px rgba(0,0,0,.60), inset -10px -10px 22px rgba(255,255,255,.06);
+  --text-primary:#f5f7fb; --text-secondary:#cfd5e3; --text-muted:#aeb6c7;
+}
+
+/* Viršutinės juostos mygtukai – vienodas aukštis ir be pabraukimų */
+.top-actions .btn,
+.top-actions a.btn,
+.top-actions a.btn:link,
+.top-actions a.btn:visited{
+  text-decoration:none; font-size:12.5px; line-height:1; padding:8px 12px;
+}
+
+/* Prisijungti/Tema – dropdown’ai */
+.login-anchor{ position:relative; }
+.login-dropdown{
+  position:absolute; right:0; top:calc(100% + 8px);
+  width:240px; padding:10px; background:var(--bg-primary);
+  border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-lg);
+  display:none; z-index:1200;
+}
+.login-dropdown.open{ display:block; }
+.login-dropdown .btn{ width:100%; justify-content:center; gap:8px; margin-bottom:6px; }
+.login-dropdown .btn:last-child{ margin-bottom:0; }
+
+/* Apačios juosta – saugi zona iOS */
+.bottom-section{ padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+
+/* HERO kortelės – kontrastas naktį */
+[data-theme="dark"] .welcome-card::after{
+  background:linear-gradient(to top, rgba(0,0,0,.70), rgba(0,0,0,0) 62%);
+}
+
+/* ===================== Mobilus ===================== */
+@media (max-width:1024px){
+  /* Kairė dingsta; vietoj jos – stalčius */
+  .layout{ grid-template-columns: 0 1fr; }
+  .sidebar{ display:none; }
+  .bottom-section{ left: var(--gutter); right: var(--gutter); }
+}
+
+/* Mobilus stalčius */
+.drawer-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.35);
+  opacity:0; visibility:hidden; transition:.2s; z-index:1300;
+}
+.drawer-overlay.show{ opacity:1; visibility:visible; }
+.drawer{
+  position:fixed; top:0; left:-320px; width:300px; height:100vh;
+  background:var(--bg-primary); border-right:1px solid var(--border);
+  box-shadow:var(--shadow-lg); z-index:1350; transition:left .25s ease; overflow:auto;
+}
+.drawer.open{ left:0; }
+.drawer-head{ display:flex; align-items:center; justify-content:space-between; padding:12px; border-bottom:1px solid var(--border); }
+.drawer-close{ width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--bg-secondary); }
+.drawer-nav{ display:flex; flex-direction:column; gap:6px; padding:12px; }
+.drawer-link{ display:flex; align-items:center; gap:8px; padding:8px 10px; background:var(--bg-secondary); border-radius:10px; font-weight:700; text-decoration:none; color:var(--text-primary); }
+
+/* Maži pataisymai */
+.btn, .chip, .tool{ box-shadow:var(--neu-raise); }
+.btn:hover, .chip:hover, .tool:hover{ box-shadow:var(--neu-press); }
+.bubble-card{ box-shadow:0 12px 34px rgba(0,0,0,.10), 0 2px 10px rgba(0,0,0,.05); }
+[data-theme="dark"] .bubble-card{ box-shadow:0 22px 60px rgba(0,0,0,.55), 0 4px 16px rgba(0,0,0,.35); }
+
+/* ========================================================================== */
 
