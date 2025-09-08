@@ -86,4 +86,10 @@ function json(res, code, obj){
   res.setHeader('Cache-Control','no-store');
   res.end(JSON.stringify(obj));
 }
+if (provider === 'anthropic' && !process.env.ANTHROPIC_API_KEY) {
+  return res.status(400).json({ ok:false, provider:'anthropic', code:'NO_API_KEY' });
+}
+if (provider === 'xai' && !process.env.XAI_API_KEY) {
+  return res.status(400).json({ ok:false, provider:'xai', code:'NO_API_KEY' });
+}
 
