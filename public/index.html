@@ -122,6 +122,76 @@
     })();
   </script>
 
+  <!-- 🩹 HOTFIX: jei POST /api/stream?mode=once grąžina SSE, konvertuojam į JSON,
+       kad Paule UI galėtų iškart parodyti atsakymą paneliuose -->
+  <script>
+    (function(){
+      'use strict';
+      if (!window.fetch) return;
+      const prevFetch = window.fetch;
+
+      async function toJsonFromSSE(resp, models){
+        const reader  = resp.body?.getReader?.();
+        if (!reader) return null;
+        const dec = new TextDecoder();
+        let buf = '', text = '';
+        for(;;){
+          const it = await reader.read();
+          if (it.done) break;
+          buf += dec.decode(it.value, {stream:true});
+          let idx;
+          while ((idx = buf.indexOf('\n\n')) >= 0){
+            const frame = buf.slice(0, idx).trim(); buf = buf.slice(idx+2);
+            if (!frame) continue;
+            const dataLine = frame.split('\n').find(l => l.startsWith('data:'));
+            if (!dataLine) continue;
+            const payload = dataLine.replace(/^data:\s*/,'').trim();
+            if (payload === '[DONE]') { buf=''; break; }
+            try{
+              const j = JSON.parse(payload);
+              const piece = j?.choices?.[0]?.delta?.content;
+              if (typeof piece === 'string') text += piece;
+            }catch(_){}
+          }
+        }
+        const answers = (models && models.length ? models : ['auto']).map(m => ({ model:m, text }));
+        return { ok:true, answers };
+      }
+
+      window.fetch = async function(input, init){
+        const url  = typeof input==='string' ? input : (input && input.url) || '';
+        const meth = (init && init.method) || (typeof input!=='string' && input && input.method) || 'GET';
+
+        const isStreamOnce = /\/api\/stream(?:\?|$)/.test(url) && /mode=once/.test(url) && String(meth).toUpperCase()==='POST';
+        if (!isStreamOnce) return prevFetch(input, init);
+
+        // Išsitraukiam models iš body (jei yra)
+        let models = [];
+        try {
+          const raw = (init && init.body) ? String(init.body) : '';
+          if (raw) {
+            const b = JSON.parse(raw);
+            if (typeof b.models === 'string') { models = b.models.split(',').map(s=>s.trim()).filter(Boolean); }
+          }
+        } catch(_){}
+
+        const resp = await prevFetch(input, init);
+        const ct   = (resp.headers.get('content-type')||'').toLowerCase();
+
+        if (ct.includes('text/event-stream')) {
+          const json = await toJsonFromSSE(resp, models);
+          if (json) {
+            return new Response(JSON.stringify(json), {
+              status: 200,
+              headers: { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store' }
+            });
+          }
+        }
+        return resp;
+      };
+    })();
+  </script>
+
   <!-- 🔗 Globalus alias (suderinamumui) -->
   <script>
     window.sendMessage = function(){
@@ -436,6 +506,6 @@
   </script>
 
   <!-- Pagrindinė logika (SSE ir t.t.) -->
-  <script src="/assets/js/paule-ui.js" defer></script>
+  <script src="/assets/js/paule-ui.js?v=1.2.1" defer></script>
 </body>
 </html>
