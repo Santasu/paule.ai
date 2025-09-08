@@ -1,99 +1,89 @@
 // api/stream.js
-const TOGETHER = (process.env.TOGETHER_API_KEY || "").trim();
-
-function sseStart(res){
-  res.setHeader("Content-Type","text/event-stream; charset=utf-8");
-  res.setHeader("Cache-Control","no-cache, no-transform");
-  res.setHeader("Connection","keep-alive");
-  res.setHeader("X-Accel-Buffering","no");
-  res.write(`: ping\n\n`);
-}
-function sseSend(res, event, data){
-  res.write(`event: ${event}\n`);
-  res.write(`data: ${JSON.stringify(data)}\n\n`);
-}
-function sseEnd(res){ res.write(`: bye\n\n`); res.end(); }
-
-async function readBody(req){
-  if (req.method === "GET") return {};
-  const chunks=[]; for await (const c of req) chunks.push(c);
-  const raw = Buffer.concat(chunks).toString("utf8") || "{}";
-  try{ return JSON.parse(raw); }catch{ return {}; }
-}
-
-async function runModel(model, message){
-  // Jei turi Together raktą ir modelis Llama – kviečiam Together.
-  if (TOGETHER && (model.includes("llama") || model==="auto" || model==="paule-ai")){
-    const togetherModel = "meta-llama/Llama-3.3-70B-Instruct-Turbo";
-    const r = await fetch("https://api.together.xyz/v1/chat/completions",{
-      method:"POST",
-      headers:{
-        "Authorization":`Bearer ${TOGETHER}`,
-        "Content-Type":"application/json"
-      },
-      body: JSON.stringify({
-        model: togetherModel,
-        messages:[
-          { role:"system", content:"Tu esi „Paule AI“. Atsakinėk trumpai ir aiškiai, lietuviškai." },
-          { role:"user", content: message }
-        ],
-        temperature:0.7,
-        max_tokens:400
-      })
-    });
-    const j = await r.json().catch(()=> ({}));
-    const out = j?.choices?.[0]?.message?.content || "";
-    return out || `Atsakymas apie: "${message}" – Together OK (bet tuščia).`;
-  }
-
-  // Fallback be raktų (lokalus testas)
-  return `Atsakymas apie: "${message}" – viskas veikia ✅`;
-}
+const {
+  env, readBody, sseStart, sseSend, sseEnd,
+  pickAutoModel, guessProvider, aliasOf, systemLT,
+  openaiCompatStream, inferOnce
+} = require('./_utils');
 
 module.exports = async (req, res) => {
-  const url = new URL(req.url, "http://localhost");
-  const mode = (url.searchParams.get("mode") || "").toLowerCase();
-  const isOnce = req.method === "POST" || mode === "once";
-
-  if (req.method === "OPTIONS"){ res.statusCode=204; return res.end(); }
-
-  // ---- JSON (mode=once) ----
-  if (isOnce){
+  // ----- JSON once (Claude/Gemini/Grok ir pan.) -----
+  if (req.method === 'POST') {
     const body = await readBody(req);
-    const message = (body.message || url.searchParams.get("message") || "Labas").slice(0, 2000);
-    const models = String(body.models || body.model || url.searchParams.get("models") || "paule-ai")
-      .split(",").map(s=>s.trim()).filter(Boolean);
+    const msg = String(body.message || body.prompt || '').slice(0, 4000);
+    const models = String(body.models || body.model || 'auto').split(',').map(s=>s.trim()).filter(Boolean);
+    if (!msg || !models.length) return json(res, 400, { ok:false, error:'BAD_REQUEST' });
 
     const answers = [];
-    for (const m of models){
-      const text = await runModel(m, message);
-      answers.push({ model: m, text });
+    for (const m of models) {
+      const model = (m === 'auto') ? pickAutoModel() : m;
+      const out = await inferOnce(model, [
+        { role:'system', content:systemLT(aliasOf(model), model, guessProvider(model)) },
+        { role:'user', content: msg }
+      ], { maxTokens: 1024, temperature: 0.6 });
+      answers.push({ model, text: out.output || '' });
     }
-    res.setHeader("Content-Type","application/json; charset=utf-8");
-    res.setHeader("Cache-Control","no-store");
-    return res.status(200).json({ ok:true, answers });
+    return json(res, 200, { ok:true, mode:'once', answers });
   }
 
-  // ---- SSE ----
-  const message = (url.searchParams.get("message") || "Labas").slice(0, 2000);
-  const model = (url.searchParams.get("model") || url.searchParams.get("models") || "paule-ai");
+  // ----- SSE (OpenAI-compatible stream) -----
+  const url = new URL(req.url, 'http://localhost');
+  const message = (url.searchParams.get('message') || '').slice(0, 4000);
+  let model = url.searchParams.get('model') || url.searchParams.get('models') || 'auto';
+  if (!message) return json(res, 400, { ok:false, error:'MESSAGE_MISSING' });
+
+  if (model === 'auto') model = pickAutoModel();
+  const provider = guessProvider(model);
+  const alias = aliasOf(model);
 
   sseStart(res);
-  const chat_id = "chat_"+Date.now();
-  sseSend(res, "start", { chat_id });
-  sseSend(res, "model_init", { model, panel:"auto", chat_id });
+  const chat_id = 'chat_' + Date.now();
+  sseSend(res, 'start', { chat_id });
+  sseSend(res, 'model_init', { chat_id, model, panel:'auto' });
 
-  try{
-    const full = await runModel(model, message);
-    // "srautam" gabaliukais:
-    const parts = full.match(/.{1,120}/g) || [full];
-    for (const p of parts){ sseSend(res, "delta", { model, panel:"auto", text: p }); }
-    sseSend(res, "answer", { model, panel:"auto", text: full });
-    sseSend(res, "model_done", { model, panel:"auto" });
-    sseSend(res, "done", { ok:true, chat_id });
-    sseEnd(res);
-  }catch(e){
-    sseSend(res, "error", { ok:false, error:String(e?.message || e) });
-    sseEnd(res);
+  // OpenAI-compatible tiekėjai (stream:true)
+  const prov = {
+    openai:   { url: 'https://api.openai.com/v1/chat/completions', key: env.OPENAI,   header: 'Authorization' },
+    together: { url: 'https://api.together.xyz/v1/chat/completions', key: env.TOGETHER, header: 'Authorization' },
+    deepseek: { url: 'https://api.deepseek.com/chat/completions', key: env.DEEPSEEK, header: 'Authorization' },
+    xai:      { url: 'https://api.x.ai/v1/chat/completions',      key: env.XAI,      header: 'Authorization' },
+  };
+
+  if (prov[provider] && prov[provider].key) {
+    const { url: apiURL, key, header } = prov[provider];
+    await openaiCompatStream({
+      url: apiURL,
+      headers: { [header]: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      payload: {
+        model,
+        stream: true,
+        temperature: 0.6,
+        max_tokens: 1024,
+        messages: [
+          { role:'system', content: systemLT(alias, model, provider) },
+          { role:'user', content: message }
+        ]
+      },
+      res,
+      meta:{ provider, model, alias }
+    });
+    sseSend(res, 'model_done', { model, panel:'auto' });
+    sseSend(res, 'done', { ok:true, chat_id });
+    return sseEnd(res);
   }
+
+  // Fallback (jei nėra rakto / ne OpenAI-compatible tiekėjas)
+  const txt = `Atsakymas apie: "${message}" – viskas veikia ✅`;
+  sseSend(res, 'delta',  { model, panel:'auto', text: txt });
+  sseSend(res, 'answer', { model, panel:'auto', text: txt });
+  sseSend(res, 'model_done', { model, panel:'auto' });
+  sseSend(res, 'done', { ok:true, chat_id });
+  return sseEnd(res);
 };
+
+function json(res, code, obj){
+  res.statusCode = code;
+  res.setHeader('Content-Type','application/json; charset=utf-8');
+  res.setHeader('Cache-Control','no-store');
+  res.end(JSON.stringify(obj));
+}
+
