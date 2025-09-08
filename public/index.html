@@ -6,109 +6,86 @@
   <title>Paule – Premium AI Chat</title>
   <link rel="stylesheet" href="/assets/css/paule.css">
 
-  <!-- Greiti UI override'ai (kol neperkelta į CSS) -->
+  <!-- Greiti UI override'ai -->
   <style>
-    /* Top modelių juosta – didesnės ikonos ir lygiuotė */
-    .models-in-topbar .model-pill .ui-icon{width:28px;height:28px;margin-right:8px;display:inline-block;vertical-align:middle}
+    /* --- Logotipas (SVG, prisitaikanti spalva) --- */
+    .brand .logo-svg{width:86px;height:28px;display:block;color:var(--fg-strong,#0b0d12)}
+    :root[data-theme="dark"] .brand .logo-svg{color:#fff}
+
+    /* --- Modelių juosta --- */
+    .models-in-topbar .model-pill .ui-icon{width:30px;height:30px;margin-right:8px;display:inline-block;vertical-align:middle}
     .models-in-topbar .model-pill{gap:8px}
 
-    /* Įvedimo juosta – siaurinam ir auginam */
+    /* --- Įvedimo juosta --- */
     .bottom-section{padding:8px 12px}
     .bottom-section .input-bar{max-width:1100px;margin:0 auto}
-    .message-input{
-      min-height:56px; max-height:40vh; overflow:auto; resize:none;
-      line-height:1.5; padding:12px 14px;
-    }
+    .message-input{min-height:56px;max-height:40vh;overflow:auto;resize:none;line-height:1.5;padding:12px 14px}
 
-    /* Sprendimų juosta (Ginčas/Teisėjas/Kompromisas) */
-    .decision-bar{position:sticky; top:72px; z-index:5; display:flex; gap:10px; justify-content:center; margin:8px 0 14px}
+    /* --- Sprendimų juosta (Ginčas / Teisėjas / Kompromisas) --- */
+    .decision-bar{position:sticky;top:72px;z-index:5;display:flex;gap:10px;justify-content:center;margin:8px 0 14px}
     .decision-chip{
-      display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px;
-      border:1px solid var(--border); background:var(--bg-primary); cursor:pointer; user-select:none;
-      box-shadow:0 6px 24px rgba(0,0,0,.06);
-      transition:transform .15s ease, box-shadow .15s ease;
+      display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid var(--border);
+      background:var(--bg-primary);cursor:pointer;user-select:none;box-shadow:0 6px 24px rgba(0,0,0,.06);
+      transition:transform .15s ease,box-shadow .15s ease
     }
-    .decision-chip:hover{transform:translateY(-1px); box-shadow:0 10px 30px rgba(0,0,0,.10)}
+    .decision-chip:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(0,0,0,.10)}
     .decision-chip img{width:18px;height:18px}
     .decision-bar.boom .decision-chip{animation:pop .25s ease}
     @keyframes pop{0%{transform:scale(.98)}100%{transform:scale(1)}}
 
-    /* Login dropdown */
-    .login-dropdown{position:absolute; right:12px; top:48px; background:var(--bg-primary); border:1px solid var(--border);
-      border-radius:12px; padding:10px; box-shadow:0 12px 40px rgba(0,0,0,.15); width:240px; display:none}
+    /* --- Login dropdown --- */
+    .login-dropdown{position:absolute;right:12px;top:48px;background:var(--bg-primary);border:1px solid var(--border);
+      border-radius:12px;padding:10px;box-shadow:0 12px 40px rgba(0,0,0,.15);width:240px;display:none}
     .login-dropdown.open{display:block}
-    .login-dropdown .btn{width:100%; display:flex; gap:8px; align-items:center; justify-content:center}
+    .login-dropdown .btn{width:100%;display:flex;gap:8px;align-items:center;justify-content:center}
     .login-anchor{position:relative}
 
-    /* Bibliotekos thumbs */
-    .library-grid{grid-template-columns:repeat(3,1fr); gap:10px}
-    .lib-card.thumb{display:flex; flex-direction:column; gap:6px}
-    .lib-card.thumb img{width:100%; height:70px; object-fit:cover; border-radius:12px; border:1px solid var(--border)}
+    /* --- Bibliotekos thumbs --- */
+    .library-grid{grid-template-columns:repeat(3,1fr);gap:10px}
+    .lib-card.thumb{display:flex;flex-direction:column;gap:6px}
+    .lib-card.thumb img{width:100%;height:70px;object-fit:cover;border-radius:12px;border:1px solid var(--border)}
 
-    /* Specialisto overlay */
-    .spec-overlay{position:fixed; inset:0; background:#000; opacity:.92; display:none; z-index:1000}
+    /* --- Hero kortelės: žemesnė kadruotė + gradientas + overlay tekstas --- */
+    .welcome-card{position:relative;overflow:hidden}
+    .welcome-card img{width:100%;height:180px;object-fit:cover;object-position:center 60%}
+    .welcome-card::after{
+      content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 35%, rgba(0,0,0,.55) 100%)
+    }
+    .welcome-card b,.welcome-card span{
+      position:absolute;left:16px;right:16px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.45)
+    }
+    .welcome-card b{bottom:42px;font-size:18px;letter-spacing:.2px}
+    .welcome-card span{bottom:16px;font-size:13px;opacity:.92}
+
+    /* Specialisto overlay (juodas per visą ekraną) */
+    .spec-overlay{position:fixed;inset:0;background:#000;opacity:.92;display:none;z-index:1000}
     .spec-overlay.open{display:block}
-    .spec-overlay .close-tip{position:absolute; inset:auto 0 0 0; color:#fff; text-align:center; padding:18px; opacity:.7}
-
-    /* Hero kortelių img saugikliai */
-    .welcome-card img{object-fit:cover}
+    .spec-overlay .close-tip{position:absolute;inset:auto 0 0 0;color:#fff;text-align:center;padding:18px;opacity:.7}
   </style>
 
-  <!-- 🔧 PAULE konfigūracija (VERCEL režimas: /api/* maršrutai) -->
+  <!-- 🔧 PAULE konfigūracija -->
   <script id="paule-config">
     (function () {
-      var htmlAttr = (document.documentElement.getAttribute('data-backend') || '').trim().toLowerCase();
-      var MODE = htmlAttr === 'vercel' ? 'vercel' : 'wp';
-      var restBase = MODE === 'vercel' ? '/api' : '/wp-json/paule/v1';
-
+      var MODE = (document.documentElement.getAttribute('data-backend')||'').trim().toLowerCase()==='vercel' ? 'vercel':'wp';
+      var restBase = MODE==='vercel' ? '/api' : '/wp-json/paule/v1';
       var routes = {
-        base: restBase,
-        stream:        restBase + '/stream',
-        models:        restBase + '/models',
-        diagnostics:   restBase + '/diagnostics',
-        comicCreate:   restBase + '/comic/create',
-        fluxCreate:    restBase + '/flux/create',
-        triptych:      restBase + '/image/triptych-series',
-        personaCreate: restBase + '/persona/create',
-        personaList:   restBase + '/persona/list',
-        personaSeries: restBase + '/persona/generate_series',
-        musicCreate:   restBase + '/music/create',
-        musicStatus:   restBase + '/music/status',
-        musicCallback: restBase + '/music/callback',
-        runwayImage:   restBase + '/runway/image',
-        runwayStatus:  restBase + '/runway/status',
-        runwayVideoUpscale:         restBase + '/runway/video-upscale',
-        runwayCharacterPerformance: restBase + '/runway/character-performance',
-        runwayVideoToVideo:         restBase + '/runway/video-to-video',
-        runwayImageToVideo:         restBase + '/runway/image-to-video',
-        runwayTextVideo:            restBase + '/runway/text-video',
-        runwayTextVideoPipeline:    restBase + '/runway/text-video-pipeline',
-        runwayPipelineStatus:       restBase + '/runway/pipeline-status',
-        runwayPing:                 restBase + '/runway/ping'
+        base:restBase, stream:restBase+'/stream', models:restBase+'/models', diagnostics:restBase+'/diagnostics',
+        comicCreate:restBase+'/comic/create', fluxCreate:restBase+'/flux/create', triptych:restBase+'/image/triptych-series',
+        personaCreate:restBase+'/persona/create', personaList:restBase+'/persona/list', personaSeries:restBase+'/persona/generate_series',
+        musicCreate:restBase+'/music/create', musicStatus:restBase+'/music/status', musicCallback:restBase+'/music/callback',
+        runwayImage:restBase+'/runway/image', runwayStatus:restBase+'/runway/status',
+        runwayVideoUpscale:restBase+'/runway/video-upscale', runwayCharacterPerformance:restBase+'/runway/character-performance',
+        runwayVideoToVideo:restBase+'/runway/video-to-video', runwayImageToVideo:restBase+'/runway/image-to-video',
+        runwayTextVideo:restBase+'/runway/text-video', runwayTextVideoPipeline:restBase+'/runway/text-video-pipeline',
+        runwayPipelineStatus:restBase+'/runway/pipeline-status', runwayPing:restBase+'/runway/ping'
       };
-
       var CFG = {
-        mode: MODE,
-        restBase: routes.base,
-        restStream: routes.stream,
-        restStreamSSE: routes.stream,   // švarus /api/stream
-        sseDefault: 1,
-        pluginBase:   '/assets',
-        iconsBase:    '/assets/icon',
-        featuresBase: '/assets/features',
-        routes: routes,
-        version: 'paule-1.0.2'
+        mode:MODE, restBase:routes.base, restStream:routes.stream, restStreamSSE:routes.stream, sseDefault:1,
+        pluginBase:'/assets', iconsBase:'/assets/icon', featuresBase:'/assets/features', routes:routes, version:'paule-1.0.3'
       };
-
-      window.PAULE_CONFIG = CFG;
-      window.AUGAM_CONFIG = CFG;
-
-      try {
-        Object.defineProperty(window, 'API_BASE', {
-          configurable: true, get: function(){ return CFG.restBase; }, set: function(_){}
-        });
-      } catch(e) {}
-      window.__SET_API_BASE__ = function (v) { /* optional */ };
+      window.PAULE_CONFIG = CFG; window.AUGAM_CONFIG = CFG;
+      try{ Object.defineProperty(window,'API_BASE',{configurable:true,get:function(){return CFG.restBase;},set:function(_){}});}catch(e){}
+      window.__SET_API_BASE__ = function(v){};
     })();
   </script>
 
@@ -116,35 +93,28 @@
   <script id="paule-bridge">
     (function(){
       'use strict';
-      try {
-        var restBase = (window.PAULE_CONFIG && window.PAULE_CONFIG.restBase) || '/api';
-        if (window.EventSource) {
-          var OrigES = window.EventSource;
-          window.EventSource = function(url, opts){
-            try { url = String(url)
-              .replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/, '/api$1')
-              .replace(/\/(?:augam|paule)\/v1(\/|$)/, '/api$1'); } catch(_){}
-            return new OrigES(url, opts);
+      try{
+        var restBase=(window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)||'/api';
+        if(window.EventSource){
+          var OrigES=window.EventSource;
+          window.EventSource=function(url,opts){
+            try{url=String(url).replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/,'/api$1').replace(/\/(?:augam|paule)\/v1(\/|$)/,'/api$1');}catch(_){}
+            return new OrigES(url,opts);
           };
-          window.EventSource.prototype = OrigES.prototype;
+          window.EventSource.prototype=OrigES.prototype;
         }
-        if (window.fetch) {
-          var origFetch = window.fetch;
-          window.fetch = function(input, init){
-            try {
-              var u = (typeof input === 'string') ? input : (input && input.url);
-              if (u) {
-                var nu = String(u)
-                  .replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/, '/api$1')
-                  .replace(/\/(?:augam|paule)\/v1(\/|$)/, '/api$1');
-                if (nu !== u) input = (typeof input === 'string') ? nu : new Request(nu, input);
-              }
-            } catch(_){}
-            return origFetch(input, init);
+        if(window.fetch){
+          var origFetch=window.fetch;
+          window.fetch=function(input,init){
+            try{var u=(typeof input==='string')?input:(input&&input.url);
+              if(u){var nu=String(u).replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/,'/api$1').replace(/\/(?:augam|paule)\/v1(\/|$)/,'/api$1');
+                if(nu!==u) input=(typeof input==='string')?nu:new Request(nu,input);
+              }}catch(_){}
+            return origFetch(input,init);
           };
         }
-        window.__FORCE_STREAM_ENDPOINT__ = restBase.replace(/\/+$/,'') + '/stream';
-      } catch(e) { console.warn('[PAULE bridge] warning:', e); }
+        window.__FORCE_STREAM_ENDPOINT__=restBase.replace(/\/+$/,'')+'/stream';
+      }catch(e){console.warn('[PAULE bridge] warning:',e);}
     })();
   </script>
 </head>
@@ -159,11 +129,17 @@
   <!-- ===== TOPBAR ===== -->
   <header class="topbar" data-no-clip="true">
     <a class="brand" href="/" aria-label="Paule">
-      <!-- Dark logotipas -->
-      <img id="brandLogo" class="brand-icon" src="/assets/icon/paule-logo-b.webp" alt="paule">
+      <!-- SVG logotipas (prisitaikanti spalva per currentColor) -->
+      <svg id="brandLogo" class="logo-svg" viewBox="0 0 120 28" role="img" aria-label="paule">
+        <title>paule</title>
+        <!-- paprastas ženkliukas + tekstas -->
+        <circle cx="12" cy="14" r="10" fill="currentColor" opacity="0.14"></circle>
+        <circle cx="12" cy="14" r="6"  fill="currentColor"></circle>
+        <text x="28" y="19" fill="currentColor" font-size="16" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial" letter-spacing=".4">paule</text>
+      </svg>
     </a>
 
-    <!-- 🆔 modelList -->
+    <!-- Modelių juosta -->
     <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
       <button class="model-pill active" data-model="auto" aria-pressed="true">
         <img class="ui-icon" src="/assets/icon/paule-icon.webp" alt=""> Paule
@@ -199,7 +175,7 @@
         </div>
       </div>
 
-      <!-- Kai prisijungta -->
+      <!-- Kai prisijungta (palikta struktūra) -->
       <div class="user-profile hidden" id="userProfile">
         <div class="user-avatar" id="userAvatar">U</div>
         <div class="user-name" id="userName">Vartotojas</div>
@@ -309,7 +285,7 @@
         <div id="decisionBar" class="decision-bar" style="display:none">
           <div class="decision-chip" data-mode="debate"><img src="/assets/icon/ai.svg" alt=""> AI ginčas</div>
           <div class="decision-chip" data-mode="judge"><img src="/assets/icon/legal-contract.svg" alt=""> Teisėjas</div>
-          <div class="decision-chip" data-mode="compromise"><img src="/assets/icon/compromise.svg" onerror="this.src='/assets/icon/ai.svg'" alt=""> Kompromisas</div>
+          <div class="decision-chip" data-mode="compromise"><img src="/assets/icon/ai.svg" alt=""> Kompromisas</div>
         </div>
 
         <!-- Hero -->
@@ -320,27 +296,27 @@
           <div class="welcome-grid">
             <a class="welcome-card" href="#" data-action="song">
               <img src="/assets/hero/music.webp" alt="">
-              <b>Sukurti dainą</b><span>Žodžiai + muzika</span>
+              <b>Sukurti dainą</b><span>Pasveikink draugą unikalia gimtadienio daina.</span>
             </a>
             <a class="welcome-card" href="#" data-action="song-photo">
               <img src="/assets/hero/song-photo.webp" alt="">
-              <b>Daina iš foto</b><span>Įkvėpta vaizdo</span>
+              <b>Daina iš nuotraukos</b><span>Įkelk kadrą ir gauk originalią melodiją su žodžiais.</span>
             </a>
             <a class="welcome-card" href="#" data-action="photo">
               <img src="/assets/hero/photo.webp" alt="">
-              <b>Sukurti nuotrauką</b><span>Produkto ar viršelio</span>
+              <b>Sukurti nuotrauką</b><span>Produktai, scenos, peizažai, selfiai ir animacija.</span>
             </a>
             <a class="welcome-card" href="#" data-action="mindmap">
               <img src="/assets/hero/mindmap.webp" alt="">
-              <b>Minčių žemėlapis</b><span>Idėjų struktūra</span>
+              <b>Minčių žemėlapis</b><span>Susitelk į esmę ir didink produktyvumą.</span>
             </a>
             <a class="welcome-card" href="/spec/goal.html">
               <img src="/assets/hero/goals.webp" alt="">
-              <b>Įgyvendinti tikslus</b><span>UGS sistema</span>
+              <b>Tikslų sistema (AI)</b><span>Vizija → užduotys → realūs rezultatai.</span>
             </a>
             <a class="welcome-card" href="#" data-action="video">
               <img src="/assets/hero/video.webp" alt="">
-              <b>Sukurti video</b><span>Runway pipeline</span>
+              <b>Sukurti video</b><span>Reels ir Stories iš teksto ar nuotraukų.</span>
             </a>
           </div>
 
@@ -376,28 +352,23 @@
     </div>
   </div>
 
-  <!-- Minimal JS (tema, mobilus, enter, kortelės, login dropdown, overlay) -->
+  <!-- Minimal HTML-only JS (login dropdown, overlay, hero clickai) -->
   <script>
     (function(){
-      const root = document.documentElement;
-      const logo = document.getElementById('brandLogo');
-      const sidebar = document.getElementById('sidebar');
-      const btnMobile = document.getElementById('btnMobile');
-      const mobileOverlay = document.getElementById('mobileOverlay');
-      const msgInput = document.getElementById('messageInput');
-      const sendBtn = document.getElementById('sendBtn');
-      const btnLogin = document.getElementById('btnLogin');
-      const loginDropdown = document.getElementById('loginDropdown');
-      const specOverlay = document.getElementById('specOverlay');
+      const root=document.documentElement;
+      const sidebar=document.getElementById('sidebar');
+      const btnMobile=document.getElementById('btnMobile');
+      const mobileOverlay=document.getElementById('mobileOverlay');
+      const msgInput=document.getElementById('messageInput');
+      const sendBtn=document.getElementById('sendBtn');
+      const btnLogin=document.getElementById('btnLogin');
+      const loginDropdown=document.getElementById('loginDropdown');
+      const specOverlay=document.getElementById('specOverlay');
 
-      function updateLogo(){
-        const isDark = (root.getAttribute('data-theme') === 'dark');
-        // dark – b versija, light – paprasta
-        logo.src = isDark ? '/assets/icon/paule-logo-b.webp' : '/assets/icon/paule-logo.webp';
-      }
-      updateLogo();
-
-      document.getElementById('selTheme')?.addEventListener('change', e=>{ root.setAttribute('data-theme', e.target.value); updateLogo(); });
+      // Tema (jei turi select'ą)
+      document.getElementById('selTheme')?.addEventListener('change',e=>{
+        root.setAttribute('data-theme', e.target.value);
+      });
 
       // Mobilus meniu
       btnMobile?.addEventListener('click', ()=>{
@@ -407,49 +378,45 @@
       mobileOverlay?.addEventListener('click', ()=>{ sidebar.classList.remove('open'); mobileOverlay.style.display='none'; });
 
       // Enter → siųsti
-      if (msgInput) {
+      if(msgInput){
         msgInput.addEventListener('keydown', function(e){
-          if (e.key === 'Enter' && !e.shiftKey) {
+          if (e.key==='Enter' && !e.shiftKey){
             e.preventDefault();
-            if (window.sendMessage) { window.sendMessage(); }
-            else if (sendBtn) { sendBtn.click(); }
+            if(window.sendMessage) window.sendMessage(); else if(sendBtn) sendBtn.click();
           }
         });
       }
 
+      // Login dropdown
+      btnLogin?.addEventListener('click', (e)=>{ e.preventDefault(); loginDropdown?.classList.toggle('open'); });
+      document.addEventListener('click', (e)=>{ if(!e.target.closest('.login-anchor')) loginDropdown?.classList.remove('open'); });
+
       // Hero kortelės
       function bindWelcomeCards(){
-        var arr = document.querySelectorAll('.welcome-grid .welcome-card');
-        for (var i = 0; i < arr.length; i++) {
+        var arr=document.querySelectorAll('.welcome-grid .welcome-card');
+        for (var i=0;i<arr.length;i++){
           arr[i].addEventListener('click', function (e) {
-            var a = e.currentTarget.getAttribute('data-action');
-            if (a === 'song') { e.preventDefault(); document.querySelector('.tool[data-tool="song"]')?.click(); }
-            else if (a === 'song-photo') { e.preventDefault(); document.querySelector('.tool[data-tool="song"]')?.click(); }
-            else if (a === 'photo') { e.preventDefault(); document.querySelector('.tool[data-tool="photo"]')?.click(); }
-            else if (a === 'mindmap') { e.preventDefault(); document.querySelector('.tool[data-tool="mindmap"]')?.click(); }
-            else if (a === 'video') { e.preventDefault(); document.querySelector('.tool[data-tool="video"]')?.click(); }
+            var a=e.currentTarget.getAttribute('data-action');
+            if(a==='song'){ e.preventDefault(); document.querySelector('.tool[data-tool="song"]')?.click(); }
+            else if(a==='song-photo'){ e.preventDefault(); document.querySelector('.tool[data-tool="song"]')?.click(); }
+            else if(a==='photo'){ e.preventDefault(); document.querySelector('.tool[data-tool="photo"]')?.click(); }
+            else if(a==='mindmap'){ e.preventDefault(); document.querySelector('.tool[data-tool="mindmap"]')?.click(); }
+            else if(a==='video'){ e.preventDefault(); document.querySelector('.tool[data-tool="video"]')?.click(); }
           });
         }
       }
       bindWelcomeCards();
 
-      // Login dropdown
-      btnLogin?.addEventListener('click', (e)=>{ e.preventDefault(); loginDropdown?.classList.toggle('open'); });
-      document.addEventListener('click', (e)=>{
-        if (!e.target.closest('.login-anchor')) loginDropdown?.classList.remove('open');
-      });
-
       // Specialisto overlay
       document.getElementById('specialistGrid')?.addEventListener('click', (e)=>{
-        const chip = e.target.closest('[data-route]'); if (!chip) return;
-        e.preventDefault();
-        specOverlay?.classList.add('open');
+        const chip=e.target.closest('[data-route]'); if(!chip) return;
+        e.preventDefault(); specOverlay?.classList.add('open');
       });
       specOverlay?.addEventListener('click', ()=> specOverlay.classList.remove('open'));
     })();
   </script>
 
-  <!-- Pagrindinė logika -->
+  <!-- Pagrindinė logika (SSE, ginčas/teisėjas/kompromisas ir t.t.) -->
   <script src="/assets/js/paule-ui.js" defer></script>
 </body>
 </html>
