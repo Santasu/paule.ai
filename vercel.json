@@ -20,6 +20,8 @@
     { "src": "^/api/paule/v1/runway/status$",    "dest": "/api/runway/status.js" },
     { "src": "^/api/paule/v1/music/create$",     "dest": "/api/music/create.js" },
     { "src": "^/api/paule/v1/music/status$",     "dest": "/api/music/status.js" },
+    
+    { "src": "^/api/sse-ping$",                  "dest": "/api/sse-ping.js" }
 
     { "src": "^/wp-json/paule/v1/stream$",       "dest": "/api/stream.js" },
     { "src": "^/wp-json/paule/v1/models$",       "dest": "/api/models.js" },
