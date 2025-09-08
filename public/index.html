@@ -10,13 +10,12 @@
   <script>
     (function () {
       var MODE=(document.documentElement.getAttribute('data-backend')||'').trim().toLowerCase()==='vercel'?'vercel':'wp';
-      var restBase = MODE==='vercel' ? '/api' : '/wp-json/paule/v1';
-      var routes={ base:restBase, stream:restBase+'/stream', models:restBase+'/models',
-        diagnostics:restBase+'/diagnostics', comicCreate:restBase+'/comic/create',
-        fluxCreate:restBase+'/flux/create', triptych:restBase+'/image/triptych-series',
-        personaCreate:restBase+'/persona/create', personaList:restBase+'/persona/list',
-        personaSeries:restBase+'/persona/generate_series', musicCreate:restBase+'/music/create',
-        musicStatus:restBase+'/music/status', musicCallback:restBase+'/music/callback',
+      var restBase=MODE==='vercel'?'/api':'/wp-json/paule/v1';
+      var routes={
+        base:restBase, stream:restBase+'/stream', models:restBase+'/models', diagnostics:restBase+'/diagnostics',
+        comicCreate:restBase+'/comic/create', fluxCreate:restBase+'/flux/create', triptych:restBase+'/image/triptych-series',
+        personaCreate:restBase+'/persona/create', personaList:restBase+'/persona/list', personaSeries:restBase+'/persona/generate_series',
+        musicCreate:restBase+'/music/create', musicStatus:restBase+'/music/status', musicCallback:restBase+'/music/callback',
         runwayImage:restBase+'/runway/image', runwayStatus:restBase+'/runway/status',
         runwayVideoUpscale:restBase+'/runway/video-upscale', runwayCharacterPerformance:restBase+'/runway/character-performance',
         runwayVideoToVideo:restBase+'/runway/video-to-video', runwayImageToVideo:restBase+'/runway/image-to-video',
@@ -24,7 +23,7 @@
         runwayPipelineStatus:restBase+'/runway/pipeline-status', runwayPing:restBase+'/runway/ping'
       };
       var CFG={mode:MODE,restBase:routes.base,restStream:routes.stream,restStreamSSE:routes.stream,sseDefault:1,
-        pluginBase:'/assets',iconsBase:'/assets/icon',featuresBase:'/assets/features',routes:routes,version:'paule-1.0.4'};
+        pluginBase:'/assets',iconsBase:'/assets/icon',featuresBase:'/assets/features',routes:routes,version:'paule-1.0.3'};
       window.PAULE_CONFIG=CFG; window.AUGAM_CONFIG=CFG;
       try{Object.defineProperty(window,'API_BASE',{configurable:true,get:function(){return CFG.restBase;},set:function(_){}});}catch(e){}
       window.__SET_API_BASE__=function(v){};
@@ -34,6 +33,7 @@
   <!-- ✅ Bridge WP->/api -->
   <script>
     (function(){
+      'use strict';
       try{
         var restBase=(window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)||'/api';
         if(window.EventSource){
@@ -45,13 +45,13 @@
           window.EventSource.prototype=OrigES.prototype;
         }
         if(window.fetch){
-          var of=window.fetch;
+          var origFetch=window.fetch;
           window.fetch=function(input,init){
             try{var u=(typeof input==='string')?input:(input&&input.url);
               if(u){var nu=String(u).replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/,'/api$1').replace(/\/(?:augam|paule)\/v1(\/|$)/,'/api$1');
                 if(nu!==u) input=(typeof input==='string')?nu:new Request(nu,input);
               }}catch(_){}
-            return of(input,init);
+            return origFetch(input,init);
           };
         }
         window.__FORCE_STREAM_ENDPOINT__=restBase.replace(/\/+$/,'')+'/stream';
@@ -62,16 +62,15 @@
 <body>
 
   <!-- ===== TOPBAR ===== -->
-  <header class="topbar" role="banner">
+  <header class="topbar" data-no-clip="true">
     <a class="brand" href="/" aria-label="Paule">
+      <!-- LOGO: keičiamas pagal temą JS'e -->
       <img id="brandLogo" class="brand-icon" src="/assets/icon/paule-logo.webp" alt="paule">
     </a>
 
-    <!-- Modelių juosta -->
+    <!-- Modelių juosta (PC ir MOBILE – horizontaliai scroll'inama) -->
     <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
-      <button class="model-pill active" data-model="auto" aria-pressed="true">
-        <img class="ui-icon" src="/assets/icon/paule-icon.webp" alt=""> Paule
-      </button>
+      <button class="model-pill active" data-model="auto" aria-pressed="true"><img class="ui-icon" src="/assets/icon/paule-icon.webp" alt=""> Paule</button>
       <button class="model-pill" data-model="chatgpt"><img class="ui-icon" src="/assets/icon/chatgpt.svg" alt=""> ChatGPT</button>
       <button class="model-pill" data-model="claude"><img class="ui-icon" src="/assets/icon/claude-seeklogo.svg" alt=""> Claude</button>
       <button class="model-pill" data-model="gemini"><img class="ui-icon" src="/assets/icon/gemini.svg" alt=""> Gemini</button>
@@ -80,22 +79,17 @@
       <button class="model-pill" data-model="llama"><img class="ui-icon" src="/assets/icon/llama.svg" alt=""> Llama</button>
     </nav>
 
-    <!-- Dešinės pusės veiksmai -->
     <div class="top-actions">
-      <a class="btn ghost" href="/community" role="button">
+      <!-- PC: Bendruomenė; MOBILE: paslepiame (bus meniu viduje) -->
+      <a class="btn ghost" data-nav="community" href="/community" role="button">
         <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė
       </a>
       <button class="btn ghost" id="btnNewChat">
         <img class="ui-icon" src="/assets/icon/nav-new-chat.svg" alt=""> Naujas pokalbis
       </button>
 
-      <!-- Mobile: atidaro šoninį meniu -->
-      <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)">
-        <img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu
-      </button>
-
-      <!-- Tema (desktop) -->
-      <div class="login-anchor hide-on-mobile">
+      <!-- Tema – PC; MOBILE: slepiam (bus stalčiuje) -->
+      <div class="login-anchor theme-anchor">
         <button class="btn ghost" id="btnTheme"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tema</button>
         <div class="login-dropdown" id="themeDropdown">
           <button class="btn" data-theme="light">Šviesi</button>
@@ -110,16 +104,33 @@
         </button>
         <div class="login-dropdown" id="loginDropdown">
           <a class="btn" id="googleLoginBtn" href="#"><img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti su Google</a>
-          <a class="btn" id="emailLoginBtn" href="#"><img class="ui-icon" src="/assets/icon/mail.svg" alt=""> Prisijungti el. paštu</a>
+          <a class="btn" id="emailLoginBtn"  href="#"><img class="ui-icon" src="/assets/icon/mail.svg"   alt=""> Prisijungti el. paštu</a>
         </div>
       </div>
+
+      <!-- MOBILE burger -->
+      <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)">
+        <img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu
+      </button>
     </div>
   </header>
 
+  <!-- Overlay mobilio stalčiaus -->
+  <div id="drawerOverlay" class="drawer-overlay"></div>
+
   <!-- ===== LAYOUT ===== -->
   <div class="layout">
-    <!-- ===== SIDEBAR ===== -->
+    <!-- ===== SIDEBAR (naudojamas kaip stalčius mobile) ===== -->
     <aside class="sidebar" id="sidebar">
+      <!-- „Bendruomenė“ ir Tema – MOBILE tik šitas blokas matomas -->
+      <section class="side-section mobile-only">
+        <a class="project-item" href="/community"><img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė</a>
+        <div class="control-group" style="display:flex;gap:8px;margin-top:8px">
+          <button class="chip" data-set-theme="light"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Šviesi</button>
+          <button class="chip" data-set-theme="dark"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tamsi</button>
+        </div>
+      </section>
+
       <!-- AI specialistai -->
       <section class="side-section">
         <div class="side-title">AI specialistai</div>
@@ -147,7 +158,7 @@
         </div>
       </section>
 
-      <!-- Bibliotekos miniatiūros (didesnės) -->
+      <!-- Bibliotekos thumb'ai -->
       <section class="side-section">
         <div class="side-title"><a class="lib-link" href="/biblioteka#dainos">Dainos</a></div>
         <div class="library-grid thumbs" id="songsFeed">
@@ -196,7 +207,7 @@
     <main class="main">
       <div class="chat-area" id="chatArea">
 
-        <!-- Sprendimų juosta -->
+        <!-- Sprendimų juosta (užpildoma JS po pirmo atsakymo) -->
         <div id="decisionBar" class="decision-bar" style="display:none">
           <div class="decision-chip" data-mode="debate"><img class="ui-icon" src="/assets/icon/ai.svg" alt=""> AI ginčas</div>
           <div class="decision-chip" data-mode="judge"><img class="ui-icon" src="/assets/icon/legal-contract.svg" alt=""> Teisėjas</div>
@@ -267,45 +278,13 @@
     </div>
   </div>
 
-  <!-- ===== MOBILE SHEET (kairė meniu + bendruomenė + tema) ===== -->
-  <div id="mobileBack" class="mobile-backdrop"></div>
-  <aside id="mobileSheet" class="mobile-sheet" aria-hidden="true">
-    <div class="sheet-body">
-      <a class="sheet-tile" href="/community">
-        <img class="ui-icon" src="/assets/icon/nav-results.svg" alt="">
-        <span>Bendruomenė</span>
-      </a>
-
-      <div class="sheet-block">
-        <div class="side-title">AI specialistai</div>
-        <div class="specialist-grid">
-          <a class="chip" href="#spec-sefas"><img class="ui-icon" src="/assets/icon/chef-knife.svg" alt=""> Šefas</a>
-          <a class="chip" href="#spec-marketing"><img class="ui-icon" src="/assets/icon/marketing-megaphone.svg" alt=""> Marketing</a>
-          <a class="chip" href="#spec-pardavimai"><img class="ui-icon" src="/assets/icon/sales-handshake.svg" alt=""> Pardavimai</a>
-          <a class="chip" href="#spec-verslas"><img class="ui-icon" src="/assets/icon/business-strategy.svg" alt=""> Verslas</a>
-          <a class="chip" href="#spec-finansai"><img class="ui-icon" src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
-          <a class="chip" href="#spec-keliones"><img class="ui-icon" src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
-          <a class="chip" href="#spec-renginiai"><img class="ui-icon" src="/assets/icon/event-planning.svg" alt=""> Renginiai</a>
-          <a class="chip" href="/spec/goal.html"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
-          <a class="chip" href="#spec-teise"><img class="ui-icon" src="/assets/icon/legal-contract.svg" alt=""> Teisininkas</a>
-          <a class="chip" href="#spec-psichologas"><img class="ui-icon" src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
-        </div>
-      </div>
-
-      <div class="sheet-block">
-        <div class="side-title">Tema</div>
-        <div class="sheet-row">
-          <button class="btn" data-mobile-theme="light">Šviesi</button>
-          <button class="btn" data-mobile-theme="dark">Tamsi</button>
-        </div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Minimal JS (dropdown’ai, tema, mobile sheet, enter=send, logotipo swap) -->
+  <!-- Minimal JS (tema, login, mobile stalčius, hero clickai, logo perjungimas) -->
   <script>
     (function(){
       const root=document.documentElement;
+      const sidebar=document.getElementById('sidebar');
+      const overlay=document.getElementById('drawerOverlay');
+      const btnMobile=document.getElementById('btnMobile');
       const msgInput=document.getElementById('messageInput');
       const sendBtn=document.getElementById('sendBtn');
       const btnLogin=document.getElementById('btnLogin');
@@ -314,30 +293,26 @@
       const themeDropdown=document.getElementById('themeDropdown');
       const logo=document.getElementById('brandLogo');
 
-      const btnMobile=document.getElementById('btnMobile');
-      const mobileSheet=document.getElementById('mobileSheet');
-      const mobileBack=document.getElementById('mobileBack');
-
-      function refreshLogo(){
+      function setLogoByTheme(){
         const dark = root.getAttribute('data-theme') === 'dark';
         logo.src = dark ? '/assets/icon/paule-logo-dark.webp' : '/assets/icon/paule-logo.webp';
       }
-      refreshLogo();
+      setLogoByTheme();
+      // Reaguojame į tema keitimą per MutationObserver (kad „Naujas pokalbis“ nekeistų)
+      new MutationObserver(setLogoByTheme).observe(root,{attributes:true,attributeFilter:['data-theme']});
 
-      // Tema (desktop)
+      // Tema dropdown (PC)
       btnTheme?.addEventListener('click', (e)=>{ e.preventDefault(); themeDropdown?.classList.toggle('open'); loginDropdown?.classList.remove('open'); });
       themeDropdown?.addEventListener('click', (e)=>{
         const b=e.target.closest('[data-theme]'); if(!b) return;
         root.setAttribute('data-theme', b.getAttribute('data-theme'));
-        refreshLogo();
         themeDropdown.classList.remove('open');
       });
 
-      // Tema (mobile meniu)
-      mobileSheet?.addEventListener('click',(e)=>{
-        const t=e.target.closest('[data-mobile-theme]'); if(!t) return;
-        root.setAttribute('data-theme', t.getAttribute('data-mobile-theme'));
-        refreshLogo();
+      // Tema mygtukai MOBILE stalčiuje
+      sidebar.addEventListener('click', (e)=>{
+        const t=e.target.closest('[data-set-theme]'); if(!t) return;
+        root.setAttribute('data-theme', t.getAttribute('data-set-theme')); setLogoByTheme();
       });
 
       // Login dropdown
@@ -346,30 +321,37 @@
         if(!e.target.closest('.login-anchor')){ loginDropdown?.classList.remove('open'); themeDropdown?.classList.remove('open'); }
       });
 
-      // Enter → siųsti
-      if(msgInput){
-        msgInput.addEventListener('keydown', function(e){
-          if (e.key==='Enter' && !e.shiftKey){
-            e.preventDefault();
-            if(window.sendMessage) window.sendMessage(); else sendBtn?.click();
-          }
-        });
+      // Mobile stalčius
+      function openDrawer(){
+        sidebar.classList.add('open'); overlay.classList.add('show');
+        document.body.style.overflow='hidden';
       }
+      function closeDrawer(){
+        sidebar.classList.remove('open'); overlay.classList.remove('show');
+        document.body.style.overflow='';
+      }
+      btnMobile?.addEventListener('click', openDrawer);
+      overlay?.addEventListener('click', closeDrawer);
 
-      // Mobile sheet
-      function openSheet(){ mobileSheet.classList.add('open'); mobileBack.classList.add('open'); }
-      function closeSheet(){ mobileSheet.classList.remove('open'); mobileBack.classList.remove('open'); }
-      btnMobile?.addEventListener('click', openSheet);
-      mobileBack?.addEventListener('click', closeSheet);
-
-      // Hero įrankių sujungimas
-      document.querySelectorAll('.welcome-grid .welcome-card')?.forEach(card=>{
-        card.addEventListener('click', (e)=>{
-          const a=card.getAttribute('data-action');
+      // Enter → siųsti
+      msgInput?.addEventListener('keydown', function(e){
+        if (e.key==='Enter' && !e.shiftKey){
           e.preventDefault();
-          document.querySelector(`.tool[data-tool="${a==='song-photo'?'song':a}"]`)?.click();
+          if(window.sendMessage) window.sendMessage(); else sendBtn?.click();
+        }
+      });
+
+      // Hero kortelės -> įrankiai
+      document.querySelectorAll('.welcome-grid .welcome-card').forEach(card=>{
+        card.addEventListener('click', e=>{
+          const a=card.getAttribute('data-action'); e.preventDefault();
+          const map={song:'[data-tool="song"]', 'song-photo':'[data-tool="song"]', photo:'[data-tool="photo"]', mindmap:'[data-tool="mindmap"]', video:'[data-tool="video"]'};
+          const sel=map[a]; if(sel) document.querySelector(sel)?.click();
         });
       });
+
+      // Apsauga: jei stalčius atidarytas – siuntimas neveiks (uždengta). Uždaryk prieš siųsdamas.
+      sendBtn?.addEventListener('click', ()=>{ if(sidebar.classList.contains('open')) closeDrawer(); });
     })();
   </script>
 
