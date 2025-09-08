@@ -6,17 +6,7 @@
     { "src": "public/**/*", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "^/api/stream$",        "dest": "/api/stream.js" },
-    { "src": "^/api/models$",        "dest": "/api/models.js" },
-    { "src": "^/api/diagnostics$",   "dest": "/api/diagnostics.js" },
     { "src": "^/api/library/recent$", "dest": "/api/library/recent.js" },
-
-    { "src": "^/api/flux/create$",   "dest": "/api/flux/create.js" },
-    { "src": "^/api/comic/create$",  "dest": "/api/comic/create.js" },
-    { "src": "^/api/runway/image$",  "dest": "/api/runway/image.js" },
-    { "src": "^/api/runway/status$", "dest": "/api/runway/status.js" },
-    { "src": "^/api/music/create$",  "dest": "/api/music/create.js" },
-    { "src": "^/api/music/status$",  "dest": "/api/music/status.js" },
 
     { "src": "^/api/paule/v1/stream$",        "dest": "/api/stream.js" },
     { "src": "^/api/paule/v1/models$",        "dest": "/api/models.js" },
