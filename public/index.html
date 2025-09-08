@@ -49,7 +49,8 @@
         mode: MODE,
         restBase: routes.base,
         restStream: routes.stream,
-        restStreamSSE: routes.stream + '?mode=sse',
+        // BUVO: restStreamSSE: routes.stream + '?mode=sse',
+        restStreamSSE: routes.stream,   // <— paliekam švarų /api/stream
         sseDefault: 1,
 
         pluginBase:   '/assets',
@@ -127,11 +128,12 @@
   <!-- ===== TOPBAR ===== -->
   <header class="topbar" data-no-clip="true">
     <a class="brand" href="/" aria-label="Paule">
+      <!-- prašei naudoti šį logotipą -->
       <img id="brandLogo" class="brand-icon" src="/assets/icon/paule-logo-b.webp" alt="paule">
     </a>
 
-    <!-- Paliekam istorinį ID #modelsBar, kad seni skriptai rastų -->
-    <nav class="models-in-topbar" aria-label="Modeliai" id="modelsBar">
+    <!-- 🆔 PERRINKTA Į modelList (kad sutaptų su JS) -->
+    <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
       <button class="model-pill active" data-model="auto" aria-pressed="true">
         <img class="ui-icon" src="/assets/icon/paule-icon.webp" alt=""> Paule
       </button>
@@ -297,30 +299,30 @@
           <h1 class="hero-title">KAIP GALIU PADĖTI ŠIANDIEN?</h1>
           <p>Pasirinkite AI specialistą kairėje arba pradėkite pokalbį žemiau. Viršuje galite rinktis vieną ar kelis modelius. 👇</p>
 
-          <!-- 6 centrinės kortelės -->
+          <!-- 6 centrinės kortelės (lokalios nuotraukos) -->
           <div class="welcome-grid">
             <a class="welcome-card" href="#" data-action="song">
-              <img src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?q=80&w=800" alt="">
+              <img src="/assets/hero/music.webp" alt="">
               <b>Sukurti dainą</b><span>Žodžiai + muzika</span>
             </a>
             <a class="welcome-card" href="#" data-action="song-photo">
-              <img src="https://images.unsplash.com/photo-1461783470468-78df4f0b1f0f?q=80&w=800" alt="">
+              <img src="/assets/hero/song-photo.webp" alt="">
               <b>Daina iš foto</b><span>Įkvėpta vaizdo</span>
             </a>
             <a class="welcome-card" href="#" data-action="photo">
-              <img src="https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=800" alt="">
+              <img src="/assets/hero/photo.webp" alt="">
               <b>Sukurti nuotrauką</b><span>Produkto ar viršelio</span>
             </a>
             <a class="welcome-card" href="#" data-action="mindmap">
-              <img src="https://images.unsplash.com/photo-1516387938699-a93567ec168e?q=80&w=800" alt="">
+              <img src="/assets/hero/mindmap.webp" alt="">
               <b>Minčių žemėlapis</b><span>Idėjų struktūra</span>
             </a>
             <a class="welcome-card" href="/spec/goal.html">
-              <img src="https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?q=80&w=800" alt="">
+              <img src="/assets/hero/goals.webp" alt="">
               <b>Įgyvendinti tikslus</b><span>UGS sistema</span>
             </a>
             <a class="welcome-card" href="#" data-action="video">
-              <img src="https://images.unsplash.com/photo-1511782323680-7f607c7f2324?q=80&w=800" alt="">
+              <img src="/assets/hero/video.webp" alt="">
               <b>Sukurti video</b><span>Runway pipeline</span>
             </a>
           </div>
@@ -331,8 +333,6 @@
             <div class="strip-item">Konkursas: Geriausia daina rugsėjį</div>
           </div>
         </section>
-
-        <!-- (demo burbulo neberodome) -->
 
       </div>
     </main>
@@ -415,7 +415,7 @@
 
       function updateLogo(){
         const isDark = (root.getAttribute('data-theme') === 'dark');
-        logo.src = isDark ? '/assets/icon/paule-logo-b.svg' : '/assets/icon/paule-logo.webp';
+        logo.src = isDark ? '/assets/icon/paule-logo-b.webp' : '/assets/icon/paule-logo.webp';
       }
       updateLogo();
 
@@ -444,7 +444,6 @@
         msgInput.addEventListener('keydown', function(e){
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            // Jei yra globali sendMessage – kviečiam; jei ne – imituojam mygtuko paspaudimą
             if (window.sendMessage) { window.sendMessage(); }
             else if (sendBtn) { sendBtn.click(); }
           }
