@@ -694,5 +694,73 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 @media (max-width:1024px){
   .sidebar .ui-icon{ width:14px; height:14px }
 }
+/* =================== PAULE MOBILE / HEADER / CHAT PATCH =================== */
+
+/* Vienodas, kiek didesnis logotipas (PC light buvo mažesnis) */
+:root { --logo-w: 3cm; }
+.topbar .brand { min-width: var(--logo-w); }
+.topbar .brand-icon{ width:var(--logo-w)!important; height:auto!important; object-fit:contain; display:block!important; }
+.topbar img, .topbar svg{ max-height: calc(var(--topbar-h) - 16px); }
+
+/* Tamsioje temoje NEDAŽOME nuotraukų, baliname tik UI ikonėles */
+:root{ --ui-icon-filter:none }
+[data-theme="dark"] .ui-icon{ filter: invert(1) brightness(1.08) contrast(1.05); }
+[data-theme="dark"] img:not(.ui-icon){ filter:none !important; }
+
+/* Kairio miniatiūrų grid’o paveikslėliai – didesni ir centruoti */
+.library-grid.thumbs .lib-card img{
+  width:100% !important; height:96px !important; object-fit:cover; object-position:center; border-radius:12px;
+}
+
+/* Modelių juosta – visuomet aktyvi, scroll’inama */
+.models-in-topbar{ gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+/* MOBILE header: 2 eilučių išdėstymas
+   1 eil. – logo + mygtukai, 2 eil. – modeliai (per visą plotį) */
+@media (max-width: 768px){
+  .topbar{
+    grid-template-areas:
+      "brand actions"
+      "models models";
+    grid-template-columns:auto 1fr;
+    height:auto; padding-bottom:10px; row-gap:8px;
+  }
+  .brand{ grid-area:brand }
+  .models-in-topbar{ grid-area:models; display:flex!important; max-width:100%; }
+  .top-actions{ grid-area:actions; justify-content:flex-end }
+  /* viršuje telefone nesisp. „Bendruomenė“ ir „Tema“ (jie stalčiuje) */
+  .top-actions [data-nav="community"], .theme-anchor{ display:none!important; }
+}
+
+/* Off-canvas stalčius telefone (nebe „po chatu“) */
+@media (max-width:1024px){
+  .layout{ grid-template-columns:0 1fr !important; }
+  .sidebar{
+    display:block!important;
+    position:fixed; top:var(--topbar-h); left:-320px;
+    width:300px; height:calc(100vh - var(--topbar-h));
+    background:var(--bg-primary); border-right:1px solid var(--border);
+    box-shadow:var(--shadow-lg); z-index:1350; transition:left .25s ease; overflow:auto;
+  }
+  .sidebar.open{ left:0; }
+  .drawer-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.35);
+    opacity:0; visibility:hidden; pointer-events:none; transition:.2s; z-index:1200;
+  }
+  .drawer-overlay.show{ opacity:1; visibility:visible; pointer-events:auto; }
+  .mobile-only{ display:block!important; }
+  .bottom-section{ left:var(--gutter)!important; right:var(--gutter)!important; padding-bottom:max(10px, env(safe-area-inset-bottom)); }
+}
+
+/* Chat zona – saugesnis viršutinis tarpas mažiems ekranams */
+#chatArea{ padding-top: calc(3cm + 6px) !important; z-index:1; }
+@media (max-height: 750px){ #chatArea{ padding-top: 24px !important; } }
+
+/* Vartotojo burbulas – tik burbulas prie dešinio krašto (ne visas chatas) */
+.message.user{ flex-direction:row-reverse; }
+.message.user .bubble{ margin-left:auto; }
+
+/* Kad meniu niekada „neuždengtų“ siuntimo, kai jis uždarytas */
+.bottom-section{ z-index:1100; }  /* žemiau už stalčių (1350), aukščiau už turinį */
 
 
