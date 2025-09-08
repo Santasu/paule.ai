@@ -1,86 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <meta charset="utf-8">
 <title>SSE test</title>
-<style>
-  body{font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding:16px; background:#0b0f14; color:#d8e1ea}
-  textarea, input, button{font:inherit}
-  .log{white-space:pre-wrap; background:#0f1720; border:1px solid #243040; padding:10px; border-radius:8px; max-height:60vh; overflow:auto}
-  .row{display:flex; gap:8px; margin-bottom:8px}
-  .ok{color:#8bd17c} .err{color:#ff8080}
-</style>
-
-<h1>SSE test</h1>
-<div class="row">
-  <input id="url" value="/api/sse-ping" style="flex:1" />
-  <button id="btnES">Start EventSource</button>
-  <button id="btnFetch">Start Fetch-SSE</button>
-  <button id="btnStop">Stop</button>
-</div>
-<div class="row">
-  <input id="streamUrl" value="/api/stream?model=gpt-4o-mini&message=Labas" style="flex:1" />
-  <button id="btnES2">EventSource /api/stream</button>
-  <button id="btnFetch2">Fetch-SSE /api/stream</button>
-</div>
-<div class="log" id="log"></div>
-
+<h1>SSE Test</h1>
+<p><a href="/api/sse-ping" target="_blank">/api/sse-ping</a></p>
+<p><button id="btn">Start /api/stream echo</button></p>
+<pre id="out" style="white-space:pre-wrap;background:#111;color:#0f0;padding:12px;border-radius:8px;max-width:900px"></pre>
 <script>
-let es=null, reader=null, aborter=null;
-
-function log(t, cls='') {
-  const el=document.getElementById('log');
-  el.insertAdjacentHTML('beforeend', `<div class="${cls}">${t}</div>`);
-  el.scrollTop = el.scrollHeight;
-}
-
-document.getElementById('btnStop').onclick = () => {
-  if (es) { es.close(); es=null; log('EventSource closed','ok'); }
-  if (reader) { try { reader.cancel(); } catch(_){ } reader=null; }
-  if (aborter) { aborter.abort(); aborter=null; }
-  log('Stopped','ok');
+btn.onclick = () => {
+  const u = '/api/stream?message=' + encodeURIComponent('Labas') + '&echo=1';
+  const es = new EventSource(u);
+  es.onmessage = (e) => out.textContent += e.data + '\n';
+  es.onerror = (e) => { out.textContent += '\n[ERROR]\n'; es.close(); };
 };
-
-document.getElementById('btnES').onclick = () => {
-  const u=document.getElementById('url').value;
-  if (es) es.close();
-  es = new EventSource(u);
-  es.onopen  = () => log(`[ES open] ${u}`,'ok');
-  es.onerror = (e) => log(`[ES error] ${e?.message||e}`, 'err');
-  es.onmessage = (e) => log(`[ES data] ${e.data}`);
-};
-
-document.getElementById('btnES2').onclick = () => {
-  const u=document.getElementById('streamUrl').value;
-  if (es) es.close();
-  es = new EventSource(u);
-  es.onopen  = () => log(`[ES open] ${u}`,'ok');
-  es.onerror = (e) => log(`[ES error] ${e?.message||e}`, 'err');
-  es.onmessage = (e) => log(`[ES data] ${e.data}`);
-};
-
-async function fetchSSE(u) {
-  aborter = new AbortController();
-  const res = await fetch(u, { headers: { 'Accept':'text/event-stream' }, signal: aborter.signal });
-  log(`[Fetch status] ${res.status}`, res.ok?'ok':'err');
-  const td = new TextDecoder();
-  reader = res.body.getReader();
-  let buf='';
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buf += td.decode(value, { stream:true });
-    let idx;
-    while ((idx = buf.indexOf('\n\n')) !== -1) {
-      const chunk = buf.slice(0, idx); buf = buf.slice(idx+2);
-      const lines = chunk.split('\n');
-      for (const ln of lines) {
-        if (ln.startsWith('data:')) log(`[Fetch data] ${ln.slice(5).trim()}`);
-        else if (ln.startsWith('event:')) log(`[Fetch event] ${ln.slice(6).trim()}`);
-      }
-    }
-  }
-  log(`[Fetch done]`,'ok');
-}
-
-document.getElementById('btnFetch').onclick = () => fetchSSE(document.getElementById('url').value);
-document.getElementById('btnFetch2').onclick = () => fetchSSE(document.getElementById('streamUrl').value);
 </script>
+
