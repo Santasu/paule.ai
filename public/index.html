@@ -4,66 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Paule – Premium AI Chat</title>
+
+  <!-- PAGRINDINIS STILIUS -->
   <link rel="stylesheet" href="/assets/css/paule.css">
 
-  <!-- Greiti UI override'ai -->
-  <style>
-    /* --- Logotipas (SVG, prisitaikanti spalva) --- */
-    .brand .logo-svg{width:86px;height:28px;display:block;color:var(--fg-strong,#0b0d12)}
-    :root[data-theme="dark"] .brand .logo-svg{color:#fff}
-
-    /* --- Modelių juosta --- */
-    .models-in-topbar .model-pill .ui-icon{width:30px;height:30px;margin-right:8px;display:inline-block;vertical-align:middle}
-    .models-in-topbar .model-pill{gap:8px}
-
-    /* --- Įvedimo juosta --- */
-    .bottom-section{padding:8px 12px}
-    .bottom-section .input-bar{max-width:1100px;margin:0 auto}
-    .message-input{min-height:56px;max-height:40vh;overflow:auto;resize:none;line-height:1.5;padding:12px 14px}
-
-    /* --- Sprendimų juosta (Ginčas / Teisėjas / Kompromisas) --- */
-    .decision-bar{position:sticky;top:72px;z-index:5;display:flex;gap:10px;justify-content:center;margin:8px 0 14px}
-    .decision-chip{
-      display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid var(--border);
-      background:var(--bg-primary);cursor:pointer;user-select:none;box-shadow:0 6px 24px rgba(0,0,0,.06);
-      transition:transform .15s ease,box-shadow .15s ease
-    }
-    .decision-chip:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(0,0,0,.10)}
-    .decision-chip img{width:18px;height:18px}
-    .decision-bar.boom .decision-chip{animation:pop .25s ease}
-    @keyframes pop{0%{transform:scale(.98)}100%{transform:scale(1)}}
-
-    /* --- Login dropdown --- */
-    .login-dropdown{position:absolute;right:12px;top:48px;background:var(--bg-primary);border:1px solid var(--border);
-      border-radius:12px;padding:10px;box-shadow:0 12px 40px rgba(0,0,0,.15);width:240px;display:none}
-    .login-dropdown.open{display:block}
-    .login-dropdown .btn{width:100%;display:flex;gap:8px;align-items:center;justify-content:center}
-    .login-anchor{position:relative}
-
-    /* --- Bibliotekos thumbs --- */
-    .library-grid{grid-template-columns:repeat(3,1fr);gap:10px}
-    .lib-card.thumb{display:flex;flex-direction:column;gap:6px}
-    .lib-card.thumb img{width:100%;height:70px;object-fit:cover;border-radius:12px;border:1px solid var(--border)}
-
-    /* --- Hero kortelės: žemesnė kadruotė + gradientas + overlay tekstas --- */
-    .welcome-card{position:relative;overflow:hidden}
-    .welcome-card img{width:100%;height:180px;object-fit:cover;object-position:center 60%}
-    .welcome-card::after{
-      content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 35%, rgba(0,0,0,.55) 100%)
-    }
-    .welcome-card b,.welcome-card span{
-      position:absolute;left:16px;right:16px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.45)
-    }
-    .welcome-card b{bottom:42px;font-size:18px;letter-spacing:.2px}
-    .welcome-card span{bottom:16px;font-size:13px;opacity:.92}
-
-    /* Specialisto overlay (juodas per visą ekraną) */
-    .spec-overlay{position:fixed;inset:0;background:#000;opacity:.92;display:none;z-index:1000}
-    .spec-overlay.open{display:block}
-    .spec-overlay .close-tip{position:absolute;inset:auto 0 0 0;color:#fff;text-align:center;padding:18px;opacity:.7}
-  </style>
-
-  <!-- 🔧 PAULE konfigūracija -->
+  <!-- 🔧 PAULE konfigūracija (švarus /api/stream) -->
   <script id="paule-config">
     (function () {
       var MODE = (document.documentElement.getAttribute('data-backend')||'').trim().toLowerCase()==='vercel' ? 'vercel':'wp';
@@ -81,7 +26,7 @@
       };
       var CFG = {
         mode:MODE, restBase:routes.base, restStream:routes.stream, restStreamSSE:routes.stream, sseDefault:1,
-        pluginBase:'/assets', iconsBase:'/assets/icon', featuresBase:'/assets/features', routes:routes, version:'paule-1.0.3'
+        pluginBase:'/assets', iconsBase:'/assets/icon', featuresBase:'/assets/features', routes:routes, version:'paule-1.0.5'
       };
       window.PAULE_CONFIG = CFG; window.AUGAM_CONFIG = CFG;
       try{ Object.defineProperty(window,'API_BASE',{configurable:true,get:function(){return CFG.restBase;},set:function(_){}});}catch(e){}
@@ -89,7 +34,7 @@
     })();
   </script>
 
-  <!-- ✅ Bridge WP->/api -->
+  <!-- ✅ Bridge WP→/api (EventSource ir fetch peradresavimas) -->
   <script id="paule-bridge">
     (function(){
       'use strict';
@@ -129,13 +74,14 @@
   <!-- ===== TOPBAR ===== -->
   <header class="topbar" data-no-clip="true">
     <a class="brand" href="/" aria-label="Paule">
-      <!-- SVG logotipas (prisitaikanti spalva per currentColor) -->
-      <svg id="brandLogo" class="logo-svg" viewBox="0 0 120 28" role="img" aria-label="paule">
+      <!-- SVG logotipas, fiksuotas 2.7 cm -->
+      <svg id="brandLogo" class="logo-svg" viewBox="0 0 520 120" role="img" aria-label="paule">
         <title>paule</title>
-        <!-- paprastas ženkliukas + tekstas -->
-        <circle cx="12" cy="14" r="10" fill="currentColor" opacity="0.14"></circle>
-        <circle cx="12" cy="14" r="6"  fill="currentColor"></circle>
-        <text x="28" y="19" fill="currentColor" font-size="16" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial" letter-spacing=".4">paule</text>
+        <g fill="currentColor">
+          <path d="M80 20H60v80h20zM140 100c-22 0-40-18-40-40s18-40 40-40 40 18 40 40-18 40-40 40zm0-20c11 0 20-9 20-20s-9-20-20-20-20 9-20 20 9 20 20 20zM240 100c-22 0-40-18-40-40s18-40 40-40c9 0 17 3 24 8v-6h20v78h-20v-6c-7 5-15 8-24 8zm4-20c12 0 20-9 20-20s-8-20-20-20-20 9-20 20 8 20 20 20zM340 20h20v80h-20zM440 100c-22 0-40-18-40-40s18-40 40-40c21 0 38 16 40 36h-60c2 10 10 16 20 16 7 0 13-3 16-8h22c-6 20-22 36-38 36zM420 52h36c-3-9-10-14-18-14-8 0-15 5-18 14z"/>
+          <!-- šypsena -->
+          <path d="M90 150c40 40 160 40 200 0" stroke="currentColor" stroke-width="20" fill="none" stroke-linecap="round"/>
+        </g>
       </svg>
     </a>
 
@@ -175,7 +121,7 @@
         </div>
       </div>
 
-      <!-- Kai prisijungta (palikta struktūra) -->
+      <!-- Kai prisijungta – palikta struktūra -->
       <div class="user-profile hidden" id="userProfile">
         <div class="user-avatar" id="userAvatar">U</div>
         <div class="user-name" id="userName">Vartotojas</div>
@@ -232,7 +178,7 @@
         </div>
       </section>
 
-      <!-- Mano biblioteka (auto-feed) -->
+      <!-- Mano biblioteka -->
       <section class="side-section">
         <div class="side-title"><a class="lib-link" href="/biblioteka#dainos">Dainos</a></div>
         <div class="library-grid" id="songsFeed">
@@ -352,7 +298,7 @@
     </div>
   </div>
 
-  <!-- Minimal HTML-only JS (login dropdown, overlay, hero clickai) -->
+  <!-- Minimalus JS (login dropdown, overlay, hero clickai) -->
   <script>
     (function(){
       const root=document.documentElement;
@@ -365,7 +311,7 @@
       const loginDropdown=document.getElementById('loginDropdown');
       const specOverlay=document.getElementById('specOverlay');
 
-      // Tema (jei turi select'ą)
+      // Tema
       document.getElementById('selTheme')?.addEventListener('change',e=>{
         root.setAttribute('data-theme', e.target.value);
       });
@@ -416,7 +362,7 @@
     })();
   </script>
 
-  <!-- Pagrindinė logika (SSE, ginčas/teisėjas/kompromisas ir t.t.) -->
+  <!-- Pagrindinė logika (SSE, ginčas/teisėjas/kompromisas ir t. t.) -->
   <script src="/assets/js/paule-ui.js" defer></script>
 </body>
 </html>
