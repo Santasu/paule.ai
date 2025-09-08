@@ -1,6 +1,12 @@
 /* =======================================================================
-   Paule – Premium Chat (Vercel) • v1.1.0
+   Paule – Premium Chat (Vercel) • v1.1.0 → v1.2.0
    UI/transport klientas be WP. API bazė iš window.PAULE_CONFIG (index.html).
+   Pataisymai:
+   - Universalus SSE parseris (dirba ir su `data:{choices[0].delta.content}`, ir su
+     `event: delta/answer` bei `[DONE]` sentineliu).
+   - Nebelieka "[object Object]" šiukšlių.
+   - Vienu metu palaikomos kelios SSE jungtys (stopStream() jas visas uždaro).
+   - Sprendimų režimai (ginčas/teisėjas/kompromisas) palikti kaip buvo.
    ======================================================================= */
 (function () {
   'use strict';
@@ -33,6 +39,7 @@
   };
   const nameOf = id => MODEL_NAME[id] || id;
 
+  // Šiuos laikome JSON/POST fallback'ui, bet su universal. SSE bandysim pirmiau
   const NON_SSE_FRONT = new Set(['claude','grok','gemini','claude-4-sonnet','grok-4','gemini-2.5-flash']);
 
   const state = {
@@ -40,7 +47,8 @@
     selectedModels: ['auto'],
     isStreaming:false, chatId:null, lastUserText:'', lastRound:{},
     modelPanels:{}, boundPanels:{}, hasMessagesStarted:false, stickToBottom:true,
-    decisionBarShown:false
+    decisionBarShown:false,
+    esList: [] // aktyvios SSE jungtys
   };
 
   const el = {
@@ -171,7 +179,14 @@
     });
   }
 
-  function stopStream(){ try{ state.currentES && state.currentES.close(); }catch(_){ } state.currentES=null; state.isStreaming=false; el.sendBtn && (el.sendBtn.disabled=false); }
+  function stopStream(){
+    try{
+      (state.esList || []).forEach(es => { try{ es.close(); }catch(_){ } });
+    }catch(_) {}
+    state.esList = [];
+    state.isStreaming=false;
+    el.sendBtn && (el.sendBtn.disabled=false);
+  }
   function hideWelcome(){ if (!el.welcome) return; el.welcome.style.display='none'; }
   function autoGrow(){
     const i = el.messageInput; if (!i) return;
@@ -271,29 +286,76 @@
     let pending = streamF.length + (jsonF.length?1:0);
     const done = ()=>{ pending--; if (pending<=0){ state.isStreaming=false; el.sendBtn && (el.sendBtn.disabled=false); maybeShowDecisionBar(); } };
 
-    // SSE
+    // SSE – bandome pirmiausia
     streamF.forEach(fid=>{
       const back = getBackId(fid);
       const payload = { ...base, models: back, model: back };
       state.boundPanels[back] = fid;
       addThinking(state.modelPanels[fid]?.element, nameOf(fid));
       const url = buildUrl(payload);
-      const es = new EventSource(url);
-      state.currentES = es;
 
+      const es = new EventSource(url);
+      state.esList.push(es);
+
+      // Vardiniai event'ai (jei backend juos siunčia)
       es.addEventListener('start', e=>{ const d=safeJson(e.data); if (d?.chat_id) state.chatId=d.chat_id; });
       es.addEventListener('model_init', e=>{ const d=safeJson(e.data)||{}; d.panel=d.panel||back; state.boundPanels[d.panel]=fid; handleModelInit(d); });
       es.addEventListener('delta', e=>{ const d=safeJson(e.data)||{}; d.panel=d.panel||back; state.boundPanels[d.panel]=fid; applyDelta(d); });
       es.addEventListener('answer', e=>{ const d=safeJson(e.data)||{}; d.panel=d.panel||back; state.boundPanels[d.panel]=fid; applyAnswer(d); });
       es.addEventListener('model_done', e=>{ const d=safeJson(e.data)||{}; d.panel=d.panel||back; const k=resolveKey(d); const r=state.modelPanels[k]; if(r){ r.completed=true; rmThinking(r.element); } });
-      es.addEventListener('done', ()=>{ try{es.close();}catch(_){} if (state.currentES===es) state.currentES=null; done(); });
-      es.onerror = ()=>{ try{es.close();}catch(_){ } postOnce({ ...base, models: back, model: back }, [back]).finally(done); };
+      es.addEventListener('done', ()=>{ try{es.close();}catch(_){} finalizeStream(es, done); });
+
+      // UNIVERSALUS "message" – kai streamas tik `data: ...` + `[DONE]`
+      es.onmessage = (ev)=>{
+        const raw = (ev && typeof ev.data === 'string') ? ev.data.trim() : '';
+        if (!raw) return;
+        if (raw === '[DONE]'){ try{es.close();}catch(_){} finalizeStream(es, done); return; }
+
+        // pabandom JSON
+        const j = safeJson(raw);
+        if (j){
+          // OpenAI-like
+          const piece =
+            (j?.choices && j.choices[0] && j.choices[0].delta && typeof j.choices[0].delta.content === 'string')
+              ? j.choices[0].delta.content
+              : (typeof j.content === 'string' ? j.content
+                : (typeof j.text === 'string' ? j.text : ''));
+
+          if (piece){
+            applyDelta({ panel: back, model: fid, text: piece });
+          } else if (j.answer || j.final || j.completion){
+            const fin = (typeof j.answer === 'string') ? j.answer :
+                        (typeof j.final === 'string') ? j.final :
+                        (typeof j.completion === 'string') ? j.completion : '';
+            if (fin) applyAnswer({ panel: back, model: fid, text: fin });
+          }
+          return;
+        }
+
+        // o jei ne JSON – tiesioginis teksto gabalas
+        applyDelta({ panel: back, model: fid, text: raw });
+      };
+
+      es.onerror = ()=>{
+        try{es.close();}catch(_){}
+        // JSON fallback jei tiekėjas neteikia SSE ar grįžo 4xx
+        postOnce({ ...base, models: back, model: back }, [back]).finally(()=>finalizeStream(es, done));
+      };
     });
 
     // JSON (grupė vienu POST)
     if (jsonF.length) postOnce(base, jsonF.map(getBackId)).finally(done);
 
     return Promise.resolve();
+  }
+
+  function finalizeStream(es, doneCb){
+    // remove from list & call done once
+    try{
+      const i = state.esList.indexOf(es);
+      if (i>=0) state.esList.splice(i,1);
+    }catch(_){}
+    doneCb && doneCb();
   }
 
   function postOnce(basePayload, backModels){
@@ -307,7 +369,7 @@
           const real = ans.model || backModels[idx] || backModels[0] || 'auto';
           const front = Object.keys(FRONT_TO_BACK).find(k=>FRONT_TO_BACK[k]===real) || real;
           const panel = state.boundPanels[real] || front;
-          applyAnswer({ model: front, panel, text: ans.text||'' });
+          applyAnswer({ model: front, panel, text: typeof ans.text === 'string' ? ans.text : '' });
         });
       })
       .catch(e=> toast('Nepavyko gauti atsakymo', e.message||String(e)));
@@ -324,7 +386,8 @@
 
   function applyDelta(payload){
     const key = resolveKey(payload||{}); let rec = state.modelPanels[key];
-    const txt = String(payload?.text || payload?.delta || payload?.content || ''); if (!rec || !txt) return;
+    const raw = (payload && ('text' in payload ? payload.text : (payload.delta ?? payload.content)));
+    const txt = (typeof raw === 'string') ? raw : ''; if (!rec || !txt) return;
     rmThinking(rec.element);
     rec.content += txt;
     rec.element.innerHTML = parseMarkdown(rec.content);
@@ -332,7 +395,9 @@
   }
   function applyAnswer(payload){
     const key = resolveKey(payload||{}); let rec = state.modelPanels[key];
-    const front = (payload?.model || rec?.model || 'auto'); const txt = String(payload?.text || payload?.answer || payload?.content || '');
+    const front = (payload?.model || rec?.model || 'auto');
+    const raw = (payload && ('text' in payload ? payload.text : (payload.answer ?? payload.content)));
+    const txt = (typeof raw === 'string') ? raw : '';
     if (!rec){
       const elc = addModelBubble(front, false, txt);
       rec = state.modelPanels[key] = { element: elc, content: txt, completed:true, model: front, locked:true };
@@ -341,7 +406,6 @@
     }
     const back = getBackId(front); state.lastRound[back] = rec.content;
 
-    // Kai tik gaunam pirmą pilną atsakymą – parodom sprendimų juostą
     maybeShowDecisionBar();
     scrollToBottomIfNeeded();
   }
@@ -381,11 +445,10 @@
     if (!answers){ toast('Trūksta atsakymų', 'Pirmiausia gauti bent vieną modelio atsakymą.'); return; }
     addSystemMessage('⚖️ Teisėjas vertina atsakymus…');
 
-    // Sukuriam specialų „Teisėjo“ burbulą, bet siunčiam užkulisiuose į Llama
     const judgeKey = 'judge';
     const cont = addModelBubble('judge', true);
     state.modelPanels = { [judgeKey]: { element: cont, content:'', completed:false, model:'judge', locked:true } };
-    state.boundPanels = {}; // izoliuojam kad atsakymas nueitų į šį panelį
+    state.boundPanels = {};
 
     const prompt = `Tu esi profesionalus „Teisėjas“.\nĮvertink pateiktus atsakymus ir parink **teisingiausią/naudingiausią**.\nGrąžink: • Verdiktas (vienas) • Kodėl • Kurio modelio idėja pasirinkta • 2 silpnybės kitų variantų • Galutinis aiškus planas.\n\n${answers}`;
     streamAPI(prompt, ['llama'], { augam_role:'judge' });
@@ -425,13 +488,12 @@
     refreshFeeds(); setInterval(refreshFeeds, 6000);
   }
   function refreshFeeds(){
-    // Tikimės /api/library/recent?limit=3 grąžina { songs:[{title,url,cover}], photos:[{title,url}], videos:[{title,thumb}] }
     fetch((API_BASE||'/api') + '/library/recent?limit=3').then(r=>r.json()).then(data=>{
       try{ fillFeed(el.songsFeed, data.songs, '/assets/hero/music.webp'); }catch(_){}
       try{ fillFeed(el.photosFeed, data.photos, '/assets/hero/photo.webp'); }catch(_){}
       try{ fillFeed(el.videosFeed, data.videos, '/assets/hero/video.webp'); }catch(_){}
     }).catch(_=>{
-      // tylus fallback – paliekam placeholder’ius
+      // tylus fallback
     });
   }
   function fillFeed(root, items, placeholder){
