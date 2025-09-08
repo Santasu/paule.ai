@@ -6,7 +6,7 @@
     { "src": "public/**/*", "use": "@vercel/static" }
   ],
   "routes": [
-    /* ----- TIESIAI /api/* ----- */
+
     { "src": "^/api/stream$",        "dest": "/api/stream.js" },
     { "src": "^/api/models$",        "dest": "/api/models.js" },
     { "src": "^/api/diagnostics$",   "dest": "/api/diagnostics.js" },
@@ -19,7 +19,7 @@
     { "src": "^/api/music/create$",  "dest": "/api/music/create.js" },
     { "src": "^/api/music/status$",  "dest": "/api/music/status.js" },
 
-    /* ----- Suderinamumas su WP/„paule“ prefiksais ----- */
+
     { "src": "^/api/paule/v1/stream$",        "dest": "/api/stream.js" },
     { "src": "^/api/paule/v1/models$",        "dest": "/api/models.js" },
     { "src": "^/api/paule/v1/diagnostics$",   "dest": "/api/diagnostics.js" },
@@ -40,7 +40,7 @@
     { "src": "^/wp-json/paule/v1/music/create$",  "dest": "/api/music/create.js" },
     { "src": "^/wp-json/paule/v1/music/status$",  "dest": "/api/music/status.js" },
 
-    /* ----- Statika ----- */
+ 
     { "src": "^/$", "dest": "/public/index.html" },
     { "src": "^(?!/api)(.*)$", "dest": "/public$1" }
   ]
