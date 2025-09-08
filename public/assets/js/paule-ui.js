@@ -1,5 +1,5 @@
 /* =======================================================================
-   Paule – Premium Chat (Vercel) • v1.0.3
+   Paule – Premium Chat (Vercel) • v1.0.4
    UI/transport klientas be WP. API bazė iš window.PAULE_CONFIG (index.html).
    ======================================================================= */
 (function () {
@@ -26,7 +26,15 @@
     if (C.restBase)     API_BASE      = rtrim(C.restBase);
     SSE_ENDPOINT = rtrim(C.restStreamSSE || C.restStream || (API_BASE + '/stream?mode=sse'));
   }
-  const normSSE = s => (s ? String(s).replace(/\/stream-sse(?:\?.*)?$/,'/stream') : API_BASE + '/stream');
+
+  // Normalizuoja bet kokį galą į /stream ir nuima query (?...)
+  const normSSE = (s) => {
+    if (!s) return API_BASE + '/stream';
+    let u = String(s);
+    u = u.replace(/\?.*$/, '');            // <— nuimam viską po ?
+    u = u.replace(/\/stream-sse$/, '/stream');
+    return u;
+  };
 
   /* ------------------------ modelių žemėlapiai ------------------------ */
   // front → back
@@ -71,7 +79,8 @@
   };
 
   const el = {
-    modelList: document.getElementById('modelList'),       // <<< svarbu: teisingas ID
+    // 💡 ID sutvarkytas pagal HTML – "modelList"
+    modelList: document.getElementById('modelList'),
     chatArea: document.getElementById('chatArea'),
     welcome: document.getElementById('welcome'),
     messageInput: document.getElementById('messageInput'),
@@ -103,7 +112,7 @@
       attachChatScroll();
       // jei yra demo seed žinučių – išvalom
       if (el.chatArea) el.chatArea.querySelectorAll('.message,.thinking')?.forEach(n=>n.remove());
-      log('🚀 Paule UI įkeltas. SSE endpoint:', SSE_ENDPOINT);
+      log('🚀 Paule UI įkeltas. SSE endpoint:', normSSE(SSE_ENDPOINT));
     } catch (e){ console.error('[PAULE]init', e); toast('Inicializacijos klaida: '+e.message); }
   }
 
@@ -144,6 +153,32 @@
   }
   function applyTheme(){ document.documentElement.setAttribute('data-theme', state.theme); }
 
+  /* ======================== įrankiai ======================== */
+  function onToolClick(e){
+    const tool = e.target.closest('.tool'); if (!tool) return;
+    const t = tool.getAttribute('data-tool');
+    switch (t){
+      case 'song':   openCreative('musicPopup'); break;
+      case 'photo':  openCreative('photoPopup'); break;
+      case 'file':   openCreative('filePopup'); break;
+      case 'video':  openCreative('videoPopup'); break;
+      case 'mindmap': openCreative('mindmapPopup'); break; // ✅ nebe video
+      default: toast('Įrankis dar kuriamas: '+t);
+    }
+  }
+  function openCreative(id){
+    let p = document.getElementById(id);
+    if (!p){
+      // fallback langas
+      p = document.createElement('div');
+      p.id = id; p.className='creative-popup active';
+      p.innerHTML = `<div class="popup-overlay"><div class="popup-content"><div class="popup-header">
+        <h2>${id}</h2><button class="popup-close" onclick="this.closest('.creative-popup').classList.remove('active')">×</button>
+      </div><div class="popup-body"><p>Modulis dar neįkeltas.</p></div></div></div>`;
+      document.body.appendChild(p);
+    } else { p.classList.add('active'); }
+  }
+
   /* ======================== modeliai ======================== */
   function onModelClick(e){
     const pill = e.target.closest('.model-pill'); if (!pill) return;
@@ -172,32 +207,6 @@
   function setInitialModelSelection(){
     el.modelList?.querySelectorAll('.model-pill').forEach(p=>p.classList.remove('active'));
     el.modelList?.querySelector('.model-pill[data-model="auto"]')?.classList.add('active');
-  }
-
-  /* ======================== įrankiai ======================== */
-  function onToolClick(e){
-    const tool = e.target.closest('.tool'); if (!tool) return;
-    const t = tool.getAttribute('data-tool');
-    switch (t){
-      case 'song':   openCreative('musicPopup'); break;
-      case 'photo':  openCreative('photoPopup'); break;
-      case 'file':   openCreative('filePopup'); break;
-      case 'video':  openCreative('videoPopup'); break;
-      case 'mindmap': window.location.href = '/spec/goal.html'; break; // kaip prašei – atskiras puslapis
-      default: toast('Įrankis dar kuriamas: '+t);
-    }
-  }
-  function openCreative(id){
-    let p = document.getElementById(id);
-    if (!p){
-      // fallback langas
-      p = document.createElement('div');
-      p.id = id; p.className='creative-popup active';
-      p.innerHTML = `<div class="popup-overlay"><div class="popup-content"><div class="popup-header">
-        <h2>${id}</h2><button class="popup-close" onclick="this.closest('.creative-popup').classList.remove('active')">×</button>
-      </div><div class="popup-body"><p>Modulis dar neįkeltas.</p></div></div></div>`;
-      document.body.appendChild(p);
-    } else { p.classList.add('active'); }
   }
 
   /* ======================== siuntimas ======================== */
@@ -235,10 +244,16 @@
       </div></div>`;
     appendFade(n); scrollToBottomIfNeeded();
   }
+
   const MODEL_ICON = {
-    chatgpt:`${ICONS_BASE}/chatgpt.svg`, claude:`${ICONS_BASE}/claude-seeklogo.svg`,
-    gemini:`${ICONS_BASE}/gemini.svg`, grok:`${ICONS_BASE}/xAI.svg`,
-    deepseek:`${ICONS_BASE}/deepseek.svg`, llama:`${ICONS_BASE}/llama.svg`, auto:`${ICONS_BASE}/ai.svg', paule:'${ICONS_BASE}/ai.svg`
+    chatgpt: `${ICONS_BASE}/chatgpt.svg`,
+    claude:  `${ICONS_BASE}/claude-seeklogo.svg`,
+    gemini:  `${ICONS_BASE}/gemini.svg`,
+    grok:    `${ICONS_BASE}/xAI.svg`,
+    deepseek:`${ICONS_BASE}/deepseek.svg`,
+    llama:   `${ICONS_BASE}/llama.svg`,
+    auto:    `${ICONS_BASE}/ai.svg`,
+    paule:   `${ICONS_BASE}/ai.svg`
   };
   const iconOf = id => MODEL_ICON[id] || MODEL_ICON.auto;
 
@@ -438,18 +453,18 @@
   function timeNow(){ return new Date().toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'}); }
   function escapeHtml(x){ const d=document.createElement('div'); d.textContent=(x==null?'':String(x)); return d.innerHTML; }
   function safeJson(s){ try{ return JSON.parse(s); }catch(_){ return null; } }
-  // lengvas MD parser’is (paryškinimai, nuorodos, eilutės)
+
+  // 🧩 ultralengvas MD (prieš pirmą panaudojimą)
   function parseMarkdown(s){
-    const e = escapeHtml(String(s||''));
-    return e
-      .replace(/^### (.*)$/gm,'<h3>$1</h3>')
-      .replace(/^## (.*)$/gm,'<h2>$1</h2>')
-      .replace(/^# (.*)$/gm,'<h1>$1</h1>')
-      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g,'<em>$1</em>')
-      .replace(/`([^`]+)`/g,'<code>$1</code>')
-      .replace(/\n/g,'<br>');
+    let t = escapeHtml(String(s || ''));
+    t = t.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+    t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+    t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    t = t.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    t = t.replace(/\n/g, '<br>');
+    return t;
   }
+
   function toast(title, details){
     const n=document.createElement('div');
     n.className='error-notification';
@@ -458,6 +473,7 @@
     document.body.appendChild(n);
     setTimeout(()=>n.remove(), 6000);
   }
+
   function log(){ try{ console.log('[PAULE]', ...arguments); }catch(_){ } }
 
   // eksportas (jei reikės testams)
