@@ -6,7 +6,6 @@
     { "src": "public/**/*", "use": "@vercel/static" }
   ],
   "routes": [
-
     { "src": "^/api/stream$",        "dest": "/api/stream.js" },
     { "src": "^/api/models$",        "dest": "/api/models.js" },
     { "src": "^/api/diagnostics$",   "dest": "/api/diagnostics.js" },
@@ -18,7 +17,6 @@
     { "src": "^/api/runway/status$", "dest": "/api/runway/status.js" },
     { "src": "^/api/music/create$",  "dest": "/api/music/create.js" },
     { "src": "^/api/music/status$",  "dest": "/api/music/status.js" },
-
 
     { "src": "^/api/paule/v1/stream$",        "dest": "/api/stream.js" },
     { "src": "^/api/paule/v1/models$",        "dest": "/api/models.js" },
@@ -40,7 +38,6 @@
     { "src": "^/wp-json/paule/v1/music/create$",  "dest": "/api/music/create.js" },
     { "src": "^/wp-json/paule/v1/music/status$",  "dest": "/api/music/status.js" },
 
- 
     { "src": "^/$", "dest": "/public/index.html" },
     { "src": "^(?!/api)(.*)$", "dest": "/public$1" }
   ]
