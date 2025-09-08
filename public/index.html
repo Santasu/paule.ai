@@ -4,11 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Paule – Premium AI Chat</title>
-
-  <!-- PAGRINDINIS STILIUS -->
   <link rel="stylesheet" href="/assets/css/paule.css">
 
-  <!-- 🔧 PAULE konfigūracija (švarus /api/stream) -->
+  <!-- 🔧 PAULE konfigūracija -->
   <script id="paule-config">
     (function () {
       var MODE = (document.documentElement.getAttribute('data-backend')||'').trim().toLowerCase()==='vercel' ? 'vercel':'wp';
@@ -26,7 +24,7 @@
       };
       var CFG = {
         mode:MODE, restBase:routes.base, restStream:routes.stream, restStreamSSE:routes.stream, sseDefault:1,
-        pluginBase:'/assets', iconsBase:'/assets/icon', featuresBase:'/assets/features', routes:routes, version:'paule-1.0.5'
+        pluginBase:'/assets', iconsBase:'/assets/icon', featuresBase:'/assets/features', routes:routes, version:'paule-1.0.3'
       };
       window.PAULE_CONFIG = CFG; window.AUGAM_CONFIG = CFG;
       try{ Object.defineProperty(window,'API_BASE',{configurable:true,get:function(){return CFG.restBase;},set:function(_){}});}catch(e){}
@@ -34,7 +32,7 @@
     })();
   </script>
 
-  <!-- ✅ Bridge WP→/api (EventSource ir fetch peradresavimas) -->
+  <!-- ✅ Bridge WP->/api -->
   <script id="paule-bridge">
     (function(){
       'use strict';
@@ -65,24 +63,10 @@
 </head>
 <body>
 
-  <!-- Juodas overlay specialisto atidarymui -->
-  <div id="specOverlay" class="spec-overlay"><div class="close-tip">Bakstelėkite uždaryti</div></div>
-
-  <!-- Mobilus overlay (uždaro šoninę) -->
-  <div id="mobileOverlay" class="mobile-overlay" style="display:none;"></div>
-
   <!-- ===== TOPBAR ===== -->
   <header class="topbar" data-no-clip="true">
     <a class="brand" href="/" aria-label="Paule">
-      <!-- SVG logotipas, fiksuotas 2.7 cm -->
-      <svg id="brandLogo" class="logo-svg" viewBox="0 0 520 120" role="img" aria-label="paule">
-        <title>paule</title>
-        <g fill="currentColor">
-          <path d="M80 20H60v80h20zM140 100c-22 0-40-18-40-40s18-40 40-40 40 18 40 40-18 40-40 40zm0-20c11 0 20-9 20-20s-9-20-20-20-20 9-20 20 9 20 20 20zM240 100c-22 0-40-18-40-40s18-40 40-40c9 0 17 3 24 8v-6h20v78h-20v-6c-7 5-15 8-24 8zm4-20c12 0 20-9 20-20s-8-20-20-20-20 9-20 20 8 20 20 20zM340 20h20v80h-20zM440 100c-22 0-40-18-40-40s18-40 40-40c21 0 38 16 40 36h-60c2 10 10 16 20 16 7 0 13-3 16-8h22c-6 20-22 36-38 36zM420 52h36c-3-9-10-14-18-14-8 0-15 5-18 14z"/>
-          <!-- šypsena -->
-          <path d="M90 150c40 40 160 40 200 0" stroke="currentColor" stroke-width="20" fill="none" stroke-linecap="round"/>
-        </g>
-      </svg>
+      <img id="brandLogo" class="brand-icon" src="/assets/icon/paule-logo.webp" alt="paule">
     </a>
 
     <!-- Modelių juosta -->
@@ -110,38 +94,23 @@
         <img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu
       </button>
 
-      <!-- Prisijungimas – dropdown -->
+      <!-- Tema (mažas dropdown šalia Prisijungti) -->
+      <div class="login-anchor">
+        <button class="btn ghost" id="btnTheme"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tema</button>
+        <div class="login-dropdown" id="themeDropdown">
+          <button class="btn" data-theme="light">Šviesi</button>
+          <button class="btn" data-theme="dark">Tamsi</button>
+        </div>
+      </div>
+
+      <!-- Prisijungimas – dropdown su Google ir el. paštu -->
       <div class="login-anchor">
         <button class="btn ghost" id="btnLogin">
           <img class="ui-icon" src="/assets/icon/user.svg" alt=""> Prisijungti
         </button>
         <div class="login-dropdown" id="loginDropdown">
           <a class="btn" id="googleLoginBtn" href="#"><img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti su Google</a>
-          <a class="btn" id="emailLoginBtn" href="#"><img class="ui-icon" src="/assets/icon/nav-login.svg" alt=""> Prisijungti el. paštu</a>
-        </div>
-      </div>
-
-      <!-- Kai prisijungta – palikta struktūra -->
-      <div class="user-profile hidden" id="userProfile">
-        <div class="user-avatar" id="userAvatar">U</div>
-        <div class="user-name" id="userName">Vartotojas</div>
-        <div class="profile-dropdown" id="profileDropdown">
-          <div class="dropdown-item" style="cursor:default">
-            <img class="ui-icon" src="/assets/icon/nav-theme.svg" alt="">
-            <div class="profile-controls">
-              <select class="select" id="selTheme" aria-label="Tema">
-                <option value="light">Šviesi</option>
-                <option value="dark">Tamsi</option>
-              </select>
-              <select class="select" id="selLang" aria-label="Kalba">
-                <option value="lt">LT</option>
-                <option value="en">EN</option>
-              </select>
-            </div>
-          </div>
-          <div class="dropdown-item" data-action="logout">
-            <img class="ui-icon" src="/assets/icon/logout.svg" alt=""> Atsijungti
-          </div>
+          <a class="btn" id="emailLoginBtn" href="#"><img class="ui-icon" src="/assets/icon/mail.svg" alt=""> Prisijungti el. paštu</a>
         </div>
       </div>
     </div>
@@ -178,7 +147,7 @@
         </div>
       </section>
 
-      <!-- Mano biblioteka -->
+      <!-- Mano biblioteka (miniatiūros) -->
       <section class="side-section">
         <div class="side-title"><a class="lib-link" href="/biblioteka#dainos">Dainos</a></div>
         <div class="library-grid" id="songsFeed">
@@ -298,30 +267,38 @@
     </div>
   </div>
 
-  <!-- Minimalus JS (login dropdown, overlay, hero clickai) -->
+  <!-- Minimal HTML-only JS -->
   <script>
     (function(){
       const root=document.documentElement;
       const sidebar=document.getElementById('sidebar');
       const btnMobile=document.getElementById('btnMobile');
-      const mobileOverlay=document.getElementById('mobileOverlay');
+      const mobileOverlay=null; // nebereikia
       const msgInput=document.getElementById('messageInput');
       const sendBtn=document.getElementById('sendBtn');
       const btnLogin=document.getElementById('btnLogin');
       const loginDropdown=document.getElementById('loginDropdown');
-      const specOverlay=document.getElementById('specOverlay');
+      const btnTheme=document.getElementById('btnTheme');
+      const themeDropdown=document.getElementById('themeDropdown');
+      const logo=document.getElementById('brandLogo');
 
-      // Tema
-      document.getElementById('selTheme')?.addEventListener('change',e=>{
-        root.setAttribute('data-theme', e.target.value);
+      function refreshLogo(){
+        const dark = root.getAttribute('data-theme') === 'dark';
+        logo.src = dark ? '/assets/icon/paule-logo-dark.webp' : '/assets/icon/paule-logo.webp';
+      }
+      refreshLogo();
+
+      // Tema (dropdown)
+      btnTheme?.addEventListener('click', (e)=>{ e.preventDefault(); themeDropdown?.classList.toggle('open'); loginDropdown?.classList.remove('open'); });
+      themeDropdown?.addEventListener('click', (e)=>{
+        const b=e.target.closest('[data-theme]'); if(!b) return;
+        root.setAttribute('data-theme', b.getAttribute('data-theme'));
+        refreshLogo();
+        themeDropdown.classList.remove('open');
       });
 
       // Mobilus meniu
-      btnMobile?.addEventListener('click', ()=>{
-        sidebar.classList.toggle('open');
-        mobileOverlay && (mobileOverlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none');
-      });
-      mobileOverlay?.addEventListener('click', ()=>{ sidebar.classList.remove('open'); mobileOverlay.style.display='none'; });
+      btnMobile?.addEventListener('click', ()=>{ sidebar.classList.toggle('open'); });
 
       // Enter → siųsti
       if(msgInput){
@@ -334,10 +311,12 @@
       }
 
       // Login dropdown
-      btnLogin?.addEventListener('click', (e)=>{ e.preventDefault(); loginDropdown?.classList.toggle('open'); });
-      document.addEventListener('click', (e)=>{ if(!e.target.closest('.login-anchor')) loginDropdown?.classList.remove('open'); });
+      btnLogin?.addEventListener('click', (e)=>{ e.preventDefault(); loginDropdown?.classList.toggle('open'); themeDropdown?.classList.remove('open'); });
+      document.addEventListener('click', (e)=>{
+        if(!e.target.closest('.login-anchor')){ loginDropdown?.classList.remove('open'); themeDropdown?.classList.remove('open'); }
+      });
 
-      // Hero kortelės
+      // Hero – mygtukų peradresavimai
       function bindWelcomeCards(){
         var arr=document.querySelectorAll('.welcome-grid .welcome-card');
         for (var i=0;i<arr.length;i++){
@@ -352,17 +331,10 @@
         }
       }
       bindWelcomeCards();
-
-      // Specialisto overlay
-      document.getElementById('specialistGrid')?.addEventListener('click', (e)=>{
-        const chip=e.target.closest('[data-route]'); if(!chip) return;
-        e.preventDefault(); specOverlay?.classList.add('open');
-      });
-      specOverlay?.addEventListener('click', ()=> specOverlay.classList.remove('open'));
     })();
   </script>
 
-  <!-- Pagrindinė logika (SSE, ginčas/teisėjas/kompromisas ir t. t.) -->
+  <!-- Pagrindinė logika (SSE, ginčas/teisėjas/kompromisas ir t.t.) -->
   <script src="/assets/js/paule-ui.js" defer></script>
 </body>
 </html>
