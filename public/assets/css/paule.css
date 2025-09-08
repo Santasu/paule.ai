@@ -635,3 +635,64 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 /* 7) Modelių juosta – saugus plotis centre, kad neliptų ant hero */
 .models-in-topbar{ max-width: min(1100px, calc(100vw - 2.7cm - 360px)); margin-inline:auto }
 
+/* =================== PAULE MOBILE + THEME PATCH =================== */
+
+/* Logo – vienodas dydis abiem temoms */
+.topbar .brand { min-width: 2.7cm }
+.topbar .brand-icon{ width:2.7cm !important; height:auto !important; display:block !important; object-fit:contain }
+.topbar img, .topbar svg{ max-height: calc(var(--topbar-h) - 16px) }
+
+/* Tamsi tema: NEDAŽYTI nuotraukų – balinam tik .ui-icon */
+:root{ --ui-icon-filter:none }
+[data-theme="dark"] .ui-icon{ filter: invert(1) brightness(1.1) contrast(1.05) }
+[data-theme="dark"] img:not(.ui-icon){ filter:none !important }
+.welcome-card img, .lib-card img, .library-grid img{ filter:none !important }
+
+/* Kairės thumbs – didesni */
+.library-grid.thumbs .lib-card img{ width:100% !important; height:96px !important; object-fit:cover; object-position:center; border-radius:12px }
+
+/* Chat top offset */
+#chatArea{ padding-top: calc(3cm + 6px) !important }
+
+/* Vartotojo burbulas prie dešinio krašto */
+.message.user{ flex-direction:row-reverse }
+.message.user .bubble{ margin-left:auto }
+
+/* Modelių juosta – visuomet matoma, su scroll, be perlipimų */
+.models-in-topbar{ gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100% }
+.models-in-topbar .model-pill{ padding:6px 10px; font-weight:700 }
+.models-in-topbar .ui-icon{ width:13px; height:13px }
+
+/* MOBILE: viršuje neberodyti „Bendruomenė“ ir „Tema“ (jie stalčiuje) */
+@media (max-width:1024px){
+  .top-actions [data-nav="community"],
+  .theme-anchor{ display:none !important }
+}
+
+/* MOBILE: sidebar kaip off-canvas stalčius */
+@media (max-width:1024px){
+  .layout{ grid-template-columns:0 1fr !important }
+  .sidebar{
+    position:fixed; top:var(--topbar-h); left:-320px;
+    width:300px; height:calc(100vh - var(--topbar-h));
+    background:var(--bg-primary); border-right:1px solid var(--border);
+    box-shadow:var(--shadow-lg); z-index:1350; transition:left .25s ease; overflow:auto;
+  }
+  .sidebar.open{ left:0 }
+  .drawer-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:1200;
+    opacity:0; visibility:hidden; transition:.2s;
+  }
+  .drawer-overlay.show{ opacity:1; visibility:visible }
+  .mobile-only{ display:block !important }
+  .bottom-section{ left:var(--gutter) !important; right:var(--gutter) !important; padding-bottom:max(10px, env(safe-area-inset-bottom)) }
+}
+/* PC: mobile-only nenaudojam */
+.mobile-only{ display:none }
+
+/* Sidebar ikonėlės – kuklesnės telefone */
+@media (max-width:1024px){
+  .sidebar .ui-icon{ width:14px; height:14px }
+}
+
+
