@@ -409,3 +409,78 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 .top-actions a{ text-decoration:none }
 .btn, .chip, .tool{ box-shadow:var(--neu-raise) }
 .btn:hover, .chip:hover, .tool:hover{ box-shadow:var(--neu-press) }
+
+/* ======= PAULE LAYOUT HOTFIX (įklijuok į patį CSS failo galą) ======= */
+
+/* 1) Topbar – visada viršuje ir stabilus */
+:root{ --topbar-h:66px } /* jeigu nėra */
+.topbar{
+  position: sticky !important;
+  top: 0; left: 0; right: 0;
+  z-index: 9999 !important;
+  grid-template-columns: minmax(2.7cm,auto) 1fr auto !important;
+  overflow: visible; /* dėl dropdownų */
+}
+
+/* 2) Logo – tik 2.7 cm, niekada ne „milžinas“ */
+.topbar .brand { min-width: 2.7cm }
+.topbar .brand-icon{
+  width: 2.7cm !important;
+  height: auto !important;
+  display: block !important;
+  object-fit: contain;
+}
+
+/* 3) Modelių juostos plotis (kad neliptų ant hero kortelių) */
+.models-in-topbar{
+  max-width: min(1100px, calc(100vw - 2.7cm - 360px));
+  margin-inline: auto;
+}
+
+/* 4) Pagrindinis „grid“ – vietos paskaičiavimas nuo topbar */
+.layout{
+  height: calc(100vh - var(--topbar-h)) !important;
+  grid-template-columns: var(--sidebar, 300px) 1fr !important;
+}
+
+/* 5) Sidebar – rodomas virš turinio, kai reikia */
+.sidebar{
+  z-index: 2;
+  background: var(--bg-primary);
+}
+
+/* 6) Chat sritis – priverstinai po topbar’u + 3 cm oras kaip prašei */
+#chatArea{
+  padding-top: calc(3cm + 6px) !important;
+}
+
+/* 7) Apačios įvesties juosta – teisingas „atsitraukimas“ nuo sidebar */
+.bottom-section{
+  left: calc(var(--sidebar, 300px) + var(--gutter, 14px)) !important;
+  right: var(--gutter, 14px) !important;
+}
+
+/* 8) Tamsi šviesi logotipo versijos (jei keiti tik su CSS) – nebūtina,
+      pas tave tai daro JS, bet palieku kaip guard, kad nebūtų inversijų */
+:root[data-theme="light"] #brandLogo{ content: normal !important }
+:root[data-theme="dark"]  #brandLogo{ content: normal !important }
+
+/* 9) Smulkūs guard’ai prieš bet kokį „didesnį nei header“ turinį */
+.topbar img, .topbar svg{
+  max-height: calc(var(--topbar-h) - 16px);
+}
+
+/* 10) Mobilui – sidebar slankiojimas, bottom bar centravimas */
+@media (max-width:1024px){
+  .layout{ grid-template-columns: 0 1fr !important }
+  .sidebar{
+    position: fixed; top: var(--topbar-h); left: -320px;
+    width: 300px; height: calc(100vh - var(--topbar-h));
+    transition: left .25s ease;
+  }
+  .sidebar.open{ left: 0 }
+  .bottom-section{ left: var(--gutter, 14px) !important; right: var(--gutter, 14px) !important }
+}
+
+/* ======= END HOTFIX ======= */
+
