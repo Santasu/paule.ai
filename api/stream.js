@@ -1,16 +1,9 @@
 // /api/stream.js – SSE vieningu formatu.
 // GET /api/stream?model=<backId>&message=...&chat_id=...
-// Eventai:
-//   event:start   data: {"model":"...","chat_id":"..."}
-//   event:delta   data: {"text":"..."}
-//   event:done    data: {"finish_reason":"stop"}
-//   event:error   data: {"message":"..."}
-// Suderinamumas: jei ?mode=once – grąžina JSON kaip /api/complete (legacy).
-
+// Eventai: start | delta | done | error
 export const config = { runtime: 'nodejs' };
 
 export default async function handler(req, res) {
-  // Legacy „mode=once“
   if ((req.method === 'POST' || req.method === 'GET') && (req.query.mode === 'once')) {
     return onceCompat(req, res);
   }
@@ -25,7 +18,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok:false, error:'Method Not Allowed' });
   }
 
-  // HEAD/probe galime užbaigti greitai
   const { model='', message='', chat_id='', probe } = req.query;
   const chatId = chat_id || ('chat_'+Date.now()+'_'+Math.random().toString(36).slice(2));
 
@@ -35,40 +27,32 @@ export default async function handler(req, res) {
   res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders && res.flushHeaders();
 
-  const writeEvent = (event, dataObj) => {
-    const payload = (typeof dataObj==='string') ? dataObj : JSON.stringify(dataObj||{});
+  const write = (event, data) => {
     res.write(`event: ${event}\n`);
-    res.write(`data: ${payload}\n\n`);
+    res.write(`data: ${typeof data==='string'?data:JSON.stringify(data||{})}\n\n`);
   };
 
-  // start
-  writeEvent('start', { model, chat_id: chatId });
+  write('start', { model, chat_id: chatId });
+  if (String(probe||'') === '1') { write('done', { finish_reason:'probe' }); return res.end(); }
 
-  // jei tik „probe“ – baigiam
-  if (String(probe||'') === '1') {
-    writeEvent('done', { finish_reason:'probe' });
-    return res.end();
-  }
-
-  // ČIA integruok tikrą srautą iš tiekėjo (OpenAI, Anthropic, Google ir t.t.)
-  // Dabar – demo „tokenizacija“:
+  // TODO: čia prijunk tikrą tiekėją (OpenAI/Anthropic/Google/xAI…)
   const text = demoStreamText(message, model);
   const chunks = simulateChunks(text);
 
   let i=0;
   const timer = setInterval(()=>{
-    if (i>=chunks.length){
+    if (i >= chunks.length){
       clearInterval(timer);
-      writeEvent('done', { finish_reason:'stop' });
+      write('done', { finish_reason:'stop' });
       return res.end();
     }
-    writeEvent('delta', { text: chunks[i++] });
+    write('delta', { text: chunks[i++] });
   }, 40);
 
-  req.on('close', ()=>{ try{ clearInterval(timer);}catch(_){ } try{res.end();}catch(_){ } });
+  req.on('close', ()=>{ try{clearInterval(timer);}catch(_){} try{res.end();}catch(_){ } });
 }
 
-// Legacy: POST /api/stream?mode=once – kad sena UI dalis nenulūžtų
+// Legacy „once“ JSON (suderinamumui su UI)
 async function onceCompat(req, res){
   if (req.method==='OPTIONS'){
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -84,7 +68,6 @@ async function onceCompat(req, res){
   const models = String(body.models||req.query.models||'').split(',').map(s=>s.trim()).filter(Boolean);
   const message = body.message || req.query.message || '';
   const chat_id = body.chat_id || ('chat_'+Date.now()+'_'+Math.random().toString(36).slice(2));
-
   const answers = models.map(m=>({ model:m, text: demoComplete(message,m) }));
 
   res.setHeader('Access-Control-Allow-Origin', '*');
