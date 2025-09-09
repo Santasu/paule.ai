@@ -1,8 +1,5 @@
-// /api/complete.js – JSON once (suderinama su Orchestratoriumi)
-// Body: { message, models: "a,b,c", chat_id?, max_tokens? }
-// Return: { ok:true, chat_id, answers:[{model:<back>, text:<string>}, ...] }
+// JSON once endpoint, naudojamas ne-SSE modeliams
 export default async function handler(req, res) {
-  // CORS
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -18,12 +15,8 @@ export default async function handler(req, res) {
     const chatId = chat_id || ('chat_'+Date.now()+'_'+Math.random().toString(36).slice(2));
     const list = String(models||'').split(',').map(s=>s.trim()).filter(Boolean);
 
-    // ČIA integruok į tikrus tiekėjus (Claude/Gemini/Grok ir pan.)
-    // Dabar – demo echo su „semantiniu“ atsakymu:
-    const answers = list.map(m=>{
-      const txt = demoComplete(message, m);
-      return { model:m, text:txt };
-    });
+    // TODO: čia sujunk su tikrais tiekėjais
+    const answers = list.map(m=>({ model:m, text: demoComplete(message, m) }));
 
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cache-Control', 'no-store');
@@ -38,12 +31,8 @@ function readJson(req){
     let b=''; req.on('data',ch=> b+=ch); req.on('end', ()=>{ try{ resolve(JSON.parse(b||'{}')); }catch(e){ reject(e); } });
   });
 }
-
 function demoComplete(message, model){
-  // paprastas pseudo-atsakymas: 2x2 -> 4 ir pan.
   const q = String(message||'').toLowerCase();
-  let a = '';
-  if (q.match(/\b2\s*x\s*2\b/) || q.includes('2x2')) a = '4';
-  else a = 'Atsakymas į: ' + message;
-  return `(${model}) ${a}`;
+  if (q.match(/\b2\s*x\s*2\b/) || q.includes('2x2')) return `(${model}) 4`;
+  return `(${model}) Atsakymas į: ${message}`;
 }
