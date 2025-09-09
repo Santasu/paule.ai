@@ -1,127 +1,91 @@
-/* ===== Paule - Clerk Popup (vienas failas) =======================
-   - Įdėk šį failą į /public/auth/clerk-popup.js
-   - HTML'e tik:
-       <div id="clerk-auth"></div>
-       <script defer src="/auth/clerk-popup.js" data-pk="PK_TAVO_PUBLISHABLE_KEY"></script>
-   - Šis failas automatiškai:
-       * įterpia CSS
-       * įterpia mygtukus (Prisijungti / Atsijungti)
-       * atidaro Clerk popup su Google
-       * rodo vartotojo vardą
-   ================================================================ */
-
+/* Paule × Clerk: vieno failo popup widgetas */
 (function () {
-  // --- Nustatymai iš <script ... data-pk="pk_..."> ---
-  const curScript = document.currentScript;
-  const PK = (window.CLERK_PUBLISHABLE_KEY || (curScript && curScript.dataset.pk) || '').trim();
-  const TARGET_ID = (curScript && curScript.dataset.target) || 'clerk-auth';
-  const REDIRECT = (curScript && curScript.dataset.redirect) || window.location.href;
+  const ANCHOR_ID = 'clerk-auth';
 
-  // --- Surandam / sukuriam konteinerį ---
-  let root = document.getElementById(TARGET_ID);
-  if (!root) {
-    root = document.createElement('div');
-    root.id = TARGET_ID;
-    document.body.insertBefore(root, document.body.firstChild);
+  function getAnchor() {
+    return document.getElementById(ANCHOR_ID) || (function () {
+      const d = document.createElement('div');
+      d.id = ANCHOR_ID;
+      (document.querySelector('.top-actions') || document.body).appendChild(d);
+      return d;
+    })();
   }
 
-  // --- Minimalus stilius (įterpiamas automatiškai) ---
-  const style = document.createElement('style');
-  style.textContent = `
-    .c-auth{display:flex;gap:10px;align-items:center;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-    .c-btn{padding:8px 14px;border-radius:12px;border:1px solid #444;background:#111;color:#fff;cursor:pointer}
-    .c-btn.ghost{background:transparent;color:#ddd}
-    .c-user{display:flex;gap:10px;align-items:center}
-    .c-avatar{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;background:#222;color:#fff}
-    .c-name{font-weight:600;color:#eee}
-    .hidden{display:none !important}
-  `;
-  document.head.appendChild(style);
-
-  // --- Įkeliame pradinį HTML į konteinerį ---
-  root.innerHTML = `
-    <div class="c-auth">
-      <button class="c-btn" data-login>Prisijungti su Google</button>
-      <div class="c-user hidden" data-signedin>
-        <span class="c-avatar" data-initial>U</span>
-        <span class="c-name" data-name>Vartotojas</span>
-        <button class="c-btn ghost" data-logout>Atsijungti</button>
-      </div>
-    </div>
-  `;
-
-  const loginBtn = root.querySelector('[data-login]');
-  const logoutBtn = root.querySelector('[data-logout]');
-  const signedInBox = root.querySelector('[data-signedin]');
-  const nameEl = root.querySelector('[data-name]');
-  const initialEl = root.querySelector('[data-initial]');
-
-  if (!PK) {
-    loginBtn.textContent = '❗️Trūksta Clerk publishable key';
-    loginBtn.disabled = true;
-    console.warn('Clerk: publishable key nerastas. Perdavimo būdai: data-pk="pk_..." arba window.CLERK_PUBLISHABLE_KEY.');
-    return;
+  async function getPK() {
+    // 1) iš <script data-pk="...">
+    try {
+      const s = document.currentScript || document.querySelector('script[src$="/auth/clerk-popup.js"]');
+      const pk = s?.dataset?.pk?.trim();
+      if (pk) return pk;
+    } catch (_) {}
+    // 2) iš window (jei kada nors įterpsi ranka)
+    if (window.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) return window.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+    // 3) iš Vercel env per API (be rakto HTML’e)
+    try {
+      const r = await fetch('/api/clerk/pk', { cache: 'no-store' });
+      if (r.ok) {
+        const j = await r.json();
+        if (j?.pk) return j.pk;
+      }
+    } catch (_) {}
+    return null;
   }
 
-  // --- Įkeliame oficialų Clerk JS skriptą (su PK) ---
-  function loadClerk() {
+  function showMissingPK() {
+    const box = getAnchor();
+    box.innerHTML = '<span style="font-size:12px;opacity:.7">❗️Trūksta Clerk publishable key</span>';
+  }
+
+  function loadClerk(pk) {
     return new Promise((resolve, reject) => {
-      if (window.Clerk && window.Clerk.load) return resolve();
       const s = document.createElement('script');
+      s.async = true;
+      s.crossOrigin = 'anonymous';
       s.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
-      s.async = true; s.defer = true; s.crossOrigin = 'anonymous';
-      s.setAttribute('data-clerk-publishable-key', PK);
+      s.setAttribute('data-clerk-publishable-key', pk);
       s.onload = resolve;
-      s.onerror = () => reject(new Error('Nepavyko įkelti Clerk JS'));
+      s.onerror = reject;
       document.head.appendChild(s);
     });
   }
 
-  // --- Paleidžiam login UI logiką ---
-  (async function init() {
-    try {
-      await loadClerk();
-      await window.Clerk.load();
-
-      function render() {
-        const on = !!window.Clerk.session?.id;
-        loginBtn.classList.toggle('hidden', on);
-        signedInBox.classList.toggle('hidden', !on);
-
-        if (on) {
-          const u = window.Clerk.user;
-          const initial = (u?.firstName?.[0] || u?.username?.[0] || 'U').toUpperCase();
-          initialEl.textContent = initial;
-          nameEl.textContent = u?.fullName || u?.primaryEmailAddress?.emailAddress || 'Vartotojas';
+  function renderLogin() {
+    const box = getAnchor();
+    box.innerHTML = `
+      <button class="btn ghost" id="btnLogin" type="button">
+        <img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti
+      </button>`;
+    box.querySelector('#btnLogin').addEventListener('click', () => {
+      window.Clerk.openSignIn({
+        redirectUrl: window.location.href,
+        appearance: {
+          elements: { card: { borderRadius: '14px' } },
+          layout:   { socialButtonsVariant: 'icon' }
         }
-      }
-
-      window.Clerk.addListener(render);
-      render();
-
-      loginBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.Clerk.openSignIn({
-          appearance: { layout: { socialButtonsVariant: 'icon' } },
-          redirectUrl: REDIRECT
-        });
       });
+    });
+  }
 
-      logoutBtn.addEventListener('click', () => window.Clerk.signOut());
+  function renderUser() {
+    const box = getAnchor();
+    box.innerHTML = `<div id="clerkUserButton"></div>`;
+    window.Clerk.mountUserButton('#clerkUserButton', {
+      afterSignOutUrl: window.location.href
+    });
+  }
 
-      // Pasirinktinai: helperiai API kvietimams su JWT
-      window.getClerkJWT = async (template) =>
-        await window.Clerk.session?.getToken(template ? { template } : undefined);
-
-      window.authFetch = async (url, opts = {}, template) => {
-        const jwt = await window.getClerkJWT(template);
-        const headers = Object.assign({}, opts.headers || {}, jwt ? { Authorization: `Bearer ${jwt}` } : {});
-        return fetch(url, Object.assign({}, opts, { headers }));
-      };
-
-    } catch (err) {
-      console.warn('Clerk widget klaida:', err);
-      root.innerHTML = '<div style="color:#f66">⚠️ Nepavyko įkelti prisijungimo.</div>';
+  (async () => {
+    try {
+      const pk = await getPK();
+      if (!pk) return showMissingPK();
+      await loadClerk(pk);
+      await window.Clerk.load();
+      const update = () => (window.Clerk.user ? renderUser() : renderLogin());
+      window.Clerk.addListener(update);
+      update();
+    } catch (e) {
+      console.warn('Clerk widget error:', e);
+      showMissingPK();
     }
   })();
 })();
