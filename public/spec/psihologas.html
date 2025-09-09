@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tikslų Sistema • Produktyvumas</title>
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>" />
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script id="tailwind" src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+
+  <style>
+    :root{ --ring: rgba(59,130,246,.25); }
+    html,body{ height:100%; font-family:system-ui,sans-serif; }
+    body{ background:#f8fafc; }
+    
+    .goal-card{ transition:all .3s ease; cursor:pointer; }
+    .goal-card:hover{ transform:translateY(-4px); box-shadow:0 20px 40px rgba(0,0,0,.1); }
+    
+    .task-item{ transition:all .2s ease; }
+    .task-item:hover{ transform:translateX(4px); }
+    
+    .mind-node{ transition:all .3s ease; cursor:move; user-select:none; }
+    .mind-node:hover{ transform:scale(1.05); z-index:10; }
+    
+    .step-item{ transition:all .2s ease; }
+    .step-item:hover{ background:rgba(59,130,246,.05); }
+    
+    .progress-ring{ transition:stroke-dashoffset .5s ease; }
+    
+    .notification{ animation:slideIn .3s ease-out; }
+    @keyframes slideIn{ from{transform:translateX(100%); opacity:0;} to{transform:translateX(0); opacity:1;} }
+    
+    .tab-active{ background:linear-gradient(135deg,#3b82f6,#1d4ed8); color:white; }
+    .tab-inactive{ background:white; color:#6b7280; border:1px solid #e5e7eb; }
+    .tab-inactive:hover{ background:#f3f4f6; color:#374151; }
+    
+    .btn{ transition:all .2s ease; cursor:pointer; }
+    .btn:hover{ transform:translateY(-1px); }
+    .btn:active{ transform:translateY(0); }
+    
+    .goal-hierarchy{ position:relative; }
+    .goal-line{ position:absolute; border-left:2px dashed #d1d5db; height:100%; left:24px; top:0; }
+    
+    .dark .goal-line{ border-color:#374151; }
+    .dark .tab-inactive{ background:#374151; color:#d1d5db; border-color:#4b5563; }
+    .dark .tab-inactive:hover{ background:#4b5563; color:#f3f4f6; }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // Utils
+    const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+    const fmt = d => new Date(d).toLocaleDateString('lt-LT');
+
+    // Storage
+    const KEYS = {
+      VISION: 'smart-goals-vision',
+      GOALS: 'smart-goals-list', 
+      MINDMAP: 'smart-goals-mindmap',
+      THEME: 'smart-goals-theme'
+    };
+
+    const storage = {
+      get: (key, defaultValue) => {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : defaultValue;
+        } catch {
+          return defaultValue;
+        }
+      },
+      set: (key, value) => {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch {}
+      }
+    };
+
+    // Components
+    const ProgressRing = ({ progress, size = 60 }) => {
+      const radius = (size - 8) / 2;
+      const circumference = 2 * Math.PI * radius;
+      const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+      return (
+        <div className="relative inline-flex">
+          <svg width={size} height={size} className="-rotate-90">
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+              className="text-gray-200 dark:text-gray-700"
+            />
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              className="text-blue-600 progress-ring"
+            />
+          </svg>
+          <span className="absolute inset-0 flex items-center justify-center text-sm font-bold">
+            {Math.round(progress)}%
+          </span>
+        </div>
+      );
+    };
+
+    const PriorityBadge = ({ level }) => {
+      const styles = {
+        high: 'bg-red-100 text-red-800 border-red-200',
+        medium: 'bg-yellow-100 text-yellow-800 border-yellow-200', 
+        low: 'bg-green-100 text-green-800 border-green-200'
+      };
+      const labels = { high: 'Aukštas', medium: 'Vidutinis', low: 'Žemas' };
+      
+      return (
+        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${styles[level] || styles.medium}`}>
+          {labels[level] || labels.medium}
+        </span>
+      );
+    };
+
+    const CategoryBadge = ({ category }) => {
+      const styles = {
+        career: 'bg-blue-100 text-blue-800',
+        finance: 'bg-green-100 text-green-800',
+        health: 'bg-red-100 text-red-800',
+        family: 'bg-purple-100 text-purple-800',
+        personal: 'bg-indigo-100 text-indigo-800',
+        education: 'bg-orange-100 text-orange-800'
+      };
+      
+      const labels = {
+        career: '💼 Karjera',
+        finance: '💰 Finansai', 
+        health: '🏃 Sveikata',
+        family: '👨‍👩‍👧‍👦 Šeima',
+        personal: '🌟 Asmeninis',
+        education: '📚 Mokymasis'
+      };
+
+      return (
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[category] || styles.personal}`}>
+          {labels[category] || labels.personal}
+        </span>
+      );
+    };
+
+    const Notification = ({ notification, onClose }) => {
+      const typeStyles = {
+        success: { bg: 'bg-green-500', icon: '✅' },
+        error: { bg: 'bg-red-500', icon: '❌' },
+        warning: { bg: 'bg-yellow-500', icon: '⚠️' },
+        info: { bg: 'bg-blue-500', icon: 'ℹ️' }
+      };
+
+      const { bg, icon } = typeStyles[notification.type] || typeStyles.info;
+
+      useEffect(() => {
+        const timer = setTimeout(onClose, 4000);
+        return () => clearTimeout(timer);
+      }, [onClose]);
+
+      return (
+        <div className={`notification ${bg} text-white p-4 rounded-lg shadow-lg flex items-center justify-between min-w-80`}>
+          <div className="flex items-center gap-3">
+            <span className="text-xl">{icon}</span>
+            <span className="font-medium">{notification.message}</span>
+          </div>
+          <button onClick={onClose} className="ml-4 text-xl opacity-80 hover:opacity-100">×</button>
+        </div>
+      );
+    };
+
+    // Main App
+    const App = () => {
+      const [activeTab, setActiveTab] = useState('vision');
+      const [isDark, setIsDark] = useState(() => storage.get(KEYS.THEME, false));
+      const [vision, setVision] = useState(() => storage.get(KEYS.VISION, ''));
+      const [goals, setGoals] = useState(() => storage.get(KEYS.GOALS, []));
+      const [mindmapNodes, setMindmapNodes] = useState(() => storage.get(KEYS.MINDMAP, []));
+      const [notifications, setNotifications] = useState([]);
+      const [isGenerating, setIsGenerating] = useState(false);
+
+      // Persistence
+      useEffect(() => storage.set(KEYS.THEME, isDark), [isDark]);
+      useEffect(() => storage.set(KEYS.VISION, vision), [vision]);
+      useEffect(() => storage.set(KEYS.GOALS, goals), [goals]);
+      useEffect(() => storage.set(KEYS.MINDMAP, mindmapNodes), [mindmapNodes]);
+
+      // Dark mode
+      useEffect(() => {
+        document.documentElement.classList.toggle('dark', isDark);
+      }, [isDark]);
+
+      const notify = (message, type = 'info') => {
+        const id = genId();
+        setNotifications(prev => [...prev, { id, message, type }]);
+      };
+
+      const removeNotification = (id) => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      };
+
+      // AI Mock function
+      const generateFromVision = async () => {
+        if (!vision.trim()) {
+          notify('Pirmiau įveskite savo viziją!', 'warning');
+          return;
+        }
+
+        setIsGenerating(true);
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate AI delay
+
+        // Generate mind map nodes from vision
+        const visionKeywords = vision.toLowerCase();
+        const suggestedNodes = [];
+
+        if (visionKeywords.includes('pinig') || visionKeywords.includes('pajam') || visionKeywords.includes('biznis')) {
+          suggestedNodes.push({ id: genId(), text: 'Finansinė laisvė', x: 200, y: 150, category: 'finance' });
+        }
+        if (visionKeywords.includes('nam') || visionKeywords.includes('būst')) {
+          suggestedNodes.push({ id: genId(), text: 'Nuosavas namas', x: 350, y: 100, category: 'personal' });
+        }
+        if (visionKeywords.includes('sveik') || visionKeywords.includes('sport') || visionKeywords.includes('form')) {
+          suggestedNodes.push({ id: genId(), text: 'Puiki fizinė forma', x: 150, y: 250, category: 'health' });
+        }
+        if (visionKeywords.includes('šeim') || visionKeywords.includes('vaik') || visionKeywords.includes('part')) {
+          suggestedNodes.push({ id: genId(), text: 'Stipri šeima', x: 400, y: 200, category: 'family' });
+        }
+        if (visionKeywords.includes('karjer') || visionKeywords.includes('darb') || visionKeywords.includes('sėkm')) {
+          suggestedNodes.push({ id: genId(), text: 'Sėkminga karjera', x: 300, y: 300, category: 'career' });
+        }
+
+        // Add center node if not exists
+        const centerNode = mindmapNodes.find(n => n.isCenter) || {
+          id: genId(), text: 'Mano vizija', x: 300, y: 200, isCenter: true
+        };
+
+        setMindmapNodes([centerNode, ...suggestedNodes]);
+
+        // Generate corresponding goals
+        const newGoals = suggestedNodes.map(node => ({
+          id: genId(),
+          title: node.text,
+          description: `Tikslas pasiekti: ${node.text.toLowerCase()}`,
+          category: node.category,
+          priority: 'high',
+          progress: 0,
+          deadline: '',
+          steps: generateStepsForGoal(node.text),
+          created: new Date().toISOString(),
+          parentId: null
+        }));
+
+        setGoals(prev => [...prev, ...newGoals]);
+        setIsGenerating(false);
+        notify(`Sukurti ${newGoals.length} tikslai iš jūsų vizijos!`, 'success');
+        setActiveTab('mindmap');
+      };
+
+      const generateStepsForGoal = (goalTitle) => {
+        const steps = [];
+        const title = goalTitle.toLowerCase();
+
+        if (title.includes('finansin') || title.includes('pinig')) {
+          steps.push(
+            { id: genId(), text: 'Išanalizuoti dabartinę finansinę situaciją', completed: false, priority: 'high' },
+            { id: genId(), text: 'Nustatyti mėnesinius pajamų tikslus', completed: false, priority: 'high' },
+            { id: genId(), text: 'Sukurti papildomų pajamų šaltinių planą', completed: false, priority: 'medium' },
+            { id: genId(), text: 'Pradėti taupyti ir investuoti', completed: false, priority: 'medium' }
+          );
+        } else if (title.includes('nam') || title.includes('būst')) {
+          steps.push(
+            { id: genId(), text: 'Apskaičiuoti reikiamą sumą namui', completed: false, priority: 'high' },
+            { id: genId(), text: 'Išnagrinėti hipotekos galimybes', completed: false, priority: 'high' },
+            { id: genId(), text: 'Pradėti taupyti pradiniam įnašui', completed: false, priority: 'medium' },
+            { id: genId(), text: 'Ieškoti tinkamos vietos ir namo', completed: false, priority: 'low' }
+          );
+        } else if (title.includes('form') || title.includes('sveik')) {
+          steps.push(
+            { id: genId(), text: 'Sukurti sporto programą', completed: false, priority: 'high' },
+            { id: genId(), text: 'Planuoti sveikų mitybos įpročius', completed: false, priority: 'high' },
+            { id: genId(), text: 'Registruotis į sporto klubą', completed: false, priority: 'medium' },
+            { id: genId(), text: 'Reguliariai stebėti pažangą', completed: false, priority: 'medium' }
+          );
+        } else if (title.includes('šeim') || title.includes('santyk')) {
+          steps.push(
+            { id: genId(), text: 'Planuoti bendro laiko praleidimą', completed: false, priority: 'high' },
+            { id: genId(), text: 'Gerinti komunikacijos įgūdžius', completed: false, priority: 'medium' },
+            { id: genId(), text: 'Kurti šeimos tradicijas', completed: false, priority: 'medium' },
+            { id: genId(), text: 'Planuoti šeimos finansus', completed: false, priority: 'low' }
+          );
+        } else {
+          steps.push(
+            { id: genId(), text: 'Apibrėžti konkretų veiksmų planą', completed: false, priority: 'high' },
+            { id: genId(), text: 'Nustatyti tarpinius tikslus', completed: false, priority: 'medium' },
+            { id: genId(), text: 'Pradėti kasdienius veiksmus', completed: false, priority: 'medium' }
+          );
+        }
+
+        return steps;
+      };
+
+      const addGoal = () => {
+        const newGoal = {
+          id: genId(),
+          title: '',
+          description: '',
+          category: 'personal',
+          priority: 'medium',
+          progress: 0,
+          deadline: '',
+          steps: [],
+          created: new Date().toISOString(),
+          parentId: null
+        };
+        setGoals(prev => [...prev, newGoal]);
+      };
+
+      const updateGoal = (goalId, field, value) => {
+        setGoals(prev => prev.map(goal => 
+          goal.id === goalId ? { ...goal, [field]: value } : goal
+        ));
+      };
+
+      const deleteGoal = (goalId) => {
+        setGoals(prev => prev.filter(goal => goal.id !== goalId));
+        notify('Tikslas pašalintas', 'info');
+      };
+
+      const addStep = (goalId) => {
+        const newStep = {
+          id: genId(),
+          text: '',
+          completed: false,
+          priority: 'medium'
+        };
+        
+        setGoals(prev => prev.map(goal => 
+          goal.id === goalId 
+            ? { ...goal, steps: [...(goal.steps || []), newStep] }
+            : goal
+        ));
+      };
+
+      const updateStep = (goalId, stepId, field, value) => {
+        setGoals(prev => prev.map(goal => 
+          goal.id === goalId 
+            ? { 
+                ...goal, 
+                steps: goal.steps.map(step => 
+                  step.id === stepId ? { ...step, [field]: value } : step
+                )
+              }
+            : goal
+        ));
+
+        // Update goal progress when step is completed
+        if (field === 'completed' && value) {
+          const goal = goals.find(g => g.id === goalId);
+          if (goal && goal.steps) {
+            const completedSteps = goal.steps.filter(s => s.completed || s.id === stepId).length;
+            const totalSteps = goal.steps.length;
+            const newProgress = Math.round((completedSteps / totalSteps) * 100);
+            updateGoal(goalId, 'progress', newProgress);
+          }
+        }
+      };
+
+      const deleteStep = (goalId, stepId) => {
+        setGoals(prev => prev.map(goal => 
+          goal.id === goalId 
+            ? { ...goal, steps: goal.steps.filter(step => step.id !== stepId) }
+            : goal
+        ));
+      };
+
+      const stats = useMemo(() => {
+        const totalGoals = goals.length;
+        const completedGoals = goals.filter(g => g.progress === 100).length;
+        const avgProgress = totalGoals > 0 
+          ? Math.round(goals.reduce((sum, g) => sum + g.progress, 0) / totalGoals)
+          : 0;
+        
+        const allSteps = goals.flatMap(g => g.steps || []);
+        const completedSteps = allSteps.filter(s => s.completed).length;
+        
+        return {
+          totalGoals,
+          completedGoals,
+          avgProgress,
+          totalSteps: allSteps.length,
+          completedSteps
+        };
+      }, [goals]);
+
+      const tabs = [
+        { id: 'vision', label: 'Vizija', icon: '⭐' },
+        { id: 'mindmap', label: 'Mind Map', icon: '🧠' },
+        { id: 'goals', label: 'Tikslai', icon: '🎯' },
+        { id: 'analytics', label: 'Analitika', icon: '📊' }
+      ];
+
+      return (
+        <div className={`min-h-screen transition-colors ${isDark ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+          {/* Notifications */}
+          <div className="fixed top-4 right-4 z-50 space-y-2">
+            {notifications.map(notification => (
+              <Notification
+                key={notification.id}
+                notification={notification}
+                onClose={() => removeNotification(notification.id)}
+              />
+            ))}
+          </div>
+
+          {/* Header */}
+          <div className={`border-b ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+            <div className="max-w-7xl mx-auto px-4 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    🎯 Tikslų Sistema
+                  </h1>
+                  <div className="hidden md:flex items-center gap-4 text-sm">
+                    <div className={`flex items-center gap-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      <span>Tikslai:</span>
+                      <span className="font-bold text-blue-600">{stats.totalGoals}</span>
+                    </div>
+                    <div className={`flex items-center gap-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      <span>Progresas:</span>
+                      <span className="font-bold text-green-600">{stats.avgProgress}%</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={generateFromVision}
+                    disabled={isGenerating || !vision.trim()}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg btn disabled:opacity-50"
+                  >
+                    {isGenerating ? '🔄 Generuojama...' : '✨ AI Pagalba'}
+                  </button>
+                  <button
+                    onClick={() => setIsDark(!isDark)}
+                    className={`p-2 rounded-lg btn ${isDark ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-700'}`}
+                  >
+                    {isDark ? '☀️' : '🌙'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="flex flex-wrap gap-2 mb-8">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg btn font-medium ${
+                    activeTab === tab.id ? 'tab-active' : 'tab-inactive'
+                  }`}
+                >
+                  <span>{tab.icon}</span>
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Content */}
+            <div className="space-y-6">
+              {/* Vision Tab */}
+              {activeTab === 'vision' && (
+                <div className={`rounded-xl shadow-lg p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      ⭐ Mano Vizija
+                    </h2>
+                    <button
+                      onClick={generateFromVision}
+                      disabled={isGenerating || !vision.trim()}
+                      className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 btn disabled:opacity-50"
+                    >
+                      {isGenerating ? '🔄' : '🧠'} Generuoti tikslus
+                    </button>
+                  </div>
+                  
+                  <textarea
+                    value={vision}
+                    onChange={(e) => setVision(e.target.value)}
+                    placeholder="Aprašykite savo ateities viziją... Pvz: Noriu turėti finansinę laisvę, nuosavą namą, puikią fizinę formą, stiprią šeimą ir sėkmingą karjerą."
+                    className={`w-full h-64 p-4 rounded-lg border resize-none focus:ring-2 focus:ring-blue-500 transition-all ${
+                      isDark 
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                  />
+                  
+                  <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">💡 Patarimai geresnei vizijai:</h3>
+                    <ul className="text-blue-700 dark:text-blue-300 text-sm space-y-1">
+                      <li>• Aprašykite konkrečius tikslus (pvz., "10,000€ mėnesinės pajamos")</li>
+                      <li>• Įtraukite skirtingas gyvenimo sritis (finansai, sveikata, šeima, karjera)</li>
+                      <li>• Galvokite apie tai, kas jums tikrai svarbu</li>
+                      <li>• Būkite ambicingi, bet realistiniai</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* Mind Map Tab */}
+              {activeTab === 'mindmap' && (
+                <div className={`rounded-xl shadow-lg p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      🧠 Tikslų žemėlapis
+                    </h2>
+                    <button
+                      onClick={() => {
+                        const newNode = {
+                          id: genId(),
+                          text: 'Naujas tikslas',
+                          x: 200 + Math.random() * 400,
+                          y: 100 + Math.random() * 300,
+                          category: 'personal'
+                        };
+                        setMindmapNodes(prev => [...prev, newNode]);
+                      }}
+                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 btn"
+                    >
+                      ➕ Pridėti mazgą
+                    </button>
+                  </div>
+
+                  <div className={`relative h-96 rounded-lg border-2 border-dashed overflow-hidden ${
+                    isDark ? 'bg-gray-700 border-gray-500' : 'bg-gray-50 border-gray-300'
+                  }`}>
+                    {mindmapNodes.map(node => (
+                      <div
+                        key={node.id}
+                        className={`mind-node absolute transform -translate-x-1/2 -translate-y-1/2 px-4 py-2 rounded-lg shadow-lg ${
+                          node.isCenter 
+                            ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold'
+                            : isDark 
+                              ? 'bg-gray-600 text-white' 
+                              : 'bg-white text-gray-900'
+                        }`}
+                        style={{ left: node.x, top: node.y }}
+                      >
+                        <input
+                          value={node.text}
+                          onChange={(e) => {
+                            setMindmapNodes(prev => prev.map(n => 
+                              n.id === node.id ? { ...n, text: e.target.value } : n
+                            ));
+                          }}
+                          className="bg-transparent border-none outline-none text-center min-w-24 font-medium"
+                          placeholder="Tikslas..."
+                        />
+                        {!node.isCenter && (
+                          <button
+                            onClick={() => {
+                              setMindmapNodes(prev => prev.filter(n => n.id !== node.id));
+                            }}
+                            className="ml-2 text-red-400 hover:text-red-600"
+                          >
+                            ×
+                          </button>
+                        )}
+                        {node.category && (
+                          <div className="mt-1">
+                            <CategoryBadge category={node.category} />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {mindmapNodes.length === 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-6xl mb-4">🧠</div>
+                          <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'} mb-4`}>
+                            Sukurkite savo tikslų žemėlapį
+                          </p>
+                          <button
+                            onClick={generateFromVision}
+                            disabled={!vision.trim()}
+                            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 btn disabled:opacity-50"
+                          >
+                            ✨ Generuoti iš vizijos
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Goals Tab */}
+              {activeTab === 'goals' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      🎯 Mano tikslai ir žingsniai
+                    </h2>
+                    <button
+                      onClick={addGoal}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 btn"
+                    >
+                      ➕ Pridėti tikslą
+                    </button>
+                  </div>
+
+                  <div className="grid gap-6">
+                    {goals.map(goal => (
+                      <div
+                        key={goal.id}
+                        className={`goal-card rounded-xl shadow-lg p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <input
+                              value={goal.title}
+                              onChange={(e) => updateGoal(goal.id, 'title', e.target.value)}
+                              placeholder="Tikslo pavadinimas..."
+                              className={`text-xl font-bold bg-transparent border-none outline-none w-full ${
+                                isDark ? 'text-white placeholder-gray-400' : 'text-gray-900 placeholder-gray-500'
+                              }`}
+                            />
+                            <textarea
+                              value={goal.description}
+                              onChange={(e) => updateGoal(goal.id, 'description', e.target.value)}
+                              placeholder="Tikslo aprašymas..."
+                              className={`mt-2 w-full bg-transparent border-none outline-none resize-none ${
+                                isDark ? 'text-gray-300 placeholder-gray-500' : 'text-gray-600 placeholder-gray-400'
+                              }`}
+                              rows="2"
+                            />
+                          </div>
+                          <div className="flex items-center gap-3 ml-4">
+                            <ProgressRing progress={goal.progress} />
+                            <button
+                              onClick={() => deleteGoal(goal.id)}
+                              className="text-red-500 hover:text-red-700 p-2"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                          <select
+                            value={goal.category}
+                            onChange={(e) => updateGoal(goal.id, 'category', e.target.value)}
+                            className={`p-3 rounded-lg border ${
+                              isDark 
+                                ? 'bg-gray-700 border-gray-600 text-white' 
+                                : 'bg-white border-gray-300 text-gray-900'
+                            }`}
+                          >
+                            <option value="personal">🌟 Asmeninis</option>
+                            <option value="career">💼 Karjera</option>
+                            <option value="finance">💰 Finansai</option>
+                            <option value="health">🏃 Sveikata</option>
+                            <option value="family">👨‍👩‍👧‍👦 Šeima</option>
+                            <option value="education">📚 Mokymasis</option>
+                          </select>
+
+                          <select
+                            value={goal.priority}
+                            onChange={(e) => updateGoal(goal.id, 'priority', e.target.value)}
+                            className={`p-3 rounded-lg border ${
+                              isDark 
+                                ? 'bg-gray-700 border-gray-600 text-white' 
+                                : 'bg-white border-gray-300 text-gray-900'
+                            }`}
+                          >
+                            <option value="low">🟢 Žemas prioritetas</option>
+                            <option value="medium">🟡 Vidutinis prioritetas</option>
+                            <option value="high">🔴 Aukštas prioritetas</option>
+                          </select>
+
+                          <input
+                            type="date"
+                            value={goal.deadline}
+                            onChange={(e) => updateGoal(goal.id, 'deadline', e.target.value)}
+                            className={`p-3 rounded-lg border ${
+                              isDark 
+                                ? 'bg-gray-700 border-gray-600 text-white' 
+                                : 'bg-white border-gray-300 text-gray-900'
+                            }`}
+                          />
+                        </div>
+
+                        <div className="mb-6">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                              Progresas
+                            </span>
+                            <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                              {goal.progress}%
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={goal.progress}
+                            onChange={(e) => updateGoal(goal.id, 'progress', parseInt(e.target.value))}
+                            className="w-full"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-2 mb-6">
+                          <CategoryBadge category={goal.category} />
+                          <PriorityBadge level={goal.priority} />
+                          {goal.deadline && (
+                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-xs">
+                              📅 {fmt(goal.deadline)}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Steps Section */}
+                        <div className="border-t border-gray-200 dark:border-gray-600 pt-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                              📝 Žingsniai tikslo link
+                            </h4>
+                            <button
+                              onClick={() => addStep(goal.id)}
+                              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            >
+                              ➕ Pridėti žingsnį
+                            </button>
+                          </div>
+
+                          <div className="space-y-3">
+                            {(goal.steps || []).map((step, index) => (
+                              <div
+                                key={step.id}
+                                className={`step-item flex items-center gap-3 p-3 rounded-lg ${
+                                  isDark ? 'bg-gray-700' : 'bg-gray-50'
+                                }`}
+                              >
+                                <button
+                                  onClick={() => updateStep(goal.id, step.id, 'completed', !step.completed)}
+                                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-sm ${
+                                    step.completed
+                                      ? 'bg-green-600 border-green-600 text-white'
+                                      : 'border-gray-300 dark:border-gray-500 hover:border-green-500'
+                                  }`}
+                                >
+                                  {step.completed ? '✓' : ''}
+                                </button>
+
+                                <span className="w-6 text-center text-sm font-bold text-blue-600">
+                                  {index + 1}
+                                </span>
+
+                                <input
+                                  value={step.text}
+                                  onChange={(e) => updateStep(goal.id, step.id, 'text', e.target.value)}
+                                  placeholder="Žingsnis..."
+                                  className={`flex-1 bg-transparent border-none outline-none ${
+                                    step.completed 
+                                      ? 'line-through opacity-60' 
+                                      : isDark ? 'text-white' : 'text-gray-900'
+                                  }`}
+                                />
+
+                                <select
+                                  value={step.priority}
+                                  onChange={(e) => updateStep(goal.id, step.id, 'priority', e.target.value)}
+                                  className={`text-xs p-1 rounded ${
+                                    isDark 
+                                      ? 'bg-gray-600 border-gray-500 text-white' 
+                                      : 'bg-white border-gray-300 text-gray-900'
+                                  }`}
+                                >
+                                  <option value="low">Žemas</option>
+                                  <option value="medium">Vidutinis</option>
+                                  <option value="high">Aukštas</option>
+                                </select>
+
+                                <button
+                                  onClick={() => deleteStep(goal.id, step.id)}
+                                  className="text-red-500 hover:text-red-700 p-1"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+
+                            {(!goal.steps || goal.steps.length === 0) && (
+                              <div className={`text-center py-8 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                                <div className="text-4xl mb-2">📝</div>
+                                <p className="mb-3">Dar nėra žingsnių šiam tikslui</p>
+                                <button
+                                  onClick={() => addStep(goal.id)}
+                                  className="text-blue-600 hover:text-blue-800 font-medium"
+                                >
+                                  ➕ Pridėti pirmą žingsnį
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {goals.length === 0 && (
+                      <div className={`text-center py-12 ${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg`}>
+                        <div className="text-6xl mb-4">🎯</div>
+                        <h3 className={`text-xl font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          Dar nėra tikslų
+                        </h3>
+                        <p className={`mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Pradėkite nuo vizijos sukūrimo ir leiskite AI sugeneruoti tikslus
+                        </p>
+                        <div className="flex justify-center gap-3">
+                          <button
+                            onClick={() => setActiveTab('vision')}
+                            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 btn"
+                          >
+                            ⭐ Kurti viziją
+                          </button>
+                          <button
+                            onClick={addGoal}
+                            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 btn"
+                          >
+                            ➕ Pridėti tikslą
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Analytics Tab */}
+              {activeTab === 'analytics' && (
+                <div className="space-y-6">
+                  <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    📊 Progreso analitika
+                  </h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className={`rounded-xl shadow-lg p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            Tikslai
+                          </h3>
+                          <p className="text-3xl font-bold text-blue-600 mt-2">
+                            {stats.totalGoals}
+                          </p>
+                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Iš viso tikslų
+                          </p>
+                        </div>
+                        <div className="text-4xl">🎯</div>
+                      </div>
+                    </div>
+
+                    <div className={`rounded-xl shadow-lg p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            Užbaigti
+                          </h3>
+                          <p className="text-3xl font-bold text-green-600 mt-2">
+                            {stats.completedGoals}
+                          </p>
+                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Pasiekti tikslai
+                          </p>
+                        </div>
+                        <div className="text-4xl">✅</div>
+                      </div>
+                    </div>
+
+                    <div className={`rounded-xl shadow-lg p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            Progresas
+                          </h3>
+                          <p className="text-3xl font-bold text-purple-600 mt-2">
+                            {stats.avgProgress}%
+                          </p>
+                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Vidutinis progresas
+                          </p>
+                        </div>
+                        <ProgressRing progress={stats.avgProgress} size={48} />
+                      </div>
+                    </div>
+
+                    <div className={`rounded-xl shadow-lg p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            Žingsniai
+                          </h3>
+                          <p className="text-3xl font-bold text-orange-600 mt-2">
+                            {stats.completedSteps}/{stats.totalSteps}
+                          </p>
+                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Atlikti žingsniai
+                          </p>
+                        </div>
+                        <div className="text-4xl">📝</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Goals by Category */}
+                  <div className={`rounded-xl shadow-lg p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+                    <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      Tikslai pagal kategorijas
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {Object.entries(
+                        goals.reduce((acc, goal) => {
+                          acc[goal.category] = (acc[goal.category] || 0) + 1;
+                          return acc;
+                        }, {})
+                      ).map(([category, count]) => (
+                        <div
+                          key={category}
+                          className={`p-4 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}
+                        >
+                          <CategoryBadge category={category} />
+                          <p className={`text-2xl font-bold mt-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            {count}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {stats.totalGoals === 0 && (
+                    <div className={`text-center py-12 ${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg`}>
+                      <div className="text-6xl mb-4">📊</div>
+                      <h3 className={`text-xl font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        Dar nėra duomenų analitikai
+                      </h3>
+                      <p className={`mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        Sukurkite tikslų ir stebėkite savo pažangą
+                      </p>
+                      <button
+                        onClick={() => setActiveTab('goals')}
+                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 btn"
+                      >
+                        🎯 Kurti tikslą
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('app')).render(<App />);
+  </script>
+</body>
+</html>
