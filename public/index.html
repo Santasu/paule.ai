@@ -2,8 +2,10 @@
 <html lang="lt" data-theme="light" data-backend="vercel">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <title>Paule – Premium AI Chat</title>
+  <link rel="icon" href="/favicon.ico"/>
 
   <!-- Pagrindinis CSS -->
   <link rel="stylesheet" href="/assets/css/paule.css">
@@ -107,6 +109,7 @@
 
   <!-- 🔧 PAULE konfigūracija -->
   <script>
+    console.log('[INDEX] head loaded');
     (function () {
       var MODE=(document.documentElement.getAttribute('data-backend')||'').trim().toLowerCase()==='vercel'?'vercel':'wp';
       var restBase=MODE==='vercel'?'/api':'/wp-json/paule/v1';
@@ -148,7 +151,7 @@
           window.fetch=function(input,init){
             try{var u=(typeof input==='string')?input:(input&&input.url);
               if(u){var nu=String(u).replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/,'/api$1').replace(/\/(?:augam|paule)\/v1(\/|$)/,'/api$1');
-                if(nu!==u) input=(typeof input==='string')?nu:new Request(nu,input);
+                if(nu!==u) input=(typeof input==='string')?nu=new Request(nu,input):new Request(nu,input);
               }}catch(_){}
             return origFetch(input,init);
           };
@@ -235,6 +238,7 @@
   </script>
 </head>
 <body>
+  <noscript>Šiam puslapiui reikia JavaScript.</noscript>
 
   <!-- ===== TOPBAR ===== -->
   <header class="topbar" data-no-clip="true" id="topbar">
@@ -444,6 +448,7 @@
   <!-- Minimal JS (tema, login, mobile stalčius, hero clickai, logo perjungimas) -->
   <script>
     (function(){
+      console.log('[INDEX] DOM script start');
       const root=document.documentElement;
       const sidebar=document.getElementById('sidebar');
       const overlay=document.getElementById('drawerOverlay');
@@ -507,6 +512,20 @@
       });
 
       /* Siųsti: jeigu yra PauleMain – naudojam jį ir nestatome fallback burbulo */
+      function appendUserBubble(text){
+        const area=document.getElementById('chatArea');
+        const wrap=document.createElement('div'); wrap.className='message user';
+        wrap.innerHTML = `
+          <div class="avatar"><img class="ui-icon" src="/assets/icon/user.svg" alt=""></div>
+          <div class="bubble" data-model="auto">
+            <div class="bubble-card">
+              <div class="msg-content">${text.replace(/</g,'&lt;')}</div>
+            </div>
+          </div>`;
+        area?.appendChild(wrap);
+        area?.scrollTo({top: area.scrollHeight, behavior:'smooth'});
+      }
+
       sendBtn?.addEventListener('click', (e)=>{
         if(sidebar.classList.contains('open')) closeDrawer();
 
@@ -517,21 +536,9 @@
           return;
         }
 
-        // Fallback – tik jeigu PauleMain dar nėra
         const val=(msgInput?.value||'').trim(); if(!val) return;
-        const area=document.getElementById('chatArea');
-        const wrap=document.createElement('div'); wrap.className='message user';
-        wrap.innerHTML = `
-          <div class="avatar"><img class="ui-icon" src="/assets/icon/user.svg" alt=""></div>
-          <div class="bubble" data-model="auto">
-            <div class="bubble-card">
-              <div class="msg-content">${val.replace(/</g,'&lt;')}</div>
-              <div class="msg-meta"><span class="model-tag">Jūs</span><span>just now</span></div>
-            </div>
-          </div>`;
-        area?.appendChild(wrap);
+        appendUserBubble(val);
         msgInput.value='';
-        area?.scrollTo({top: area.scrollHeight, behavior:'smooth'});
         hideInlineDeck(); hideFollowBar();
       });
 
@@ -578,7 +585,6 @@
       function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
 
       async function fetchSuggestionsInline(seed){
-        // Jei nieko nera – rodom stock
         if (!seed || !seed.trim()) { renderInline(STOCK); return; }
         try{
           const r = await fetch(restBase+'/suggest', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message:seed, count:5 }) });
@@ -594,34 +600,26 @@
 
       const debouncedInline = debounce(fetchSuggestionsInline, 150);
 
-      // Rodyti inline korteles kai fokusas ir laukelis tuščias
       msgInput.addEventListener('focus', ()=>{
         if (!msgInput.value.trim()) renderInline(STOCK);
       });
-
-      // Dingsta kai pradedam rašyti
       msgInput.addEventListener('input', ()=>{
         const v = msgInput.value;
         if (v.length === 0) { debouncedInline(''); }
         else { hideInlineDeck(); }
       });
-
-      // Jei vartotojas nutrina atgal iki tuščio – vėl rodyt
       msgInput.addEventListener('keyup', ()=>{
         if (!msgInput.value.trim()) renderInline(STOCK);
       });
-
-      // Įdėti pasirinktą kortelę į lauką ir slėpti deck
       inputDeck.addEventListener('click', (e)=>{
         if (e.target.closest('.suggest-chip')) hideInlineDeck();
       });
 
       // Stebėti naujus AI pranešimus ir generuoti follow-ups
       const obs = new MutationObserver(()=>{
-        const nodes = chatArea.querySelectorAll('.message'); // laukiam bet kokio burbulo
+        const nodes = chatArea.querySelectorAll('.message');
         if (!nodes.length) return;
         const lastMsg = nodes[nodes.length-1];
-        // Jeigu yra AI burbulas (ne user), imi tekstą
         const isUser = lastMsg.classList.contains('user');
         if (!isUser){
           const txt = (lastMsg.querySelector('.msg-content')?.textContent || '').trim();
@@ -633,14 +631,12 @@
       });
       obs.observe(chatArea, { childList:true, subtree:true });
 
-      // Išsaugom paskutinę vartotojo žinutę ant siuntimo
       function captureUserMessage(){
         const v=(msgInput?.value||'').trim();
         if (v) lastUser=v;
       }
       sendBtn.addEventListener('mousedown', captureUserMessage);
       sendBtn.addEventListener('touchstart', captureUserMessage, {passive:true});
-
     })();
   </script>
 
