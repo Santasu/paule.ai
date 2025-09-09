@@ -12,16 +12,24 @@
   <link rel="apple-touch-icon" href="/assets/icon/apple-touch-icon.png">
   <meta name="theme-color" content="#111827"/>
 
+  <!-- Preconnect (naudingas, jei /api yra tame pačiame hoste – naršyklė greičiau atidarys SSE) -->
+  <link rel="preconnect" href="/" crossorigin>
+
   <!-- Pagrindinis CSS -->
   <link rel="stylesheet" href="/assets/css/paule.css?v=1.0.0">
 
   <!-- ===== PATCH: išdėstymas, mobilus, chips apačioje ===== -->
   <style>
-  :root { --logo-w: 3cm; --topbar-h: 66px; }
+  :root{
+    --logo-w: 3cm;
+    --topbar-h: 66px;
+    --ui-icon-filter: none;
+  }
+
   .topbar .brand { min-width: var(--logo-w); }
   .topbar .brand-icon{ width:var(--logo-w)!important; height:auto!important; object-fit:contain; display:block!important; }
   .topbar img, .topbar svg{ max-height: calc(var(--topbar-h) - 16px); }
-  :root{ --ui-icon-filter:none }
+
   [data-theme="dark"] .ui-icon{ filter: invert(1) brightness(1.08) contrast(1.05); }
   [data-theme="dark"] img:not(.ui-icon){ filter:none !important; }
 
@@ -36,6 +44,7 @@
 
   @media (max-width: 768px){
     .topbar{
+      display:grid;
       grid-template-areas: "brand actions" "models models";
       grid-template-columns:auto 1fr; height:auto; padding-bottom:10px; row-gap:8px;
     }
@@ -45,7 +54,7 @@
     .top-actions [data-nav="community"], .theme-anchor{ display:none!important; }
   }
   @media (max-width:1024px){
-    .layout{ grid-template-columns:0 1fr !important; }
+    .layout{ display:grid; grid-template-columns:0 1fr !important; }
     .sidebar{
       display:block!important; position:fixed; top:var(--topbar-h); left:-320px;
       width:300px; height:calc(100vh - var(--topbar-h));
@@ -154,10 +163,13 @@
         if(window.fetch){
           var origFetch=window.fetch;
           window.fetch=function(input,init){
-            try{var u=(typeof input==='string')?input:(input&&input.url);
-              if(u){var nu=String(u).replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/,'/api$1').replace(/\/(?:augam|paule)\/v1(\/|$)/,'/api$1');
+            try{
+              var u=(typeof input==='string')?input:(input&&input.url);
+              if(u){
+                var nu=String(u).replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/,'/api$1').replace(/\/(?:augam|paule)\/v1(\/|$)/,'/api$1');
                 if(nu!==u) input=(typeof input==='string')?nu:new Request(nu,input);
-              }}catch(_){}
+              }
+            }catch(_){}
             return origFetch(input,init);
           };
         }
@@ -183,12 +195,12 @@
           if (it.done) break;
           buf += dec.decode(it.value, {stream:true});
           let idx;
-          while ((idx = buf.indexOf('\n\n')) >= 0){
+          while ((idx = buf.indexOf('\\n\\n')) >= 0){
             const frame = buf.slice(0, idx).trim(); buf = buf.slice(idx+2);
             if (!frame) continue;
-            const dataLine = frame.split('\n').find(l => l.startsWith('data:'));
+            const dataLine = frame.split('\\n').find(l => l.startsWith('data:'));
             if (!dataLine) continue;
-            const payload = dataLine.replace(/^data:\s*/,'').trim();
+            const payload = dataLine.replace(/^data:\\s*/,'').trim();
             if (payload === '[DONE]') { buf=''; break; }
             try{
               const j = JSON.parse(payload);
@@ -204,7 +216,7 @@
       window.fetch = async function(input, init){
         const url  = typeof input==='string' ? input : (input && input.url) || '';
         const meth = (init && init.method) || (typeof input!=='string' && input && input.method) || 'GET';
-        const isStreamOnce = /\/api\/stream(?:\?|$)/.test(url) && /mode=once/.test(url) && String(meth).toUpperCase()==='POST';
+        const isStreamOnce = /\\/api\\/stream(?:\\?|$)/.test(url) && /mode=once/.test(url) && String(meth).toUpperCase()==='POST';
         if (!isStreamOnce) return prevFetch(input, init);
 
         let models = [];
@@ -244,62 +256,62 @@
 <body>
 
   <!-- ===== TOPBAR ===== -->
-  <header class="topbar" data-no-clip="true" id="topbar">
+  <header class="topbar" data-no-clip="true" id="topbar" role="banner">
     <a class="brand" href="/" aria-label="Paule">
-      <img id="brandLogo" class="brand-icon" src="/assets/icon/paule-logo.webp" alt="paule">
+      <img id="brandLogo" class="brand-icon" src="/assets/icon/paule-logo.webp" alt="Paule logotipas">
     </a>
 
     <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
-      <button class="model-pill active" data-model="auto" aria-pressed="true"><img class="ui-icon" src="/assets/icon/paule-icon.webp" alt=""> Paule</button>
-      <button class="model-pill" data-model="chatgpt"><img class="ui-icon" src="/assets/icon/chatgpt.svg" alt=""> ChatGPT</button>
-      <button class="model-pill" data-model="claude"><img class="ui-icon" src="/assets/icon/claude-seeklogo.svg" alt=""> Claude</button>
-      <button class="model-pill" data-model="gemini"><img class="ui-icon" src="/assets/icon/gemini.svg" alt=""> Gemini</button>
-      <button class="model-pill" data-model="grok"><img class="ui-icon" src="/assets/icon/xAI.svg" alt=""> Grok</button>
-      <button class="model-pill" data-model="deepseek"><img class="ui-icon" src="/assets/icon/deepseek.svg" alt=""> DeepSeek</button>
-      <button class="model-pill" data-model="llama"><img class="ui-icon" src="/assets/icon/llama.svg" alt=""> Llama</button>
+      <button class="model-pill active" data-model="auto" aria-pressed="true" type="button"><img class="ui-icon" src="/assets/icon/paule-icon.webp" alt=""> Paule</button>
+      <button class="model-pill" data-model="chatgpt" type="button"><img class="ui-icon" src="/assets/icon/chatgpt.svg" alt=""> ChatGPT</button>
+      <button class="model-pill" data-model="claude" type="button"><img class="ui-icon" src="/assets/icon/claude-seeklogo.svg" alt=""> Claude</button>
+      <button class="model-pill" data-model="gemini" type="button"><img class="ui-icon" src="/assets/icon/gemini.svg" alt=""> Gemini</button>
+      <button class="model-pill" data-model="grok" type="button"><img class="ui-icon" src="/assets/icon/xAI.svg" alt=""> Grok</button>
+      <button class="model-pill" data-model="deepseek" type="button"><img class="ui-icon" src="/assets/icon/deepseek.svg" alt=""> DeepSeek</button>
+      <button class="model-pill" data-model="llama" type="button"><img class="ui-icon" src="/assets/icon/llama.svg" alt=""> Llama</button>
     </nav>
 
-    <div class="top-actions" id="topActions">
+    <div class="top-actions" id="topActions" role="navigation" aria-label="Pagrindiniai veiksmai">
       <a class="btn ghost" data-nav="community" href="/community" role="button">
         <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė
       </a>
-      <button class="btn ghost" id="btnNewChat">
+      <button class="btn ghost" id="btnNewChat" type="button">
         <img class="ui-icon" src="/assets/icon/nav-new-chat.svg" alt=""> Naujas pokalbis
       </button>
 
       <div class="login-anchor theme-anchor">
-        <button class="btn ghost" id="btnTheme"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tema</button>
-        <div class="login-dropdown" id="themeDropdown">
-          <button class="btn" data-theme="light">Šviesi</button>
-          <button class="btn" data-theme="dark">Tamsi</button>
+        <button class="btn ghost" id="btnTheme" type="button" aria-haspopup="menu" aria-expanded="false"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tema</button>
+        <div class="login-dropdown" id="themeDropdown" role="menu" aria-label="Temos pasirinkimas">
+          <button class="btn" data-theme="light" type="button">Šviesi</button>
+          <button class="btn" data-theme="dark" type="button">Tamsi</button>
         </div>
       </div>
 
       <div class="login-anchor" id="loginAnchor">
-        <button class="btn ghost" id="btnLogin">
+        <button class="btn ghost" id="btnLogin" type="button" aria-haspopup="menu" aria-expanded="false">
           <img class="ui-icon" src="/assets/icon/user.svg" alt=""> Prisijungti
         </button>
-        <div class="login-dropdown" id="loginDropdown">
+        <div class="login-dropdown" id="loginDropdown" role="menu" aria-label="Prisijungimas">
           <a class="btn" id="googleLoginBtn" href="#"><img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti su Google</a>
           <a class="btn" id="emailLoginBtn"  href="#"><img class="ui-icon" src="/assets/icon/mail.svg"   alt=""> Prisijungti el. paštu</a>
         </div>
       </div>
 
-      <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)">
+      <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)" type="button">
         <img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu
       </button>
     </div>
   </header>
 
-  <div id="drawerOverlay" class="drawer-overlay"></div>
+  <div id="drawerOverlay" class="drawer-overlay" aria-hidden="true"></div>
 
   <div class="layout" id="layoutRoot">
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar" role="complementary" aria-label="Šoninė navigacija">
       <section class="side-section mobile-only" style="display:none" id="mobileQuick">
         <a class="project-item" href="/community"><img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė</a>
         <div class="control-group" style="display:flex;gap:8px;margin-top:8px">
-          <button class="chip" data-set-theme="light"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Šviesi</button>
-          <button class="chip" data-set-theme="dark"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tamsi</button>
+          <button class="chip" data-set-theme="light" type="button"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Šviesi</button>
+          <button class="chip" data-set-theme="dark" type="button"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tamsi</button>
         </div>
       </section>
 
@@ -321,7 +333,7 @@
 
       <section class="side-section">
         <div class="side-title">Aktyvumas</div>
-        <div class="community-pings" id="communityPings">
+        <div class="community-pings" id="communityPings" aria-live="polite">
           <div class="ping"><img class="ui-icon" src="/assets/icon/music.svg" alt=""> @Mantas įkėlė dainą „Vasaros vėjas“</div>
           <div class="ping"><img class="ui-icon" src="/assets/icon/photo.svg" alt=""> @Ieva pridėjo 3 nuotraukas</div>
           <div class="ping"><img class="ui-icon" src="/assets/icon/video-library.svg" alt=""> @Ruta publikavo „Reklama-15s“</div>
@@ -358,7 +370,7 @@
       <section class="side-section">
         <div class="side-title">Projektai</div>
         <div class="control-group" id="projectsList">
-          <div class="project-item" data-project="new">
+          <div class="project-item" data-project="new" role="button" tabindex="0">
             <img class="ui-icon" src="/assets/icon/plus.svg" alt=""> Naujas projektas
           </div>
         </div>
@@ -370,9 +382,9 @@
       </section>
     </aside>
 
-    <main class="main">
+    <main class="main" role="main">
       <div class="chat-area" id="chatArea">
-        <section class="welcome" id="welcome">
+        <section class="welcome" id="welcome" aria-label="Pradinis ekranas">
           <h1 class="hero-title">KAIP GALIU PADĖTI ŠIANDIEN?</h1>
           <p>Pasirinkite AI specialistą kairėje arba pradėkite pokalbį žemiau. Viršuje galite rinktis vieną ar kelis modelius. 👇</p>
 
@@ -414,8 +426,9 @@
 
     <div class="input-bar" id="inputBar">
       <div class="input-container" id="inputContainer">
+        <label for="messageInput" class="sr-only">Žinutė specialistui</label>
         <textarea class="message-input" id="messageInput" rows="1" placeholder="Žinutė specialistui…" autocomplete="on" autocapitalize="sentences" autocorrect="on" spellcheck="true"></textarea>
-        <button class="send-btn" id="sendBtn" aria-label="Siųsti">
+        <button class="send-btn" id="sendBtn" aria-label="Siųsti" type="button">
           <img class="ui-icon" src="/assets/icon/arrow-top.svg" alt="">
         </button>
         <!-- ▶ Inline kortelės į pačią įvestį -->
@@ -423,13 +436,13 @@
       </div>
     </div>
 
-    <div class="tools-bar" id="toolsBar">
-      <div class="tool" data-tool="mindmap"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Mindmap</div>
-      <div class="tool" data-tool="photo"><img class="ui-icon" src="/assets/icon/tool-photo.svg" alt=""> Foto</div>
-      <div class="tool" data-tool="file"><img class="ui-icon" src="/assets/icon/tool-file.svg" alt=""> Failas</div>
-      <div class="tool" data-tool="song"><img class="ui-icon" src="/assets/icon/tool-music.svg" alt=""> Sukurti dainą</div>
-      <div class="tool" data-tool="video"><img class="ui-icon" src="/assets/icon/video-plus.svg" alt=""> Sukurti video</div>
-      <div class="tool" data-tool="goals"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų sistema</div>
+    <div class="tools-bar" id="toolsBar" role="toolbar" aria-label="Įrankiai">
+      <div class="tool" data-tool="mindmap" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Mindmap</div>
+      <div class="tool" data-tool="photo" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-photo.svg" alt=""> Foto</div>
+      <div class="tool" data-tool="file" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-file.svg" alt=""> Failas</div>
+      <div class="tool" data-tool="song" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-music.svg" alt=""> Sukurti dainą</div>
+      <div class="tool" data-tool="video" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/video-plus.svg" alt=""> Sukurti video</div>
+      <div class="tool" data-tool="goals" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų sistema</div>
     </div>
   </div>
 
@@ -485,65 +498,75 @@
     function setLogoByTheme(){
       const dark = root.getAttribute('data-theme') === 'dark';
       logo.src = dark ? '/assets/icon/paule-logo-dark.webp' : '/assets/icon/paule-logo.webp';
+      logo.setAttribute('alt', dark ? 'Paule logotipas – tamsi tema' : 'Paule logotipas – šviesi tema');
     }
     setLogoByTheme();
     new MutationObserver(setLogoByTheme).observe(root,{attributes:true,attributeFilter:['data-theme']});
 
-    btnTheme?.addEventListener('click', (e)=>{ e.preventDefault(); themeDropdown?.classList.toggle('open'); });
+    // dropdown atidarymas/uždarymas
+    btnTheme?.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const open = !themeDropdown?.classList.contains('open');
+      themeDropdown?.classList.toggle('open', open);
+      btnTheme.setAttribute('aria-expanded', String(open));
+    });
     themeDropdown?.addEventListener('click', (e)=>{
       const b=e.target.closest('[data-theme]'); if(!b) return;
       root.setAttribute('data-theme', b.getAttribute('data-theme'));
       themeDropdown.classList.remove('open');
+      btnTheme.setAttribute('aria-expanded','false');
       setLogoByTheme();
     });
 
-    function openDrawer(){ sidebar.classList.add('open'); overlay.classList.add('show'); document.body.style.overflow='hidden'; }
-    function closeDrawer(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); document.body.style.overflow=''; }
+    function openDrawer(){ sidebar.classList.add('open'); overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; }
+    function closeDrawer(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
     btnMobile?.addEventListener('click', openDrawer);
     overlay?.addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeDrawer(); });
 
     // ===== Modelių pasirinkimas (multi-pick; „auto“ – vienas)
     modelList.addEventListener('click', (e)=>{
       const b=e.target.closest('.model-pill'); if(!b) return;
       if(b.dataset.model==='auto'){
-        modelList.querySelectorAll('.model-pill').forEach(x=>x.classList.remove('active'));
+        modelList.querySelectorAll('.model-pill').forEach(x=>{ x.classList.remove('active'); x.setAttribute('aria-pressed','false'); });
         b.classList.add('active'); b.setAttribute('aria-pressed','true');
       }else{
         b.classList.toggle('active');
         b.setAttribute('aria-pressed', b.classList.contains('active')?'true':'false');
-        modelList.querySelector('.model-pill[data-model="auto"]')?.classList.remove('active');
+        const autoBtn = modelList.querySelector('.model-pill[data-model="auto"]');
+        autoBtn?.classList.remove('active');
+        autoBtn?.setAttribute('aria-pressed','false');
       }
     });
 
     // ===== Helpers
     function timeNow(){ return new Date().toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'}); }
     function escapeHtml(x){ const d=document.createElement('div'); d.textContent=(x==null?'':String(x)); return d.innerHTML; }
-    function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
-    function stripMd(s){ return String(s||'').replace(/`{1,3}[\s\S]*?`{1,3}/g,'').replace(/[*_#>-]/g,''); }
+    function stripMd(s){ return String(s||'').replace(/`{1,3}[\\s\\S]*?`{1,3}/g,'').replace(/[*_#>-]/g,''); }
     function uniqueNonEmpty(arr){ const s=new Set(); const out=[]; (arr||[]).forEach(v=>{ const t=String(v||'').trim(); if(t&&!s.has(t)){ s.add(t); out.push(t);} }); return out; }
 
     function parseMarkdown(input){
       let src = String(input||'');
       let t = escapeHtml(src);
-      const STORE=[]; t=t.replace(/```([\s\S]*?)```/g,(_,m)=>`@@CB_${STORE.push(m)-1}@@`);
+      const STORE=[]; t=t.replace(/```([\\s\\S]*?)```/g,(_,m)=>`@@CB_${STORE.push(m)-1}@@`);
       t = t.replace(/`([^`]+)`/g, (_,m)=> `<code style="background:var(--bg-code,rgba(0,0,0,.06));padding:2px 4px;border-radius:4px">${m}</code>`);
-      t = t.replace(/^\s*###\s+(.+)$/gm,   `<h3 style="margin:.4em 0 .2em;color:var(--accent,#5b7cff);font-weight:700">$1</h3>`);
-      t = t.replace(/^\s*##\s+(.+)$/gm,    `<h2 style="margin:.5em 0 .25em;color:var(--accent,#5b7cff);font-weight:800">$1</h2>`);
-      t = t.replace(/^\s*#\s+(.+)$/gm,     `<h1 style="margin:.6em 0 .3em;color:var(--accent,#5b7cff);font-weight:800;font-size:1.15em">$1</h1>`);
-      t = t.replace(/(^|\n)(?:[-*]\s.+)(?:\n[-*]\s.+)*/g, (block)=>{
-        const lines = block.trim().split('\n').map(l=> l.replace(/^[-*]\s+/,'').trim());
-        return `\n<ul style="margin:.25em 0 .25em .9em; padding:0; list-style:disc inside;">` +
+      t = t.replace(/^\\s*###\\s+(.+)$/gm,   `<h3 style="margin:.4em 0 .2em;color:var(--accent,#5b7cff);font-weight:700">$1</h3>`);
+      t = t.replace(/^\\s*##\\s+(.+)$/gm,    `<h2 style="margin:.5em 0 .25em;color:var(--accent,#5b7cff);font-weight:800">$1</h2>`);
+      t = t.replace(/^\\s*#\\s+(.+)$/gm,     `<h1 style="margin:.6em 0 .3em;color:var(--accent,#5b7cff);font-weight:800;font-size:1.15em">$1</h1>`);
+      t = t.replace(/(^|\\n)(?:[-*]\\s.+)(?:\\n[-*]\\s.+)*/g, (block)=>{
+        const lines = block.trim().split('\\n').map(l=> l.replace(/^[-*]\\s+/,'').trim());
+        return `\\n<ul style="margin:.25em 0 .25em .9em; padding:0; list-style:disc inside;">` +
           lines.map(li=>`<li>${li}</li>`).join('') + `</ul>`;
       });
-      t = t.replace(/(^|\n)(?:\d+[.)]\s.+)(?:\n\d+[.)]\s.+)*/g, (block)=>{
-        const lines = block.trim().split('\n').map(l=> l.replace(/^\d+[.)]\s+/,'').trim());
-        return `\n<ol style="margin:.25em 0 .25em 1.1em; padding:0; list-style:decimal inside;">` +
+      t = t.replace(/(^|\\n)(?:\\d+[.)]\\s.+)(?:\\n\\d+[.)]\\s.+)*/g, (block)=>{
+        const lines = block.trim().split('\\n').map(l=> l.replace(/^\\d+[.)]\\s+/,'').trim());
+        return `\\n<ol style="margin:.25em 0 .25em 1.1em; padding:0; list-style:decimal inside;">` +
           lines.map(li=>`<li>${li}</li>`).join('') + `</ol>`;
       });
-      t = t.replace(/\*\*([^*]+)\*\*/g, `<strong style="color:var(--accent,#5b7cff)">$1</strong>`);
-      t = t.replace(/\*([^*]+)\*/g, `<em>$1</em>`);
-      t = t.replace(/\n/g, '<br>');
-      t = t.replace(/@@CB_(\d+)@@/g, (_,i)=> `<pre style="background:var(--bg-code,rgba(0,0,0,.06));padding:10px;border-radius:10px;overflow:auto"><code>${STORE[Number(i)]||''}</code></pre>`);
+      t = t.replace(/\\*\\*([^*]+)\\*\\*/g, `<strong style="color:var(--accent,#5b7cff)">$1</strong>`);
+      t = t.replace(/\\*([^*]+)\\*/g, `<em>$1</em>`);
+      t = t.replace(/\\n/g, '<br>');
+      t = t.replace(/@@CB_(\\d+)@@/g, (_,i)=> `<pre style="background:var(--bg-code,rgba(0,0,0,.06));padding:10px;border-radius:10px;overflow:auto"><code>${STORE[Number(i)]||''}</code></pre>`);
       return t;
     }
 
@@ -551,7 +574,8 @@
       if (document.querySelector('._ai-wait')) return;
       const w = document.createElement('div');
       w.className='_ai-wait';
-      w.innerHTML = `<div class="dots"><span></span><span></span><span></span></div><div>AI mąsto, palaukite akimirką…</div>`;
+      w.setAttribute('aria-live','polite');
+      w.innerHTML = `<div class="dots" aria-hidden="true"><span></span><span></span><span></span></div><div>AI mąsto, palaukite akimirką…</div>`;
       chatArea?.appendChild(w);
       chatArea?.scrollTo({top: chatArea.scrollHeight});
     }
@@ -565,6 +589,10 @@
         <div class="avatar"><img class="ui-icon" src="/assets/icon/user.svg" alt=""></div>
         <div class="bubble" data-model="user">
           <div class="bubble-card">
+            <button class="copy-btn" title="Kopijuoti"
+              type="button"
+              onclick="(function(b){try{const t=b.closest('.bubble-card')?.querySelector('.msg-content')?.innerText||'';navigator.clipboard.writeText(t).catch(()=>{});b.classList.add('ok');setTimeout(()=>b.classList.remove('ok'),900);}catch(_){}})(this)"
+              style="position:absolute;right:8px;top:8px;font-size:12px;border:1px solid var(--border);background:var(--bg-primary);padding:4px 6px;border-radius:6px;cursor:pointer;opacity:.8">⧉</button>
             <div class="msg-content"></div>
             <div class="msg-meta"><span class="model-tag">Jūs</span><span>${timeNow()}</span></div>
           </div>
@@ -581,7 +609,7 @@
       n.innerHTML = `<div class="avatar"><img class="ui-icon" src="/assets/icon/ai.svg" alt=""></div>
         <div class="bubble" data-model="${frontId}">
           <div class="bubble-card">
-            <button class="copy-btn" title="Kopijuoti"
+            <button class="copy-btn" title="Kopijuoti" type="button"
              onclick="(function(b){const t=b.closest('.bubble-card')?.querySelector('.msg-content')?.innerText||'';navigator.clipboard.writeText(t).catch(()=>{});b.classList.add('ok');setTimeout(()=>b.classList.remove('ok'),900)})(this)"
              style="position:absolute;right:8px;top:8px;font-size:12px;border:1px solid var(--border);background:var(--bg-primary);padding:4px 6px;border-radius:6px;cursor:pointer;opacity:.8">⧉</button>
             <div class="msg-content"></div>
@@ -617,7 +645,8 @@
       streamFronts.forEach(f=>{
         const back = FRONT_TO_BACK[f]||f;
         runSSE({ front:f, back, text, chatId:state.chatId })
-          .catch(()=>{}).finally(()=>decPending());
+          .catch(()=>{})
+          .finally(()=>decPending());
       });
 
       // JSON GRUPEI – po soft timeout
@@ -671,69 +700,74 @@
     // SSE runner
     function runSSE({ front, back, text, chatId }){
       return new Promise(async (resolve) => {
-        const qs=new URLSearchParams({ model: back, models: back, message:text, max_tokens:'4096', chat_id:chatId, _t:Date.now().toString() });
-        const resp=await fetch(`${SSE_URL}?${qs}`, { headers:{ 'Accept':'text/event-stream' }});
-        const ct=(resp.headers.get('content-type')||'').toLowerCase();
+        try{
+          const qs=new URLSearchParams({ model: back, models: back, message:text, max_tokens:'4096', chat_id:chatId, _t:Date.now().toString() });
+          const resp=await fetch(`${SSE_URL}?${qs}`, { headers:{ 'Accept':'text/event-stream' }});
+          const ct=(resp.headers.get('content-type')||'').toLowerCase();
 
-        if(!ct.includes('text/event-stream')){
-          // serveris grąžino JSON – pabandom jį
-          try{
-            const j=await resp.json();
-            const txt=j?.answers?.[0]?.text||j?.text||'';
-            if (txt){
-              if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
-              const p = ensurePanel(front);
-              p.content += txt;
-              p.el.innerHTML = parseMarkdown(p.content);
-            } else {
-              state.errors.push({front, name:front, msg:'Tuščias atsakymas (JSON).'});
-            }
-          }catch(err){
-            state.errors.push({front, name:front, msg:'Neskaidomas atsakymas (JSON).'});
-          }
-          return resolve();
-        }
-
-        const reader=resp.body.getReader();
-        const dec=new TextDecoder();
-        let buf='', gotAny=false;
-
-        for(;;){
-          const {done,value}=await reader.read(); if(done) break;
-          buf+=dec.decode(value,{stream:true});
-          let i; while((i=buf.indexOf('\n\n'))>=0){
-            const frame=buf.slice(0,i).trim(); buf=buf.slice(i+2);
-            if(!frame) continue;
-            const dataLine = frame.split('\n').find(l=> l.startsWith('data:'));
-            const eventLine = frame.split('\n').find(l=> l.startsWith('event:'));
-            const ev = eventLine ? eventLine.replace(/^event:\s*/,'').trim() : 'message';
-            if(!dataLine) continue;
-            const data = dataLine.replace(/^data:\s*/,'').trim();
-            if (data==='[DONE]'){ buf=''; break; }
-
-            if (ev==='error'){
-              if (!gotAny) state.errors.push({front, name:front, msg: parseErrEvent({data})});
-              continue;
-            }
-
-            let piece='';
+          if(!ct.includes('text/event-stream')){
+            // serveris grąžino JSON – pabandom jį
             try{
-              const j=JSON.parse(data);
-              piece = j?.choices?.[0]?.delta?.content ?? j?.text ?? j?.data ?? '';
-            }catch{ piece = data; }
+              const j=await resp.json();
+              const txt=j?.answers?.[0]?.text||j?.text||'';
+              if (txt){
+                if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
+                const p = ensurePanel(front);
+                p.content += txt;
+                p.el.innerHTML = parseMarkdown(p.content);
+              } else {
+                state.errors.push({front, name:front, msg:'Tuščias atsakymas (JSON).'});
+              }
+            }catch(err){
+              state.errors.push({front, name:front, msg:'Neskaidomas atsakymas (JSON).'});
+            }
+            return resolve();
+          }
 
-            if(piece){
-              if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
-              gotAny=true;
-              const p = ensurePanel(front);
-              p.content += piece;
-              p.el.innerHTML = parseMarkdown(p.content);
-              chatArea.scrollTo({top:chatArea.scrollHeight});
+          const reader=resp.body.getReader();
+          const dec=new TextDecoder();
+          let buf='', gotAny=false;
+
+          for(;;){
+            const {done,value}=await reader.read(); if(done) break;
+            buf+=dec.decode(value,{stream:true});
+            let i; while((i=buf.indexOf('\\n\\n'))>=0){
+              const frame=buf.slice(0,i).trim(); buf=buf.slice(i+2);
+              if(!frame) continue;
+              const dataLine = frame.split('\\n').find(l=> l.startsWith('data:'));
+              const eventLine = frame.split('\\n').find(l=> l.startsWith('event:'));
+              const ev = eventLine ? eventLine.replace(/^event:\\s*/,'').trim() : 'message';
+              if(!dataLine) continue;
+              const data = dataLine.replace(/^data:\\s*/,'').trim();
+              if (data==='[DONE]'){ buf=''; break; }
+
+              if (ev==='error'){
+                if (!gotAny) state.errors.push({front, name:front, msg: parseErrEvent({data})});
+                continue;
+              }
+
+              let piece='';
+              try{
+                const j=JSON.parse(data);
+                piece = j?.choices?.[0]?.delta?.content ?? j?.text ?? j?.data ?? '';
+              }catch{ piece = data; }
+
+              if(piece){
+                if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
+                gotAny=true;
+                const p = ensurePanel(front);
+                p.content += piece;
+                p.el.innerHTML = parseMarkdown(p.content);
+                chatArea.scrollTo({top:chatArea.scrollHeight});
+              }
             }
           }
+          const p = state.panels[front]; if (p) p.done=true;
+        }catch(e){
+          state.errors.push({front, name:front, msg:'SSE nepavyko inicijuoti.'});
+        }finally{
+          resolve();
         }
-        const p = state.panels[front]; if (p) p.done=true;
-        resolve();
       });
     }
 
@@ -754,7 +788,6 @@
           if (txt){
             if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
             const p = ensurePanel(front);
-            // „typing“ imitacija (be sub-sub animacijų, kad būtų greita)
             p.content += txt;
             p.el.innerHTML = parseMarkdown(p.content);
             chatArea.scrollTo({top:chatArea.scrollHeight});
