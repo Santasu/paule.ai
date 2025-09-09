@@ -783,5 +783,15 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 @media (max-width:480px){
   .message-input{ padding-bottom:56px !important; }
 }
+/* Mygtukas "Į naujausią" */
+.jump-latest{
+  position:fixed; right:16px; bottom:92px; z-index:1200;
+  display:none; align-items:center; gap:6px;
+  padding:8px 10px; border:1px solid var(--border);
+  background:var(--bg-primary); border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.12); cursor:pointer;
+  font-size:13px;
+}
+.jump-latest.show{ display:flex; }
 
 
