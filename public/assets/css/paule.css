@@ -763,4 +763,25 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 /* Kad meniu niekada „neuždengtų“ siuntimo, kai jis uždarytas */
 .bottom-section{ z-index:1100; }  /* žemiau už stalčių (1350), aukščiau už turinį */
 
+/* ——— SUGGEST FIX ——— */
+/* neberodyti jokių sugestų burbuluose, jei kas nors juos ten įterptų */
+.bubble .suggest-chip,
+.bubble .msg-suggest,
+.bubble .follow-ups,
+.bubble [data-follow],
+.bubble [data-suggest]{
+  display:none !important;
+}
+
+/* įvesties kortelės visada po tekstu, neuždengia */
+.input-suggest-deck{
+  bottom:8px; z-index:5; pointer-events:auto;
+}
+.message-input{ padding-bottom:52px !important; } /* daugiau vietos tekstui */
+
+/* mobiliajame – dar truputį daugiau „oro“ */
+@media (max-width:480px){
+  .message-input{ padding-bottom:56px !important; }
+}
+
 
