@@ -8,7 +8,8 @@
   "routes": [
     { "handle": "filesystem" },
 
+    { "src": "^/$", "dest": "/index.html" },
 
-    { "src": "^(?!/api)(?!/_static)(?!/_next)(?!/assets)(?!/spec)(?!/favicon\\.ico)(?!/robots\\.txt)(/.*)$", "dest": "/index.html" }
+    { "src": "^(?!/api)(?!/_next)(?!/assets)(?!/spec)(?!/favicon\\.ico)(?!/robots\\.txt)(/.*)$", "dest": "/index.html" }
   ]
 }
