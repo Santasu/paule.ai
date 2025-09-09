@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="lt" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verslo konsultanto AI asistentas</title>
+  
+  <style>
+/* =========================================================
+   UNIVERSALI SPALVŲ SISTEMA
+   ========================================================= */
+:root {
+  --bg-primary: #0a0d14;
+  --bg-secondary: #0f1419;
+  --bg-elevated: #141922;
+  --bg-card: #1a1f2b;
+  --bg-overlay: #1e252f;
+  
+  --text-primary: #e8eaf0;
+  --text-secondary: #b8bcc8;
+  --text-muted: #8a8f9a;
+  --text-hint: #6b7280;
+  
+  --border-soft: #1f2937;
+  --border-medium: #374151;
+  
+  --accent-primary: #3b82f6;
+  --accent-primary-hover: #2563eb;
+  --accent-secondary: #1e40af;
+  --accent-ghost: #1e3a8a;
+  
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  --neu-raise: 
+    0 4px 8px rgba(0, 0, 0, 0.3), 
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  
+  --neu-press: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  
+  --neu-float: 
+    0 10px 25px rgba(0, 0, 0, 0.5), 
+    0 4px 8px rgba(0, 0, 0, 0.3);
+  
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --space-4xl: 40px;
+  
+  --transition-fast: 0.15s;
+  --transition-normal: 0.25s;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+}
+
+/* =========================================================
+   HERO SECTION
+   ========================================================= */
+.hero-section {
+  text-align: center;
+  margin-bottom: var(--space-4xl);
+  padding: var(--space-4xl) 0;
+}
+
+.hero-title {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+  margin-bottom: var(--space-lg);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.stats-banner {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+  background: var(--bg-card);
+  padding: var(--space-xl);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  min-width: 120px;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  display: block;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: var(--space-sm);
+}
+
+/* =========================================================
+   FEATURES GRID
+   ========================================================= */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-2xl);
+  padding: 0;
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--neu-float);
+}
+
+.feature-header {
+  position: relative;
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.3), rgba(0,0,0,.7));
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: white;
+  background: rgba(59, 130, 246, 0.9);
+  box-shadow: var(--neu-raise);
+  position: relative;
+  z-index: 2;
+}
+
+.feature-content {
+  padding: var(--space-3xl);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.feature-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+}
+
+.feature-desc {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-xl);
+}
+
+.feature-cta {
+  margin-top: var(--space-xl);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: var(--neu-raise);
+  transition: all var(--transition-normal) ease;
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neu-float);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border: none;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+  color: white;
+  border: none;
+}
+
+.btn-lg {
+  padding: var(--space-lg) var(--space-3xl);
+  font-size: 16px;
+  border-radius: var(--radius-xl);
+}
+
+/* =========================================================
+   MODAL/POPUP SYSTEM
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--neu-float);
+  border: 1px solid var(--border-soft);
+  width: 95%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  background: var(--bg-elevated);
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.modal-close {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.modal-close:hover {
+  background: var(--error);
+  color: white;
+  transform: scale(1.1);
+}
+
+.modal-body {
+  flex: 1;
+  padding: var(--space-xl);
+  overflow-y: auto;
+}
+
+/* =========================================================
+   CHAT SYSTEM
+   ========================================================= */
+.chat-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-2xl);
+  margin-top: var(--space-4xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  text-align: center;
+}
+
+.chat-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.ai-status {
+  font-size: 14px;
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.chat-messages {
+  padding: var(--space-xl);
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.message {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+  animation: messageIn 0.3s ease;
+  max-width: 80%;
+}
+
+@keyframes messageIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.message.ai .message-avatar {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+}
+
+.message.user .message-avatar {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 2px solid var(--border-medium);
+}
+
+.message-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--neu-raise);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.message.user .message-content {
+  background: var(--accent-primary);
+  color: white;
+  border-color: transparent;
+}
+
+.message-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.message-image {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  aspect-ratio: 1;
+  position: relative;
+  cursor: pointer;
+  transition: transform var(--transition-normal);
+}
+
+.message-image:hover {
+  transform: scale(1.05);
+}
+
+.message-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.typing-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typing {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.chat-input {
+  padding: var(--space-xl);
+  border-top: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+}
+
+.input-group {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-end;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.message-input {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  color: var(--text-primary);
+  resize: none;
+  min-height: 50px;
+  max-height: 120px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-ghost);
+}
+
+.send-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.send-btn:hover {
+  background: var(--accent-primary-hover);
+  transform: scale(1.1);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================================================
+   FEATURE SPECIFIC STYLES
+   ========================================================= */
+.upload-zone {
+  border: 2px dashed var(--border-medium);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4xl);
+  text-align: center;
+  background: var(--bg-elevated);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+  margin: var(--space-xl) 0;
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--accent-primary);
+  background: var(--accent-ghost);
+  transform: scale(1.02);
+}
+
+.strategy-frameworks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.framework-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.framework-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.analysis-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.tool-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+}
+
+.tool-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.tool-image {
+  height: 120px;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tool-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tool-content {
+  padding: var(--space-md);
+}
+
+.kpi-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+}
+
+.kpi-number {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.kpi-label {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: var(--space-sm);
+}
+
+.kpi-trend {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.trend-up {
+  color: var(--success);
+}
+
+.trend-down {
+  color: var(--error);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .strategy-frameworks-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--space-lg);
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  
+  .feature-card {
+    min-height: 350px;
+  }
+  
+  .stats-banner {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+  
+  .modal {
+    width: 98%;
+    margin: var(--space-sm);
+  }
+  
+  .strategy-frameworks-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chat-messages {
+    max-height: 300px;
+  }
+  
+  .message {
+    max-width: 90%;
+  }
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Loading animation */
+.loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-soft);
+  border-radius: 50%;
+  border-top-color: var(--accent-primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <h1 class="hero-title">Verslo konsultanto AI asistentas</h1>
+      <p class="hero-subtitle">
+        Profesionalus verslo padėjėjas su strategine analize, finansų optimizavimu ir augimo sprendimais
+      </p>
+      
+      <!-- Statistics Banner -->
+      <div class="stats-banner">
+        <div class="stat-item">
+          <span class="stat-number">5.2x</span>
+          <span class="stat-label">ROI pagerinimas su AI</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">84%</span>
+          <span class="stat-label">Efektyvesnės operacijos</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">3 mėn</span>
+          <span class="stat-label">Strategijos įgyvendinimas</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">€450K</span>
+          <span class="stat-label">Vidutinis metinis taupymas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Features -->
+    <div class="features-grid">
+      <div class="feature-card" data-feature="business-strategy">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🎯</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Verslo strategija</h3>
+          <p class="feature-desc">
+            AI sukuria verslo strategijas naudojant SWOT, Porter's 5 Forces, Blue Ocean ir kitus frameworkus per 15 minučių
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-primary btn-lg">Kurti strategiją</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="financial-analysis">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📊</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Finansų analizė</h3>
+          <p class="feature-desc">
+            Automatinė finansinių ataskaitų analizė, cash flow prognozės, ROI skaičiavimai ir investicijų vertinimas
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-secondary btn-lg">Analizuoti finansus</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="operations-optimization">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1553484771-371a605b060b?w=400&h=300&fit=crop');">
+          <div class="feature-icon">⚙️</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Operacijų optimizavimas</h3>
+          <p class="feature-desc">
+            Procesų analizė, efektyvumo pagerinimas, cost reduction strategijos ir workflow automatizavimas
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Optimizuoti procesus</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="market-research">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🔍</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Rinkos tyrimai</h3>
+          <p class="feature-desc">
+            AI-powered competitor analysis, market sizing, trend analysis ir customer segmentation su realiu laiku duomenimis
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Tirti rinką</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="digital-transformation">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🚀</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Skaitmeninė transformacija</h3>
+          <p class="feature-desc">
+            Digital roadmap kūrimas, technologijų vertinimas, change management ir AI integracijos strategijos
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Pradėti transformaciją</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="performance-metrics">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📈</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Veiklos metrikos</h3>
+          <p class="feature-desc">
+            KPI tracking, balanced scorecard, OKR sistema ir realaus laiko performance analytics su AI insights
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Stebėti veiklą</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Section -->
+    <div class="chat-section">
+      <div class="chat-header">
+        <div class="chat-title">🧠 AI Verslo ekspertas</div>
+        <div class="ai-status">
+          <span class="status-dot"></span>
+          Aktyvus ir pasiruošęs padėti su verslo strategijomis ir optimizavimu
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message ai">
+          <div class="message-avatar">AI</div>
+          <div class="message-content">
+            Sveiki! Esu jūsų asmeninis AI verslo konsultantas. Galiu padėti kurti strategijas, analizuoti finansus, optimizuoti procesus ar atsakyti į verslo klausimus. Kaip galiu padėti šiandien?
+          </div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <div class="input-group">
+          <textarea 
+            class="message-input" 
+            id="messageInput" 
+            placeholder="Užduokite klausimą apie verslą, strategijas ar finansų analizę..."
+            rows="1"
+          ></textarea>
+          <button class="send-btn" id="sendBtn">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Feature Title</h2>
+        <button class="modal-close" id="modalClose">×</button>
+      </div>
+      <div class="modal-body" id="modalContent">
+        <!-- Content will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global state
+    let currentFeature = null;
+    let chatHistory = [];
+    let isGeneratingContent = false;
+    let messageCount = 0;
+
+    // DOM elements
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const modalClose = document.getElementById('modalClose');
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Business content images for AI generation
+    const businessContent = {
+      strategy: [
+        'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1553484771-371a605b060b?w=300&h=300&fit=crop'
+      ],
+      financial: [
+        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=300&h=300&fit=crop'
+      ],
+      operations: [
+        'https://images.unsplash.com/photo-1553484771-371a605b060b?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=300&h=300&fit=crop'
+      ],
+      market: [
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1553028826-f4804a6dba3b?w=300&h=300&fit=crop'
+      ],
+      mixed: [
+        'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1553484771-371a605b060b?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop'
+      ]
+    };
+
+    // Feature content templates
+    const featureContent = {
+      'business-strategy': {
+        title: '🎯 AI Verslo strategijos kūrimas',
+        content: `
+          <div class="upload-zone" id="businessUpload">
+            <h3>📋 Įkelkite verslo duomenis</h3>
+            <p style="color: var(--text-muted); margin-top: 8px;">Finansinės ataskaitos, verslo planai, rinkos analizės</p>
+          </div>
+          
+          <div class="strategy-frameworks-grid">
+            <div class="framework-card" data-framework="swot">
+              <div style="font-size: 32px; margin-bottom: 12px;">⚖️</div>
+              <h4>SWOT analizė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Strengths, Weaknesses, Opportunities, Threats</p>
+            </div>
+            <div class="framework-card" data-framework="porter">
+              <div style="font-size: 32px; margin-bottom: 12px;">🏭</div>
+              <h4>Porter's 5 Forces</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Competitive analysis framework</p>
+            </div>
+            <div class="framework-card" data-framework="blue-ocean">
+              <div style="font-size: 32px; margin-bottom: 12px;">🌊</div>
+              <h4>Blue Ocean</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Uncontested market spaces</p>
+            </div>
+            <div class="framework-card" data-framework="bcg-matrix">
+              <div style="font-size: 32px; margin-bottom: 12px;">📊</div>
+              <h4>BCG Matrix</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Product portfolio analysis</p>
+            </div>
+            <div class="framework-card" data-framework="lean-canvas">
+              <div style="font-size: 32px; margin-bottom: 12px;">📝</div>
+              <h4>Lean Canvas</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Business model design</p>
+            </div>
+            <div class="framework-card" data-framework="ansoff-matrix">
+              <div style="font-size: 32px; margin-bottom: 12px;">🎯</div>
+              <h4>Ansoff Matrix</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Growth strategy framework</p>
+            </div>
+          </div>
+
+          <div style="margin: 24px 0;">
+            <h4>🤖 AI strategijos proceso:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Current state assessment ir competitive landscape<br>
+                • Goal setting ir strategic objectives definition<br>
+                • Strategic options generation ir evaluation<br>
+                • Implementation roadmap su milestones ir KPIs
+              </p>
+            </div>
+          </div>
+        `
+      },
+      
+      'financial-analysis': {
+        title: '📊 AI Finansų analizė',
+        content: `
+          <div class="kpi-dashboard">
+            <div class="kpi-card">
+              <div class="kpi-number">€2.4M</div>
+              <div class="kpi-label">Revenue (TTM)</div>
+              <div class="kpi-trend trend-up">↑ 23%</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-number">18.5%</div>
+              <div class="kpi-label">EBITDA Margin</div>
+              <div class="kpi-trend trend-up">↑ 3.2%</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-number">1.8x</div>
+              <div class="kpi-label">Current Ratio</div>
+              <div class="kpi-trend trend-up">↑ 0.3</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-number">45 d.</div>
+              <div class="kpi-label">Cash Conversion</div>
+              <div class="kpi-trend trend-down">↓ 5 d.</div>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>📈 Finansinės analizės sritys:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • P&L, Balance Sheet, Cash Flow analizė<br>
+                • Ratio analysis: liquidity, profitability, efficiency<br>
+                • Variance analysis ir budget vs actual<br>
+                • Financial forecasting ir scenario modeling<br>
+                • Investment appraisal: NPV, IRR, Payback period
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="analyzeFinancials()">Pradėti finansų analizę</button>
+          </div>
+        `
+      },
+      
+      'operations-optimization': {
+        title: '⚙️ AI Operacijų optimizavimas',
+        content: `
+          <div class="analysis-tools-grid">
+            <div class="tool-card" data-tool="process-mapping">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1553484771-371a605b060b?w=300&h=200&fit=crop" alt="Process Mapping">
+              </div>
+              <div class="tool-content">
+                <h5>Process Mapping</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Workflow vizualizacija</p>
+              </div>
+            </div>
+            <div class="tool-card" data-tool="lean-six-sigma">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=300&h=200&fit=crop" alt="Lean Six Sigma">
+              </div>
+              <div class="tool-content">
+                <h5>Lean Six Sigma</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Waste elimination</p>
+              </div>
+            </div>
+            <div class="tool-card" data-tool="automation-analysis">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=300&h=200&fit=crop" alt="Automation">
+              </div>
+              <div class="tool-content">
+                <h5>Automation Analysis</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">RPA galimybės</p>
+              </div>
+            </div>
+            <div class="tool-card" data-tool="capacity-planning">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=200&fit=crop" alt="Capacity Planning">
+              </div>
+              <div class="tool-content">
+                <h5>Capacity Planning</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Resource optimization</p>
+              </div>
+            </div>
+            <div class="tool-card" data-tool="supply-chain">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=300&h=200&fit=crop" alt="Supply Chain">
+              </div>
+              <div class="tool-content">
+                <h5>Supply Chain</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">End-to-end optimization</p>
+              </div>
+            </div>
+            <div class="tool-card" data-tool="quality-management">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop" alt="Quality Management">
+              </div>
+              <div class="tool-content">
+                <h5>Quality Management</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">TQM implementation</p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      
+      'market-research': {
+        title: '🔍 AI Rinkos tyrimai',
+        content: `
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🎯 Tyrimų sritys:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="research" value="competitor" checked> Competitor analysis
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="research" value="market-sizing" checked> Market sizing
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="research" value="customer-segmentation" checked> Customer segmentation
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="research" value="trend-analysis" checked> Trend analysis
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="research" value="pricing-analysis"> Pricing analysis
+              </label>
+            </div>
+          </div>
+          
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🌍 Geografinės rinkos:</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 16px 0;">
+              <label style="display: block; text-align: center; padding: 8px; background: var(--bg-card); border-radius: 8px; cursor: pointer;">
+                <input type="checkbox" name="region" value="lithuania" checked style="margin-bottom: 4px;">
+                <div>🇱🇹 Lietuva</div>
+              </label>
+              <label style="display: block; text-align: center; padding: 8px; background: var(--bg-card); border-radius: 8px; cursor: pointer;">
+                <input type="checkbox" name="region" value="baltics" style="margin-bottom: 4px;">
+                <div>🌊 Baltijos šalys</div>
+              </label>
+              <label style="display: block; text-align: center; padding: 8px; background: var(--bg-card); border-radius: 8px; cursor: pointer;">
+                <input type="checkbox" name="region" value="europe" style="margin-bottom: 4px;">
+                <div>🇪🇺 Europa</div>
+              </label>
+              <label style="display: block; text-align: center; padding: 8px; background: var(--bg-card); border-radius: 8px; cursor: pointer;">
+                <input type="checkbox" name="region" value="global" style="margin-bottom: 4px;">
+                <div>🌍 Globaliai</div>
+              </label>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="startMarketResearch()">Pradėti tyrimus</button>
+          </div>
+        `
+      },
+      
+      'digital-transformation': {
+        title: '🚀 AI Skaitmeninė transformacija',
+        content: `
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🔄 Transformacijos sritys:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="transformation" value="process-digitization"> Process digitization
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="transformation" value="customer-experience"> Customer experience transformation
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="transformation" value="business-model"> Business model innovation
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="transformation" value="full-digital"> Full digital transformation
+              </label>
+            </div>
+          </div>
+          
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🛠️ Technologijos:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="tech" value="ai-ml" checked> AI & Machine Learning
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="tech" value="cloud" checked> Cloud Infrastructure
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="tech" value="automation" checked> Process Automation
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="tech" value="data-analytics"> Data Analytics Platform
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="tech" value="iot"> IoT & Connected Devices
+              </label>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="createDigitalRoadmap()">Sukurti roadmap</button>
+          </div>
+        `
+      },
+      
+      'performance-metrics': {
+        title: '📈 AI Veiklos metrikos',
+        content: `
+          <div class="kpi-dashboard">
+            <div class="kpi-card">
+              <div class="kpi-number">127%</div>
+              <div class="kpi-label">Goal Achievement</div>
+              <div class="kpi-trend trend-up">↑ 27%</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-number">89%</div>
+              <div class="kpi-label">Customer Satisfaction</div>
+              <div class="kpi-trend trend-up">↑ 7%</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-number">94%</div>
+              <div class="kpi-label">Process Efficiency</div>
+              <div class="kpi-trend trend-up">↑ 12%</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-number">€450K</div>
+              <div class="kpi-label">Cost Savings YTD</div>
+              <div class="kpi-trend trend-up">↑ €150K</div>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>📊 Metrikos kategorijos:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Financial KPIs: Revenue, Profit margins, ROI, Cash flow<br>
+                • Operational KPIs: Efficiency, Quality, Productivity, Cycle time<br>
+                • Customer KPIs: Satisfaction, Retention, NPS, CLV<br>
+                • Employee KPIs: Engagement, Turnover, Performance, Training<br>
+                • Strategic KPIs: Market share, Innovation rate, Goal achievement
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="setupKPIDashboard()">Sukurti KPI dashboard</button>
+          </div>
+        `
+      }
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Feature card clicks
+      document.querySelectorAll('.feature-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const feature = this.dataset.feature;
+          openModal(feature);
+        });
+      });
+
+      // Modal close events
+      modalClose.addEventListener('click', closeModal);
+      
+      modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) {
+          closeModal();
+        }
+      });
+
+      // Escape key to close
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+          closeModal();
+        }
+      });
+
+      // Chat functionality
+      sendBtn.addEventListener('click', sendMessage);
+      
+      messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Auto-resize textarea
+      messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      });
+    });
+
+    function openModal(feature) {
+      currentFeature = feature;
+      const content = featureContent[feature];
+      
+      if (content) {
+        modalTitle.innerHTML = content.title;
+        modalContent.innerHTML = content.content;
+        modalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Bind events for new content
+        bindContentEvents();
+      }
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        modalContent.innerHTML = '';
+        modalTitle.innerHTML = '';
+        currentFeature = null;
+      }, 300);
+    }
+
+    function bindContentEvents() {
+      // Upload zone
+      const uploadZone = document.getElementById('businessUpload');
+      if (uploadZone) {
+        uploadZone.addEventListener('click', openFileDialog);
+        uploadZone.addEventListener('dragover', handleDragOver);
+        uploadZone.addEventListener('drop', handleDrop);
+      }
+
+      // Framework cards
+      document.querySelectorAll('.framework-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const framework = this.dataset.framework;
+          const frameworkNames = {
+            'swot': 'SWOT analizę',
+            'porter': 'Porter\'s 5 Forces analizę',
+            'blue-ocean': 'Blue Ocean strategiją',
+            'bcg-matrix': 'BCG Matrix analizę',
+            'lean-canvas': 'Lean Canvas modelį',
+            'ansoff-matrix': 'Ansoff Matrix analizę'
+          };
+          sendChatMessage(`Noriu sukurti ${frameworkNames[framework]} savo verslui`);
+          closeModal();
+        });
+      });
+
+      // Tool cards
+      document.querySelectorAll('.tool-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const tool = this.dataset.tool;
+          const toolNames = {
+            'process-mapping': 'procesų žemėlapių kūrimą',
+            'lean-six-sigma': 'Lean Six Sigma optimizavimą',
+            'automation-analysis': 'automatizavimo analizę',
+            'capacity-planning': 'pajėgumų planavimą',
+            'supply-chain': 'tiekimo grandinės optimizavimą',
+            'quality-management': 'kokybės valdymo sistemą'
+          };
+          sendChatMessage(`Norėčiau pradėti ${toolNames[tool]} mano organizacijoje`);
+          closeModal();
+        });
+      });
+    }
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+      
+      sendChatMessage(message);
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+    }
+
+    function sendChatMessage(message) {
+      // Add user message
+      addChatMessage(message, true);
+      chatHistory.push({ role: 'user', content: message });
+      messageCount++;
+      
+      // Show typing indicator
+      const typingIndicator = addTypingIndicator();
+      
+      // Simulate AI processing
+      setTimeout(() => {
+        removeTypingIndicator(typingIndicator);
+        
+        // Generate AI response
+        const response = generateAIResponse(message);
+        addChatMessage(response.text, false);
+        chatHistory.push({ role: 'assistant', content: response.text });
+        
+        // Generate content after 2-3 messages and if response includes it
+        if (messageCount >= 2 && response.generateContent) {
+          setTimeout(() => {
+            generateBusinessContent(response.contentType);
+          }, 1000);
+        }
+      }, 1000 + Math.random() * 1500);
+    }
+
+    function addChatMessage(content, isUser = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+      
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${isUser ? '👤' : 'AI'}</div>
+        <div class="message-content">${content}</div>
+      `;
+      
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message ai typing-indicator-msg';
+      typingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          <div class="typing-indicator">
+            <span>AI atsako</span>
+            <div class="typing-dots">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      chatMessages.appendChild(typingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return typingDiv;
+    }
+
+    function removeTypingIndicator(indicator) {
+      if (indicator && indicator.parentNode) {
+        indicator.remove();
+      }
+    }
+
+    function generateAIResponse(message) {
+      const msg = message.toLowerCase();
+      
+      // Strategy responses
+      if (msg.includes('strategij') || msg.includes('swot') || msg.includes('porter')) {
+        const responses = [
+          {
+            text: `Kuriu ${getStrategyFromMessage(msg)} jūsų verslui:<br><br><strong>Strategijos komponentai:</strong><br>• Current state assessment ir SWOT analizė<br>• Competitive landscape ir Porter's 5 Forces<br>• Strategic objectives ir growth opportunities<br>• Implementation roadmap su KPIs<br><br>Generuoju vizualų strategijos dokumentą! 🎯`,
+            generateContent: true,
+            contentType: 'strategy'
+          }
+        ];
+        return responses[0];
+      }
+      
+      // Financial analysis responses
+      if (msg.includes('finansų') || msg.includes('financial') || msg.includes('roi')) {
+        return {
+          text: `Analizuoju jūsų finansinius duomenis su AI:<br><br><strong>Analizės sritys:</strong><br>• P&L ir Balance Sheet analizė<br>• Cash flow forecasting ir liquidity ratios<br>• Profitability analysis ir cost structure<br>• Investment appraisal ir ROI calculations<br><br>Generuoju comprehensive finansų report'ą! 📊`,
+          generateContent: true,
+          contentType: 'financial'
+        };
+      }
+      
+      // Operations optimization responses
+      if (msg.includes('operacij') || msg.includes('procesu') || msg.includes('optimizav')) {
+        return {
+          text: `Analizuoju jūsų veiklos procesus optimizavimui:<br><br><strong>Optimization areas:</strong><br>• Process mapping ir bottleneck identification<br>• Lean methodologies ir waste elimination<br>• Automation opportunities ir RPA assessment<br>• Resource allocation ir capacity planning<br><br>Generuoju process improvement plan! ⚙️`,
+          generateContent: true,
+          contentType: 'operations'
+        };
+      }
+      
+      // Market research responses
+      if (msg.includes('rinkos') || msg.includes('market') || msg.includes('competitor')) {
+        return {
+          text: `Atliekamas comprehensive market research:<br><br><strong>Research scope:</strong><br>• Competitor analysis ir market positioning<br>• Market sizing ir growth opportunities<br>• Customer segmentation ir target personas<br>• Trend analysis ir future outlook<br><br>Generuoju detailed market intelligence report! 🔍`,
+          generateContent: true,
+          contentType: 'market'
+        };
+      }
+      
+      // Digital transformation responses
+      if (msg.includes('digital') || msg.includes('transformation') || msg.includes('technology')) {
+        return {
+          text: `Kuriu digital transformation roadmap:<br><br><strong>Transformation pillars:</strong><br>• Technology assessment ir gap analysis<br>• Process digitization ir automation<br>• Data strategy ir analytics capabilities<br>• Change management ir employee training<br><br>Generuoju implementation plan! 🚀`,
+          generateContent: true,
+          contentType: 'operations'
+        };
+      }
+      
+      // Performance metrics responses
+      if (msg.includes('metrik') || msg.includes('kpi') || msg.includes('performance')) {
+        return {
+          text: `Sukuriu KPI dashboard jūsų verslui:<br><br><strong>Metrics categories:</strong><br>• Financial KPIs: Revenue, margins, cash flow<br>• Operational KPIs: Efficiency, quality, productivity<br>• Customer KPIs: Satisfaction, retention, NPS<br>• Strategic KPIs: Goal achievement, innovation<br><br>Generuoju real-time analytics dashboard! 📈`,
+          generateContent: true,
+          contentType: 'financial'
+        };
+      }
+      
+      // Default responses
+      const defaultResponses = [
+        {
+          text: `Supratau jūsų verslo poreikius! AI sprendimai pagerina ROI 5.2x ir efektyvumą 84%. Galiu pasiūlyti konkrečias strategijas su duomenų analize.`,
+          generateContent: true,
+          contentType: 'mixed'
+        },
+        {
+          text: `Puikus klausimas! Verslo konsultacijos su AI padeda įmonėms sutaupyti vidutiniškai €450K per metus. Pasiūlysiu optimizavimo sprendimus.`,
+          generateContent: true,
+          contentType: 'strategy'
+        },
+        {
+          text: `Dėkoju už klausimą! Verslo srityje AI gali automatizuoti analizę, optimizuoti procesus ir prognozuoti trends. Galiu parodyti konkrečius sprendimus.`,
+          generateContent: false,
+          contentType: null
+        }
+      ];
+      
+      return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+    }
+
+    function getStrategyFromMessage(msg) {
+      if (msg.includes('swot')) return 'SWOT analizę';
+      if (msg.includes('porter')) return 'Porter\'s 5 Forces analizę';
+      if (msg.includes('blue ocean')) return 'Blue Ocean strategiją';
+      if (msg.includes('bcg')) return 'BCG Matrix analizę';
+      if (msg.includes('lean canvas')) return 'Lean Canvas modelį';
+      return 'verslo strategiją';
+    }
+
+    async function generateBusinessContent(contentType = 'mixed') {
+      if (isGeneratingContent) return;
+      isGeneratingContent = true;
+      
+      // Add loading message with content placeholders
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'message ai';
+      loadingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          🎨 Generuoju AI verslo turinį...
+          <div class="message-images">
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+          </div>
+          <p style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">Paspauskite ant turinio detalesniems aprašymams</p>
+        </div>
+      `;
+      
+      chatMessages.appendChild(loadingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // Simulate content generation delay
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Replace with actual content
+      const content = businessContent[contentType] || businessContent.mixed;
+      const imageElements = loadingDiv.querySelectorAll('.message-image');
+      
+      content.slice(0, 3).forEach((contentUrl, index) => {
+        if (imageElements[index]) {
+          imageElements[index].innerHTML = `<img src="${contentUrl}" alt="AI Generated Business Content" data-content-type="${contentType}" data-step="${index + 1}">`;
+          imageElements[index].addEventListener('click', () => {
+            handleContentClick(contentType, index + 1);
+          });
+        }
+      });
+      
+      // Update message text
+      const messageContent = loadingDiv.querySelector('.message-content');
+      messageContent.firstChild.textContent = '✨ AI sugeneravo verslo turinį:';
+      
+      isGeneratingContent = false;
+    }
+
+    function handleContentClick(contentType, step) {
+      const contentInstructions = {
+        strategy: [
+          'SWOT Matrix: Strengths - strong brand, loyal customers | Weaknesses - limited digital presence | Opportunities - emerging markets, tech adoption | Threats - new competitors',
+          'Strategic priorities: 1) Digital transformation (€200K investment, 18 months) 2) Market expansion (targeting 25-35 age group) 3) Operational efficiency (15% cost reduction target)',
+          'Implementation roadmap: Q1-Q2 foundation building, Q3-Q4 market entry, Year 2 scaling operations. Success metrics: 30% revenue growth, 20% margin improvement'
+        ],
+        financial: [
+          'Revenue analysis: €2.4M TTM, 23% YoY growth. Key drivers: new customer acquisition (+45%), price optimization (+8%), product mix improvement (+7%)',
+          'Profitability deep-dive: Gross margin 65% (industry avg 58%), EBITDA 18.5% (target 20%), Net margin 12% (improving trend). Cost structure: 40% COGS, 35% OpEx, 25% overheads',
+          'Cash flow forecast: Operating cash flow €420K projected, Working capital needs €180K, CapEx requirements €150K. Recommended: €200K credit facility for growth'
+        ],
+        operations: [
+          'Process efficiency analysis: Current productivity 75% of benchmark. Key bottlenecks: manual approvals (avg 2.3 days), inventory management (15% overstock)',
+          'Automation opportunities: RPA for invoice processing (80% time saving), CRM integration (30% sales efficiency), automated reporting (5 hours/week saved)',
+          'Lean implementation plan: 5S methodology rollout, value stream mapping, kanban system. Expected outcomes: 25% cycle time reduction, 15% quality improvement'
+        ],
+        market: [
+          'Competitive landscape: Market leader 35% share, we hold 8% share with growth potential. Key differentiators: premium quality, customer service, innovation speed',
+          'Market opportunity: €50M total addressable market, growing 12% annually. Underserved segments: SME market (€15M), digital-first customers (€8M)',
+          'Customer insights: Primary segment 45-55 years, high lifetime value €3,200, prefer relationship-based selling. Recommendation: targeted digital marketing + personal touch'
+        ],
+        mixed: [
+          'Business model canvas: Value propositions - cost savings, quality assurance, expert consultation. Revenue streams: recurring subscriptions (70%), one-time projects (30%)',
+          'Growth strategy matrix: Existing markets - penetration tactics, New markets - expansion plan, New products - innovation pipeline, Market development - partnership approach',
+          'Performance dashboard: Financial health 8.5/10, Operational efficiency 7.2/10, Market position 6.8/10, Innovation capability 7.5/10. Priority: strengthen market position'
+        ]
+      };
+      
+      const instructions = contentInstructions[contentType] || contentInstructions.mixed;
+      const instruction = instructions[step - 1] || instructions[0];
+      
+      setTimeout(() => {
+        addChatMessage(`📝 ${instruction}`, false);
+      }, 500);
+    }
+
+    // File upload functions
+    function openFileDialog() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.pdf,.xlsx,.xls,.doc,.docx,.ppt,.pptx';
+      input.multiple = true;
+      input.onchange = function(e) {
+        const files = e.target.files;
+        if (files.length > 0) {
+          handleFileUpload(files);
+        }
+      };
+      input.click();
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('dragover');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileUpload(files);
+      }
+    }
+
+    function handleFileUpload(files) {
+      const uploadZone = document.getElementById('businessUpload');
+      if (uploadZone) {
+        uploadZone.innerHTML = `
+          <div style="color: var(--success);">
+            <h3>✅ Analizuojama...</h3>
+            <p style="margin-top: 8px;">Įkelta ${files.length} failas(-ai)</p>
+          </div>
+        `;
+        
+        // Close modal and trigger chat message
+        closeModal();
+        sendChatMessage(`Įkėliau ${files.length} verslo dokumentą(-us) AI analizei`);
+      }
+    }
+
+    // Additional functions for interactive elements
+    function analyzeFinancials() {
+      closeModal();
+      sendChatMessage('Prašau analizuoti mano finansinius duomenis su AI insights');
+    }
+
+    function startMarketResearch() {
+      closeModal();
+      sendChatMessage('Norėčiau pradėti išsamius rinkos tyrimus su AI analize');
+    }
+
+    function createDigitalRoadmap() {
+      closeModal();
+      sendChatMessage('Noriu sukurti digital transformation roadmap su AI rekomendacijomis');
+    }
+
+    function setupKPIDashboard() {
+      closeModal();
+      sendChatMessage('Prašau sukurti KPI dashboard su realiu laiku analytics');
+    }
+
+    // Initialize
+    console.log('🚀 Verslo konsultanto AI asistentas su content generavimu paleistas!');
+  </script>
+</body>
+</html>
