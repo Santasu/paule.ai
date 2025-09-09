@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="lt" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finansų konsultanto AI asistentas</title>
+  
+  <style>
+/* =========================================================
+   UNIVERSALI SPALVŲ SISTEMA
+   ========================================================= */
+:root {
+  --bg-primary: #0a0d14;
+  --bg-secondary: #0f1419;
+  --bg-elevated: #141922;
+  --bg-card: #1a1f2b;
+  --bg-overlay: #1e252f;
+  
+  --text-primary: #e8eaf0;
+  --text-secondary: #b8bcc8;
+  --text-muted: #8a8f9a;
+  --text-hint: #6b7280;
+  
+  --border-soft: #1f2937;
+  --border-medium: #374151;
+  
+  --accent-primary: #10b981;
+  --accent-primary-hover: #059669;
+  --accent-secondary: #34d399;
+  --accent-ghost: #064e3b;
+  
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  --neu-raise: 
+    0 4px 8px rgba(0, 0, 0, 0.3), 
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  
+  --neu-press: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  
+  --neu-float: 
+    0 10px 25px rgba(0, 0, 0, 0.5), 
+    0 4px 8px rgba(0, 0, 0, 0.3);
+  
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --space-4xl: 40px;
+  
+  --transition-fast: 0.15s;
+  --transition-normal: 0.25s;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+}
+
+/* =========================================================
+   HERO SECTION
+   ========================================================= */
+.hero-section {
+  text-align: center;
+  margin-bottom: var(--space-4xl);
+  padding: var(--space-4xl) 0;
+}
+
+.hero-title {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+  margin-bottom: var(--space-lg);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.stats-banner {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+  background: var(--bg-card);
+  padding: var(--space-xl);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  min-width: 120px;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  display: block;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: var(--space-sm);
+}
+
+/* =========================================================
+   FEATURES GRID
+   ========================================================= */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-2xl);
+  padding: 0;
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--neu-float);
+}
+
+.feature-header {
+  position: relative;
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.3), rgba(0,0,0,.7));
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: white;
+  background: rgba(16, 185, 129, 0.9);
+  box-shadow: var(--neu-raise);
+  position: relative;
+  z-index: 2;
+}
+
+.feature-content {
+  padding: var(--space-3xl);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.feature-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+}
+
+.feature-desc {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-xl);
+}
+
+.feature-cta {
+  margin-top: var(--space-xl);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: var(--neu-raise);
+  transition: all var(--transition-normal) ease;
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neu-float);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border: none;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+  color: white;
+  border: none;
+}
+
+.btn-lg {
+  padding: var(--space-lg) var(--space-3xl);
+  font-size: 16px;
+  border-radius: var(--radius-xl);
+}
+
+/* =========================================================
+   MODAL/POPUP SYSTEM
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--neu-float);
+  border: 1px solid var(--border-soft);
+  width: 95%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  background: var(--bg-elevated);
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.modal-close {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.modal-close:hover {
+  background: var(--error);
+  color: white;
+  transform: scale(1.1);
+}
+
+.modal-body {
+  flex: 1;
+  padding: var(--space-xl);
+  overflow-y: auto;
+}
+
+/* =========================================================
+   CHAT SYSTEM
+   ========================================================= */
+.chat-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-2xl);
+  margin-top: var(--space-4xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  text-align: center;
+}
+
+.chat-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.ai-status {
+  font-size: 14px;
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.chat-messages {
+  padding: var(--space-xl);
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.message {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+  animation: messageIn 0.3s ease;
+  max-width: 80%;
+}
+
+@keyframes messageIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.message.ai .message-avatar {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+}
+
+.message.user .message-avatar {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 2px solid var(--border-medium);
+}
+
+.message-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--neu-raise);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.message.user .message-content {
+  background: var(--accent-primary);
+  color: white;
+  border-color: transparent;
+}
+
+.message-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.message-image {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  aspect-ratio: 1;
+  position: relative;
+  cursor: pointer;
+  transition: transform var(--transition-normal);
+}
+
+.message-image:hover {
+  transform: scale(1.05);
+}
+
+.message-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.typing-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typing {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.chat-input {
+  padding: var(--space-xl);
+  border-top: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+}
+
+.input-group {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-end;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.message-input {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  color: var(--text-primary);
+  resize: none;
+  min-height: 50px;
+  max-height: 120px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-ghost);
+}
+
+.send-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.send-btn:hover {
+  background: var(--accent-primary-hover);
+  transform: scale(1.1);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================================================
+   FEATURE SPECIFIC STYLES
+   ========================================================= */
+.upload-zone {
+  border: 2px dashed var(--border-medium);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4xl);
+  text-align: center;
+  background: var(--bg-elevated);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+  margin: var(--space-xl) 0;
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--accent-primary);
+  background: var(--accent-ghost);
+  transform: scale(1.02);
+}
+
+.budget-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.category-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.investment-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.tool-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+}
+
+.tool-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.tool-image {
+  height: 120px;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tool-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tool-content {
+  padding: var(--space-md);
+}
+
+.financial-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.dashboard-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+}
+
+.dashboard-number {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.dashboard-label {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: var(--space-sm);
+}
+
+.dashboard-trend {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.trend-up {
+  color: var(--success);
+}
+
+.trend-down {
+  color: var(--error);
+}
+
+.disclaimer {
+  background: var(--bg-elevated);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--warning);
+  margin: var(--space-xl) 0;
+}
+
+.disclaimer-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .budget-categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--space-lg);
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  
+  .feature-card {
+    min-height: 350px;
+  }
+  
+  .stats-banner {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+  
+  .modal {
+    width: 98%;
+    margin: var(--space-sm);
+  }
+  
+  .budget-categories-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chat-messages {
+    max-height: 300px;
+  }
+  
+  .message {
+    max-width: 90%;
+  }
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Loading animation */
+.loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-soft);
+  border-radius: 50%;
+  border-top-color: var(--accent-primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <h1 class="hero-title">Finansų konsultanto AI asistentas</h1>
+      <p class="hero-subtitle">
+        Profesionalus asmeninių finansų padėjėjas su biudžeto valdymu, investavimo strategijomis ir turtėjimo planais
+      </p>
+      
+      <!-- Statistics Banner -->
+      <div class="stats-banner">
+        <div class="stat-item">
+          <span class="stat-number">8.7%</span>
+          <span class="stat-label">Vidutinis metinis ROI</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">67%</span>
+          <span class="stat-label">Sutaupo daugiau su AI</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">€2.8K</span>
+          <span class="stat-label">Vidutinis metinis taupymas</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">12 mėn</span>
+          <span class="stat-label">Iki finansinės laisvės</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Features -->
+    <div class="features-grid">
+      <div class="feature-card" data-feature="budget-planning">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=300&fit=crop');">
+          <div class="feature-icon">💰</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Biudžeto planavimas</h3>
+          <p class="feature-desc">
+            AI analizuoja jūsų išlaidas ir sukuria personalizuotą biudžetą pagal 50/30/20 taisyklę ir kitus metodus
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-primary btn-lg">Kurti biudžetą</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="savings-strategies">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🎯</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Taupymo strategijos</h3>
+          <p class="feature-desc">
+            Automatinis taupymo planas su AI optimizuotais tikslais, emergency fund kūrimu ir išlaidų mažinimu
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-secondary btn-lg">Pradėti taupyti</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="investment-portfolio">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📈</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Investicijų portfelis</h3>
+          <p class="feature-desc">
+            AI sukuria diversifikuotą portfelį pagal jūsų rizikas, tikslus ir laiko horizontą su rebalancing
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Investuoti protingai</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="debt-management">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop');">
+          <div class="feature-icon">💳</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Skolų valdymas</h3>
+          <p class="feature-desc">
+            Debt snowball ir avalanche metodai, refinansavimo galimybės ir AI optimizuoti mokėjimo planai
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Valdyti skolas</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="retirement-planning">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🏖️</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Pensijų planavimas</h3>
+          <p class="feature-desc">
+            III pakopos pensijos, FIRE strategijos, long-term wealth building su compound interest skaičiavimais
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Planuoti pensiją</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="financial-goals">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🏆</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Finansiniai tikslai</h3>
+          <p class="feature-desc">
+            SMART tikslų kūrimas, progress tracking, milestone celebration ir AI coaching palaikymui
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Nustatyti tikslus</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Section -->
+    <div class="chat-section">
+      <div class="chat-header">
+        <div class="chat-title">💼 AI Finansų ekspertas</div>
+        <div class="ai-status">
+          <span class="status-dot"></span>
+          Aktyvus ir pasiruošęs padėti su asmeninių finansų valdymu
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message ai">
+          <div class="message-avatar">AI</div>
+          <div class="message-content">
+            Sveiki! Esu jūsų asmeninis AI finansų konsultantas. Galiu padėti kurti biudžetą, planuoti investicijas, valdyti skolas ar pasiekti finansinius tikslus. Kaip galiu padėti šiandien?
+            <div class="disclaimer">
+              <div class="disclaimer-text">
+                <strong>Svarbu:</strong> Tai edukacinė informacija, ne finansų patarimai. Prieš investuojant ar priimant finansinius sprendimus, pasikonsultuokite su licencijuotais specialistais.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <div class="input-group">
+          <textarea 
+            class="message-input" 
+            id="messageInput" 
+            placeholder="Užduokite klausimą apie biudžetą, investicijas ar finansų planavimą..."
+            rows="1"
+          ></textarea>
+          <button class="send-btn" id="sendBtn">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Feature Title</h2>
+        <button class="modal-close" id="modalClose">×</button>
+      </div>
+      <div class="modal-body" id="modalContent">
+        <!-- Content will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global state
+    let currentFeature = null;
+    let chatHistory = [];
+    let isGeneratingContent = false;
+    let messageCount = 0;
+
+    // DOM elements
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const modalClose = document.getElementById('modalClose');
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Financial content images for AI generation
+    const financialContent = {
+      budget: [
+        'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=300&fit=crop'
+      ],
+      investments: [
+        'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=300&h=300&fit=crop'
+      ],
+      savings: [
+        'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop'
+      ],
+      debt: [
+        'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300&h=300&fit=crop'
+      ],
+      mixed: [
+        'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=300&fit=crop'
+      ]
+    };
+
+    // Feature content templates
+    const featureContent = {
+      'budget-planning': {
+        title: '💰 AI Biudžeto planavimas',
+        content: `
+          <div class="upload-zone" id="expensesUpload">
+            <h3>📊 Įkelkite išlaidų duomenis</h3>
+            <p style="color: var(--text-muted); margin-top: 8px;">Banko išrašai, CSV failai arba išlaidų sąrašai</p>
+          </div>
+          
+          <div class="budget-categories-grid">
+            <div class="category-card" data-category="housing">
+              <div style="font-size: 32px; margin-bottom: 12px;">🏠</div>
+              <h4>Būstas</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Nuoma, hipoteka, komunalinės</p>
+            </div>
+            <div class="category-card" data-category="food">
+              <div style="font-size: 32px; margin-bottom: 12px;">🍽️</div>
+              <h4>Maistas</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Maisto produktai, restoranai</p>
+            </div>
+            <div class="category-card" data-category="transport">
+              <div style="font-size: 32px; margin-bottom: 12px;">🚗</div>
+              <h4>Transportas</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Kuras, draudimas, viešasis</p>
+            </div>
+            <div class="category-card" data-category="entertainment">
+              <div style="font-size: 32px; margin-bottom: 12px;">🎬</div>
+              <h4>Pramogos</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Kinas, sportas, kelionės</p>
+            </div>
+            <div class="category-card" data-category="health">
+              <div style="font-size: 32px; margin-bottom: 12px;">🏥</div>
+              <h4>Sveikata</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Gydytojai, vaistai, sportas</p>
+            </div>
+            <div class="category-card" data-category="education">
+              <div style="font-size: 32px; margin-bottom: 12px;">📚</div>
+              <h4>Švietimas</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Kursai, knygos, mokymai</p>
+            </div>
+            <div class="category-card" data-category="savings">
+              <div style="font-size: 32px; margin-bottom: 12px;">💾</div>
+              <h4>Taupymas</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Emergency fund, investicijos</p>
+            </div>
+            <div class="category-card" data-category="other">
+              <div style="font-size: 32px; margin-bottom: 12px;">📋</div>
+              <h4>Kita</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Dovanos, drabužiai, kita</p>
+            </div>
+          </div>
+
+          <div style="margin: 24px 0;">
+            <h4>💡 AI biudžeto metodai:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • 50/30/20 taisyklė: 50% būtinybės, 30% norai, 20% taupymas<br>
+                • Zero-based budgeting: kiekvienas euras turi paskirtį<br>
+                • Envelope method: pinigų kategorijos kaip vokai<br>
+                • AI predictions: numato būsimas išlaidas ir optimizuoja
+              </p>
+            </div>
+          </div>
+
+          <div class="disclaimer">
+            <div class="disclaimer-text">
+              <strong>Priminimas:</strong> Biudžeto sėkmė priklauso nuo nuoseklumo. Stebėkite išlaidas kasdien ir koreguokite planą pagal poreikius.
+            </div>
+          </div>
+        `
+      },
+      
+      'savings-strategies': {
+        title: '🎯 AI Taupymo strategijos',
+        content: `
+          <div class="financial-dashboard">
+            <div class="dashboard-card">
+              <div class="dashboard-number">€3,450</div>
+              <div class="dashboard-label">Emergency Fund tikslas</div>
+              <div class="dashboard-trend trend-up">↑ €250/mėn</div>
+            </div>
+            <div class="dashboard-card">
+              <div class="dashboard-number">€180</div>
+              <div class="dashboard-label">Automatinis taupymas</div>
+              <div class="dashboard-trend trend-up">15% pajamų</div>
+            </div>
+            <div class="dashboard-card">
+              <div class="dashboard-number">6 mėn</div>
+              <div class="dashboard-label">Išgyvenimo fondas</div>
+              <div class="dashboard-trend trend-up">2.5 mėn baigta</div>
+            </div>
+            <div class="dashboard-card">
+              <div class="dashboard-number">€2.8K</div>
+              <div class="dashboard-label">Metinis taupymas</div>
+              <div class="dashboard-trend trend-up">↑ €1.2K</div>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>💰 Taupymo technikos:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • "Pay yourself first" principas - taupyk prieš išleisdamas<br>
+                • Micro-saving: apvalinti pirkimai ir taupyti skirtumus<br>
+                • 52 savaičių challenge: taupyk €1, €2, €3... kas savaitę<br>
+                • Automated transfers: nustatyti automatinius pervedimus<br>
+                • Sinking funds: atskirti fondai dideliems pirkimams
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="createSavingsPlan()">Kurti taupymo planą</button>
+          </div>
+
+          <div class="disclaimer">
+            <div class="disclaimer-text">
+              <strong>Patarimas:</strong> Emergency fund turėtų sudaryti 3-6 mėnesių išlaidų suma lengvai prieinamoje sąskaitoje.
+            </div>
+          </div>
+        `
+      },
+      
+      'investment-portfolio': {
+        title: '📈 AI Investicijų portfelis',
+        content: `
+          <div class="investment-tools-grid">
+            <div class="tool-card" data-investment="etf">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=300&h=200&fit=crop" alt="ETF Investicijos">
+              </div>
+              <div class="tool-content">
+                <h5>ETF portfelis</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Diversifikuotos investicijos</p>
+              </div>
+            </div>
+            <div class="tool-card" data-investment="stocks">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=200&fit=crop" alt="Akcijos">
+              </div>
+              <div class="tool-content">
+                <h5>Akcijų rinka</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Individual stocks</p>
+              </div>
+            </div>
+            <div class="tool-card" data-investment="bonds">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=300&h=200&fit=crop" alt="Obligacijos">
+              </div>
+              <div class="tool-content">
+                <h5>Obligacijos</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Stabilus pelnas</p>
+              </div>
+            </div>
+            <div class="tool-card" data-investment="crypto">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=300&h=200&fit=crop" alt="Kriptovaliutos">
+              </div>
+              <div class="tool-content">
+                <h5>Kriptovaliutos</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Aukštos rizikos investicijos</p>
+              </div>
+            </div>
+            <div class="tool-card" data-investment="real-estate">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=300&h=200&fit=crop" alt="Nekilnojamas turtas">
+              </div>
+              <div class="tool-content">
+                <h5>Nekilnojamas turtas</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">REITs ir tiesiogiai</p>
+              </div>
+            </div>
+            <div class="tool-card" data-investment="commodities">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1610375461246-83df859d849d?w=300&h=200&fit=crop" alt="Prekės">
+              </div>
+              <div class="tool-content">
+                <h5>Prekės</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Auksas, sidabras, nafta</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin: 24px 0;">
+            <h4>⚖️ Rizikos tolerancijos vertinimas:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <div style="margin: 16px 0;">
+                <label style="display: block; margin: 8px 0;">
+                  <input type="radio" name="risk" value="conservative"> Konservatyvus (30% akcijos, 70% obligacijos)
+                </label>
+                <label style="display: block; margin: 8px 0;">
+                  <input type="radio" name="risk" value="moderate"> Vidutinis (60% akcijos, 40% obligacijos)
+                </label>
+                <label style="display: block; margin: 8px 0;">
+                  <input type="radio" name="risk" value="aggressive"> Agresyvus (80% akcijos, 20% obligacijos)
+                </label>
+                <label style="display: block; margin: 8px 0;">
+                  <input type="radio" name="risk" value="very-aggressive"> Labai agresyvus (90%+ akcijos)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="disclaimer">
+            <div class="disclaimer-text">
+              <strong>Svarbu:</strong> Praeities rezultatai negarantuoja ateities pelno. Investuokite tik tuos pinigus, kuriuos galite leisti sau prarasti. Diversifikuokite portfelį.
+            </div>
+          </div>
+        `
+      },
+      
+      'debt-management': {
+        title: '💳 AI Skolų valdymas',
+        content: `
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>📊 Skolų mokėjimo strategijos:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="debt-strategy" value="snowball"> Debt Snowball (mažiausios skolos pirma)
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="debt-strategy" value="avalanche"> Debt Avalanche (didžiausių palūkanų pirma)
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="debt-strategy" value="consolidation"> Debt Consolidation (suvienijimas)
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="debt-strategy" value="balance-transfer"> Balance Transfer (pervedimas)
+              </label>
+            </div>
+          </div>
+          
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>💳 Tipinės skolų kategorijos:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="debt-type" value="credit-cards" checked> Kreditinės kortelės (18-24% palūkanos)
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="debt-type" value="personal-loans"> Vartojimo kreditai (8-15% palūkanos)
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="debt-type" value="car-loans"> Auto kreditai (3-7% palūkanos)
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="debt-type" value="student-loans"> Studijų kreditai (2-6% palūkanos)
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="debt-type" value="mortgage"> Hipoteka (2-4% palūkanos)
+              </label>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="createDebtPlan()">Kurti skolų planą</button>
+          </div>
+
+          <div class="disclaimer">
+            <div class="disclaimer-text">
+              <strong>Patarimas:</strong> Skubiai mokėkite aukštų palūkanų skolas. Svarstykit refinansavimo galimybes mažesnėm palūkanom.
+            </div>
+          </div>
+        `
+      },
+      
+      'retirement-planning': {
+        title: '🏖️ AI Pensijų planavimas',
+        content: `
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🎯 FIRE strategijos:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="fire" value="lean-fire"> Lean FIRE (€20K-30K/metai)
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="fire" value="regular-fire"> Regular FIRE (€40K-50K/metai)
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="fire" value="fat-fire"> Fat FIRE (€80K+/metai)
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="fire" value="coast-fire"> Coast FIRE (pasyvus augimas)
+              </label>
+            </div>
+          </div>
+          
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🇱🇹 Lietuvos pensijų sistema:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="pension" value="first-pillar" checked> I pakopos pensija (Sodra)
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="pension" value="second-pillar" checked> II pakopos pensija (privatus fondas)
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="pension" value="third-pillar"> III pakopos pensija (savanoriškas taupymas)
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="pension" value="private-savings"> Privatūs investiciniai fondai
+              </label>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="calculateRetirement()">Skaičiuoti pensijų poreikis</button>
+          </div>
+
+          <div class="disclaimer">
+            <div class="disclaimer-text">
+              <strong>25x taisyklė:</strong> Pensijai reikia 25x metinių išlaidų. Pvz., €40K/metai = €1M portfelis. 4% withdrawal rate.
+            </div>
+          </div>
+        `
+      },
+      
+      'financial-goals': {
+        title: '🏆 AI Finansiniai tikslai',
+        content: `
+          <div class="financial-dashboard">
+            <div class="dashboard-card">
+              <div class="dashboard-number">75%</div>
+              <div class="dashboard-label">Emergency Fund</div>
+              <div class="dashboard-trend trend-up">3 mėn iš 6 mėn</div>
+            </div>
+            <div class="dashboard-card">
+              <div class="dashboard-number">€15K</div>
+              <div class="dashboard-label">Automobilio fondas</div>
+              <div class="dashboard-trend trend-up">€8.5K sutaupyta</div>
+            </div>
+            <div class="dashboard-card">
+              <div class="dashboard-number">€50K</div>
+              <div class="dashboard-label">Būsto įmoka</div>
+              <div class="dashboard-trend trend-up">€12K sutaupyta</div>
+            </div>
+            <div class="dashboard-card">
+              <div class="dashboard-number">€500K</div>
+              <div class="dashboard-label">FIRE tikslas</div>
+              <div class="dashboard-trend trend-up">€85K sutaupyta</div>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>🎯 SMART tikslų metodas:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • <strong>Specific:</strong> Konkretus tikslas su suma ir paskirtimi<br>
+                • <strong>Measurable:</strong> Matuojamas progress ir milestone'ai<br>
+                • <strong>Achievable:</strong> Realus pagal pajamas ir išlaidas<br>
+                • <strong>Relevant:</strong> Svarbus jūsų gyvenimo tikslams<br>
+                • <strong>Time-bound:</strong> Su aiškiu terminų ir deadline'ų
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>📊 Tikslų kategorijos:</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0;">
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center; cursor: pointer;" data-goal="emergency">
+                <h5>Emergency Fund</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">3-6 mėnesių išlaidos</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center; cursor: pointer;" data-goal="vacation">
+                <h5>Atostogos</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Kelionių fondas</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center; cursor: pointer;" data-goal="house">
+                <h5>Būsto įmoka</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">20% hipotekai</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center; cursor: pointer;" data-goal="education">
+                <h5>Švietimas</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Kursai, mokymai</p>
+              </div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="createFinancialGoal()">Kurti finansinį tikslą</button>
+          </div>
+        `
+      }
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Feature card clicks
+      document.querySelectorAll('.feature-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const feature = this.dataset.feature;
+          openModal(feature);
+        });
+      });
+
+      // Modal close events
+      modalClose.addEventListener('click', closeModal);
+      
+      modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) {
+          closeModal();
+        }
+      });
+
+      // Escape key to close
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+          closeModal();
+        }
+      });
+
+      // Chat functionality
+      sendBtn.addEventListener('click', sendMessage);
+      
+      messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Auto-resize textarea
+      messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      });
+    });
+
+    function openModal(feature) {
+      currentFeature = feature;
+      const content = featureContent[feature];
+      
+      if (content) {
+        modalTitle.innerHTML = content.title;
+        modalContent.innerHTML = content.content;
+        modalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Bind events for new content
+        bindContentEvents();
+      }
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        modalContent.innerHTML = '';
+        modalTitle.innerHTML = '';
+        currentFeature = null;
+      }, 300);
+    }
+
+    function bindContentEvents() {
+      // Upload zone
+      const uploadZone = document.getElementById('expensesUpload');
+      if (uploadZone) {
+        uploadZone.addEventListener('click', openFileDialog);
+        uploadZone.addEventListener('dragover', handleDragOver);
+        uploadZone.addEventListener('drop', handleDrop);
+      }
+
+      // Category cards
+      document.querySelectorAll('.category-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const category = this.dataset.category;
+          const categoryNames = {
+            housing: 'būsto išlaidų',
+            food: 'maisto išlaidų',
+            transport: 'transporto išlaidų',
+            entertainment: 'pramogų išlaidų',
+            health: 'sveikatos išlaidų',
+            education: 'švietimo išlaidų',
+            savings: 'taupymo strategijos',
+            other: 'kitų išlaidų'
+          };
+          sendChatMessage(`Noriu optimizuoti ${categoryNames[category]} biudžete`);
+          closeModal();
+        });
+      });
+
+      // Investment cards
+      document.querySelectorAll('.tool-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const investment = this.dataset.investment;
+          const investmentNames = {
+            etf: 'ETF portfelio',
+            stocks: 'akcijų investicijų',
+            bonds: 'obligacijų investicijų',
+            crypto: 'kriptovaliutų investicijų',
+            'real-estate': 'nekilnojamo turto investicijų',
+            commodities: 'prekių investicijų'
+          };
+          sendChatMessage(`Norėčiau sužinoti apie ${investmentNames[investment]} strategijas`);
+          closeModal();
+        });
+      });
+
+      // Goal cards
+      document.querySelectorAll('[data-goal]').forEach(card => {
+        card.addEventListener('click', function() {
+          const goal = this.dataset.goal;
+          const goalNames = {
+            emergency: 'Emergency Fund tikslą',
+            vacation: 'atostogų fondą',
+            house: 'būsto įmokos tikslą',
+            education: 'švietimo fondą'
+          };
+          sendChatMessage(`Noriu sukurti ${goalNames[goal]} su AI pagalba`);
+          closeModal();
+        });
+      });
+    }
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+      
+      sendChatMessage(message);
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+    }
+
+    function sendChatMessage(message) {
+      // Add user message
+      addChatMessage(message, true);
+      chatHistory.push({ role: 'user', content: message });
+      messageCount++;
+      
+      // Show typing indicator
+      const typingIndicator = addTypingIndicator();
+      
+      // Simulate AI processing
+      setTimeout(() => {
+        removeTypingIndicator(typingIndicator);
+        
+        // Generate AI response
+        const response = generateAIResponse(message);
+        addChatMessage(response.text, false);
+        chatHistory.push({ role: 'assistant', content: response.text });
+        
+        // Generate content after 2-3 messages and if response includes it
+        if (messageCount >= 2 && response.generateContent) {
+          setTimeout(() => {
+            generateFinancialContent(response.contentType);
+          }, 1000);
+        }
+      }, 1000 + Math.random() * 1500);
+    }
+
+    function addChatMessage(content, isUser = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+      
+      const disclaimerHtml = !isUser ? `
+        <div class="disclaimer" style="margin-top: 12px;">
+          <div class="disclaimer-text">
+            <strong>Disclaimer:</strong> Tai edukacinė informacija, ne finansų patarimai. Konsultuokitės su kvalifikuotais specialistais.
+          </div>
+        </div>
+      ` : '';
+      
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${isUser ? '👤' : 'AI'}</div>
+        <div class="message-content">${content}${disclaimerHtml}</div>
+      `;
+      
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message ai typing-indicator-msg';
+      typingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          <div class="typing-indicator">
+            <span>AI atsako</span>
+            <div class="typing-dots">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      chatMessages.appendChild(typingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return typingDiv;
+    }
+
+    function removeTypingIndicator(indicator) {
+      if (indicator && indicator.parentNode) {
+        indicator.remove();
+      }
+    }
+
+    function generateAIResponse(message) {
+      const msg = message.toLowerCase();
+      
+      // Budget planning responses
+      if (msg.includes('biudžet') || msg.includes('išlaid')) {
+        const responses = [
+          {
+            text: `Kuriu personalizuotą biudžetą pagal jūsų išlaidas:<br><br><strong>Biudžeto struktūra:</strong><br>• 50% būtinybės (būstas, maistas, transportas)<br>• 30% norai (pramogos, drabužiai, restoranai)<br>• 20% taupymas (emergency fund, investicijos)<br><br>Analizuoju jūsų išlaidų kategorijas ir kuriu optimizavimo planą!`,
+            generateContent: true,
+            contentType: 'budget'
+          }
+        ];
+        return responses[0];
+      }
+      
+      // Savings responses
+      if (msg.includes('taupym') || msg.includes('emergency')) {
+        return {
+          text: `Kuriu AI taupymo strategiją jums:<br><br><strong>Taupymo planas:</strong><br>• Emergency fund: 6 mėnesių išlaidų (€3,450)<br>• Automatinis taupymas: €250/mėn (15% pajamų)<br>• High-yield savings account: 2.5% palūkanos<br>• Taupymo tikslai su deadline'ais<br><br>Generuoju vizualų taupymo tracker!`,
+          generateContent: true,
+          contentType: 'savings'
+        };
+      }
+      
+      // Investment responses
+      if (msg.includes('investic') || msg.includes('portfel') || msg.includes('etf')) {
+        return {
+          text: `Kuriu diversifikuotą investicijų portfelį:<br><br><strong>Portfelio allokacija:</strong><br>• 60% akcijų ETF (VWCE, VTI)<br>• 30% obligacijų (government + corporate)<br>• 10% alternatyvūs (REITs, commodities)<br>• Rebalancing kas 6 mėnesius<br><br>Generuoju investment allocation charts!`,
+          generateContent: true,
+          contentType: 'investments'
+        };
+      }
+      
+      // Debt responses
+      if (msg.includes('skol') || msg.includes('kredit') || msg.includes('debt')) {
+        return {
+          text: `Analizuoju jūsų skolas ir kuriu mokėjimo strategiją:<br><br><strong>Debt elimination plan:</strong><br>• Avalanche method: pradėkite nuo aukščiausių palūkanų<br>• Extra payments: €100/mėn papildomai<br>• Debt-free timeline: 18 mėnesiai<br>• Interest savings: €2,400<br><br>Generuoju debt payoff visualization!`,
+          generateContent: true,
+          contentType: 'debt'
+        };
+      }
+      
+      // Retirement planning responses
+      if (msg.includes('pensij') || msg.includes('fire') || msg.includes('retirement')) {
+        return {
+          text: `Kuriu pensijų planavimo strategiją:<br><br><strong>FIRE plan:</strong><br>• Target number: €500K (25x rule)<br>• Current savings rate: 25%<br>• Time to FI: 12 metų<br>• III pakopa: €200/mėn investicijos<br><br>Generuoju compound interest projections!`,
+          generateContent: true,
+          contentType: 'savings'
+        };
+      }
+      
+      // Financial goals responses
+      if (msg.includes('tiksla') || msg.includes('goal') || msg.includes('plana')) {
+        return {
+          text: `Kuriu SMART finansinį tikslą:<br><br><strong>Goal structure:</strong><br>• Specific: Konkretūs €€€ ir terminas<br>• Measurable: Progress tracking system<br>• Achievable: Realistic savings rate<br>• Time-bound: Clear milestones<br><br>Generuoju goal tracking dashboard!`,
+          generateContent: true,
+          contentType: 'mixed'
+        };
+      }
+      
+      // Default responses
+      const defaultResponses = [
+        {
+          text: `Supratau jūsų finansinius poreikius! Su AI pagalba žmonės vidutiniškai sutaupo €2.8K per metus ir pagerini ROI 8.7%. Galiu sukurti personalizuotą finansų planą.`,
+          generateContent: true,
+          contentType: 'mixed'
+        },
+        {
+          text: `Finansų valdymas su AI padeda optimizuoti biudžetą ir pasiekti tikslus 67% greičiau. Pasiūlysiu konkrečias strategijas pagal jūsų situaciją.`,
+          generateContent: true,
+          contentType: 'budget'
+        },
+        {
+          text: `Galiu padėti su asmeninių finansų valdymu - nuo biudžeto planavimo iki investicijų portfelio kūrimo. Kokie jūsų prioritetai?`,
+          generateContent: false,
+          contentType: null
+        }
+      ];
+      
+      return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+    }
+
+    async function generateFinancialContent(contentType = 'mixed') {
+      if (isGeneratingContent) return;
+      isGeneratingContent = true;
+      
+      // Add loading message with content placeholders
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'message ai';
+      loadingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          🎨 Generuoju AI finansų turinį...
+          <div class="message-images">
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+          </div>
+          <p style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">Paspauskite ant turinio detalesniems aprašymams</p>
+        </div>
+      `;
+      
+      chatMessages.appendChild(loadingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // Simulate content generation delay
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Replace with actual content
+      const content = financialContent[contentType] || financialContent.mixed;
+      const imageElements = loadingDiv.querySelectorAll('.message-image');
+      
+      content.slice(0, 3).forEach((contentUrl, index) => {
+        if (imageElements[index]) {
+          imageElements[index].innerHTML = `<img src="${contentUrl}" alt="AI Generated Financial Content" data-content-type="${contentType}" data-step="${index + 1}">`;
+          imageElements[index].addEventListener('click', () => {
+            handleContentClick(contentType, index + 1);
+          });
+        }
+      });
+      
+      // Update message text
+      const messageContent = loadingDiv.querySelector('.message-content');
+      messageContent.firstChild.textContent = '✨ AI sugeneravo finansų turinį:';
+      
+      isGeneratingContent = false;
+    }
+
+    function handleContentClick(contentType, step) {
+      const contentInstructions = {
+        budget: [
+          'Biudžeto formula: Pajamos €2,400 - Būtinybės €1,200 (50%) - Norai €720 (30%) = Taupymas €480 (20%). Track su apps: YNAB, Mint, PocketGuard',
+          'Išlaidų optimizavimas: Sumažinkite subscription services (avg €45/mėn), meal prep (taupymas €120/mėn), generic brands (10-30% pigiau)',
+          'Emergency fund strategy: Atskira high-yield sąskaita, automated transfers €250/mėn, tikslas 6 mėnesių išlaidų (€7,200 total)'
+        ],
+        investments: [
+          'ETF portfolio allocation: 70% VWCE (World developed), 20% VFEM (Emerging markets), 10% AGGU (EU Government bonds). Expense ratio <0.25%',
+          'Dollar-cost averaging: €300/mėn automatic investment, ignore market volatility, 20+ metų timeline. Historical return 7-8% annually',
+          'Rebalancing rules: Check quarterly, rebalance if >5% deviation from target. Tax-efficient: sell losers first, use ISA/pension accounts'
+        ],
+        savings: [
+          'Savings rate calculation: (Income - Expenses) / Income. Target 20%+. High achievers save 30-50%. FIRE requires 50%+ savings rate',
+          'Compound interest magic: €200/mėn x 20 metų @ 7% = €98,846 (invested €48K). Start early! €100 @ age 25 = €1,497 @ age 65',
+          'Savings vehicles hierarchy: 1) Employer match 401k, 2) High-yield emergency fund, 3) Tax-advantaged accounts, 4) Taxable investments'
+        ],
+        debt: [
+          'Debt avalanche example: Credit card €5K @ 22%, Personal loan €10K @ 8%, Car loan €15K @ 4%. Pay minimums on all, extra to highest rate',
+          'Refinancing benefits: €20K @ 18% to €20K @ 8% saves €2,000/year. Credit score 700+ required. Compare offers from 3+ lenders',
+          'Debt-to-income ratio: Total monthly debt / gross monthly income. Target <36%. Above 40% = high risk. Include housing in calculation'
+        ],
+        mixed: [
+          'Financial independence formula: Annual expenses x 25 = FI number. €40K expenses = €1M needed. 4% withdrawal rate sustainable',
+          'Net worth tracking: Assets (cash, investments, property) - Liabilities (debts, mortgages). Target 1x income by 30, 3x by 40',
+          'Risk management: 3-6 month emergency fund, adequate insurance (health, disability, life), diversified investments, multiple income streams'
+        ]
+      };
+      
+      const instructions = contentInstructions[contentType] || contentInstructions.mixed;
+      const instruction = instructions[step - 1] || instructions[0];
+      
+      setTimeout(() => {
+        addChatMessage(`📝 ${instruction}`, false);
+      }, 500);
+    }
+
+    // File upload functions
+    function openFileDialog() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.csv,.xlsx,.xls,.pdf';
+      input.multiple = true;
+      input.onchange = function(e) {
+        const files = e.target.files;
+        if (files.length > 0) {
+          handleFileUpload(files);
+        }
+      };
+      input.click();
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('dragover');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileUpload(files);
+      }
+    }
+
+    function handleFileUpload(files) {
+      const uploadZone = document.getElementById('expensesUpload');
+      if (uploadZone) {
+        uploadZone.innerHTML = `
+          <div style="color: var(--success);">
+            <h3>✅ Analizuojama...</h3>
+            <p style="margin-top: 8px;">Įkelta ${files.length} failas(-ai)</p>
+          </div>
+        `;
+        
+        // Close modal and trigger chat message
+        closeModal();
+        sendChatMessage(`Įkėliau ${files.length} išlaidų failą(-us) AI biudžeto analizei`);
+      }
+    }
+
+    // Additional functions for interactive elements
+    function createSavingsPlan() {
+      closeModal();
+      sendChatMessage('Prašau sukurti personalizuotą taupymo planą su AI optimizavimu');
+    }
+
+    function createDebtPlan() {
+      closeModal();
+      sendChatMessage('Noriu sukurti skolų mokėjimo strategiją su AI pagalba');
+    }
+
+    function calculateRetirement() {
+      closeModal();
+      sendChatMessage('Prašau apskaičiuoti mano pensijų poreikius ir FIRE strategiją');
+    }
+
+    function createFinancialGoal() {
+      closeModal();
+      sendChatMessage('Noriu sukurti SMART finansinį tikslą su AI tracking');
+    }
+
+    // Initialize
+    console.log('🚀 Finansų konsultanto AI asistentas su content generavimu paleistas!');
+  </script>
+</body>
+</html>
