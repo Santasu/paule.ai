@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="lt" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Psichologo AI asistentas</title>
+  
+  <style>
+/* =========================================================
+   UNIVERSALI SPALVŲ SISTEMA
+   ========================================================= */
+:root {
+  --bg-primary: #0a0d14;
+  --bg-secondary: #0f1419;
+  --bg-elevated: #141922;
+  --bg-card: #1a1f2b;
+  --bg-overlay: #1e252f;
+  
+  --text-primary: #e8eaf0;
+  --text-secondary: #b8bcc8;
+  --text-muted: #8a8f9a;
+  --text-hint: #6b7280;
+  
+  --border-soft: #1f2937;
+  --border-medium: #374151;
+  
+  --accent-primary: #14b8a6;
+  --accent-primary-hover: #0d9488;
+  --accent-secondary: #06b6d4;
+  --accent-ghost: #134e4a;
+  
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  --neu-raise: 
+    0 4px 8px rgba(0, 0, 0, 0.3), 
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  
+  --neu-press: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  
+  --neu-float: 
+    0 10px 25px rgba(0, 0, 0, 0.5), 
+    0 4px 8px rgba(0, 0, 0, 0.3);
+  
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --space-4xl: 40px;
+  
+  --transition-fast: 0.15s;
+  --transition-normal: 0.25s;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+}
+
+/* =========================================================
+   HERO SECTION
+   ========================================================= */
+.hero-section {
+  text-align: center;
+  margin-bottom: var(--space-4xl);
+  padding: var(--space-4xl) 0;
+  position: relative;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(6, 182, 212, 0.1));
+  border-radius: var(--radius-2xl);
+}
+
+.hero-title {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+  margin-bottom: var(--space-lg);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-disclaimer {
+  background: var(--bg-elevated);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--accent-primary);
+  margin: var(--space-xl) auto;
+  max-width: 800px;
+}
+
+.disclaimer-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.stats-banner {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+  background: var(--bg-card);
+  padding: var(--space-xl);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  min-width: 120px;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  display: block;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: var(--space-sm);
+}
+
+/* =========================================================
+   FEATURES GRID
+   ========================================================= */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-2xl);
+  padding: 0;
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--neu-float);
+}
+
+.feature-header {
+  position: relative;
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.3), rgba(0,0,0,.7));
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: white;
+  background: rgba(20, 184, 166, 0.9);
+  box-shadow: var(--neu-raise);
+  position: relative;
+  z-index: 2;
+}
+
+.feature-content {
+  padding: var(--space-3xl);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.feature-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+}
+
+.feature-desc {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-xl);
+}
+
+.feature-cta {
+  margin-top: var(--space-xl);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: var(--neu-raise);
+  transition: all var(--transition-normal) ease;
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neu-float);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border: none;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+  color: white;
+  border: none;
+}
+
+.btn-lg {
+  padding: var(--space-lg) var(--space-3xl);
+  font-size: 16px;
+  border-radius: var(--radius-xl);
+}
+
+/* =========================================================
+   MODAL/POPUP SYSTEM
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--neu-float);
+  border: 1px solid var(--border-soft);
+  width: 95%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  background: var(--bg-elevated);
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.modal-close {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.modal-close:hover {
+  background: var(--error);
+  color: white;
+  transform: scale(1.1);
+}
+
+.modal-body {
+  flex: 1;
+  padding: var(--space-xl);
+  overflow-y: auto;
+}
+
+/* =========================================================
+   CHAT SYSTEM
+   ========================================================= */
+.chat-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-2xl);
+  margin-top: var(--space-4xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  text-align: center;
+}
+
+.chat-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.ai-status {
+  font-size: 14px;
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.chat-messages {
+  padding: var(--space-xl);
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.message {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+  animation: messageIn 0.3s ease;
+  max-width: 80%;
+}
+
+@keyframes messageIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.message.ai .message-avatar {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+}
+
+.message.user .message-avatar {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 2px solid var(--border-medium);
+}
+
+.message-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--neu-raise);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.message.user .message-content {
+  background: var(--accent-primary);
+  color: white;
+  border-color: transparent;
+}
+
+/* =========================================================
+   FEATURE SPECIFIC STYLES
+   ========================================================= */
+.disclaimer {
+  background: var(--bg-elevated);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--warning);
+  margin: var(--space-xl) 0;
+}
+
+.emergency-notice {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+  border: 2px solid var(--error);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  margin: var(--space-xl) 0;
+  text-align: center;
+}
+
+.emergency-title {
+  color: var(--error);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+}
+
+.emergency-text {
+  color: var(--text-primary);
+  margin-bottom: var(--space-md);
+}
+
+.emergency-number {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--error);
+}
+
+.techniques-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.technique-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.technique-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.emotion-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.emotion-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.emotion-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.wellness-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.metric-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+}
+
+.metric-number {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.metric-label {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: var(--space-sm);
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.typing-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typing {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.chat-input {
+  padding: var(--space-xl);
+  border-top: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+}
+
+.input-group {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-end;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.message-input {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  color: var(--text-primary);
+  resize: none;
+  min-height: 50px;
+  max-height: 120px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-ghost);
+}
+
+.send-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.send-btn:hover {
+  background: var(--accent-primary-hover);
+  transform: scale(1.1);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .techniques-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .emotion-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--space-lg);
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  
+  .feature-card {
+    min-height: 350px;
+  }
+  
+  .stats-banner {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+  
+  .modal {
+    width: 98%;
+    margin: var(--space-sm);
+  }
+  
+  .techniques-grid,
+  .emotion-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .chat-messages {
+    max-height: 300px;
+  }
+  
+  .message {
+    max-width: 90%;
+  }
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Loading animation */
+.loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-soft);
+  border-radius: 50%;
+  border-top-color: var(--accent-primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <h1 class="hero-title">Psichologo AI asistentas</h1>
+      <p class="hero-subtitle">
+        Edukacinė psichikos sveikatos platforma su AI palaikymu, streso valdymu ir gerovės strategijomis
+      </p>
+      
+      <div class="hero-disclaimer">
+        <div class="disclaimer-text">
+          <strong>Svarbu:</strong> Tai edukacinė informacija, ne profesionali psichologinė pagalba. Jei jaučiate rimtus psichikos sveikatos sunkumus, kreipkitės į kvalifikuotą specialistą arba skambinkite pagalbos linijai.
+        </div>
+      </div>
+      
+      <!-- Statistics Banner -->
+      <div class="stats-banner">
+        <div class="stat-item">
+          <span class="stat-number">74%</span>
+          <span class="stat-label">Mažiau streso su AI</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">89%</span>
+          <span class="stat-label">Geresnė nuotaika</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">15min</span>
+          <span class="stat-label">Dieninė mindfulness</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">24/7</span>
+          <span class="stat-label">Pagalbos prieinamumas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emergency Notice -->
+    <div class="emergency-notice">
+      <div class="emergency-title">Krizių situacijos pagalba</div>
+      <div class="emergency-text">Jei jaučiatės nesaugiai ar turite savižudybės minčių, nedelsiant kreipkitės:</div>
+      <div class="emergency-number">116 123 (Vilties linija)</div>
+    </div>
+
+    <!-- Main Features -->
+    <div class="features-grid">
+      <div class="feature-card" data-feature="stress-anxiety">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🧘</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Streso ir nerimo valdymas</h3>
+          <p class="feature-desc">
+            Praktinės technikos streso mažinimui, nerimo simptomų valdymui ir ramybės atkūrimui su AI personalizacija
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-primary btn-lg">Valdyti stresą</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="cbt-techniques">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🧠</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Kognityvinės technikos</h3>
+          <p class="feature-desc">
+            CBT metodai, minčių restruktūrizavimas, neigiamų įsitikinimų keitimas ir pozityvaus mąstymo ugdymas
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-secondary btn-lg">Keisti mintis</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="emotion-regulation">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=300&fit=crop');">
+          <div class="feature-icon">❤️</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Emocijų reguliavimas</h3>
+          <p class="feature-desc">
+            Emocinio intelekto ugdymas, jausmų atpažinimas, valdymas ir sveiki būdai išreikšti emocijas
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Valdyti emocijas</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="sleep-wellness">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🌙</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Miego ir gerovės</h3>
+          <p class="feature-desc">
+            Miego higiena, atsipalaidavimo technikos, žvalumas dieną ir natūralūs būdai pagerinti poilsį
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Gerinti miegą</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="relationships">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=300&fit=crop');">
+          <div class="feature-icon">👥</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Santykių gerinimas</h3>
+          <p class="feature-desc">
+            Komunikacijos įgūdžiai, konfliktų sprendimas, empatijos ugdymas ir sveikų ribų nustatymas
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Gerinti santykius</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="mindfulness">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1510894347713-fc3ed6fdf539?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🌸</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Mindfulness ir meditacija</h3>
+          <p class="feature-desc">
+            Sąmoningumo praktikos, meditacijos technikos, dabartinio momento suvokimas ir dėmesingumo ugdymas
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Medituoti dabar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Section -->
+    <div class="chat-section">
+      <div class="chat-header">
+        <div class="chat-title">🧠 AI Psichikos sveikatos padėjėjas</div>
+        <div class="ai-status">
+          <span class="status-dot"></span>
+          Aktyvus ir pasiruošęs padėti su psichikos sveikata ir gerove
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message ai">
+          <div class="message-avatar">AI</div>
+          <div class="message-content">
+            Sveiki! Esu jūsų AI psichikos sveikatos padėjėjas. Galiu pasiūlyti technikos streso valdymui, mindfulness pratimus ar atsakyti į klausimus apie gerovę. Kaip šiandien jaučiatės?
+            <div class="disclaimer">
+              <div class="disclaimer-text">
+                <strong>Priminimas:</strong> Teikiu edukacinę informaciją, ne profesionalų gydymą. Rimtais atvejais kreipkitės į specialistą.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <div class="input-group">
+          <textarea 
+            class="message-input" 
+            id="messageInput" 
+            placeholder="Papasakokite, kaip jaučiatės ar užduokite klausimą apie psichikos sveikatą..."
+            rows="1"
+          ></textarea>
+          <button class="send-btn" id="sendBtn">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Feature Title</h2>
+        <button class="modal-close" id="modalClose">×</button>
+      </div>
+      <div class="modal-body" id="modalContent">
+        <!-- Content will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global state
+    let currentFeature = null;
+    let chatHistory = [];
+    let messageCount = 0;
+    
+    // Safety tracking
+    let concerningMessageCount = 0;
+    let lastCrisisCheck = Date.now();
+
+    // DOM elements
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const modalClose = document.getElementById('modalClose');
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Feature content templates with enhanced safety
+    const featureContent = {
+      'stress-anxiety': {
+        title: '🧘 Streso ir nerimo valdymas',
+        content: `
+          <div class="disclaimer">
+            <div class="disclaimer-text">
+              <strong>Svarbu:</strong> Jei streso ar nerimo simptomai trikdo kasdienį gyvenimą ilgiau nei 2 savaites, rekomenduojama kreiptis į psichikos sveikatos specialistą.
+            </div>
+          </div>
+          
+          <div class="techniques-grid">
+            <div class="technique-card" data-technique="breathing">
+              <div style="font-size: 48px; margin-bottom: 12px;">🫁</div>
+              <h4>Kvėpavimo technikos</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">4-7-8, box breathing</p>
+            </div>
+            <div class="technique-card" data-technique="grounding">
+              <div style="font-size: 48px; margin-bottom: 12px;">🌱</div>
+              <h4>Grounding exercises</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">5-4-3-2-1 technika</p>
+            </div>
+            <div class="technique-card" data-technique="progressive">
+              <div style="font-size: 48px; margin-bottom: 12px;">💆</div>
+              <h4>Progresyvus atsipalaidavimas</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Raumenų įtampos mažinimas</p>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>⚡ Greitoji pagalba nerimo priepuoliui:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Lėtas kvėpavimas: įkvėpimas 4 sek, iškvėpimas 6 sek<br>
+                • Pavadinkit 5 daiktus, kuriuos matote<br>
+                • Palieskit 4 skirtingas tekstūras<br>
+                • Išgirskite 3 garsus aplinkoje<br>
+                • Pajuskite 2 kvapus ir 1 skonį
+              </p>
+            </div>
+          </div>
+
+          <div class="emergency-notice" style="margin-top: 20px;">
+            <div class="emergency-title">Kada kreiptis į specialistą?</div>
+            <div class="emergency-text">• Simptomai tęsiasi ilgiau nei 2 savaites<br>• Trikdo darbą, mokslus ar santykius<br>• Atsiranda savžudybės mintys</div>
+            <div style="margin-top: 12px;">
+              <strong>116 123 - Vilties linija (24/7)</strong>
+            </div>
+          </div>
+        `
+      },
+      
+      'cbt-techniques': {
+        title: '🧠 Kognityvinės technikos',
+        content: `
+          <div class="disclaimer">
+            <div class="disclaimer-text">
+              <strong>Pastaba:</strong> CBT technikos yra efektyvios, tačiau profesionalaus CBT terapeuto pagalba yra daug efektyvesnė nei savarankiškas taikymas.
+            </div>
+          </div>
+
+          <div style="margin: 24px 0;">
+            <h4>🔍 Minčių stebėjimas ir keitimas:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • <strong>Automatinės mintys:</strong> Atpažinkite neigiamas mintis<br>
+                • <strong>Minčių tikrinimas:</strong> "Ar tai faktas ar nuomonė?"<br>
+                • <strong>Restruktūrizavimas:</strong> Pakeiskite realistesnė perspektyva<br>
+                • <strong>Balanced thinking:</strong> Ieškokite vidurinio kelio
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>📝 CBT užduotys:</h4>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 16px 0;">
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>Minčių žurnalas</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Užrašykite neigiamas mintis ir alternatyvas</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>Behavioral experiments</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Testuokite savo įsitikinimus</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>Katastrofizavimo stop</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">"Kas blogiausio gali nutikti?"</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>Pozityvių įrodymų paieška</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Faktai, prieštaraujantys neigiamoms mintims</p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      
+      'emotion-regulation': {
+        title: '❤️ Emocijų reguliavimas',
+        content: `
+          <div class="emotion-cards">
+            <div class="emotion-card" data-emotion="anger">
+              <div style="font-size: 32px; margin-bottom: 8px;">😠</div>
+              <h5>Pyktis</h5>
+              <p style="color: var(--text-secondary); font-size: 10px;">Valdymo strategijos</p>
+            </div>
+            <div class="emotion-card" data-emotion="sadness">
+              <div style="font-size: 32px; margin-bottom: 8px;">😢</div>
+              <h5>Liūdesys</h5>
+              <p style="color: var(--text-secondary); font-size: 10px;">Healing techniques</p>
+            </div>
+            <div class="emotion-card" data-emotion="anxiety">
+              <div style="font-size: 32px; margin-bottom: 8px;">😰</div>
+              <h5>Nerimas</h5>
+              <p style="color: var(--text-secondary); font-size: 10px;">Calming methods</p>
+            </div>
+            <div class="emotion-card" data-emotion="joy">
+              <div style="font-size: 32px; margin-bottom: 8px;">😊</div>
+              <h5>Džiaugsmas</h5>
+              <p style="color: var(--text-secondary); font-size: 10px;">Sustaining happiness</p>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>🎯 Emocinio intelekto ugdymas:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • <strong>Atpažinimas:</strong> "Kokią emociją jaučiu dabar?"<br>
+                • <strong>Supratimas:</strong> "Kodėl jaučiu šitą?"<br>
+                • <strong>Pavadinimas:</strong> Suteikite emocijai konkretų pavadinimą<br>
+                • <strong>Reguliavimas:</strong> Pasirinkite sveikus reagavimo būdus<br>
+                • <strong>Išraiška:</strong> Saugiai ir konstruktyviai išreikškite
+              </p>
+            </div>
+          </div>
+
+          <div class="disclaimer">
+            <div class="disclaimer-text">
+              <strong>Atminkite:</strong> Intensyvūs ar ilgalaikiai emocijų reguliavimo sunkumai gali reikalauti profesionalios pagalbos.
+            </div>
+          </div>
+        `
+      },
+      
+      'sleep-wellness': {
+        title: '🌙 Miego ir gerovės optimizavimas',
+        content: `
+          <div class="wellness-metrics">
+            <div class="metric-card">
+              <div class="metric-number">7-9h</div>
+              <div class="metric-label">Rekomenduojamas miegas</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-number">10:30</div>
+              <div class="metric-label">Ideal bedtime</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-number">15min</div>
+              <div class="metric-label">Wind-down routine</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-number">18-22°C</div>
+              <div class="metric-label">Miegamojo temperatūra</div>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>😴 Miego higienos principai:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Nuoseklus miego režimas (net savaitgaliais)<br>
+                • Vengti ekranų 1 valanda prieš miegą<br>
+                • Tamsi, vėsi ir tyli miegamojo aplinka<br>
+                • Vengti kofeino po 14:00<br>
+                • Regular daytime light exposure<br>
+                • Fizinis aktyvumas, bet ne prieš miegą
+              </p>
+            </div>
+          </div>
+          
+          <div class="disclaimer">
+            <div class="disclaimer-text">
+              <strong>Kada kreiptis į gydytoją:</strong> Jei miego problemos tęsiasi ilgiau nei mėnesį ar stipriai paveiks kasdienį funkcionalumą.
+            </div>
+          </div>
+        `
+      },
+      
+      'relationships': {
+        title: '👥 Santykių gerinimas',
+        content: `
+          <div style="margin: 24px 0;">
+            <h4>💬 Komunikacijos įgūdžiai:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • <strong>Aktyvus klausymas:</strong> Dėmesys to asmens žodžiams<br>
+                • <strong>"Aš" teiginiai:</strong> "Aš jaučiu..." vietoj "Tu visada..."<br>
+                • <strong>Empatija:</strong> Pamėgink suprasti kito perspektyvą<br>
+                • <strong>Assertyvumas:</strong> Išreikšk poreikius be agresijos<br>
+                • <strong>Konfliktų sprendimas:</strong> Focus on solutions, not blame
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>🚧 Sveikų ribų nustatymas:</h4>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 16px 0;">
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>Emocionalinės ribos</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Protect your emotional wellbeing</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>Fizinės ribos</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Personal space ir comfort levels</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>Laiko ribos</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Balance between giving ir receiving</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>Digital boundaries</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Healthy technology use</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="disclaimer">
+            <div class="disclaimer-text">
+              <strong>Pastaba:</strong> Jei santykiai yra destruktyvūs ar pavojingi, kreipkitės į specialistą ar pagalbos liniją.
+            </div>
+          </div>
+        `
+      },
+      
+      'mindfulness': {
+        title: '🌸 Mindfulness ir meditacija',
+        content: `
+          <div style="margin: 24px 0;">
+            <h4>🧘 Meditacijos tipai:</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 16px 0;">
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center; cursor: pointer;" data-meditation="breath">
+                <h5>Breath awareness</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">5-20 minučių</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center; cursor: pointer;" data-meditation="body">
+                <h5>Body scan</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">10-30 minučių</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center; cursor: pointer;" data-meditation="loving">
+                <h5>Loving-kindness</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">10-15 minučių</p>
+              </div>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>🎯 Sąmoningumo praktikos kasdienybėje:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Mindful eating: Dėmesys skoniui ir tekstūrai<br>
+                • Walking meditation: Dėmesys kiekvienam žingsniui<br>
+                • Present moment awareness: "Ką jaučiu dabar?"<br>
+                • Gratitude practice: 3 dalykai per dieną<br>
+                • Digital detox: Regular screen-free periods
+              </p>
+            </div>
+          </div>
+          
+          <div class="disclaimer">
+            <div class="disclaimer-text">
+              <strong>Pastaba:</strong> Pradėkite nuo trumpų sesijų (5-10 min). Meditacija turėtų būti malonūs, ne streso šaltinis.
+            </div>
+          </div>
+        `
+      }
+    };
+
+    // Enhanced crisis detection
+    function detectCrisisLanguage(message) {
+      const crisisKeywords = [
+        'savižudyb', 'nužudyti save', 'noriu mirti', 'baigti gyvenimą', 
+        'nenoriu gyventi', 'prarasti norą gyventi', 'suicid', 'nunuody',
+        'pasikarti', 'nušokti', 'savęs žalojim', 'self harm', 'nepakeliama',
+        'niekas nebegali padėti', 'be išeities', 'vienišas kaip šuo'
+      ];
+      
+      const concerningKeywords = [
+        'depresi', 'beprasmyb', 'nevilt', 'desperaci', 'panik', 'bijo', 
+        'neramu', 'stresa', 'varginant'
+      ];
+      
+      const msgLower = message.toLowerCase();
+      
+      // Crisis detection
+      if (crisisKeywords.some(keyword => msgLower.includes(keyword))) {
+        return 'crisis';
+      }
+      
+      // Concerning content tracking
+      if (concerningKeywords.some(keyword => msgLower.includes(keyword))) {
+        concerningMessageCount++;
+        if (concerningMessageCount >= 3) {
+          return 'concerning';
+        }
+      }
+      
+      return false;
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeEventListeners();
+      console.log('🛡️ Psichologo AI asistentas su saugumo funkcijomis paleistas!');
+    });
+
+    function initializeEventListeners() {
+      // Feature card clicks
+      document.querySelectorAll('.feature-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const feature = this.dataset.feature;
+          openModal(feature);
+        });
+      });
+
+      // Modal close events
+      modalClose.addEventListener('click', closeModal);
+      
+      modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) {
+          closeModal();
+        }
+      });
+
+      // Escape key to close
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+          closeModal();
+        }
+      });
+
+      // Chat functionality
+      sendBtn.addEventListener('click', sendMessage);
+      
+      messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Auto-resize textarea
+      messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      });
+    }
+
+    function openModal(feature) {
+      currentFeature = feature;
+      const content = featureContent[feature];
+      
+      if (content) {
+        modalTitle.innerHTML = content.title;
+        modalContent.innerHTML = content.content;
+        modalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Bind events for new content
+        bindContentEvents();
+      }
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        modalContent.innerHTML = '';
+        modalTitle.innerHTML = '';
+        currentFeature = null;
+      }, 300);
+    }
+
+    function bindContentEvents() {
+      // Technique cards
+      document.querySelectorAll('.technique-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const technique = this.dataset.technique;
+          const techniqueNames = {
+            breathing: 'kvėpavimo technikas',
+            grounding: 'grounding exercises',
+            progressive: 'progresyvų atsipalaidavimą'
+          };
+          sendChatMessage(`Noriu išmokti ${techniqueNames[technique]} streso valdymui`);
+          closeModal();
+        });
+      });
+
+      // Emotion cards
+      document.querySelectorAll('.emotion-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const emotion = this.dataset.emotion;
+          const emotionNames = {
+            anger: 'pykčio valdymo',
+            sadness: 'liūdesio įveikimo',
+            anxiety: 'nerimo mažinimo',
+            joy: 'džiaugsmo išlaikymo'
+          };
+          sendChatMessage(`Reikia pagalbos su ${emotionNames[emotion]} strategijomis`);
+          closeModal();
+        });
+      });
+
+      // Meditation cards
+      document.querySelectorAll('[data-meditation]').forEach(card => {
+        card.addEventListener('click', function() {
+          const meditation = this.dataset.meditation;
+          const meditationNames = {
+            breath: 'kvėpavimo meditaciją',
+            body: 'body scan meditaciją',
+            loving: 'loving-kindness meditaciją'
+          };
+          sendChatMessage(`Noriu pradėti ${meditationNames[meditation]} su AI pagalba`);
+          closeModal();
+        });
+      });
+    }
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+      
+      // Enhanced crisis detection
+      const crisisLevel = detectCrisisLanguage(message);
+      if (crisisLevel === 'crisis') {
+        addCrisisResponse();
+        return;
+      } else if (crisisLevel === 'concerning') {
+        addConcernResponse();
+      }
+      
+      sendChatMessage(message);
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+    }
+
+    function addCrisisResponse() {
+      const crisisDiv = document.createElement('div');
+      crisisDiv.className = 'message ai';
+      crisisDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          <div class="emergency-notice" style="margin: 0;">
+            <div class="emergency-title">⚠️ Skubiai reikia pagalbos</div>
+            <div class="emergency-text">Jūsų saugumas yra svarbiausias. Prašau nedelsiant kreipkitės:</div>
+            <div style="margin: 12px 0;">
+              <strong>116 123 - Vilties linija (24/7)</strong><br>
+              <strong>112 - Skubios pagalbos tarnyba</strong><br>
+              <strong>8-800-28888 - Jaunimo linija</strong>
+            </div>
+            <div style="font-size: 14px; color: var(--text-secondary);">
+              Jūs nesate vienas. Profesionalūs specialistai gali padėti. Jūsų gyvenimas yra vertingas.
+            </div>
+          </div>
+        </div>
+      `;
+      
+      chatMessages.appendChild(crisisDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // Clear input for safety
+      messageInput.value = '';
+    }
+
+    function addConcernResponse() {
+      const concernDiv = document.createElement('div');
+      concernDiv.className = 'message ai';
+      concernDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          Pastebiu, kad jaučiatės sunkiai. Norėčiau priminti, kad profesionali pagalba yra prieinama:
+          <div style="margin: 12px 0; padding: 12px; background: var(--bg-elevated); border-radius: 8px;">
+            <strong>📞 Pagalbos kontaktai:</strong><br>
+            116 123 - Vilties linija (24/7)<br>
+            8-800-77277 - Psichologinė pagalba<br>
+            8-800-28888 - Jaunimo linija
+          </div>
+          Kuo galiu padėti šiandien?
+        </div>
+      `;
+      
+      chatMessages.appendChild(concernDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function sendChatMessage(message) {
+      // Add user message
+      addChatMessage(message, true);
+      chatHistory.push({ role: 'user', content: message });
+      messageCount++;
+      
+      // Show typing indicator
+      const typingIndicator = addTypingIndicator();
+      
+      // Simulate AI processing
+      setTimeout(() => {
+        removeTypingIndicator(typingIndicator);
+        
+        // Generate AI response
+        const response = generateAIResponse(message);
+        addChatMessage(response, false);
+        chatHistory.push({ role: 'assistant', content: response });
+        
+      }, 1000 + Math.random() * 1500);
+    }
+
+    function addChatMessage(content, isUser = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+      
+      const disclaimerHtml = !isUser ? `
+        <div class="disclaimer" style="margin-top: 12px;">
+          <div class="disclaimer-text">
+            <strong>Priminimas:</strong> Tai edukacinė informacija. Rimtais atvejais kreipkitės į specialistą.
+          </div>
+        </div>
+      ` : '';
+      
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${isUser ? '👤' : 'AI'}</div>
+        <div class="message-content">${content}${disclaimerHtml}</div>
+      `;
+      
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message ai typing-indicator-msg';
+      typingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          <div class="typing-indicator">
+            <span>AI atsako</span>
+            <div class="typing-dots">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      chatMessages.appendChild(typingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return typingDiv;
+    }
+
+    function removeTypingIndicator(indicator) {
+      if (indicator && indicator.parentNode) {
+        indicator.remove();
+      }
+    }
+
+    function generateAIResponse(message) {
+      const msg = message.toLowerCase();
+      
+      // Stress and anxiety responses
+      if (msg.includes('stresas') || msg.includes('nerimas') || msg.includes('anxiety')) {
+        return `Suprantu, kad jaučiate stresą ar nerimą. Štai keletas technikų, kurios gali padėti:<br><br><strong>Greitoji pagalba:</strong><br>• 4-7-8 kvėpavimo technika (įkvėpimas 4s, sulaikymas 7s, iškvėpimas 8s)<br>• 5-4-3-2-1 grounding: 5 daiktai, kuriuos matote, 4 - kuriuos galite paliesti, 3 - kuriuos girdite, 2 - kuriuos kvepiare, 1 - kurį ragaujar<br>• Progresyvus raumenų atsipalaidavimas<br><br>Jei simptomai tęsiasi ilgiau nei 2 savaites, rekomenduoju kreiptis į specialistą.`;
+      }
+      
+      // Sleep responses
+      if (msg.includes('miego') || msg.includes('mieg') || msg.includes('nemieg')) {
+        return `Miego problemos paveiks visą gerovę. Štai miego higienos principai:<br><br><strong>Miego optimizavimas:</strong><br>• Nuoseklus režimas (eiti miegoti ir keltis tuo pačiu laiku)<br>• Vengti ekranų 1 valandą prieš miegą<br>• Tamsi, vėsi aplinka (18-22°C)<br>• Atsipalaidavimo rutina prieš miegą<br><br>Jei problemos tęsiasi >1 mėnesio, rekomenduoju konsultuotis su gydytoju.`;
+      }
+      
+      // CBT and thoughts responses
+      if (msg.includes('minti') || msg.includes('negativ') || msg.includes('depresi')) {
+        return `Neigiamos mintys gali paveikti nuotaiką. CBT technikos gali padėti:<br><br><strong>Minčių restruktūrizavimas:</strong><br>• Atpažinkite automatines neigiamas mintis<br>• Užduokite klausimą: "Ar tai faktas ar nuomonė?"<br>• Ieškokite balanced perspektyvos<br>• Practice pozityvų savęs kalbėjimą<br><br>CBT terapeuto pagalba bus daug efektyvesnė nei savarankiškas taikymas.`;
+      }
+      
+      // Mindfulness responses
+      if (msg.includes('meditacij') || msg.includes('mindfulness') || msg.includes('sąmoning')) {
+        return `Mindfulness praktikos gali sumažinti stresą ir pagerinti gerovę:<br><br><strong>Sąmoningumo technikos:</strong><br>• Breath awareness meditation (5-20 min)<br>• Body scan practice<br>• Present moment awareness<br>• Gratitude exercises<br><br>Pradėkite nuo trumpų sesijų (5-10 min). Meditacija turėtų būti maloni, ne streso šaltinis.`;
+      }
+      
+      // Default supportive responses
+      const defaultResponses = [
+        `Dėkoju, kad pasidalijote savo jausmais. Kiekvieno žmogaus patirtis yra svarbi. Galiu pasiūlyti įvairias technikas gerovės gerinimui - nuo streso valdymo iki mindfulness praktikų. Prisiminkit, kad pagalbos ieškojimas yra stiprybės ženklas.`,
+        
+        `Psichikos sveikata yra lygiai taip pat svarbi kaip ir fizinė. Galiu padėti su konkrečiais sprendimais, tačiau jei jaučiate, kad reikia daugiau pagalbos, nesukolebkite kreiptis į specialistą.`,
+        
+        `Suprantu, kad gali būti sunku. Jūsų jausmai yra validūs ir suprantami. Kokią sritį domintų labiausiai - streso valdymas, miego gerinimas ar gal emocijų reguliavimas?`
+      ];
+      
+      return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+    }
+  </script>
+</body>
+</html>
