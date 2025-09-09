@@ -13,7 +13,7 @@
   <meta name="theme-color" content="#111827"/>
 
   <!-- Pagrindinis CSS -->
-  <link rel="stylesheet" href="/assets/css/paule.css?v=1.0.0">
+  <link rel="stylesheet" href="/assets/css/paule.css?v=1.0.1">
 
   <!-- ===== UI PATCH ===== -->
   <style>
@@ -32,7 +32,6 @@
     .message.user .bubble{ margin-left:auto; }
     .bottom-section{ z-index:1100; padding-bottom:max(10px, env(safe-area-inset-bottom)); }
 
-    /* Sidebar -> drawer mobilui */
     @media (max-width:1024px){
       .layout{ grid-template-columns:0 1fr!important; }
       .sidebar{ display:block!important; position:fixed; top:var(--topbar-h); left:-320px; width:300px; height:calc(100vh - var(--topbar-h)); background:var(--bg-primary); border-right:1px solid var(--border); box-shadow:0 18px 60px rgba(0,0,0,.14); z-index:1350; transition:left .25s ease; overflow:auto; }
@@ -43,40 +42,64 @@
       .bottom-section{ left:var(--gutter)!important; right:var(--gutter)!important; }
     }
 
-    /* ====== SUGGESTIONS (tik apačioje, ne burbuluose) ====== */
-    .follow-suggest-bar{ display:none; gap:8px; flex-wrap:wrap; margin:8px 0 6px 0; padding:6px 0; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    /* ====== TUŠTUMOS & DEMO ====== */
+    .bubble:has(.msg-content:empty){ display:none!important; }
+    .bubble .followups, .bubble .follow-up, .bubble .chip-row, .bubble .sugg-row,
+    .bubble .suggestions, .bubble .suggest-bar{ display:none!important; }
+
+    /* ====== SUGGESTIONS APAČIOJE (CENTRUOTI) ====== */
+    .follow-suggest-bar{
+      display:none; gap:8px; flex-wrap:wrap;
+      margin:8px 0 6px 0; padding:6px 0;
+      overflow-x:auto; -webkit-overflow-scrolling:touch;
+      justify-content:center;   /* CENTRUOTA */
+    }
     .follow-suggest-bar.show{ display:flex; }
-    .suggest-chip{ display:inline-flex; align-items:center; white-space:nowrap; padding:6px 10px; border:1px solid var(--border); border-radius:12px; font-size:13px; line-height:1; background:var(--bg-secondary,rgba(0,0,0,.03)); cursor:pointer; user-select:none; transition:background .15s,border-color .15s,transform .05s; }
+    .suggest-chip{
+      display:inline-flex; align-items:center; white-space:nowrap;
+      padding:6px 10px; border:1px solid var(--border); border-radius:12px;
+      font-size:13px; line-height:1; background:var(--bg-secondary,rgba(0,0,0,0.03));
+      cursor:pointer; user-select:none; transition:background .15s, border-color .15s, transform .05s;
+    }
     .suggest-chip:hover{ background:rgba(0,0,0,.05); }
     .suggest-chip:active{ transform:scale(.98); }
 
-    /* Inline deck į pačią įvestį */
+    /* Inline deck – į pačią įvestį (centruoti nereikia) */
     .input-container{ position:relative; }
-    .input-suggest-deck{ position:absolute; left:8px; right:56px; bottom:8px; display:none; align-items:center; gap:6px; padding:6px; border:1px solid var(--border); border-radius:10px; background:var(--bg-primary); box-shadow:0 6px 18px rgba(0,0,0,.06); overflow-x:auto; -webkit-overflow-scrolling:touch; z-index:5; }
+    .input-suggest-deck{
+      position:absolute; left:8px; right:56px; bottom:8px;
+      display:none; align-items:center; gap:6px; padding:6px;
+      border:1px solid var(--border); border-radius:10px;
+      background:var(--bg-primary); box-shadow:0 6px 18px rgba(0,0,0,.06);
+      overflow-x:auto; -webkit-overflow-scrolling:touch; z-index:5;
+    }
     .input-suggest-deck.show{ display:flex; }
     .input-suggest-deck .suggest-chip{ font-size:12px; padding:6px 9px; }
     .message-input{ padding-bottom:44px!important; }
     @media (max-width:480px){ .input-suggest-deck{ left:6px; right:52px; bottom:6px; } .message-input{ padding-bottom:48px!important; } }
 
-    /* ====== Slėpti tuščius / demo elementus ====== */
-    .bubble:has(.msg-content:empty){ display:none!important; }
-    .bubble .followups, .bubble .follow-up, .bubble .chip-row, .bubble .sugg-row, .bubble .suggestions, .bubble .suggest-bar{ display:none!important; }
+    /* ====== SPRENDIMŲ MINI-KORTELĖS APAČIOJE (CENTRUOTI) ====== */
+    .decision-row{
+      display:none; gap:10px; padding:8px 10px; margin:6px 0 6px;
+      flex-wrap:wrap; justify-content:center;   /* CENTRUOTA */
+    }
+    .decision-row.show{ display:flex; }
+    .decision-row .d-pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px; border-radius:14px; font-size:13px; line-height:1;
+      cursor:pointer; border:2px solid transparent; background:var(--bg-primary);
+      box-shadow:0 6px 22px rgba(0,0,0,.06); user-select:none;
+    }
+    .d-debate{ border-color:#2563eb33; }  /* mėlyna */
+    .d-judge{  border-color:#ef444433; }  /* raudona */
+    .d-comp{   border-color:#10b98133; }  /* žalia  */
+    .decision-row .d-pill:hover{ transform:translateY(-1px); }
+    .decision-row .d-pill img{ width:16px; height:16px; }
 
-    /* ====== Decision mini bar (po pirmo AI atsakymo) ====== */
-    .decision-mini{ display:none; gap:10px; padding:8px 10px; margin:10px 0 0; flex-wrap:wrap; }
-    .decision-mini.show{ display:flex; }
-    .decision-mini .d-pill{ display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:14px; font-size:13px; line-height:1; cursor:pointer; border:2px solid transparent; background:var(--bg-primary); box-shadow:0 6px 22px rgba(0,0,0,.06); user-select:none; }
-    .d-debate{ border-color:#2563eb33; }     /* mėlyna */
-    .d-judge{ border-color:#ef444433; }      /* raudona */
-    .d-comp{ border-color:#10b98133; }       /* žalia */
-    .decision-mini .d-pill:hover{ transform:translateY(-1px); }
-    .decision-mini .d-pill img{ width:16px; height:16px; }
-
-    /* ====== Modal (spec/*.html) ====== */
+    /* ====== SPEC modal ====== */
     .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:2000; }
     .modal-overlay.show{ display:flex; }
     .modal-card{ position:relative; width:min(100vw - 40px, 980px); height:min(100vh - 40px, 720px); background:#0b0f1a; border-radius:16px; box-shadow:0 24px 80px rgba(0,0,0,.45); overflow:hidden; border:1px solid rgba(255,255,255,.08); }
-    .modal-card.light{ background:#fff; }
     .modal-card iframe{ width:100%; height:100%; border:0; background:#fff; }
     .modal-close{ position:absolute; top:8px; right:8px; width:44px; height:44px; border-radius:12px; border:1px solid rgba(255,255,255,.18); background:rgba(0,0,0,.35); color:#fff; font-size:22px; line-height:42px; text-align:center; cursor:pointer; }
     .modal-close:hover{ background:rgba(0,0,0,.5); }
@@ -88,18 +111,17 @@
       var MODE=(document.documentElement.getAttribute('data-backend')||'').trim().toLowerCase()==='vercel'?'vercel':'wp';
       var restBase=MODE==='vercel'?'/api':'/wp-json/paule/v1';
       var routes={ base:restBase, stream:restBase+'/stream', models:restBase+'/models', diagnostics:restBase+'/diagnostics',
-        comicCreate:restBase+'/comic/create', fluxCreate:restBase+'/flux/create',
-        musicCreate:restBase+'/music/create', musicStatus:restBase+'/music/status',
-        runwayImage:restBase+'/runway/image', runwayStatus:restBase+'/runway/status' };
+        comicCreate:restBase+'/comic/create', fluxCreate:restBase+'/flux/create', musicCreate:restBase+'/music/create',
+        musicStatus:restBase+'/music/status', runwayImage:restBase+'/runway/image', runwayStatus:restBase+'/runway/status' };
       var CFG={ mode:MODE, restBase:routes.base, restStream:routes.stream, restStreamSSE:routes.stream, sseDefault:1,
-        pluginBase:'/assets', iconsBase:'/assets/icon', featuresBase:'/assets/features', routes:routes, version:'paule-1.0.5' };
+        pluginBase:'/assets', iconsBase:'/assets/icon', featuresBase:'/assets/features', routes:routes, version:'paule-1.0.6' };
       window.PAULE_CONFIG=CFG; window.AUGAM_CONFIG=CFG;
       try{ Object.defineProperty(window,'API_BASE',{configurable:true,get:function(){return CFG.restBase;},set:function(_){}});}catch(e){}
       window.__SET_API_BASE__=function(v){};
     })();
   </script>
 
-  <!-- ✅ Bridge (perrašo wp-json → /api) -->
+  <!-- ✅ Bridge (wp-json → /api) -->
   <script>
     (function(){
       'use strict';
@@ -131,12 +153,11 @@
     })();
   </script>
 
-  <!-- 🩹 Jei kas netyčia grąžina SSE vietoj JSON (mode=once) -->
+  <!-- 🩹 SSE→JSON (mode=once apsauga) -->
   <script>
     (function(){
       'use strict'; if(!window.fetch) return;
       const prevFetch=window.fetch;
-
       async function toJsonFromSSE(resp,models){
         const reader=resp.body?.getReader?.(); if(!reader) return null;
         const dec=new TextDecoder(); let buf='',text='';
@@ -146,32 +167,29 @@
           while((idx=buf.indexOf('\n\n'))>=0){
             const frame=buf.slice(0,idx).trim(); buf=buf.slice(idx+2);
             if(!frame) continue;
-            const dataLine=frame.split('\n').find(l=>l.startsWith('data:'));
-            if(!dataLine) continue;
-            const payload=dataLine.replace(/^data:\s*/,'').trim();
-            if(payload==='[DONE]'){ buf=''; break; }
+            const dataLine=frame.split('\n').find(l=>l.startsWith('data:')); if(!dataLine) continue;
+            const payload=dataLine.replace(/^data:\s*/,'').trim(); if(payload==='[DONE]'){ buf=''; break; }
             try{ const j=JSON.parse(payload); const piece=j?.choices?.[0]?.delta?.content; if(typeof piece==='string') text+=piece; }catch(_){}
           }
         }
         const answers=(models&&models.length?models:['auto']).map(m=>({model:m,text}));
         return {ok:true,answers};
       }
-
       window.fetch=async function(input,init){
         const url=typeof input==='string'?input:(input&&input.url)||'';
         const meth=(init&&init.method)||(typeof input!=='string'&&input&&input.method)||'GET';
         const isStreamOnce=/\/api\/stream(?:\?|$)/.test(url)&&/mode=once/.test(url)&&String(meth).toUpperCase()==='POST';
         if(!isStreamOnce) return prevFetch(input,init);
-
         let models=[]; try{ const raw=(init&&init.body)?String(init.body):''; if(raw){ const b=JSON.parse(raw); if(typeof b.models==='string'){ models=b.models.split(',').map(s=>s.trim()).filter(Boolean); }}}catch(_){}
-        const resp=await prevFetch(input,init); const ct=(resp.headers.get('content-type')||'').toLowerCase();
+        const resp=await prevFetch(input,init);
+        const ct=(resp.headers.get('content-type')||'').toLowerCase();
         if(ct.includes('text/event-stream')){ const json=await toJsonFromSSE(resp,models); if(json){ return new Response(JSON.stringify(json),{status:200,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}}); } }
         return resp;
       };
     })();
   </script>
 
-  <!-- Aliases -->
+  <!-- Alias -->
   <script>
     window.sendMessage=function(){ if(window.PauleMain&&typeof window.PauleMain.sendMessage==='function'){ return window.PauleMain.sendMessage(); } };
   </script>
@@ -195,9 +213,7 @@
     </nav>
 
     <div class="top-actions" id="topActions">
-      <a class="btn ghost" data-nav="community" href="/community" role="button">
-        <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė
-      </a>
+      <a class="btn ghost" data-nav="community" href="/community" role="button"><img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė</a>
       <button class="btn ghost" id="btnNewChat"><img class="ui-icon" src="/assets/icon/nav-new-chat.svg" alt=""> Naujas pokalbis</button>
 
       <div class="login-anchor theme-anchor">
@@ -299,14 +315,7 @@
 
     <main class="main">
       <div class="chat-area" id="chatArea">
-        <!-- Mini sprendimų baras (dinamiškai įjungiamas po 1 AI atsakymo) -->
-        <div id="decisionMini" class="decision-mini" aria-live="polite">
-          <div class="d-pill d-debate" data-action="debate"><img class="ui-icon" src="/assets/icon/ai.svg" alt=""> AI ginčas</div>
-          <div class="d-pill d-judge"  data-action="judge"><img class="ui-icon" src="/assets/icon/legal-contract.svg" alt=""> Teisėjas</div>
-          <div class="d-pill d-comp"   data-action="compromise"><img class="ui-icon" src="/assets/icon/ai.svg" alt=""> Kompromisas</div>
-        </div>
-
-        <!-- Hero -->
+        <!-- HERO (kol dar nieko nėra) -->
         <section class="welcome" id="welcome">
           <h1 class="hero-title">KAIP GALIU PADĖTI ŠIANDIEN?</h1>
           <p>Pasirinkite AI specialistą kairėje arba pradėkite pokalbį žemiau. Viršuje galite rinktis vieną ar kelis modelius. 👇</p>
@@ -330,9 +339,17 @@
     </main>
   </div>
 
-  <!-- ===== BOTTOM INPUT ===== -->
+  <!-- ===== APAČIA: SUGGEST + SPRENDIMAI + INPUT ===== -->
   <div class="bottom-section after-message" id="bottomSection" data-responsive="true">
+    <!-- Pasiūlymai (centruota) -->
     <div class="follow-suggest-bar" id="followSuggestBar" aria-live="polite"></div>
+
+    <!-- Sprendimų mini-kortelės (centruota) -->
+    <div id="decisionRow" class="decision-row" aria-live="polite">
+      <div class="d-pill d-debate" data-action="debate"><img class="ui-icon" src="/assets/icon/ai.svg" alt=""> AI ginčas</div>
+      <div class="d-pill d-judge"  data-action="judge"><img class="ui-icon" src="/assets/icon/legal-contract.svg" alt=""> Teisėjas</div>
+      <div class="d-pill d-comp"   data-action="compromise"><img class="ui-icon" src="/assets/icon/ai.svg" alt=""> Kompromisas</div>
+    </div>
 
     <div class="input-bar" id="inputBar">
       <div class="input-container" id="inputContainer">
@@ -367,7 +384,7 @@
       const themeDropdown=document.getElementById('themeDropdown');
       const logo=document.getElementById('brandLogo');
       const chatArea=document.getElementById('chatArea');
-      const decisionMini=document.getElementById('decisionMini');
+      const decisionRow=document.getElementById('decisionRow');
 
       function hasPaule(){ return !!(window.PauleMain && typeof window.PauleMain.sendMessage==='function'); }
       function setLogoByTheme(){ const dark=root.getAttribute('data-theme')==='dark'; logo.src=dark?'/assets/icon/paule-logo-dark.webp':'/assets/icon/paule-logo.webp'; }
@@ -384,7 +401,101 @@
       function closeDrawer(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); document.body.style.overflow=''; }
       btnMobile?.addEventListener('click', openDrawer); overlay?.addEventListener('click', closeDrawer);
 
-      /* Enter – pirmiausia PauleMain, tik tada fallback */
+      /* ===== Modelio pasirinkimas → API modelio pavadinimas ===== */
+      function resolveModel(key){
+        switch(key){
+          case 'chatgpt': return 'gpt-4o-mini';
+          case 'claude':  return 'claude-3-5-sonnet';
+          case 'gemini':  return 'gemini-1.5-flash';
+          case 'grok':    return 'grok-beta';
+          case 'deepseek':return 'deepseek-chat';
+          case 'llama':   return 'meta-llama/Llama-4-Scout-17B-16E-Instruct';
+          case 'auto':    return 'gpt-4o-mini';
+          default:        return key || 'gpt-4o-mini';
+        }
+      }
+      function currentModels(){
+        const nodes=[...document.querySelectorAll('#modelList .model-pill.active')];
+        if(!nodes.length) return ['gpt-4o-mini'];
+        return nodes.map(n=>resolveModel(n.dataset.model));
+      }
+
+      /* ===== Fallback STREAM per /api/stream (jei nėra PauleMain) ===== */
+      const restBase=(window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)||'/api';
+      const streamBase=(window.__FORCE_STREAM_ENDPOINT__|| (restBase.replace(/\/+$/,'')+'/stream'));
+
+      function createUserBubble(text){
+        const wrap=document.createElement('div'); wrap.className='message user';
+        wrap.innerHTML=`<div class="avatar"><img class="ui-icon" src="/assets/icon/user.svg" alt=""></div>
+          <div class="bubble" data-model="user"><div class="bubble-card">
+            <div class="msg-content"></div><div class="msg-meta"><span class="model-tag">Jūs</span><span>just now</span></div>
+          </div></div>`;
+        wrap.querySelector('.msg-content').textContent=text;
+        chatArea.appendChild(wrap);
+        chatArea.scrollTo({top:chatArea.scrollHeight,behavior:'smooth'});
+      }
+
+      function createAIBubble(model){
+        const wrap=document.createElement('div'); wrap.className='message';
+        const mdl = (model||'').split('/').pop();
+        wrap.innerHTML=`<div class="avatar"><img class="ui-icon" src="/assets/icon/ai.svg" alt=""></div>
+          <div class="bubble" data-model="${mdl}">
+            <div class="bubble-card">
+              <div class="msg-content"></div>
+              <div class="msg-meta"><span class="model-tag">${mdl}</span><span>streaming…</span></div>
+            </div>
+          </div>`;
+        chatArea.appendChild(wrap);
+        chatArea.scrollTo({top:chatArea.scrollHeight,behavior:'smooth'});
+        return wrap;
+      }
+
+      async function streamOnce(model, text, outEl, chatId){
+        const q=new URLSearchParams({
+          model, models:model, message:text, max_tokens:'4096',
+          chat_id:chatId, _t:Date.now().toString()
+        });
+        const resp=await fetch(`${streamBase}?${q}`, { headers:{ 'Accept':'text/event-stream' }});
+        const ct=(resp.headers.get('content-type')||'').toLowerCase();
+        if(!ct.includes('text/event-stream')){
+          // gal JSON (iš hotfix) – parodyti tekstą
+          try{ const j=await resp.json(); const txt=j?.answers?.[0]?.text||j?.text||''; outEl.textContent += txt; return; }catch(_){}
+          outEl.textContent += await resp.text(); return;
+        }
+        const reader=resp.body.getReader(); const dec=new TextDecoder(); let buf='';
+        for(;;){
+          const {done,value}=await reader.read(); if(done) break;
+          buf+=dec.decode(value,{stream:true});
+          let i;
+          while((i=buf.indexOf('\n\n'))>=0){
+            const frame=buf.slice(0,i).trim(); buf=buf.slice(i+2);
+            if(!frame) continue;
+            const line=frame.split('\n').find(l=>l.startsWith('data:')); if(!line) continue;
+            const data=line.slice(5).trim();
+            if(data==='[DONE]') { buf=''; break; }
+            try{
+              const j=JSON.parse(data);
+              const piece=j?.choices?.[0]?.delta?.content ?? j?.data ?? j?.text ?? '';
+              if(piece) outEl.textContent += piece;
+            }catch(_){ outEl.textContent += data; }
+          }
+        }
+      }
+
+      async function sendViaAPI(text){
+        const models=currentModels();
+        const chatId=`chat_${Date.now()}_${Math.random().toString(36).slice(2,10)}`;
+        for(const m of models){
+          const bubble=createAIBubble(m);
+          const out=bubble.querySelector('.msg-content');
+          try{ await streamOnce(m, text, out, chatId); }
+          catch(err){ out.textContent += `\n[error] ${err?.message||err}`; }
+        }
+        // po pirmo realaus atsakymo – rodyti sprendimų korteles
+        decisionRow.classList.add('show');
+      }
+
+      /* ===== Įvestis / siuntimas ===== */
       msgInput?.addEventListener('keydown', function(e){
         if(e.key==='Enter' && !e.shiftKey){
           e.preventDefault();
@@ -393,21 +504,22 @@
         }
       });
 
-      /* Siųsti */
-      sendBtn?.addEventListener('click', e=>{
+      sendBtn?.addEventListener('click', async (e)=>{
         if(sidebar.classList.contains('open')) closeDrawer();
-        if(hasPaule()){ e.preventDefault(); e.stopImmediatePropagation(); window.PauleMain.sendMessage(); return; }
-
-        // Fallback UI, jeigu dar nėra PauleMain
         const val=(msgInput?.value||'').trim(); if(!val) return;
-        const wrap=document.createElement('div'); wrap.className='message user';
-        wrap.innerHTML=`<div class="avatar"><img class="ui-icon" src="/assets/icon/user.svg" alt=""></div>
-          <div class="bubble" data-model="auto"><div class="bubble-card"><div class="msg-content">${val.replace(/</g,'&lt;')}</div><div class="msg-meta"><span class="model-tag">Jūs</span><span>just now</span></div></div></div>`;
-        chatArea?.appendChild(wrap); msgInput.value=''; chatArea?.scrollTo({top:chatArea.scrollHeight,behavior:'smooth'});
+
+        // Hero paslėpti, kai pradedam pokalbį
+        document.getElementById('welcome')?.remove();
+
+        createUserBubble(val);
+        msgInput.value='';
         hideInlineDeck(); hideFollowBar();
+
+        if(hasPaule()){ e.preventDefault(); e.stopImmediatePropagation(); window.PauleMain.sendMessage(); return; }
+        await sendViaAPI(val);
       });
 
-      /* Hero short-cuts */
+      /* ===== HERO short-cuts ===== */
       document.querySelectorAll('.welcome-grid .welcome-card').forEach(card=>{
         card.addEventListener('click', e=>{
           const a=card.getAttribute('data-action'); e.preventDefault();
@@ -416,22 +528,19 @@
         });
       });
 
-      /* ===== Suggestions (APAČIOJE) ===== */
-      const restBase=(window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)||'/api';
+      /* ===== Suggestions (apačioje, centruotos) ===== */
       const inputDeck=document.getElementById('inputSuggestDeck');
       const followBar=document.getElementById('followSuggestBar');
-
       const STOCK=['Paaiškink detaliau','Duok pavyzdį','Sutrumpink iki 3 sakinių','Sukurk veiksmų planą','Kokie KPI?'];
       let lastUser='', lastAssistant='';
 
       function chip(text){
         const b=document.createElement('div');
         b.className='suggest-chip'; b.textContent=text; b.title=text; b.tabIndex=0;
-        b.addEventListener('click', ()=>{ insertSuggestion(text); });                     // NEBESIUNČIAM!
-        b.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); insertSuggestion(text);} });
+        b.addEventListener('click', ()=>{ msgInput.value=text; msgInput.focus(); });
+        b.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); msgInput.value=text; msgInput.focus(); } });
         return b;
       }
-      function insertSuggestion(text){ msgInput.value=text; msgInput.focus(); /* nesiunčiam ir netrigerinam */ }
       function renderInline(list){ inputDeck.innerHTML=''; (list||[]).slice(0,5).forEach(t=> inputDeck.appendChild(chip(t))); inputDeck.classList.toggle('show', !!(list&&list.length)); }
       function renderFollow(list){ followBar.innerHTML=''; (list||[]).slice(0,6).forEach(t=> followBar.appendChild(chip(t))); followBar.classList.toggle('show', !!(list&&list.length)); }
       function hideInlineDeck(){ inputDeck.classList.remove('show'); }
@@ -439,15 +548,17 @@
       function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
 
       async function fetchSuggestionsInline(seed){
+        const base=(window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)||'/api';
         if(!seed || !seed.trim()){ renderInline(STOCK); return; }
         try{
-          const r=await fetch(restBase+'/suggest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:seed,count:5})});
+          const r=await fetch(base+'/suggest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:seed,count:5})});
           const j=await r.json(); if(j&&j.ok){ renderInline(j.suggestions); } else { renderInline(STOCK); }
         }catch(_){ renderInline(STOCK); }
       }
       async function fetchSuggestionsFollow(userMsg,assistantMsg){
+        const base=(window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)||'/api';
         try{
-          const r=await fetch(restBase+'/suggest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:userMsg||'',answer:assistantMsg||'',count:6})});
+          const r=await fetch(base+'/suggest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:userMsg||'',answer:assistantMsg||'',count:6})});
           const j=await r.json(); if(j&&j.ok){ renderFollow(j.suggestions); } else { renderFollow(STOCK); }
         }catch(_){ renderFollow(STOCK); }
       }
@@ -458,12 +569,12 @@
       msgInput.addEventListener('keyup', ()=>{ if(!msgInput.value.trim()) renderInline(STOCK); });
       inputDeck.addEventListener('click', e=>{ if(e.target.closest('.suggest-chip')) hideInlineDeck(); });
 
-      // Sekam AI atsakymus: rodom follow-up tik po realaus AI teksto + sprendimų korteles
+      // Kai atsiranda AI atsakymas – įjunk follow-ups ir sprendimų eilę (apačioje)
       const obs=new MutationObserver(()=>{
         const aiMsgs=[...chatArea.querySelectorAll('.message')].filter(n=>!n.classList.contains('user'));
         if(aiMsgs.length>0){
           const txt=(aiMsgs[aiMsgs.length-1].querySelector('.msg-content')?.textContent||'').trim();
-          if(txt){ lastAssistant=txt; fetchSuggestionsFollow(lastUser,lastAssistant); decisionMini.classList.add('show'); }
+          if(txt){ lastAssistant=txt; fetchSuggestionsFollow(lastUser,lastAssistant); decisionRow.classList.add('show'); }
         }
       });
       obs.observe(chatArea,{childList:true,subtree:true});
@@ -472,25 +583,29 @@
       sendBtn.addEventListener('mousedown', captureUser);
       sendBtn.addEventListener('touchstart', captureUser, {passive:true});
 
-      /* ===== Sprendimų mini-kortelės ===== */
+      /* ===== Sprendimų mini-kortelės (siunčia!) ===== */
       function runDecision(kind){
         const prompts={
-          debate:"Sukelk AI ginčą dviem skirtingomis pozicijomis. Struktūra: [POZICIJA A] → argumentai → [POZICIJA B] → argumentai → [Moderatorius] trumpa santrauka ir sprendimas.",
-          judge:"Veik kaip teisėjas: pateik bylos faktus (trumpai), abiejų pusių argumentus, taikomus kriterijus ir galutinį sprendimą su motyvais.",
-          compromise:"Pateik kompromisą: 3 realistiški variantai (mažai/vidut./daug pastangų), kiekvieno PLIUSAI/MINUSAI, rekomendacija."
+          debate:"Sukelk AI ginčą dviem skirtingomis pozicijomis. Struktūra: [POZICIJA A] → argumentai → [POZICIJA B] → argumentai → [Moderatorius] santrauka ir sprendimas.",
+          judge:"Veik kaip teisėjas: bylos faktai, abiejų pusių argumentai, taikomi kriterijai ir galutinis sprendimas su motyvais.",
+          compromise:"Pasiūlyk kompromisą: 3 variantai (mažai/vidut./daug pastangų), kiekvieno PLIUSAI/MINUSAI, rekomendacija."
         };
         const text=prompts[kind]||"";
         if(!text) return;
-        msgInput.value=text;
-        if(hasPaule()){ window.PauleMain.sendMessage(); } else { sendBtn.click(); }
+        // paslėpti hero, jei dar rodomas
+        document.getElementById('welcome')?.remove();
+        createUserBubble(text);
+        msgInput.value='';
         hideInlineDeck(); hideFollowBar();
+        if(hasPaule()){ window.PauleMain.sendMessage(); }
+        else{ sendViaAPI(text); }
       }
-      decisionMini.addEventListener('click', e=>{
+      decisionRow.addEventListener('click', e=>{
         const b=e.target.closest('.d-pill'); if(!b) return;
         runDecision(b.getAttribute('data-action'));
       });
 
-      /* ===== Spec modal (pilnas ekranas) ===== */
+      /* ===== Spec modal ===== */
       function openModal(url){
         if(!/\.html($|\?)/.test(url)) url=url.replace(/\/+$/,'')+'.html';
         const m=document.createElement('div');
@@ -506,7 +621,7 @@
         a.addEventListener('click', e=>{ e.preventDefault(); const r=a.getAttribute('data-route')||a.getAttribute('href')||''; if(r) openModal(r); });
       });
 
-      // Apsauga: jei koks JS sugeneruotų „demo“ kontroles burbuluose – pašalinam
+      // Išvalom, jei koks scriptas įkištų demo juostas burbuluose
       const scrubber=new MutationObserver((ml)=>{
         ml.forEach(m=>{
           m.addedNodes.forEach(n=>{
@@ -522,7 +637,7 @@
 
   <!-- Modelių žemėlapis (UI) -->
   <script src="/assets/js/models.js?v=1.3.0" defer></script>
-  <!-- Pagrindinė logika (SSE ir t.t.) — tavo egzistuojantis failas -->
+  <!-- Tavo esamas paule-ui.js (jei yra – perims; jei ne – veiks fallback'as aukščiau) -->
   <script src="/assets/js/paule-ui.js?v=1.2.1" defer></script>
 </body>
 </html>
