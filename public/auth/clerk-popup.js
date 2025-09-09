@@ -1,91 +1,89 @@
-/* Paule × Clerk: vieno failo popup widgetas */
 (function () {
-  const ANCHOR_ID = 'clerk-auth';
+  'use strict';
 
-  function getAnchor() {
-    return document.getElementById(ANCHOR_ID) || (function () {
-      const d = document.createElement('div');
-      d.id = ANCHOR_ID;
-      (document.querySelector('.top-actions') || document.body).appendChild(d);
-      return d;
-    })();
+  function ready(fn) {
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      setTimeout(fn, 0);
+    } else {
+      document.addEventListener('DOMContentLoaded', fn);
+    }
   }
 
-  async function getPK() {
-    // 1) iš <script data-pk="...">
-    try {
-      const s = document.currentScript || document.querySelector('script[src$="/auth/clerk-popup.js"]');
-      const pk = s?.dataset?.pk?.trim();
-      if (pk) return pk;
-    } catch (_) {}
-    // 2) iš window (jei kada nors įterpsi ranka)
-    if (window.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) return window.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-    // 3) iš Vercel env per API (be rakto HTML’e)
-    try {
-      const r = await fetch('/api/clerk/pk', { cache: 'no-store' });
-      if (r.ok) {
-        const j = await r.json();
-        if (j?.pk) return j.pk;
-      }
-    } catch (_) {}
-    return null;
-  }
+  async function loadClerk(pk) {
+    if (!pk) throw new Error('Publishable key is missing');
+    if (window.Clerk && window.Clerk.loaded) return window.Clerk;
 
-  function showMissingPK() {
-    const box = getAnchor();
-    box.innerHTML = '<span style="font-size:12px;opacity:.7">❗️Trūksta Clerk publishable key</span>';
-  }
-
-  function loadClerk(pk) {
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       const s = document.createElement('script');
       s.async = true;
       s.crossOrigin = 'anonymous';
       s.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
-      s.setAttribute('data-clerk-publishable-key', pk);
       s.onload = resolve;
-      s.onerror = reject;
+      s.onerror = () => reject(new Error('Failed to load Clerk JS'));
       document.head.appendChild(s);
     });
+
+    await window.Clerk.load({ publishableKey: pk });
+    return window.Clerk;
   }
 
-  function renderLogin() {
-    const box = getAnchor();
-    box.innerHTML = `
-      <button class="btn ghost" id="btnLogin" type="button">
-        <img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti
-      </button>`;
-    box.querySelector('#btnLogin').addEventListener('click', () => {
-      window.Clerk.openSignIn({
-        redirectUrl: window.location.href,
-        appearance: {
-          elements: { card: { borderRadius: '14px' } },
-          layout:   { socialButtonsVariant: 'icon' }
-        }
+  function getPk() {
+    try {
+      const cur = document.currentScript;
+      const pk = (cur && (cur.getAttribute('data-pk') || cur.dataset.pk)) || '';
+      return pk.trim();
+    } catch (_) { return ''; }
+  }
+
+  function renderSignedOut(Clerk, mount) {
+    mount.innerHTML = '';
+    const btn = document.createElement('button');
+    btn.className = 'btn ghost';
+    btn.type = 'button';
+    btn.textContent = 'Prisijungti';
+    btn.addEventListener('click', () => {
+      Clerk.openSignIn({
+        afterSignInUrl: window.location.href,
+        afterSignUpUrl: window.location.href
       });
     });
+    mount.appendChild(btn);
   }
 
-  function renderUser() {
-    const box = getAnchor();
-    box.innerHTML = `<div id="clerkUserButton"></div>`;
-    window.Clerk.mountUserButton('#clerkUserButton', {
-      afterSignOutUrl: window.location.href
-    });
+  function renderSignedIn(Clerk, mount) {
+    mount.innerHTML = '';
+    const holder = document.createElement('div');
+    holder.id = 'clerk-user-button';
+    mount.appendChild(holder);
+    Clerk.mountUserButton(holder, { appearance: { elements: { userButtonAvatarBox: { cursor: 'pointer' } } } });
   }
 
-  (async () => {
-    try {
-      const pk = await getPK();
-      if (!pk) return showMissingPK();
-      await loadClerk(pk);
-      await window.Clerk.load();
-      const update = () => (window.Clerk.user ? renderUser() : renderLogin());
-      window.Clerk.addListener(update);
-      update();
-    } catch (e) {
-      console.warn('Clerk widget error:', e);
-      showMissingPK();
+  ready(async () => {
+    const mount = document.getElementById('clerk-auth');
+    if (!mount) return;
+
+    const pk = getPk();
+    // jei kažkada norėtum iš API – bandom atsargiai
+    const finalPk = pk || (await fetch('/api/clerk/pk').then(r => r.ok ? r.text() : '').catch(() => '')).trim();
+
+    if (!finalPk) {
+      mount.innerHTML = '<span style="color:#c00;font-size:12px">Clerk PK nerastas</span>';
+      return;
     }
-  })();
+
+    try {
+      const Clerk = await loadClerk(finalPk);
+
+      const paint = () => {
+        if (Clerk.user) renderSignedIn(Clerk, mount);
+        else renderSignedOut(Clerk, mount);
+      };
+
+      paint();
+      Clerk.addListener(paint); // atnaujina po prisijungimo/atsijungimo
+    } catch (e) {
+      console.error('[Clerk]', e);
+      mount.innerHTML = '<span style="color:#c00;font-size:12px">Clerk inicializavimo klaida</span>';
+    }
+  });
 })();
