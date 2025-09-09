@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="lt" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Marketingo AI asistentas</title>
+  
+  <style>
+/* =========================================================
+   UNIVERSALI SPALVŲ SISTEMA
+   ========================================================= */
+:root {
+  --bg-primary: #0a0d14;
+  --bg-secondary: #0f1419;
+  --bg-elevated: #141922;
+  --bg-card: #1a1f2b;
+  --bg-overlay: #1e252f;
+  
+  --text-primary: #e8eaf0;
+  --text-secondary: #b8bcc8;
+  --text-muted: #8a8f9a;
+  --text-hint: #6b7280;
+  
+  --border-soft: #1f2937;
+  --border-medium: #374151;
+  
+  --accent-primary: #f59e0b;
+  --accent-primary-hover: #d97706;
+  --accent-secondary: #f97316;
+  --accent-ghost: #451a03;
+  
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  --neu-raise: 
+    0 4px 8px rgba(0, 0, 0, 0.3), 
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  
+  --neu-press: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  
+  --neu-float: 
+    0 10px 25px rgba(0, 0, 0, 0.5), 
+    0 4px 8px rgba(0, 0, 0, 0.3);
+  
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --space-4xl: 40px;
+  
+  --transition-fast: 0.15s;
+  --transition-normal: 0.25s;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+}
+
+/* =========================================================
+   HERO SECTION
+   ========================================================= */
+.hero-section {
+  text-align: center;
+  margin-bottom: var(--space-4xl);
+  padding: var(--space-4xl) 0;
+}
+
+.hero-title {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+  margin-bottom: var(--space-lg);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.stats-banner {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+  background: var(--bg-card);
+  padding: var(--space-xl);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  min-width: 120px;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  display: block;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: var(--space-sm);
+}
+
+/* =========================================================
+   FEATURES GRID
+   ========================================================= */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-2xl);
+  padding: 0;
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--neu-float);
+}
+
+.feature-header {
+  position: relative;
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.3), rgba(0,0,0,.7));
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: white;
+  background: rgba(245, 158, 11, 0.9);
+  box-shadow: var(--neu-raise);
+  position: relative;
+  z-index: 2;
+}
+
+.feature-content {
+  padding: var(--space-3xl);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.feature-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+}
+
+.feature-desc {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-xl);
+}
+
+.feature-cta {
+  margin-top: var(--space-xl);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: var(--neu-raise);
+  transition: all var(--transition-normal) ease;
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neu-float);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border: none;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+  color: white;
+  border: none;
+}
+
+.btn-lg {
+  padding: var(--space-lg) var(--space-3xl);
+  font-size: 16px;
+  border-radius: var(--radius-xl);
+}
+
+/* =========================================================
+   MODAL/POPUP SYSTEM
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--neu-float);
+  border: 1px solid var(--border-soft);
+  width: 95%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  background: var(--bg-elevated);
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.modal-close {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.modal-close:hover {
+  background: var(--error);
+  color: white;
+  transform: scale(1.1);
+}
+
+.modal-body {
+  flex: 1;
+  padding: var(--space-xl);
+  overflow-y: auto;
+}
+
+/* =========================================================
+   CHAT SYSTEM
+   ========================================================= */
+.chat-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-2xl);
+  margin-top: var(--space-4xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  text-align: center;
+}
+
+.chat-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.ai-status {
+  font-size: 14px;
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.chat-messages {
+  padding: var(--space-xl);
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.message {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+  animation: messageIn 0.3s ease;
+  max-width: 80%;
+}
+
+@keyframes messageIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.message.ai .message-avatar {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+}
+
+.message.user .message-avatar {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 2px solid var(--border-medium);
+}
+
+.message-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--neu-raise);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.message.user .message-content {
+  background: var(--accent-primary);
+  color: white;
+  border-color: transparent;
+}
+
+.message-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.message-image {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  aspect-ratio: 1;
+  position: relative;
+  cursor: pointer;
+  transition: transform var(--transition-normal);
+}
+
+.message-image:hover {
+  transform: scale(1.05);
+}
+
+.message-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.typing-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typing {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.chat-input {
+  padding: var(--space-xl);
+  border-top: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+}
+
+.input-group {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-end;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.message-input {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  color: var(--text-primary);
+  resize: none;
+  min-height: 50px;
+  max-height: 120px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-ghost);
+}
+
+.send-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.send-btn:hover {
+  background: var(--accent-primary-hover);
+  transform: scale(1.1);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================================================
+   FEATURE SPECIFIC STYLES
+   ========================================================= */
+.upload-zone {
+  border: 2px dashed var(--border-medium);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4xl);
+  text-align: center;
+  background: var(--bg-elevated);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+  margin: var(--space-xl) 0;
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--accent-primary);
+  background: var(--accent-ghost);
+  transform: scale(1.02);
+}
+
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.platform-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.platform-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.campaign-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.campaign-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+}
+
+.campaign-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.campaign-image {
+  height: 120px;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.campaign-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.campaign-content {
+  padding: var(--space-md);
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.analytics-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+}
+
+.analytics-number {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.analytics-label {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .platform-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--space-lg);
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  
+  .feature-card {
+    min-height: 350px;
+  }
+  
+  .stats-banner {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+  
+  .modal {
+    width: 98%;
+    margin: var(--space-sm);
+  }
+  
+  .platform-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .chat-messages {
+    max-height: 300px;
+  }
+  
+  .message {
+    max-width: 90%;
+  }
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Loading animation */
+.loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-soft);
+  border-radius: 50%;
+  border-top-color: var(--accent-primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <h1 class="hero-title">Marketingo AI asistentas</h1>
+      <p class="hero-subtitle">
+        Profesionalus marketingo padėjėjas su AI analize, kampanijų kūrimu ir socialinių tinklų valdymu
+      </p>
+      
+      <!-- Statistics Banner -->
+      <div class="stats-banner">
+        <div class="stat-item">
+          <span class="stat-number">3.2x</span>
+          <span class="stat-label">Didesnė konversija su AI</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">67%</span>
+          <span class="stat-label">Efektyvesnės kampanijos</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">15min</span>
+          <span class="stat-label">Turinio kūrimo laikas</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">$890</span>
+          <span class="stat-label">Vidutinis mėnesio ROI</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Features -->
+    <div class="features-grid">
+      <div class="feature-card" data-feature="brand-analysis">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📊</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Prekės ženklo analizė</h3>
+          <p class="feature-desc">
+            AI analizuoja jūsų prekės ženklą, konkurentus ir rinką. Gaukite detalius ataskaitų su rekomendacijomis per 5 minutes
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-primary btn-lg">Pradėti analizę</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="social-content">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📱</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Socialinio turinio kūrimas</h3>
+          <p class="feature-desc">
+            Automatiškai generuokite įrašus visoms socialinėms platformoms su AI grafikos ir tekstų kūrimu
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-secondary btn-lg">Kurti turinį</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="campaigns">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1553028826-f4804a6dba3b?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🚀</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Kampanijų planavimas</h3>
+          <p class="feature-desc">
+            Pilnas kampanijų ciklas nuo idėjos iki įgyvendinimo su AI optimizuotais sprendimais ir biudžeto skaičiavimais
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Planuoti kampaniją</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="competitor">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🎯</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Konkurentų analizė</h3>
+          <p class="feature-desc">
+            Realaus laiko konkurentų stebėjimas, jų strategijų analizė ir rinkos pozicijos palyginimas
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Analizuoti rinką</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="content-calendar">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📅</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Turinio kalendorius</h3>
+          <p class="feature-desc">
+            Automatinis turinio planavimas ir publikavimas visuose kanaluose su optimaliomis publikavimo valandomis
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Sukurti kalendorių</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="analytics">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📈</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Analitikos dashboard</h3>
+          <p class="feature-desc">
+            Realaus laiko duomenų analizė, ROI skaičiavimas ir AI pagrindu teikiamos rekomendacijos veiksmams
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Peržiūrėti duomenis</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Section -->
+    <div class="chat-section">
+      <div class="chat-header">
+        <div class="chat-title">🤖 AI Marketingo ekspertas</div>
+        <div class="ai-status">
+          <span class="status-dot"></span>
+          Aktyvus ir pasiruošęs padėti su marketingo strategijomis ir kampanijomis
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message ai">
+          <div class="message-avatar">AI</div>
+          <div class="message-content">
+            Sveiki! Esu jūsų asmeninis AI marketingo ekspertas. Galiu padėti kurti kampanijas, analizuoti duomenis, generuoti turinį ar atsakyti į marketingo klausimus. Kaip galiu padėti šiandien?
+          </div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <div class="input-group">
+          <textarea 
+            class="message-input" 
+            id="messageInput" 
+            placeholder="Užduokite klausimą apie marketingą, kampanijas ar turinio kūrimą..."
+            rows="1"
+          ></textarea>
+          <button class="send-btn" id="sendBtn">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Feature Title</h2>
+        <button class="modal-close" id="modalClose">×</button>
+      </div>
+      <div class="modal-body" id="modalContent">
+        <!-- Content will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global state
+    let currentFeature = null;
+    let chatHistory = [];
+    let isGeneratingContent = false;
+    let messageCount = 0;
+
+    // DOM elements
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const modalClose = document.getElementById('modalClose');
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Marketing content images for AI generation
+    const marketingContent = {
+      social: [
+        'https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1493612276216-ee3925520721?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=300&h=300&fit=crop'
+      ],
+      analytics: [
+        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1590650213165-33b1b3e20e70?w=300&h=300&fit=crop'
+      ],
+      campaigns: [
+        'https://images.unsplash.com/photo-1553028826-f4804a6dba3b?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=300&h=300&fit=crop'
+      ],
+      branding: [
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1554177255-61502b352de3?w=300&h=300&fit=crop'
+      ],
+      mixed: [
+        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1553028826-f4804a6dba3b?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop'
+      ]
+    };
+
+    // Feature content templates
+    const featureContent = {
+      'brand-analysis': {
+        title: '📊 Prekės ženklo AI analizė',
+        content: `
+          <div class="upload-zone" id="brandUpload">
+            <h3>🔍 Įkelkite prekės ženklo medžiagą</h3>
+            <p style="color: var(--text-muted); margin-top: 8px;">Logo, svetainės nuoroda, socialinių tinklų profiliai</p>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>🎯 AI analizės procesas:</h4>
+            <ol style="margin: 16px 0; padding-left: 20px; color: var(--text-secondary);">
+              <li>AI nuskenuoja jūsų prekės ženklo vizualinę tapatybę</li>
+              <li>Analizuoja konkurentų strategijas ir pozicionavimą</li>
+              <li>Įvertina rinkos galimybes ir tendencijas</li>
+              <li>Pateikia detalų ataskaitą su rekomendacijomis</li>
+            </ol>
+          </div>
+
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>📈 Analizės rezultatai:</h4>
+            <p style="color: var(--text-secondary); margin-top: 8px;">
+              • SWOT analizė ir konkurentų palyginimas<br>
+              • Tikslinės auditorijos segmentavimas<br>
+              • Prekės ženklo stiprybių ir silpnybių įvertinimas<br>
+              • Konkrečių veiksmų planas su prioritetais
+            </p>
+          </div>
+        `
+      },
+      
+      'social-content': {
+        title: '📱 Socialinio turinio AI kūrimas',
+        content: `
+          <div class="platform-grid">
+            <div class="platform-card" data-platform="facebook">
+              <div style="font-size: 32px; margin-bottom: 12px;">📘</div>
+              <h4>Facebook</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Įrašai, istorijos, reklamos</p>
+            </div>
+            <div class="platform-card" data-platform="instagram">
+              <div style="font-size: 32px; margin-bottom: 12px;">📷</div>
+              <h4>Instagram</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Posts, Stories, Reels</p>
+            </div>
+            <div class="platform-card" data-platform="linkedin">
+              <div style="font-size: 32px; margin-bottom: 12px;">💼</div>
+              <h4>LinkedIn</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">B2B turinys, straipsniai</p>
+            </div>
+            <div class="platform-card" data-platform="twitter">
+              <div style="font-size: 32px; margin-bottom: 12px;">🐦</div>
+              <h4>Twitter/X</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Tweet'ai, gijos</p>
+            </div>
+            <div class="platform-card" data-platform="tiktok">
+              <div style="font-size: 32px; margin-bottom: 12px;">🎵</div>
+              <h4>TikTok</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Trumpi video, trends</p>
+            </div>
+            <div class="platform-card" data-platform="youtube">
+              <div style="font-size: 32px; margin-bottom: 12px;">📺</div>
+              <h4>YouTube</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Video aprašymai, thumbnail</p>
+            </div>
+            <div class="platform-card" data-platform="pinterest">
+              <div style="font-size: 32px; margin-bottom: 12px;">📌</div>
+              <h4>Pinterest</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Pin'ai, boards</p>
+            </div>
+            <div class="platform-card" data-platform="snapchat">
+              <div style="font-size: 32px; margin-bottom: 12px;">👻</div>
+              <h4>Snapchat</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Snap'ai, filtrai</p>
+            </div>
+          </div>
+        `
+      },
+      
+      'campaigns': {
+        title: '🚀 AI kampanijų planavimas',
+        content: `
+          <h4>📋 Kampanijų tipai:</h4>
+          <div class="campaign-grid" style="margin: 20px 0;">
+            <div class="campaign-card" data-campaign="brand-awareness">
+              <div class="campaign-image">
+                <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=300&h=200&fit=crop" alt="Brand Awareness">
+              </div>
+              <div class="campaign-content">
+                <h5>Prekės ženklo žinomumas</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Reach, impressions, brand recall</p>
+              </div>
+            </div>
+            <div class="campaign-card" data-campaign="lead-generation">
+              <div class="campaign-image">
+                <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=300&h=200&fit=crop" alt="Lead Generation">
+              </div>
+              <div class="campaign-content">
+                <h5>Lead generavimas</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Forms, email capture, CRM</p>
+              </div>
+            </div>
+            <div class="campaign-card" data-campaign="sales">
+              <div class="campaign-image">
+                <img src="https://images.unsplash.com/photo-1553028826-f4804a6dba3b?w=300&h=200&fit=crop" alt="Sales Campaign">
+              </div>
+              <div class="campaign-content">
+                <h5>Pardavimų kampanija</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Conversion, ROAS, revenue</p>
+              </div>
+            </div>
+            <div class="campaign-card" data-campaign="retention">
+              <div class="campaign-image">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop" alt="Customer Retention">
+              </div>
+              <div class="campaign-content">
+                <h5>Klientų išlaikymas</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Loyalty, engagement, LTV</p>
+              </div>
+            </div>
+            <div class="campaign-card" data-campaign="product-launch">
+              <div class="campaign-image">
+                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=200&fit=crop" alt="Product Launch">
+              </div>
+              <div class="campaign-content">
+                <h5>Produkto pristatymas</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Launch strategy, buzz, adoption</p>
+              </div>
+            </div>
+            <div class="campaign-card" data-campaign="event">
+              <div class="campaign-image">
+                <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?w=300&h=200&fit=crop" alt="Event Marketing">
+              </div>
+              <div class="campaign-content">
+                <h5>Renginių marketingas</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Registration, attendance, networking</p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      
+      'competitor': {
+        title: '🎯 Konkurentų AI analizė',
+        content: `
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🔍 Analizės sritys:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="analysis" value="social" checked> Socialinių tinklų veikla
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="analysis" value="content" checked> Turinio strategijos
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="analysis" value="pricing" checked> Kainų politika
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="analysis" value="seo" checked> SEO ir organinis reitingas
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="analysis" value="ads" checked> Mokamos reklamos
+              </label>
+            </div>
+          </div>
+          
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🏢 Pridėti konkurentus analizei:</h4>
+            <div style="margin: 16px 0;">
+              <input type="text" placeholder="Konkurento svetainės URL" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-soft); background: var(--bg-card); color: var(--text-primary); margin: 8px 0;">
+              <input type="text" placeholder="Konkurento pavadinimas" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-soft); background: var(--bg-card); color: var(--text-primary); margin: 8px 0;">
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="startCompetitorAnalysis()">Pradėti analizę</button>
+          </div>
+        `
+      },
+      
+      'content-calendar': {
+        title: '📅 AI turinio kalendorius',
+        content: `
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>📊 Kalendoriaus nustatymai:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <strong>Publikavimo dažnumas:</strong>
+                <select style="width: 100%; padding: 8px; margin-top: 4px; border-radius: 8px; border: 1px solid var(--border-soft); background: var(--bg-card); color: var(--text-primary);">
+                  <option>Kasdien</option>
+                  <option>3 kartai per savaitę</option>
+                  <option>2 kartai per savaitę</option>
+                  <option>Kartą per savaitę</option>
+                </select>
+              </label>
+              
+              <label style="display: block; margin: 8px 0;">
+                <strong>Prioritetinės platformos:</strong>
+                <div style="margin-top: 8px;">
+                  <label style="margin-right: 16px;"><input type="checkbox" checked> Facebook</label>
+                  <label style="margin-right: 16px;"><input type="checkbox" checked> Instagram</label>
+                  <label style="margin-right: 16px;"><input type="checkbox"> LinkedIn</label>
+                  <label style="margin-right: 16px;"><input type="checkbox"> Twitter</label>
+                </div>
+              </label>
+              
+              <label style="display: block; margin: 8px 0;">
+                <strong>Turinio tipai:</strong>
+                <div style="margin-top: 8px;">
+                  <label style="margin-right: 16px;"><input type="checkbox" checked> Edukaciniai</label>
+                  <label style="margin-right: 16px;"><input type="checkbox" checked> Prekių pristatymai</label>
+                  <label style="margin-right: 16px;"><input type="checkbox"> UGC</label>
+                  <label style="margin-right: 16px;"><input type="checkbox"> Behind-the-scenes</label>
+                </div>
+              </label>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="generateContentCalendar()">Generuoti kalendorių</button>
+          </div>
+        `
+      },
+      
+      'analytics': {
+        title: '📈 AI analitikos dashboard',
+        content: `
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <div class="analytics-number">3.2x</div>
+              <div class="analytics-label">ROI pagerinimas su AI</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-number">67%</div>
+              <div class="analytics-label">Konversijų padidėjimas</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-number">89%</div>
+              <div class="analytics-label">Engagement rate</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-number">15min</div>
+              <div class="analytics-label">Turinio kūrimo laikas</div>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>📊 Realaus laiko metrikos:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Socialinių tinklų engagement analizė<br>
+                • Website traffic ir konversijų tracking<br>
+                • Email kampanijų efektyvumas<br>
+                • Paid ads ROAS ir CTR stebėjimas<br>
+                • Konkurentų pozicijų palyginimas
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="openAnalyticsDashboard()">Atidaryti pilną dashboard</button>
+          </div>
+        `
+      }
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Feature card clicks
+      document.querySelectorAll('.feature-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const feature = this.dataset.feature;
+          openModal(feature);
+        });
+      });
+
+      // Modal close events
+      modalClose.addEventListener('click', closeModal);
+      
+      modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) {
+          closeModal();
+        }
+      });
+
+      // Escape key to close
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+          closeModal();
+        }
+      });
+
+      // Chat functionality
+      sendBtn.addEventListener('click', sendMessage);
+      
+      messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Auto-resize textarea
+      messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      });
+    });
+
+    function openModal(feature) {
+      currentFeature = feature;
+      const content = featureContent[feature];
+      
+      if (content) {
+        modalTitle.innerHTML = content.title;
+        modalContent.innerHTML = content.content;
+        modalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Bind events for new content
+        bindContentEvents();
+      }
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        modalContent.innerHTML = '';
+        modalTitle.innerHTML = '';
+        currentFeature = null;
+      }, 300);
+    }
+
+    function bindContentEvents() {
+      // Upload zone
+      const uploadZone = document.getElementById('brandUpload');
+      if (uploadZone) {
+        uploadZone.addEventListener('click', openFileDialog);
+        uploadZone.addEventListener('dragover', handleDragOver);
+        uploadZone.addEventListener('drop', handleDrop);
+      }
+
+      // Platform cards
+      document.querySelectorAll('.platform-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const platform = this.dataset.platform;
+          const platformNames = {
+            facebook: 'Facebook',
+            instagram: 'Instagram',
+            linkedin: 'LinkedIn',
+            twitter: 'Twitter/X',
+            tiktok: 'TikTok',
+            youtube: 'YouTube',
+            pinterest: 'Pinterest',
+            snapchat: 'Snapchat'
+          };
+          sendChatMessage(`Noriu sukurti turinį ${platformNames[platform]} platformai`);
+          closeModal();
+        });
+      });
+
+      // Campaign cards
+      document.querySelectorAll('.campaign-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const campaign = this.dataset.campaign;
+          const campaignNames = {
+            'brand-awareness': 'prekės ženklo žinomumo',
+            'lead-generation': 'lead generavimo',
+            'sales': 'pardavimų',
+            'retention': 'klientų išlaikymo',
+            'product-launch': 'produkto pristatymo',
+            'event': 'renginių marketingo'
+          };
+          sendChatMessage(`Norėčiau sukurti ${campaignNames[campaign]} kampaniją. Galite padėti su strategija?`);
+          closeModal();
+        });
+      });
+    }
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+      
+      sendChatMessage(message);
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+    }
+
+    function sendChatMessage(message) {
+      // Add user message
+      addChatMessage(message, true);
+      chatHistory.push({ role: 'user', content: message });
+      messageCount++;
+      
+      // Show typing indicator
+      const typingIndicator = addTypingIndicator();
+      
+      // Simulate AI processing
+      setTimeout(() => {
+        removeTypingIndicator(typingIndicator);
+        
+        // Generate AI response
+        const response = generateAIResponse(message);
+        addChatMessage(response.text, false);
+        chatHistory.push({ role: 'assistant', content: response.text });
+        
+        // Generate content after 2-3 messages and if response includes it
+        if (messageCount >= 2 && response.generateContent) {
+          setTimeout(() => {
+            generateMarketingContent(response.contentType);
+          }, 1000);
+        }
+      }, 1000 + Math.random() * 1500);
+    }
+
+    function addChatMessage(content, isUser = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+      
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${isUser ? '👤' : 'AI'}</div>
+        <div class="message-content">${content}</div>
+      `;
+      
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message ai typing-indicator-msg';
+      typingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          <div class="typing-indicator">
+            <span>AI atsako</span>
+            <div class="typing-dots">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      chatMessages.appendChild(typingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return typingDiv;
+    }
+
+    function removeTypingIndicator(indicator) {
+      if (indicator && indicator.parentNode) {
+        indicator.remove();
+      }
+    }
+
+    function generateAIResponse(message) {
+      const msg = message.toLowerCase();
+      
+      // Campaign related responses
+      if (msg.includes('kampanij') || msg.includes('strategij')) {
+        const responses = [
+          {
+            text: `Puiku! Sukursiu ${getCampaignFromMessage(msg)} kampanijos strategiją:<br><br><strong>Pagrindiniai elementai:</strong><br>• Tikslinė auditorija ir segmentavimas<br>• Komunikacijos žinutės ir pozicionavimas<br>• Kanalų pasirinkimas ir biudžeto paskirstymas<br>• KPI ir sėkmės matavimas<br><br>Dabar generuoju kampanijos vizualizacijas! 🎯`,
+            generateContent: true,
+            contentType: getContentTypeFromMessage(msg)
+          }
+        ];
+        return responses[0];
+      }
+      
+      // Social media content responses
+      if (msg.includes('turinį') || msg.includes('social') || msg.includes('facebook') || msg.includes('instagram')) {
+        return {
+          text: `Puiku! Kursiu ${getPlatformFromMessage(msg)} turinio strategiją:<br><br><strong>Turinio planas:</strong><br>• Post'ų tekstai ir hashtag'ai<br>• Vizualinio turinio koncepcijos<br>• Publikavimo grafiko optimizavimas<br>• Engagement strategijos<br><br>Generuoju turinio pavyzdžius su vizualiais! 📱`,
+          generateContent: true,
+          contentType: 'social'
+        };
+      }
+      
+      // Analytics responses
+      if (msg.includes('analiz') || msg.includes('duomen') || msg.includes('statistik')) {
+        return {
+          text: `Analizuoju jūsų marketingo duomenis...<br><br><strong>Pagrindiniai insights:</strong><br>• ROI padidėjo 3.2x per paskutinį mėnesį<br>• Geriausi rezultatai pasiekti Instagram platformoje<br>• Optimali publikavimo valanda: 19:00-21:00<br>• CTR pagerinimas 67% su AI generuotu turiniu<br><br>Generuoju detalų analitikos report'ą! 📊`,
+          generateContent: true,
+          contentType: 'analytics'
+        };
+      }
+      
+      // Brand analysis responses
+      if (msg.includes('prekės ženkl') || msg.includes('brand') || msg.includes('konkurent')) {
+        return {
+          text: `Atliekamas prekės ženklo ir konkurentų AI analizė...<br><br><strong>Analizės sritys:</strong><br>• Prekės ženklo pozicionavimas rinkoje<br>• Konkurentų strategijų palyginimas<br>• Auditorijos segmentavimas ir insights<br>• Galimybių ir grėsmių identifikavimas<br><br>Generuoju vizualų SWOT analizės report'ą! 🎯`,
+          generateContent: true,
+          contentType: 'branding'
+        };
+      }
+      
+      // Default responses
+      const defaultResponses = [
+        {
+          text: `Supratau jūsų marketingo poreikius! Pagal statistikas, AI marketingo sprendimai padidina ROI 3.2x. Galiu pasiūlyti konkrečias strategijas su vizualiais pavyzdžiais.`,
+          generateContent: true,
+          contentType: 'mixed'
+        },
+        {
+          text: `Puikus klausimas! 67% įmonių, naudojančių AI marketingą, pasiekia geresnius rezultatus. Pasiūlysiu sprendimus su konkrečiais pavyzdžiais.`,
+          generateContent: true,
+          contentType: 'campaigns'
+        },
+        {
+          text: `Dėkoju už klausimą! Marketingo srityje AI gali padėti optimizuoti kampanijas ir automatizuoti turinio kūrimą. Galiu parodyti konkrečius sprendimus.`,
+          generateContent: false,
+          contentType: null
+        }
+      ];
+      
+      return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+    }
+
+    function getCampaignFromMessage(msg) {
+      if (msg.includes('žinomum')) return 'prekės ženklo žinomumo';
+      if (msg.includes('lead') || msg.includes('potencial')) return 'lead generavimo';
+      if (msg.includes('pardavm')) return 'pardavimų';
+      if (msg.includes('išlaikym')) return 'klientų išlaikymo';
+      if (msg.includes('produkto') || msg.includes('pristatym')) return 'produkto pristatymo';
+      return 'marketingo';
+    }
+
+    function getPlatformFromMessage(msg) {
+      if (msg.includes('facebook')) return 'Facebook';
+      if (msg.includes('instagram')) return 'Instagram';
+      if (msg.includes('linkedin')) return 'LinkedIn';
+      if (msg.includes('twitter')) return 'Twitter';
+      if (msg.includes('tiktok')) return 'TikTok';
+      return 'socialinių tinklų';
+    }
+
+    function getContentTypeFromMessage(msg) {
+      if (msg.includes('social') || msg.includes('facebook') || msg.includes('instagram')) return 'social';
+      if (msg.includes('analiz') || msg.includes('duomen')) return 'analytics';
+      if (msg.includes('kampanij')) return 'campaigns';
+      if (msg.includes('prekės ženkl') || msg.includes('brand')) return 'branding';
+      return 'mixed';
+    }
+
+    async function generateMarketingContent(contentType = 'mixed') {
+      if (isGeneratingContent) return;
+      isGeneratingContent = true;
+      
+      // Add loading message with content placeholders
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'message ai';
+      loadingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          🎨 Generuoju AI marketingo turinį...
+          <div class="message-images">
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+          </div>
+          <p style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">Paspauskite ant turinio detalesniems aprašymams</p>
+        </div>
+      `;
+      
+      chatMessages.appendChild(loadingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // Simulate content generation delay
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Replace with actual content
+      const content = marketingContent[contentType] || marketingContent.mixed;
+      const imageElements = loadingDiv.querySelectorAll('.message-image');
+      
+      content.slice(0, 3).forEach((contentUrl, index) => {
+        if (imageElements[index]) {
+          imageElements[index].innerHTML = `<img src="${contentUrl}" alt="AI Generated Marketing Content" data-content-type="${contentType}" data-step="${index + 1}">`;
+          imageElements[index].addEventListener('click', () => {
+            handleContentClick(contentType, index + 1);
+          });
+        }
+      });
+      
+      // Update message text
+      const messageContent = loadingDiv.querySelector('.message-content');
+      messageContent.firstChild.textContent = '✨ AI sugeneravo marketingo turinį:';
+      
+      isGeneratingContent = false;
+    }
+
+    function handleContentClick(contentType, step) {
+      const contentInstructions = {
+        social: [
+          'Post\'o tekstas: "🚀 Nauja savaitė - naujos galimybės! Kas jūsų didžiausias tikslas šią savaitę? Pasidalinkite komentaruose! #MotivationMonday #Goals"',
+          'Instagram Story: Interaktyvus klausimas su poll\'u "Kurią temą norėtumėte matyti kitą savaitę?" + brand\'o spalvų background',
+          'LinkedIn straipsnis: "5 AI marketingo tendencijos 2025 metams" su profesionaliu tone ir industry insights'
+        ],
+        analytics: [
+          'KPI Dashboard: CTR ↑ 34%, Engagement ↑ 67%, Cost per Lead ↓ 23%, ROI: 3.2x per paskutinius 30 dienų',
+          'Auditorijos analizė: 65% moterys 25-45m., didžiausias aktyvumas 19:00-21:00, top interest\'ai: technologijos, verslas',
+          'Konkurentų palyginimas: Jūsų engagement 2.1x didesnis, tačiau reach 15% mažesnis - rekomendacija didinti ad spend'
+        ],
+        campaigns: [
+          'Kampanijos koncepcija: "Digital Transformation 2025" - B2B auditorija, 3 mėnesių trukmė, €15k biudžetas',
+          'Creative brief: Hero image su modern office, tagline "Future is Now", CTA "Start Your Journey", brand colors',
+          'Launch timeline: Week 1-2 teasing, Week 3 launch event, Week 4-12 nurturing sequence su weekly content drops'
+        ],
+        branding: [
+          'SWOT analizė: Strengths - inovatyvus produktas, Weaknesses - žemas brand awareness, Opportunities - rinkos augimas',
+          'Brand positioning: Premium segment, tech-savvy audience, unique value proposition - "AI that understands your business"',
+          'Visual identity: Primary color #f59e0b, secondary #f97316, modern sans-serif font, minimalist design approach'
+        ],
+        mixed: [
+          'Multi-channel strategy: Email 35%, Social 30%, Paid ads 25%, Content marketing 10% - optimizuotas budžeto paskirstymas',
+          'Content calendar: Pirmadienis - motivation, Trečiadienis - education, Penktadienis - community, Sekmadienis - behind-scenes',
+          'Performance metrics: Engagement goal 8%+, CTR target 2.5%+, Cost per acquisition <€50, Monthly growth rate 15%+'
+        ]
+      };
+      
+      const instructions = contentInstructions[contentType] || contentInstructions.mixed;
+      const instruction = instructions[step - 1] || instructions[0];
+      
+      setTimeout(() => {
+        addChatMessage(`📝 ${instruction}`, false);
+      }, 500);
+    }
+
+    // File upload functions
+    function openFileDialog() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*,.pdf,.doc,.docx';
+      input.multiple = true;
+      input.onchange = function(e) {
+        const files = e.target.files;
+        if (files.length > 0) {
+          handleFileUpload(files);
+        }
+      };
+      input.click();
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('dragover');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileUpload(files);
+      }
+    }
+
+    function handleFileUpload(files) {
+      const uploadZone = document.getElementById('brandUpload');
+      if (uploadZone) {
+        uploadZone.innerHTML = `
+          <div style="color: var(--success);">
+            <h3>✅ Analizuojama...</h3>
+            <p style="margin-top: 8px;">Įkelta ${files.length} failas(-ai)</p>
+          </div>
+        `;
+        
+        // Close modal and trigger chat message
+        closeModal();
+        sendChatMessage(`Įkėliau ${files.length} prekės ženklo failą(-us) analizei`);
+      }
+    }
+
+    // Additional functions for interactive elements
+    function startCompetitorAnalysis() {
+      closeModal();
+      sendChatMessage('Norėčiau pradėti konkurentų analizę su AI');
+    }
+
+    function generateContentCalendar() {
+      closeModal();
+      sendChatMessage('Prašau sugeneruoti AI turinio kalendorių su publikavimo planu');
+    }
+
+    function openAnalyticsDashboard() {
+      closeModal();
+      sendChatMessage('Noriu pamatyti detalų analitikos dashboard su AI insights');
+    }
+
+    // Initialize
+    console.log('🚀 Marketingo AI asistentas su content generavimu paleistas!');
+  </script>
+</body>
+</html>
