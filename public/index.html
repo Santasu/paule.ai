@@ -20,34 +20,22 @@
 
   <!-- ===== PATCH: išdėstymas, mobilus, chips apačioje ===== -->
   <style>
-  :root{
-    --logo-w: 3cm;
-    --topbar-h: 66px;
-    --ui-icon-filter: none;
-  }
-
+  :root{ --logo-w: 3cm; --topbar-h: 66px; --ui-icon-filter: none; }
   .topbar .brand { min-width: var(--logo-w); }
   .topbar .brand-icon{ width:var(--logo-w)!important; height:auto!important; object-fit:contain; display:block!important; }
   .topbar img, .topbar svg{ max-height: calc(var(--topbar-h) - 16px); }
-
   [data-theme="dark"] .ui-icon{ filter: invert(1) brightness(1.08) contrast(1.05); }
   [data-theme="dark"] img:not(.ui-icon){ filter:none !important; }
-
   .models-in-topbar{ gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .topbar{ position:sticky; top:0; left:0; right:0; z-index:1000; }
   #chatArea{ padding-top: 18px; z-index:1; min-height: calc(100vh - 240px); }
-
   .message.user{ flex-direction:row-reverse; }
   .message.user .bubble{ margin-left:auto; }
   .bottom-section{ z-index:1100; padding-bottom:max(10px, env(safe-area-inset-bottom)); }
-
-  /* jei šablonas įterptų antrą apačios juostą – slėpti */
   .bottom-section ~ .bottom-section{ display:none !important; }
-
   @media (max-width: 768px){
     .topbar{
-      display:grid;
-      grid-template-areas: "brand actions" "models models";
+      display:grid; grid-template-areas: "brand actions" "models models";
       grid-template-columns:auto 1fr; height:auto; padding-bottom:10px; row-gap:8px;
     }
     .brand{ grid-area:brand }
@@ -103,20 +91,15 @@
   .input-suggest-deck.show{ display:flex; }
   .input-suggest-deck .suggest-chip{ font-size:12px; padding:6px 9px; }
 
-  /* daugiau vietos žinutei, kad kortelės neuždengtų */
   .message-input{ padding-bottom:44px !important; }
-
-  /* Global wait („AI mąsto…“) */
   ._ai-wait{ display:flex; gap:10px; align-items:center; opacity:.85; font-size:14px; margin:10px auto; width:fit-content; }
   ._ai-wait .dots{ display:inline-flex; gap:4px }
   ._ai-wait .dots span{ width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.4; display:inline-block; animation:bl .9s infinite alternate }
   ._ai-wait .dots span:nth-child(2){ animation-delay:.15s } ._ai-wait .dots span:nth-child(3){ animation-delay:.3s }
   @keyframes bl{ to{ opacity:1; transform:translateY(-2px) } }
 
-  /* Klaidos kortelė */
   .error-card{ background:var(--bg-danger,rgba(220,20,60,.08)); border:1px solid var(--border-danger,rgba(220,20,60,.35)); }
 
-  /* Scroll-lock mygtukas „Į naujausią“ */
   .jump-latest{
     position:fixed; right:16px; bottom:92px; z-index:1200;
     display:none; align-items:center; gap:6px;
@@ -127,7 +110,6 @@
   }
   .jump-latest.show{ display:flex; }
 
-  /* Burbulas – „Maximize“ + „drag-to-resize“ */
   .bubble.fullscreen{
     position:fixed; left:0; right:0; top:var(--topbar-h); bottom:0;
     z-index:2000; margin:0!important; padding:12px var(--gutter,16px);
@@ -136,7 +118,6 @@
   .bubble.fullscreen .bubble-card{ height:100%; overflow:auto; }
   .bubble-card{ resize:both; overflow:auto; min-height:64px; max-height:70vh; contain:layout paint; }
 
-  /* H1–H6 – neryškūs juodi atspalviai; bold – juodas */
   .msg-content h1{color:#111827}
   .msg-content h2{color:#1f2937}
   .msg-content h3{color:#374151}
@@ -263,11 +244,6 @@
     })();
   </script>
 
-  <!-- Clerk (Google login modal) -->
-  <script async crossorigin="anonymous"
-    data-clerk-publishable-key="PAKEISK_MANE"
-    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
-
   <!-- Globalus alias -->
   <script>
     window.sendMessage = function(){
@@ -302,18 +278,12 @@
       <button class="btn ghost" id="btnNewChat" type="button">
         <img class="ui-icon" src="/assets/icon/nav-new-chat.svg" alt=""> Naujas pokalbis
       </button>
-
-      <!-- Tema: be popup – tiesiog togglinam -->
       <button class="btn ghost" id="btnTheme" type="button" aria-label="Perjungti temą">
         <img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tema
       </button>
 
-      <!-- Prisijungimas (Clerk mount) -->
-      <div class="login-anchor" id="loginAnchor">
-        <button class="btn ghost" id="btnLogin" type="button">
-          <img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti
-        </button>
-      </div>
+      <!-- ČIA įsikels mūsų vieno failo Clerk widgetas -->
+      <div id="clerk-auth" class="login-anchor"></div>
 
       <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)" type="button">
         <img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu
@@ -439,7 +409,6 @@
 
   <!-- ===== BOTTOM INPUT ===== -->
   <div class="bottom-section after-message" id="bottomSection" data-responsive="true">
-    <!-- ▶ Follow-up -->
     <div class="follow-suggest-bar" id="followSuggestBar" aria-live="polite"></div>
 
     <div class="input-bar" id="inputBar">
@@ -449,7 +418,6 @@
         <button class="send-btn" id="sendBtn" aria-label="Siųsti" type="button">
           <img class="ui-icon" src="/assets/icon/arrow-top.svg" alt="">
         </button>
-        <!-- ▶ Inline kortelės į pačią įvestį -->
         <div class="input-suggest-deck" id="inputSuggestDeck" aria-live="polite"></div>
       </div>
     </div>
@@ -481,7 +449,6 @@
     const chatArea  = document.getElementById('chatArea');
     const followBar = document.getElementById('followSuggestBar');
     const inputDeck = document.getElementById('inputSuggestDeck');
-    const loginAnchor = document.getElementById('loginAnchor');
 
     const API_BASE   = (window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)  || '/api';
     const SSE_URL    = (window.PAULE_CONFIG&&window.PAULE_CONFIG.restStream)|| '/api/stream';
@@ -489,9 +456,8 @@
     const SUGGEST_URL  = API_BASE + '/suggest';
     const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
 
-    /* ===== Modelių žemėlapis (front -> back) ===== */
     const FRONT_TO_BACK={
-      paule:'meta-llama/Llama-4-Scout-17B-16E-Instruct', // „Paule“ = Llama
+      paule:'meta-llama/Llama-4-Scout-17B-16E-Instruct',
       chatgpt:'gpt-4o-mini',
       claude:'claude-4-sonnet',
       gemini:'gemini-2.5-flash',
@@ -499,10 +465,7 @@
       deepseek:'deepseek-chat',
       llama:'meta-llama/Llama-4-Scout-17B-16E-Instruct'
     };
-
-    // JSON tik: Claude, Gemini, Grok. Visi kiti – SSE (įskaitant ChatGPT).
     const NON_SSE_FRONT = new Set(['claude','gemini','grok']);
-
     const MODEL_ICON = {
       paule:`${ICONS_BASE}/llama.svg`,
       chatgpt:`${ICONS_BASE}/chatgpt.svg`,
@@ -513,21 +476,12 @@
       llama:`${ICONS_BASE}/llama.svg`
     };
 
-    /* ===== Bendra round būsena ===== */
     const state = {
-      chatId:null,
-      panels:{},          // frontId -> { el, wrap, bubble, content, done }
-      startedOrder:[],    // pagal pirmą delta
-      firstStarted:null,
-      pending:0,          // kiek frontų dar laukiam
-      errors:[],          // {front, name, msg}
-      hasAnyText:false,
-      suggestShown:false,
-      stickToBottom:true,
-      lastUserText:''
+      chatId:null, panels:{}, startedOrder:[], firstStarted:null,
+      pending:0, errors:[], hasAnyText:false, suggestShown:false, stickToBottom:true, lastUserText:''
     };
 
-    /* ===== Tema (be popup) ===== */
+    /* ===== Tema ===== */
     initTheme();
     function initTheme(){
       try{
@@ -548,25 +502,6 @@
       logo.src = dark ? '/assets/icon/paule-logo-dark.webp' : '/assets/icon/paule-logo.webp';
       logo.setAttribute('alt', dark ? 'Paule logotipas – tamsi tema' : 'Paule logotipas – šviesi tema');
     }
-
-    /* ===== Clerk (login modal su Google) – jei yra raktas ===== */
-    window.addEventListener('load', async ()=>{
-      try{
-        if(!window.Clerk) return;
-        await window.Clerk.load();
-        const mountUser = ()=>{
-          if (window.Clerk.user){
-            loginAnchor.innerHTML = '<div id="clerkUserButton"></div>';
-            window.Clerk.mountUserButton('#clerkUserButton');
-          }else{
-            loginAnchor.innerHTML = '<button class="btn ghost" id="btnLogin"><img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti</button>';
-            document.getElementById('btnLogin')?.addEventListener('click', ()=> window.Clerk.openSignIn({ appearance:{ elements:{ card:{ borderRadius:'14px' }}}}));
-          }
-        };
-        window.Clerk.addListener(mountUser);
-        mountUser();
-      }catch(e){ console.warn('Clerk init:', e); }
-    });
 
     /* ===== Drawer ===== */
     btnMobile?.addEventListener('click', ()=>{ sidebar.classList.add('open'); overlay.classList.add('show'); });
@@ -590,21 +525,16 @@
         jumpBtn.classList.toggle('show', !nearBottom);
       }, {passive:true});
     }
-    function autoscrollIfNeeded(){
-      if (state.stickToBottom) chatArea.scrollTo({ top: chatArea.scrollHeight });
-      else jumpBtn?.classList.add('show');
-    }
+    function autoscrollIfNeeded(){ if (state.stickToBottom) chatArea.scrollTo({ top: chatArea.scrollHeight }); else jumpBtn?.classList.add('show'); }
 
-    /* ===== Helpers ===== */
     function timeNow(){ return new Date().toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'}); }
     function escapeHtml(x){ const d=document.createElement('div'); d.textContent=(x==null?'':String(x)); return d.innerHTML; }
     function stripMd(s){ return String(s||'').replace(/`{1,3}[\s\S]*?`{1,3}/g,'').replace(/[*_#>-]/g,''); }
     function uniqueNonEmpty(arr){ const s=new Set(); const out=[]; (arr||[]).forEach(v=>{ const t=String(v||'').trim(); if(t&&!s.has(t)){ s.add(t); out.push(t);} }); return out; }
 
-    /* ===== Markdown (pilki Hx + juodas bold) ===== */
     function parseMarkdown(input){
       let src = String(input||'');
-      src = src.replace(/(^|\n)#{1,6}\s*$/g, '$1'); // nuimam plikas antraštes
+      src = src.replace(/(^|\n)#{1,6}\s*$/g, '$1');
       const GREY=['#111827','#1f2937','#374151','#4b5563','#6b7280','#9ca3af'];
       let t = escapeHtml(src);
       const STORE=[]; t=t.replace(/```([\s\S]*?)```/g,(_,m)=>`@@CB_${STORE.push(m)-1}@@`);
@@ -632,7 +562,6 @@
       return t;
     }
 
-    /* ===== UI burbulai ===== */
     function addUserBubble(text){
       document.getElementById('welcome')?.remove();
       const wrap=document.createElement('div'); wrap.className='message user';
@@ -683,7 +612,6 @@
       return panel;
     }
 
-    /* ===== Global wait ===== */
     function showGlobalWait(){
       if (document.querySelector('._ai-wait')) return;
       const w = document.createElement('div');
@@ -695,7 +623,6 @@
     }
     function hideGlobalWait(){ const w=document.querySelector('._ai-wait'); if (w){ w.remove(); } }
 
-    /* ===== Orchestrator ===== */
     function resetRound(){
       state.chatId = 'chat_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
       state.panels={}; state.startedOrder=[]; state.firstStarted=null;
@@ -705,34 +632,22 @@
     }
 
     async function startOrchestrator(text, fronts){
-      // skaidom pagal transportą
-      const streamFronts = fronts.filter(f=> !NON_SSE_FRONT.has(f)); // paule/llama, chatgpt, deepseek
-      const jsonFronts   = fronts.filter(f=>  NON_SSE_FRONT.has(f)); // claude, gemini, grok
+      const streamFronts = fronts.filter(f=> !NON_SSE_FRONT.has(f));
+      const jsonFronts   = fronts.filter(f=>  NON_SSE_FRONT.has(f));
       state.pending = streamFronts.length + jsonFronts.length;
 
-      // SSE – visiems, kurie moka (panel sukuriama tik gavus 1-ą delta)
       streamFronts.forEach(f=>{
         const back = FRONT_TO_BACK[f]||f;
-        runSSE({ front:f, back, text, chatId:state.chatId })
-          .catch(()=>{})
-          .finally(()=>decPending());
+        runSSE({ front:f, back, text, chatId:state.chatId }).catch(()=>{}).finally(()=>decPending());
       });
 
-      // JSON – iškart (be vėlinimo), kad startuotų kartu
       if (jsonFronts.length){
-        runJSONOnce({ fronts: jsonFronts, text, chatId: state.chatId })
-          .catch(()=>{}); // decPending viduje
+        runJSONOnce({ fronts: jsonFronts, text, chatId: state.chatId }).catch(()=>{});
       }
-
-      // Hard deadline – jei kas pakibo
       setTimeout(()=>{ if (state.pending>0){ state.pending=0; finalizeRound(); } }, 22000);
     }
 
-    function decPending(){
-      state.pending = Math.max(0, state.pending-1);
-      if (state.pending===0) finalizeRound();
-    }
-
+    function decPending(){ state.pending = Math.max(0, state.pending-1); if (state.pending===0) finalizeRound(); }
     function finalizeRound(){
       hideGlobalWait();
       if (state.errors.length){
@@ -748,20 +663,14 @@
         });
         chatArea.appendChild(wrap); autoscrollIfNeeded();
       }
-      if (!state.suggestShown){
-        state.suggestShown=true;
-        showFollowUps();
-      }
+      if (!state.suggestShown){ state.suggestShown=true; showFollowUps(); }
     }
 
     function parseErrEvent(e){
-      try{
-        const data = (e&&e.data)? JSON.parse(e.data):{};
-        return data?.message || 'Klaida';
-      }catch(_){ return 'Klaida'; }
+      try{ const data = (e&&e.data)? JSON.parse(e.data):{}; return data?.message || 'Klaida'; }
+      catch(_){ return 'Klaida'; }
     }
 
-    // SSE runner (kortelė tik kai gaunam pirmą delta)
     async function runSSE({ front, back, text, chatId }){
       try{
         const qs=new URLSearchParams({ model: back, models: back, message:text, max_tokens:'4096', chat_id:chatId, _t:Date.now().toString() });
@@ -769,7 +678,6 @@
         const ct=(resp.headers.get('content-type')||'').toLowerCase();
 
         if(!ct.includes('text/event-stream')){
-          // serveris grąžino JSON – pabandom jį
           try{
             const j=await resp.json();
             const txt=j?.answers?.[0]?.text||j?.text||'';
@@ -777,19 +685,14 @@
               if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
               const p = ensurePanel(front);
               p.content += txt; p.el.innerHTML = parseMarkdown(p.content); autoscrollIfNeeded();
-            } else {
-              state.errors.push({front, name:front, msg:'Tuščias atsakymas (JSON).'});
-            }
-          }catch(_){
-            state.errors.push({front, name:front, msg:'Neskaidomas atsakymas (JSON).'});
-          }
+            } else { state.errors.push({front, name:front, msg:'Tuščias atsakymas (JSON).'}); }
+          }catch(_){ state.errors.push({front, name:front, msg:'Neskaidomas atsakymas (JSON).'}); }
           return;
         }
 
         const reader=resp.body.getReader();
         const dec=new TextDecoder();
         let buf='', gotAny=false;
-
         for(;;){
           const {done,value}=await reader.read(); if(done) break;
           buf+=dec.decode(value,{stream:true});
@@ -820,12 +723,9 @@
           }
         }
         const p = state.panels[front]; if (p) p.done=true;
-      }catch(_){
-        state.errors.push({front, name:front, msg:'SSE nepavyko inicijuoti.'});
-      }
+      }catch(_){ state.errors.push({front, name:front, msg:'SSE nepavyko inicijuoti.'}); }
     }
 
-    // JSON once (Claude, Gemini, Grok) – paleidžiam iškart
     async function runJSONOnce({ fronts, text, chatId }){
       const backIds = fronts.map(f=> FRONT_TO_BACK[f]||f).join(',');
       try{
@@ -844,9 +744,7 @@
             const p = ensurePanel(front);
             await typeInto(p, txt);
             p.done=true;
-          } else {
-            state.errors.push({ front, name:front, msg:'Tuščias atsakymas (JSON).' });
-          }
+          } else { state.errors.push({ front, name:front, msg:'Tuščias atsakymas (JSON).' }); }
           decPending();
         }
         fronts.forEach(f=>{ if(!gotFronts.has(f)){ state.errors.push({ front:f, name:f, msg:'Nepavyko gauti atsakymo (JSON).' }); decPending(); } });
@@ -870,7 +768,6 @@
       }
     }
 
-    /* ===== Follow-ups (jei yra) ===== */
     async function showFollowUps(){
       const bestFront = state.firstStarted || Object.keys(state.panels)[0];
       if (!bestFront) return;
@@ -892,7 +789,6 @@
       }catch(_){ /* tyliai */ }
     }
 
-    /* ===== Siuntimas ===== */
     sendBtn.addEventListener('click', (e)=>{ e.preventDefault(); doSend(); });
     msgInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); doSend(); }});
     msgInput.addEventListener('focus', ()=>{ if(!msgInput.value.trim()) renderInline(['Paaiškink detaliau','Duok pavyzdį','Sutrumpink iki 3 sakinių','Sukurk veiksmų planą','Kokie KPI?']); });
@@ -904,9 +800,8 @@
       msgInput.value=''; inputDeck.classList.remove('show'); followBar.classList.remove('show'); followBar.innerHTML='';
       addUserBubble(text);
 
-      // aktyvūs front'ai
       let fronts=[...modelList.querySelectorAll('.model-pill.active')].map(b=>b.dataset.model).filter(Boolean);
-      if(!fronts.length) fronts=['paule','chatgpt','deepseek']; // saugus default (visi SSE)
+      if(!fronts.length) fronts=['paule','chatgpt','deepseek'];
 
       resetRound();
       startOrchestrator(text, fronts);
@@ -922,17 +817,17 @@
       if ((list||[]).length) inputDeck.classList.add('show'); else inputDeck.classList.remove('show');
     }
 
-    // Modelių pasirinkimas (multi-pick)
     modelList.addEventListener('click', (e)=>{
       const b=e.target.closest('.model-pill'); if(!b) return;
       b.classList.toggle('active');
       b.setAttribute('aria-pressed', b.classList.contains('active')?'true':'false');
     });
 
-    // Kad veiktų window.sendMessage()
     window.PauleMain = { sendMessage: doSend };
-
   })();
   </script>
+
+  <!-- 🟢 Įjungiam vieno failo Clerk widgetą -->
+  <script defer src="/auth/clerk-popup.js" data-pk="PK_TAVO_PUBLISHABLE_KEY"></script>
 </body>
 </html>
