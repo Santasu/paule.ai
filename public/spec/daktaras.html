@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Psichologo AI asistentas</title>
+  <title>Sveikatos informacijos asistentas</title>
   
   <style>
 /* =========================================================
@@ -24,10 +24,10 @@
   --border-soft: #1f2937;
   --border-medium: #374151;
   
-  --accent-primary: #14b8a6;
-  --accent-primary-hover: #0d9488;
+  --accent-primary: #10b981;
+  --accent-primary-hover: #059669;
   --accent-secondary: #06b6d4;
-  --accent-ghost: #134e4a;
+  --accent-ghost: #064e3b;
   
   --success: #10b981;
   --warning: #f59e0b;
@@ -88,7 +88,7 @@ body {
   margin-bottom: var(--space-4xl);
   padding: var(--space-4xl) 0;
   position: relative;
-  background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(6, 182, 212, 0.1));
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
   border-radius: var(--radius-2xl);
 }
 
@@ -235,7 +235,7 @@ body {
   font-size: 16px;
   font-weight: 800;
   color: white;
-  background: rgba(20, 184, 166, 0.9);
+  background: rgba(16, 185, 129, 0.9);
   box-shadow: var(--neu-raise);
   position: relative;
   z-index: 2;
@@ -513,18 +513,10 @@ body {
 }
 
 /* =========================================================
-   FEATURE SPECIFIC STYLES
+   SAFETY ELEMENTS
    ========================================================= */
-.disclaimer {
-  background: var(--bg-elevated);
-  padding: var(--space-lg);
-  border-radius: var(--radius-lg);
-  border-left: 4px solid var(--warning);
-  margin: var(--space-xl) 0;
-}
-
 .emergency-notice {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
   border: 2px solid var(--error);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
@@ -550,14 +542,22 @@ body {
   color: var(--error);
 }
 
-.techniques-grid {
+.medical-disclaimer {
+  background: var(--bg-elevated);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--warning);
+  margin: var(--space-xl) 0;
+}
+
+.info-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-lg);
   margin: var(--space-xl) 0;
 }
 
-.technique-card {
+.info-card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
@@ -568,19 +568,19 @@ body {
   transition: all var(--transition-normal) ease;
 }
 
-.technique-card:hover {
+.info-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--neu-float);
 }
 
-.emotion-cards {
+.symptom-cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--space-lg);
   margin: var(--space-xl) 0;
 }
 
-.emotion-card {
+.symptom-card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
@@ -591,38 +591,9 @@ body {
   transition: all var(--transition-normal) ease;
 }
 
-.emotion-card:hover {
+.symptom-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--neu-float);
-}
-
-.wellness-metrics {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-lg);
-  margin: var(--space-xl) 0;
-}
-
-.metric-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  text-align: center;
-  box-shadow: var(--neu-raise);
-  border: 1px solid var(--border-soft);
-}
-
-.metric-number {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--accent-primary);
-  margin-bottom: var(--space-sm);
-}
-
-.metric-label {
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin-bottom: var(--space-sm);
 }
 
 .typing-indicator {
@@ -721,11 +692,11 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
   
-  .techniques-grid {
+  .info-cards {
     grid-template-columns: repeat(2, 1fr);
   }
   
-  .emotion-cards {
+  .symptom-cards {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -755,8 +726,8 @@ body {
     margin: var(--space-sm);
   }
   
-  .techniques-grid,
-  .emotion-cards {
+  .info-cards,
+  .symptom-cards {
     grid-template-columns: 1fr;
   }
   
@@ -793,133 +764,133 @@ body {
   <div class="container">
     <!-- Hero Section -->
     <div class="hero-section">
-      <h1 class="hero-title">Psichologo AI asistentas</h1>
+      <h1 class="hero-title">Sveikatos informacijos asistentas</h1>
       <p class="hero-subtitle">
-        Edukacinė psichikos sveikatos platforma su AI palaikymu, streso valdymu ir gerovės strategijomis
+        Edukacinė sveikatos informacija ir bendri patarimai. Nepakeičia gydytojo konsultacijos.
       </p>
       
       <div class="hero-disclaimer">
         <div class="disclaimer-text">
-          <strong>Svarbu:</strong> Tai edukacinė informacija, ne profesionali psichologinė pagalba. Jei jaučiate rimtus psichikos sveikatos sunkumus, kreipkitės į kvalifikuotą specialistą arba skambinkite pagalbos linijai.
+          <strong>Svarbu:</strong> Tai edukacinė informacija, ne medicinos diagnozė ar gydymas. Visais konkrečiais sveikatos klausimais kreipkitės į gydytoją.
         </div>
       </div>
       
       <!-- Statistics Banner -->
       <div class="stats-banner">
         <div class="stat-item">
-          <span class="stat-number">74%</span>
-          <span class="stat-label">Mažiau streso su AI</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">89%</span>
-          <span class="stat-label">Geresnė nuotaika</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">15min</span>
-          <span class="stat-label">Dieninė mindfulness</span>
+          <span class="stat-number">100%</span>
+          <span class="stat-label">Tik edukacinė info</span>
         </div>
         <div class="stat-item">
           <span class="stat-number">24/7</span>
-          <span class="stat-label">Pagalbos prieinamumas</span>
+          <span class="stat-label">Greitoji: 112</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">Always</span>
+          <span class="stat-label">Kreipkitės į gydytoją</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">Safe</span>
+          <span class="stat-label">Saugi informacija</span>
         </div>
       </div>
     </div>
 
     <!-- Emergency Notice -->
     <div class="emergency-notice">
-      <div class="emergency-title">Krizių situacijos pagalba</div>
-      <div class="emergency-text">Jei jaučiatės nesaugiai ar turite savižudybės minčių, nedelsiant kreipkitės:</div>
-      <div class="emergency-number">116 123 (Vilties linija)</div>
+      <div class="emergency-title">Greitoji medicinos pagalba</div>
+      <div class="emergency-text">Skubiais atvejais, traumų ar gyvybę keliančių situacijų atveju:</div>
+      <div class="emergency-number">112 - Greitoji pagalba</div>
     </div>
 
     <!-- Main Features -->
     <div class="features-grid">
-      <div class="feature-card" data-feature="stress-anxiety">
-        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop');">
-          <div class="feature-icon">🧘</div>
+      <div class="feature-card" data-feature="common-symptoms">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🌡️</div>
         </div>
         <div class="feature-content">
-          <h3 class="feature-title">Streso ir nerimo valdymas</h3>
+          <h3 class="feature-title">Dažni simptomai</h3>
           <p class="feature-desc">
-            Praktinės technikos streso mažinimui, nerimo simptomų valdymui ir ramybės atkūrimui su AI personalizacija
+            Bendroji informacija apie dažnus simptomus ir kada kreiptis į gydytoją. Nepakeičia profesionalios diagnostikos.
           </p>
           <div class="feature-cta">
-            <button class="btn btn-primary btn-lg">Valdyti stresą</button>
+            <button class="btn btn-primary btn-lg">Simptomų gidas</button>
           </div>
         </div>
       </div>
 
-      <div class="feature-card" data-feature="cbt-techniques">
-        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=400&h=300&fit=crop');">
-          <div class="feature-icon">🧠</div>
+      <div class="feature-card" data-feature="first-aid">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1584432743501-7d5c27a39189?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🩹</div>
         </div>
         <div class="feature-content">
-          <h3 class="feature-title">Kognityvinės technikos</h3>
+          <h3 class="feature-title">Pirmoji pagalba</h3>
           <p class="feature-desc">
-            CBT metodai, minčių restruktūrizavimas, neigiamų įsitikinimų keitimas ir pozityvaus mąstymo ugdymas
+            Pirmosios pagalbos pagrindai ir greitieji veiksmai. Rekomenduojama mokytis iš kvalifikuotų instruktorių.
           </p>
           <div class="feature-cta">
-            <button class="btn btn-secondary btn-lg">Keisti mintis</button>
+            <button class="btn btn-secondary btn-lg">Pagalbos pagrindai</button>
           </div>
         </div>
       </div>
 
-      <div class="feature-card" data-feature="emotion-regulation">
-        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=300&fit=crop');">
-          <div class="feature-icon">❤️</div>
+      <div class="feature-card" data-feature="prevention">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🛡️</div>
         </div>
         <div class="feature-content">
-          <h3 class="feature-title">Emocijų reguliavimas</h3>
+          <h3 class="feature-title">Prevencija ir profilaktika</h3>
           <p class="feature-desc">
-            Emocinio intelekto ugdymas, jausmų atpažinimas, valdymas ir sveiki būdai išreikšti emocijas
+            Ligų prevencijos principai, vakcinacijos, sveikos gyvensenos patarimai ir reguliarūs patikrinimai.
           </p>
           <div class="feature-cta">
-            <button class="btn btn-lg">Valdyti emocijas</button>
+            <button class="btn btn-lg">Prevencijos gidas</button>
           </div>
         </div>
       </div>
 
-      <div class="feature-card" data-feature="sleep-wellness">
-        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=400&h=300&fit=crop');">
-          <div class="feature-icon">🌙</div>
+      <div class="feature-card" data-feature="wellness">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🌱</div>
         </div>
         <div class="feature-content">
-          <h3 class="feature-title">Miego ir gerovės</h3>
+          <h3 class="feature-title">Sveikas gyvenimo būdas</h3>
           <p class="feature-desc">
-            Miego higiena, atsipalaidavimo technikos, žvalumas dieną ir natūralūs būdai pagerinti poilsį
+            Mityba, fizinis aktyvumas, miegas ir wellness. Individualius planus derinkite su specialistais.
           </p>
           <div class="feature-cta">
-            <button class="btn btn-lg">Gerinti miegą</button>
+            <button class="btn btn-lg">Wellness patarimai</button>
           </div>
         </div>
       </div>
 
-      <div class="feature-card" data-feature="relationships">
-        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=300&fit=crop');">
-          <div class="feature-icon">👥</div>
+      <div class="feature-card" data-feature="when-to-see-doctor">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1563213126-a4273aed2016?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🏥</div>
         </div>
         <div class="feature-content">
-          <h3 class="feature-title">Santykių gerinimas</h3>
+          <h3 class="feature-title">Kada kreiptis į gydytoją</h3>
           <p class="feature-desc">
-            Komunikacijos įgūdžiai, konfliktų sprendimas, empatijos ugdymas ir sveikų ribų nustatymas
+            Aiškūs kriterijai, kada reikalinga medicinos pagalba, skubūs atvejai ir profilaktinės apžiūros.
           </p>
           <div class="feature-cta">
-            <button class="btn btn-lg">Gerinti santykius</button>
+            <button class="btn btn-lg">Gydytojo pagalba</button>
           </div>
         </div>
       </div>
 
-      <div class="feature-card" data-feature="mindfulness">
-        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1510894347713-fc3ed6fdf539?w=400&h=300&fit=crop');">
-          <div class="feature-icon">🌸</div>
+      <div class="feature-card" data-feature="health-resources">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1581056771107-24ca5f033842?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📚</div>
         </div>
         <div class="feature-content">
-          <h3 class="feature-title">Mindfulness ir meditacija</h3>
+          <h3 class="feature-title">Sveikatos ištekliai</h3>
           <p class="feature-desc">
-            Sąmoningumo praktikos, meditacijos technikos, dabartinio momento suvokimas ir dėmesingumo ugdymas
+            Patikimi sveikatos informacijos šaltiniai, kontaktai ir nuorodos į sveikatos specialistus.
           </p>
           <div class="feature-cta">
-            <button class="btn btn-lg">Medituoti dabar</button>
+            <button class="btn btn-lg">Išteklių sąrašas</button>
           </div>
         </div>
       </div>
@@ -928,21 +899,19 @@ body {
     <!-- Chat Section -->
     <div class="chat-section">
       <div class="chat-header">
-        <div class="chat-title">🧠 AI Psichikos sveikatos padėjėjas</div>
+        <div class="chat-title">🩺 Sveikatos informacijos asistentas</div>
         <div class="ai-status">
           <span class="status-dot"></span>
-          Aktyvus ir pasiruošęs padėti su psichikos sveikata ir gerove
+          Teikia bendrą edukacinę informaciją apie sveikatą
         </div>
       </div>
       <div class="chat-messages" id="chatMessages">
         <div class="message ai">
-          <div class="message-avatar">AI</div>
+          <div class="message-avatar">🩺</div>
           <div class="message-content">
-            Sveiki! Esu jūsų AI psichikos sveikatos padėjėjas. Galiu pasiūlyti technikos streso valdymui, mindfulness pratimus ar atsakyti į klausimus apie gerovę. Kaip šiandien jaučiatės?
-            <div class="disclaimer">
-              <div class="disclaimer-text">
-                <strong>Priminimas:</strong> Teikiu edukacinę informaciją, ne profesionalų gydymą. Rimtais atvejais kreipkitės į specialistą.
-              </div>
+            Sveiki! Galiu pateikti bendrą edukacinę informaciją apie sveikatą, simptomus ir kada kreiptis į gydytoją.
+            <div class="medical-disclaimer" style="margin-top: 12px;">
+              <strong>Svarbu:</strong> Neteikiu diagnozių ar gydymo rekomendacijų. Visais konkrečiais sveikatos klausimais kreipkitės į gydytoją.
             </div>
           </div>
         </div>
@@ -952,7 +921,7 @@ body {
           <textarea 
             class="message-input" 
             id="messageInput" 
-            placeholder="Papasakokite, kaip jaučiatės ar užduokite klausimą apie psichikos sveikatą..."
+            placeholder="Užduokite klausimą apie bendrą sveikatos informaciją..."
             rows="1"
           ></textarea>
           <button class="send-btn" id="sendBtn">→</button>
@@ -979,10 +948,6 @@ body {
     let currentFeature = null;
     let chatHistory = [];
     let messageCount = 0;
-    
-    // Safety tracking
-    let concerningMessageCount = 0;
-    let lastCrisisCheck = Date.now();
 
     // DOM elements
     const modalOverlay = document.getElementById('modalOverlay');
@@ -994,319 +959,298 @@ body {
     const messageInput = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
 
-    // Feature content templates with enhanced safety
+    // Feature content with balanced safety
     const featureContent = {
-      'stress-anxiety': {
-        title: '🧘 Streso ir nerimo valdymas',
+      'common-symptoms': {
+        title: '🌡️ Dažni simptomai',
         content: `
-          <div class="disclaimer">
-            <div class="disclaimer-text">
-              <strong>Svarbu:</strong> Jei streso ar nerimo simptomai trikdo kasdienį gyvenimą ilgiau nei 2 savaites, rekomenduojama kreiptis į psichikos sveikatos specialistą.
-            </div>
+          <div class="medical-disclaimer">
+            <strong>Perspėjimas:</strong> Ši informacija neskirta savidiagnostikai. Visais simptomų atvejais kreipkitės į gydytoją.
           </div>
           
-          <div class="techniques-grid">
-            <div class="technique-card" data-technique="breathing">
-              <div style="font-size: 48px; margin-bottom: 12px;">🫁</div>
-              <h4>Kvėpavimo technikos</h4>
-              <p style="color: var(--text-secondary); font-size: 12px;">4-7-8, box breathing</p>
+          <div class="symptom-cards">
+            <div class="symptom-card" data-symptom="fever">
+              <div style="font-size: 32px; margin-bottom: 8px;">🌡️</div>
+              <h5>Karščiavimas</h5>
+              <p style="color: var(--text-secondary); font-size: 10px;">Aukšta temperatūra</p>
             </div>
-            <div class="technique-card" data-technique="grounding">
-              <div style="font-size: 48px; margin-bottom: 12px;">🌱</div>
-              <h4>Grounding exercises</h4>
-              <p style="color: var(--text-secondary); font-size: 12px;">5-4-3-2-1 technika</p>
+            <div class="symptom-card" data-symptom="headache">
+              <div style="font-size: 32px; margin-bottom: 8px;">🤕</div>
+              <h5>Galvos skausmas</h5>
+              <p style="color: var(--text-secondary); font-size: 10px;">Skausmas galvoje</p>
             </div>
-            <div class="technique-card" data-technique="progressive">
-              <div style="font-size: 48px; margin-bottom: 12px;">💆</div>
-              <h4>Progresyvus atsipalaidavimas</h4>
-              <p style="color: var(--text-secondary); font-size: 12px;">Raumenų įtampos mažinimas</p>
+            <div class="symptom-card" data-symptom="cough">
+              <div style="font-size: 32px; margin-bottom: 8px;">😷</div>
+              <h5>Kosulys</h5>
+              <p style="color: var(--text-secondary); font-size: 10px;">Kvėpavimo takų iritacija</p>
+            </div>
+            <div class="symptom-card" data-symptom="stomach">
+              <div style="font-size: 32px; margin-bottom: 8px;">🤢</div>
+              <h5>Pilvo skausmas</h5>
+              <p style="color: var(--text-secondary); font-size: 10px;">Virškinimo problemos</p>
+            </div>
+            <div class="symptom-card" data-symptom="dental">
+              <div style="font-size: 32px; margin-bottom: 8px;">🦷</div>
+              <h5>Dantų skausmas</h5>
+              <p style="color: var(--text-secondary); font-size: 10px;">Odontologinės problemos</p>
+            </div>
+            <div class="symptom-card" data-symptom="fatigue">
+              <div style="font-size: 32px; margin-bottom: 8px;">😴</div>
+              <h5>Nuovargis</h5>
+              <p style="color: var(--text-secondary); font-size: 10px;">Energijos stoka</p>
+            </div>
+            <div class="symptom-card" data-symptom="joint">
+              <div style="font-size: 32px; margin-bottom: 8px;">🦴</div>
+              <h5>Sąnarių skausmas</h5>
+              <p style="color: var(--text-secondary); font-size: 10px;">Artritai, traumos</p>
+            </div>
+            <div class="symptom-card" data-symptom="skin">
+              <div style="font-size: 32px; margin-bottom: 8px;">🧴</div>
+              <h5>Odos problemos</h5>
+              <p style="color: var(--text-secondary); font-size: 10px;">Išbėrimai, niežėjimas</p>
             </div>
           </div>
           
           <div style="margin: 24px 0;">
-            <h4>⚡ Greitoji pagalba nerimo priepuoliui:</h4>
+            <h4>⚠️ Kada skubiai kreiptis į gydytoją:</h4>
             <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
               <p style="color: var(--text-secondary);">
-                • Lėtas kvėpavimas: įkvėpimas 4 sek, iškvėpimas 6 sek<br>
-                • Pavadinkit 5 daiktus, kuriuos matote<br>
-                • Palieskit 4 skirtingas tekstūras<br>
-                • Išgirskite 3 garsus aplinkoje<br>
-                • Pajuskite 2 kvapus ir 1 skonį
+                • Aukšta temperatūra (>39°C) ilgiau nei 3 dienos<br>
+                • Stiprus, staigus skausmas<br>
+                • Kvėpavimo sunkumai<br>
+                • Stiprus kraujavimas<br>
+                • Sąmonės sutrikimas<br>
+                • Allergijos požymiai
               </p>
             </div>
           </div>
 
-          <div class="emergency-notice" style="margin-top: 20px;">
-            <div class="emergency-title">Kada kreiptis į specialistą?</div>
-            <div class="emergency-text">• Simptomai tęsiasi ilgiau nei 2 savaites<br>• Trikdo darbą, mokslus ar santykius<br>• Atsiranda savžudybės mintys</div>
-            <div style="margin-top: 12px;">
-              <strong>116 123 - Vilties linija (24/7)</strong>
+          <div class="emergency-notice">
+            <div class="emergency-title">Svarbu atsiminti</div>
+            <div class="emergency-text">
+              Simptomai gali turėti daug priežasčių. Tik gydytojas gali nustatyti tikslią diagnozę.
             </div>
           </div>
         `
       },
       
-      'cbt-techniques': {
-        title: '🧠 Kognityvinės technikos',
+      'first-aid': {
+        title: '🩹 Pirmoji pagalba',
         content: `
-          <div class="disclaimer">
-            <div class="disclaimer-text">
-              <strong>Pastaba:</strong> CBT technikos yra efektyvios, tačiau profesionalaus CBT terapeuto pagalba yra daug efektyvesnė nei savarankiškas taikymas.
-            </div>
+          <div class="medical-disclaimer">
+            <strong>Svarbu:</strong> Ši informacija nepakeičia kvalifikuoto pirmosios pagalbos mokymo. Mokykitės iš licencijuotų instruktorių.
           </div>
 
           <div style="margin: 24px 0;">
-            <h4>🔍 Minčių stebėjimas ir keitimas:</h4>
-            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
-              <p style="color: var(--text-secondary);">
-                • <strong>Automatinės mintys:</strong> Atpažinkite neigiamas mintis<br>
-                • <strong>Minčių tikrinimas:</strong> "Ar tai faktas ar nuomonė?"<br>
-                • <strong>Restruktūrizavimas:</strong> Pakeiskite realistesnė perspektyva<br>
-                • <strong>Balanced thinking:</strong> Ieškokite vidurinio kelio
+            <h4>🚨 Skubūs numeriai:</h4>
+            <div style="background: var(--error); color: white; padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="font-size: 18px; font-weight: bold;">
+                112 - Greitoji pagalba, ugniagesiai, policija<br>
+                116 117 - Konsultacinė gydytojų linija
               </p>
             </div>
           </div>
           
           <div style="margin: 24px 0;">
-            <h4>📝 CBT užduotys:</h4>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 16px 0;">
-              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
-                <h5>Minčių žurnalas</h5>
-                <p style="color: var(--text-secondary); font-size: 12px;">Užrašykite neigiamas mintis ir alternatyvas</p>
-              </div>
-              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
-                <h5>Behavioral experiments</h5>
-                <p style="color: var(--text-secondary); font-size: 12px;">Testuokite savo įsitikinimus</p>
-              </div>
-              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
-                <h5>Katastrofizavimo stop</h5>
-                <p style="color: var(--text-secondary); font-size: 12px;">"Kas blogiausio gali nutikti?"</p>
-              </div>
-              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
-                <h5>Pozityvių įrodymų paieška</h5>
-                <p style="color: var(--text-secondary); font-size: 12px;">Faktai, prieštaraujantys neigiamoms mintims</p>
-              </div>
-            </div>
-          </div>
-        `
-      },
-      
-      'emotion-regulation': {
-        title: '❤️ Emocijų reguliavimas',
-        content: `
-          <div class="emotion-cards">
-            <div class="emotion-card" data-emotion="anger">
-              <div style="font-size: 32px; margin-bottom: 8px;">😠</div>
-              <h5>Pyktis</h5>
-              <p style="color: var(--text-secondary); font-size: 10px;">Valdymo strategijos</p>
-            </div>
-            <div class="emotion-card" data-emotion="sadness">
-              <div style="font-size: 32px; margin-bottom: 8px;">😢</div>
-              <h5>Liūdesys</h5>
-              <p style="color: var(--text-secondary); font-size: 10px;">Healing techniques</p>
-            </div>
-            <div class="emotion-card" data-emotion="anxiety">
-              <div style="font-size: 32px; margin-bottom: 8px;">😰</div>
-              <h5>Nerimas</h5>
-              <p style="color: var(--text-secondary); font-size: 10px;">Calming methods</p>
-            </div>
-            <div class="emotion-card" data-emotion="joy">
-              <div style="font-size: 32px; margin-bottom: 8px;">😊</div>
-              <h5>Džiaugsmas</h5>
-              <p style="color: var(--text-secondary); font-size: 10px;">Sustaining happiness</p>
-            </div>
-          </div>
-          
-          <div style="margin: 24px 0;">
-            <h4>🎯 Emocinio intelekto ugdymas:</h4>
+            <h4>🩺 Pagrindiniai principai:</h4>
             <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
               <p style="color: var(--text-secondary);">
-                • <strong>Atpažinimas:</strong> "Kokią emociją jaučiu dabar?"<br>
-                • <strong>Supratimas:</strong> "Kodėl jaučiu šitą?"<br>
-                • <strong>Pavadinimas:</strong> Suteikite emocijai konkretų pavadinimą<br>
-                • <strong>Reguliavimas:</strong> Pasirinkite sveikus reagavimo būdus<br>
-                • <strong>Išraiška:</strong> Saugiai ir konstruktyviai išreikškite
+                • Užtikrinkite saugumą (sau ir nukentėjusiam)<br>
+                • Įvertinkite situaciją<br>
+                • Iškvieskite pagalbą (112)<br>
+                • Suteikite pagalbą pagal žinias<br>
+                • Stebiękite nukentėjusio būklę<br>
+                • Niekada neperkelkite sunkiai sužeisto žmogaus
               </p>
             </div>
           </div>
 
-          <div class="disclaimer">
-            <div class="disclaimer-text">
-              <strong>Atminkite:</strong> Intensyvūs ar ilgalaikiai emocijų reguliavimo sunkumai gali reikalauti profesionalios pagalbos.
+          <div class="emergency-notice">
+            <div class="emergency-title">Saugumas pirmiausia</div>
+            <div class="emergency-text">
+              Niekada neatlikite procedūrų, kurių nesate išmokę. Pirmiau iškvieskite 112.
             </div>
           </div>
         `
       },
       
-      'sleep-wellness': {
-        title: '🌙 Miego ir gerovės optimizavimas',
-        content: `
-          <div class="wellness-metrics">
-            <div class="metric-card">
-              <div class="metric-number">7-9h</div>
-              <div class="metric-label">Rekomenduojamas miegas</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-number">10:30</div>
-              <div class="metric-label">Ideal bedtime</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-number">15min</div>
-              <div class="metric-label">Wind-down routine</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-number">18-22°C</div>
-              <div class="metric-label">Miegamojo temperatūra</div>
-            </div>
-          </div>
-          
-          <div style="margin: 24px 0;">
-            <h4>😴 Miego higienos principai:</h4>
-            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
-              <p style="color: var(--text-secondary);">
-                • Nuoseklus miego režimas (net savaitgaliais)<br>
-                • Vengti ekranų 1 valanda prieš miegą<br>
-                • Tamsi, vėsi ir tyli miegamojo aplinka<br>
-                • Vengti kofeino po 14:00<br>
-                • Regular daytime light exposure<br>
-                • Fizinis aktyvumas, bet ne prieš miegą
-              </p>
-            </div>
-          </div>
-          
-          <div class="disclaimer">
-            <div class="disclaimer-text">
-              <strong>Kada kreiptis į gydytoją:</strong> Jei miego problemos tęsiasi ilgiau nei mėnesį ar stipriai paveiks kasdienį funkcionalumą.
-            </div>
-          </div>
-        `
-      },
-      
-      'relationships': {
-        title: '👥 Santykių gerinimas',
+      'prevention': {
+        title: '🛡️ Prevencija ir profilaktika',
         content: `
           <div style="margin: 24px 0;">
-            <h4>💬 Komunikacijos įgūdžiai:</h4>
+            <h4>💉 Vakcinacijos:</h4>
             <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
               <p style="color: var(--text-secondary);">
-                • <strong>Aktyvus klausymas:</strong> Dėmesys to asmens žodžiams<br>
-                • <strong>"Aš" teiginiai:</strong> "Aš jaučiu..." vietoj "Tu visada..."<br>
-                • <strong>Empatija:</strong> Pamėgink suprasti kito perspektyvą<br>
-                • <strong>Assertyvumas:</strong> Išreikšk poreikius be agresijos<br>
-                • <strong>Konfliktų sprendimas:</strong> Focus on solutions, not blame
+                • Laikykitės nacionalinės vakcinacijos programos<br>
+                • Metinė gripo vakcina (ypač rizikos grupėms)<br>
+                • Kelionių vakcinacijos (konsultuokitės su gydytoju)<br>
+                • COVID-19 vakcinacijos pagal rekomendacijas<br>
+                • Suaugusiųjų rappeliai (stabligė, difterija)
               </p>
             </div>
           </div>
           
           <div style="margin: 24px 0;">
-            <h4>🚧 Sveikų ribų nustatymas:</h4>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 16px 0;">
-              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
-                <h5>Emocionalinės ribos</h5>
-                <p style="color: var(--text-secondary); font-size: 12px;">Protect your emotional wellbeing</p>
-              </div>
-              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
-                <h5>Fizinės ribos</h5>
-                <p style="color: var(--text-secondary); font-size: 12px;">Personal space ir comfort levels</p>
-              </div>
-              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
-                <h5>Laiko ribos</h5>
-                <p style="color: var(--text-secondary); font-size: 12px;">Balance between giving ir receiving</p>
-              </div>
-              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
-                <h5>Digital boundaries</h5>
-                <p style="color: var(--text-secondary); font-size: 12px;">Healthy technology use</p>
-              </div>
+            <h4>🔍 Profilaktinės apžiūros:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Šeimos gydytojas - bent kartą per metus<br>
+                • Kraujo spaudimo matavimas<br>
+                • Cholesterolio patikra (po 40 metų)<br>
+                • Onkologiniai patikrinimai pagal amžių<br>
+                • Akių ir ausų patikra<br>
+                • Dantų higienos procedūros (2 kartus per metus)
+              </p>
             </div>
           </div>
 
-          <div class="disclaimer">
-            <div class="disclaimer-text">
-              <strong>Pastaba:</strong> Jei santykiai yra destruktyvūs ar pavojingi, kreipkitės į specialistą ar pagalbos liniją.
+          <div class="medical-disclaimer">
+            <strong>Pastaba:</strong> Prevencijos planas turi būti individualus ir derinamas su gydytoju.
+          </div>
+        `
+      },
+      
+      'wellness': {
+        title: '🌱 Sveikas gyvenimo būdas',
+        content: `
+          <div class="info-cards">
+            <div class="info-card" data-topic="nutrition">
+              <div style="font-size: 48px; margin-bottom: 12px;">🥗</div>
+              <h4>Subalansuota mityba</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Mitybos principai</p>
+            </div>
+            <div class="info-card" data-topic="exercise">
+              <div style="font-size: 48px; margin-bottom: 12px;">🏃</div>
+              <h4>Fizinis aktyvumas</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Sport ir judėjimas</p>
+            </div>
+            <div class="info-card" data-topic="sleep">
+              <div style="font-size: 48px; margin-bottom: 12px;">😴</div>
+              <h4>Kokybiškas miegas</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Poilsio higiena</p>
+            </div>
+            <div class="info-card" data-topic="stress">
+              <div style="font-size: 48px; margin-bottom: 12px;">🧘</div>
+              <h4>Streso valdymas</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Atsipalaidavimas</p>
+            </div>
+            <div class="info-card" data-topic="hygiene">
+              <div style="font-size: 48px; margin-bottom: 12px;">🧼</div>
+              <h4>Asmens higiena</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Infekcijų prevencija</p>
+            </div>
+            <div class="info-card" data-topic="habits">
+              <div style="font-size: 48px; margin-bottom: 12px;">🚭</div>
+              <h4>Žalingi įpročiai</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Rūkymas, alkoholis</p>
+            </div>
+          </div>
+
+          <div class="medical-disclaimer">
+            <strong>Svarbu:</strong> Prieš keičiant gyvenimo būdą, ypač turint sveikatos problemų, konsultuokitės su gydytoju.
+          </div>
+        `
+      },
+      
+      'when-to-see-doctor': {
+        title: '🏥 Kada kreiptis į gydytoją',
+        content: `
+          <div style="margin: 24px 0;">
+            <h4>🚨 Skubūs atvejai (112):</h4>
+            <div style="background: var(--error); color: white; padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p>
+                • Širdies priepuolis požymiai<br>
+                • Insulto simptomai<br>
+                • Stiprus kraujavimas<br>
+                • Kvėpavimo sunkumai<br>
+                • Sąmonės netekimas<br>
+                • Sunkūs traumos atvejai
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>⚠️ Skubiai į šeimos gydytoją:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Aukšta temperatūra ilgiau nei 3 dienos<br>
+                • Stiprus skausmas, kuris nestoja<br>
+                • Kraujavimas iš natūralių angų<br>
+                • Staiga atsiradę matymo ar klausos sutrikimai<br>
+                • Stiprus galvos skausmas su vėmimu<br>
+                • Įtartini odos pakitimai
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>📅 Planuoti vizitai:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Metinės profilaktinės apžiūros<br>
+                • Lėtinės ligos kontrolė<br>
+                • Vakcinacijos<br>
+                • Sveikatos patikra prieš keliones<br>
+                • Onkologiniai patikrinimai pagal amžių
+              </p>
             </div>
           </div>
         `
       },
       
-      'mindfulness': {
-        title: '🌸 Mindfulness ir meditacija',
+      'health-resources': {
+        title: '📚 Sveikatos ištekliai',
         content: `
           <div style="margin: 24px 0;">
-            <h4>🧘 Meditacijos tipai:</h4>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 16px 0;">
-              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center; cursor: pointer;" data-meditation="breath">
-                <h5>Breath awareness</h5>
-                <p style="color: var(--text-secondary); font-size: 12px;">5-20 minučių</p>
-              </div>
-              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center; cursor: pointer;" data-meditation="body">
-                <h5>Body scan</h5>
-                <p style="color: var(--text-secondary); font-size: 12px;">10-30 minučių</p>
-              </div>
-              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center; cursor: pointer;" data-meditation="loving">
-                <h5>Loving-kindness</h5>
-                <p style="color: var(--text-secondary); font-size: 12px;">10-15 minučių</p>
-              </div>
-            </div>
-          </div>
-          
-          <div style="margin: 24px 0;">
-            <h4>🎯 Sąmoningumo praktikos kasdienybėje:</h4>
+            <h4>🏥 Kur kreiptis:</h4>
             <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
               <p style="color: var(--text-secondary);">
-                • Mindful eating: Dėmesys skoniui ir tekstūrai<br>
-                • Walking meditation: Dėmesys kiekvienam žingsniui<br>
-                • Present moment awareness: "Ką jaučiu dabar?"<br>
-                • Gratitude practice: 3 dalykai per dieną<br>
-                • Digital detox: Regular screen-free periods
+                • <strong>Šeimos gydytojas</strong> - pirminis kontaktas visais sveikatos klausimais<br>
+                • <strong>Greitoji pagalba 112</strong> - kritinės situacijos<br>
+                • <strong>Konsultacinė linija 116 117</strong> - medicinos konsultacijos<br>
+                • <strong>Poliklinikos</strong> - specializuota pagalba<br>
+                • <strong>Vaistinės</strong> - farmacijos konsultacijos<br>
+                • <strong>Odontologai</strong> - dantų sveikatos priežiūra
               </p>
             </div>
           </div>
-          
-          <div class="disclaimer">
-            <div class="disclaimer-text">
-              <strong>Pastaba:</strong> Pradėkite nuo trumpų sesijų (5-10 min). Meditacija turėtų būti malonūs, ne streso šaltinis.
+
+          <div style="margin: 24px 0;">
+            <h4>🌐 Patikimi informacijos šaltiniai:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Sveikatos apsaugos ministerija (sam.lrv.lt)<br>
+                • Nacionalinis visuomenės sveikatos centras<br>
+                • Valstybinė vaistų kontrolės tarnyba<br>
+                • Lietuvos gydytojų rūmai<br>
+                • Pasaulio sveikatos organizacija (WHO)
+              </p>
             </div>
+          </div>
+
+          <div class="medical-disclaimer">
+            <strong>Pastaba:</strong> Visada patikrinkite specialistų kvalifikacijas ir licencijas.
           </div>
         `
       }
     };
 
-    // Enhanced crisis detection
-    function detectCrisisLanguage(message) {
-      const crisisKeywords = [
-        'savižudyb', 'nužudyti save', 'noriu mirti', 'baigti gyvenimą', 
-        'nenoriu gyventi', 'prarasti norą gyventi', 'suicid', 'nunuody',
-        'pasikarti', 'nušokti', 'savęs žalojim', 'self harm', 'nepakeliama',
-        'niekas nebegali padėti', 'be išeities', 'vienišas kaip šuo'
-      ];
-      
-      const concerningKeywords = [
-        'depresi', 'beprasmyb', 'nevilt', 'desperaci', 'panik', 'bijo', 
-        'neramu', 'stresa', 'varginant'
+    // Emergency keywords detection
+    function detectEmergencyContent(message) {
+      const emergencyKeywords = [
+        'širdies priepuolis', 'insultas', 'negaliu kvėpuoti', 'kraujavimas',
+        'sunkus skausmas', 'apalp', 'sąmonės netekimas', 'convulsijos',
+        'apsinuodijimas', 'trauma', 'accident', 'nelaimė'
       ];
       
       const msgLower = message.toLowerCase();
-      
-      // Crisis detection
-      if (crisisKeywords.some(keyword => msgLower.includes(keyword))) {
-        return 'crisis';
-      }
-      
-      // Concerning content tracking
-      if (concerningKeywords.some(keyword => msgLower.includes(keyword))) {
-        concerningMessageCount++;
-        if (concerningMessageCount >= 3) {
-          return 'concerning';
-        }
-      }
-      
-      return false;
+      return emergencyKeywords.some(keyword => msgLower.includes(keyword));
     }
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
       initializeEventListeners();
-      console.log('🛡️ Psichologo AI asistentas su saugumo funkcijomis paleistas!');
+      console.log('🩺 Sveikatos informacijos asistentas paleistas!');
     });
 
     function initializeEventListeners() {
@@ -1318,25 +1262,14 @@ body {
         });
       });
 
-      // Modal close events
+      // Modal events
       modalClose.addEventListener('click', closeModal);
-      
       modalOverlay.addEventListener('click', function(e) {
-        if (e.target === modalOverlay) {
-          closeModal();
-        }
-      });
-
-      // Escape key to close
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
-          closeModal();
-        }
+        if (e.target === modalOverlay) closeModal();
       });
 
       // Chat functionality
       sendBtn.addEventListener('click', sendMessage);
-      
       messageInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
@@ -1361,7 +1294,6 @@ body {
         modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
         
-        // Bind events for new content
         bindContentEvents();
       }
     }
@@ -1377,45 +1309,38 @@ body {
     }
 
     function bindContentEvents() {
-      // Technique cards
-      document.querySelectorAll('.technique-card').forEach(card => {
+      // Info cards
+      document.querySelectorAll('.info-card').forEach(card => {
         card.addEventListener('click', function() {
-          const technique = this.dataset.technique;
-          const techniqueNames = {
-            breathing: 'kvėpavimo technikas',
-            grounding: 'grounding exercises',
-            progressive: 'progresyvų atsipalaidavimą'
+          const topic = this.dataset.topic;
+          const topicNames = {
+            nutrition: 'mitybos principus',
+            exercise: 'fizinio aktyvumo rekomendacijas',
+            sleep: 'miego higienos patarimus',
+            stress: 'streso valdymo metodus',
+            hygiene: 'higienos rekomendacijas',
+            habits: 'informaciją apie žalingus įpročius'
           };
-          sendChatMessage(`Noriu išmokti ${techniqueNames[technique]} streso valdymui`);
+          sendChatMessage(`Papasakokite apie ${topicNames[topic]}`);
           closeModal();
         });
       });
 
-      // Emotion cards
-      document.querySelectorAll('.emotion-card').forEach(card => {
+      // Symptom cards
+      document.querySelectorAll('.symptom-card').forEach(card => {
         card.addEventListener('click', function() {
-          const emotion = this.dataset.emotion;
-          const emotionNames = {
-            anger: 'pykčio valdymo',
-            sadness: 'liūdesio įveikimo',
-            anxiety: 'nerimo mažinimo',
-            joy: 'džiaugsmo išlaikymo'
+          const symptom = this.dataset.symptom;
+          const symptomNames = {
+            fever: 'karščiavimą',
+            headache: 'galvos skausmą',
+            cough: 'kosulį',
+            stomach: 'pilvo skausmą',
+            dental: 'dantų skausmą',
+            fatigue: 'nuovargį',
+            joint: 'sąnarių skausmą',
+            skin: 'odos problemas'
           };
-          sendChatMessage(`Reikia pagalbos su ${emotionNames[emotion]} strategijomis`);
-          closeModal();
-        });
-      });
-
-      // Meditation cards
-      document.querySelectorAll('[data-meditation]').forEach(card => {
-        card.addEventListener('click', function() {
-          const meditation = this.dataset.meditation;
-          const meditationNames = {
-            breath: 'kvėpavimo meditaciją',
-            body: 'body scan meditaciją',
-            loving: 'loving-kindness meditaciją'
-          };
-          sendChatMessage(`Noriu pradėti ${meditationNames[meditation]} su AI pagalba`);
+          sendChatMessage(`Kada dėl ${symptomNames[symptom]} reikia kreiptis į gydytoją?`);
           closeModal();
         });
       });
@@ -1425,13 +1350,10 @@ body {
       const message = messageInput.value.trim();
       if (!message) return;
       
-      // Enhanced crisis detection
-      const crisisLevel = detectCrisisLanguage(message);
-      if (crisisLevel === 'crisis') {
-        addCrisisResponse();
+      // Emergency detection
+      if (detectEmergencyContent(message)) {
+        addEmergencyResponse();
         return;
-      } else if (crisisLevel === 'concerning') {
-        addConcernResponse();
       }
       
       sendChatMessage(message);
@@ -1439,53 +1361,29 @@ body {
       messageInput.style.height = 'auto';
     }
 
-    function addCrisisResponse() {
-      const crisisDiv = document.createElement('div');
-      crisisDiv.className = 'message ai';
-      crisisDiv.innerHTML = `
-        <div class="message-avatar">AI</div>
+    function addEmergencyResponse() {
+      const emergencyDiv = document.createElement('div');
+      emergencyDiv.className = 'message ai';
+      emergencyDiv.innerHTML = `
+        <div class="message-avatar">🚨</div>
         <div class="message-content">
           <div class="emergency-notice" style="margin: 0;">
-            <div class="emergency-title">⚠️ Skubiai reikia pagalbos</div>
-            <div class="emergency-text">Jūsų saugumas yra svarbiausias. Prašau nedelsiant kreipkitės:</div>
+            <div class="emergency-title">🚨 SKUBI MEDICINOS PAGALBA</div>
+            <div class="emergency-text">Dėl skubių medicinos situacijų NEDELSIANT:</div>
             <div style="margin: 12px 0;">
-              <strong>116 123 - Vilties linija (24/7)</strong><br>
-              <strong>112 - Skubios pagalbos tarnyba</strong><br>
-              <strong>8-800-28888 - Jaunimo linija</strong>
+              <strong>112 - Greitoji pagalba</strong><br>
+              <strong>116 117 - Konsultacinė gydytojų linija</strong>
             </div>
-            <div style="font-size: 14px; color: var(--text-secondary);">
-              Jūs nesate vienas. Profesionalūs specialistai gali padėti. Jūsų gyvenimas yra vertingas.
+            <div style="font-size: 14px;">
+              Nesikimkite į internetinę informaciją kritinėse situacijose!
             </div>
           </div>
         </div>
       `;
       
-      chatMessages.appendChild(crisisDiv);
+      chatMessages.appendChild(emergencyDiv);
       chatMessages.scrollTop = chatMessages.scrollHeight;
-      
-      // Clear input for safety
       messageInput.value = '';
-    }
-
-    function addConcernResponse() {
-      const concernDiv = document.createElement('div');
-      concernDiv.className = 'message ai';
-      concernDiv.innerHTML = `
-        <div class="message-avatar">AI</div>
-        <div class="message-content">
-          Pastebiu, kad jaučiatės sunkiai. Norėčiau priminti, kad profesionali pagalba yra prieinama:
-          <div style="margin: 12px 0; padding: 12px; background: var(--bg-elevated); border-radius: 8px;">
-            <strong>📞 Pagalbos kontaktai:</strong><br>
-            116 123 - Vilties linija (24/7)<br>
-            8-800-77277 - Psichologinė pagalba<br>
-            8-800-28888 - Jaunimo linija
-          </div>
-          Kuo galiu padėti šiandien?
-        </div>
-      `;
-      
-      chatMessages.appendChild(concernDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
     function sendChatMessage(message) {
@@ -1502,7 +1400,7 @@ body {
         removeTypingIndicator(typingIndicator);
         
         // Generate AI response
-        const response = generateAIResponse(message);
+        const response = generateHealthResponse(message);
         addChatMessage(response, false);
         chatHistory.push({ role: 'assistant', content: response });
         
@@ -1514,15 +1412,13 @@ body {
       messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
       
       const disclaimerHtml = !isUser ? `
-        <div class="disclaimer" style="margin-top: 12px;">
-          <div class="disclaimer-text">
-            <strong>Priminimas:</strong> Tai edukacinė informacija. Rimtais atvejais kreipkitės į specialistą.
-          </div>
+        <div class="medical-disclaimer" style="margin-top: 12px;">
+          <strong>Priminimas:</strong> Tai bendroji informacija. Visais konkrečiais atvejais kreipkitės į gydytoją.
         </div>
       ` : '';
       
       messageDiv.innerHTML = `
-        <div class="message-avatar">${isUser ? '👤' : 'AI'}</div>
+        <div class="message-avatar">${isUser ? '👤' : '🩺'}</div>
         <div class="message-content">${content}${disclaimerHtml}</div>
       `;
       
@@ -1534,10 +1430,10 @@ body {
       const typingDiv = document.createElement('div');
       typingDiv.className = 'message ai typing-indicator-msg';
       typingDiv.innerHTML = `
-        <div class="message-avatar">AI</div>
+        <div class="message-avatar">🩺</div>
         <div class="message-content">
           <div class="typing-indicator">
-            <span>AI atsako</span>
+            <span>Ieškau sveikatos informacijos</span>
             <div class="typing-dots">
               <div class="typing-dot"></div>
               <div class="typing-dot"></div>
@@ -1558,39 +1454,44 @@ body {
       }
     }
 
-    function generateAIResponse(message) {
+    function generateHealthResponse(message) {
       const msg = message.toLowerCase();
       
-      // Stress and anxiety responses
-      if (msg.includes('stresas') || msg.includes('nerimas') || msg.includes('anxiety')) {
-        return `Suprantu, kad jaučiate stresą ar nerimą. Štai keletas technikų, kurios gali padėti:<br><br><strong>Greitoji pagalba:</strong><br>• 4-7-8 kvėpavimo technika (įkvėpimas 4s, sulaikymas 7s, iškvėpimas 8s)<br>• 5-4-3-2-1 grounding: 5 daiktai, kuriuos matote, 4 - kuriuos galite paliesti, 3 - kuriuos girdite, 2 - kuriuos kvepiare, 1 - kurį ragaujar<br>• Progresyvus raumenų atsipalaidavimas<br><br>Jei simptomai tęsiasi ilgiau nei 2 savaites, rekomenduoju kreiptis į specialistą.`;
+      // Fever/temperature responses
+      if (msg.includes('karščiavi') || msg.includes('temperatūr') || msg.includes('kar')) {
+        return `<strong>Karščiavimas - bendroji informacija:</strong><br><br>Normali kūno temperatūra: 36.1-37.2°C<br><br><strong>Kada kreiptis į gydytoją:</strong><br>• Temperatūra >38.5°C ir nedingstanti 3 dienas<br>• Temperatūra >39.5°C<br>• Su karščiavimu atsiranda kvėpavimo sunkumai<br>• Stiprus galvos skausmas, sprando sustingimas<br>• Vėmimas, dehidratacija<br><br><strong>Pirmoji pagalba:</strong><br>• Daug gėrimo<br>• Poilsys<br>• Lengvi drabužiai<br>• Antipiretikai (paracetamolis) pagal instrukciją`;
       }
       
-      // Sleep responses
-      if (msg.includes('miego') || msg.includes('mieg') || msg.includes('nemieg')) {
-        return `Miego problemos paveiks visą gerovę. Štai miego higienos principai:<br><br><strong>Miego optimizavimas:</strong><br>• Nuoseklus režimas (eiti miegoti ir keltis tuo pačiu laiku)<br>• Vengti ekranų 1 valandą prieš miegą<br>• Tamsi, vėsi aplinka (18-22°C)<br>• Atsipalaidavimo rutina prieš miegą<br><br>Jei problemos tęsiasi >1 mėnesio, rekomenduoju konsultuotis su gydytoju.`;
+      // Headache responses
+      if (msg.includes('galvos skausm') || msg.includes('galva skaud') || msg.includes('migren')) {
+        return `<strong>Galvos skausmas - bendroji informacija:</strong><br><br><strong>Dažnos priežastys:</strong><br>• Įtampos tipo galvos skausmas<br>• Migrena<br>• Dehidratacija<br>• Streso poveikis<br>• Miego trūkumas<br><br><strong>Kada skubiai kreiptis į gydytoją:</strong><br>• Staigus, labai stiprus skausmas<br>• Su vėmimu ir matymo sutrikimu<br>• Su karščiavimu ir sprando sustingimu<br>• Po galvos traumos<br>• Keičiasi skausmo pobūdis<br><br><strong>Pirmoji pagalba:</strong><br>• Poilsys tamsoje<br>• Šaltas komprestas<br>• Hidrotalansaspas<br>• Skausmą malšinantys vaistai pagal instrukciją`;
       }
       
-      // CBT and thoughts responses
-      if (msg.includes('minti') || msg.includes('negativ') || msg.includes('depresi')) {
-        return `Neigiamos mintys gali paveikti nuotaiką. CBT technikos gali padėti:<br><br><strong>Minčių restruktūrizavimas:</strong><br>• Atpažinkite automatines neigiamas mintis<br>• Užduokite klausimą: "Ar tai faktas ar nuomonė?"<br>• Ieškokite balanced perspektyvos<br>• Practice pozityvų savęs kalbėjimą<br><br>CBT terapeuto pagalba bus daug efektyvesnė nei savarankiškas taikymas.`;
+      // Cough responses
+      if (msg.includes('kosuly') || msg.includes('kosu') || msg.includes('kosėj')) {
+        return `<strong>Kosulys - bendroji informacija:</strong><br><br><strong>Kosul tipos:</strong><br>• Sausas (be skrepliavimo)<br>• Drėgnas (su skrepliavimo)<br>• Lėtinis (>8 savaitės)<br><br><strong>Kada kreiptis į gydytoją:</strong><br>• Kosulys su krauju<br>• Su aukšta temperatūra >3 dienos<br>• Kvėpavimo sunkumai<br>• Krūtinės skausmas<br>• Kosulys >2 savaitės be gerėjimo<br><br><strong>Pagalba namuose:</strong><br>• Daug šilto gėrimo<br>• Oro drėkinimas<br>• Medus ir citrina<br>• Vengti dirginančių veiksnių<br>• Poilsys`;
       }
       
-      // Mindfulness responses
-      if (msg.includes('meditacij') || msg.includes('mindfulness') || msg.includes('sąmoning')) {
-        return `Mindfulness praktikos gali sumažinti stresą ir pagerinti gerovę:<br><br><strong>Sąmoningumo technikos:</strong><br>• Breath awareness meditation (5-20 min)<br>• Body scan practice<br>• Present moment awareness<br>• Gratitude exercises<br><br>Pradėkite nuo trumpų sesijų (5-10 min). Meditacija turėtų būti maloni, ne streso šaltinis.`;
+      // Stomach pain responses
+      if (msg.includes('pilvo skausm') || msg.includes('pilvas skaud') || msg.includes('virškin')) {
+        return `<strong>Pilvo skausmas - bendroji informacija:</strong><br><br><strong>Dažnos priežastys:</strong><br>• Virškinimo sutrikimai<br>• Maisto netoleravimas<br>• Stresas<br>• Infekcijos<br>• Gastroenteritis<br><br><strong>Kada skubiai kreiptis į gydytoją:</strong><br>• Stiprus, staigus skausmas<br>• Su aukšta temperatūra<br>• Vėmimas su krauju<br>• Nenustojamas vėmimas<br>• Pilvo sustingimas<br>• Ūminio apendicito simptomi<br><br><strong>Lengvavimas namuose:</strong><br>• Lengva dieta<br>• Daug skysčių<br>• Šiltas kompresasis<br>• Vengti riebaus maisto`;
       }
       
-      // Default supportive responses
-      const defaultResponses = [
-        `Dėkoju, kad pasidalijote savo jausmais. Kiekvieno žmogaus patirtis yra svarbi. Galiu pasiūlyti įvairias technikas gerovės gerinimui - nuo streso valdymo iki mindfulness praktikų. Prisiminkit, kad pagalbos ieškojimas yra stiprybės ženklas.`,
+      // Dental pain responses
+      if (msg.includes('dantų skausm') || msg.includes('dantis skaud') || msg.includes('odontolog')) {
+        return `<strong>Dantų skausmas - bendroji informacija:</strong><br><br><strong>Dažnos priežastys:</strong><br>• Ėduonis (kariesas)<br>• Dantų ėmiamas<br>• Dantenų uždegimas<br>• Dantų jautrumas<br>• Sinusitas<br><br><strong>Kada kreiptis į odontologą:</strong><br>• Stiprus, nuolatinis skausmas<br>• Dantenos paburkusios<br>• Karščiavimas su dantų skausmu<br>• Veido patinimas<br>• Kraujuoja dantenos<br><br><strong>Skubūs veiksmai:</strong><br>• Skausmą malšinantys vaistai<br>• Šaltas kompresasis<br>• Burnos skalavimas druskos tirpalu<br>• Vengti karšto/šalto maisto<br>• Skubiai registruotis pas odontologą`;
+      }
+      
+      // Default health responses
+      const healthResponses = [
+        `Galiu pateikti bendrą informaciją apie sveikatos temą. Visais konkrečiais simptomų atvejais rekomenduoju kreiptis į šeimos gydytoją arba skambinti konsultacinėje linijoje 116 117.`,
         
-        `Psichikos sveikata yra lygiai taip pat svarbi kaip ir fizinė. Galiu padėti su konkrečiais sprendimais, tačiau jei jaučiate, kad reikia daugiau pagalbos, nesukolebkite kreiptis į specialistą.`,
+        `Sveikatos klausimais geriausia visada konsultuotis su medicinos specialistais. Galiu papasakoti bendrą informaciją apie prevenciją, sveiką gyvenimo būdą ar kada kreiptis į gydytoją.`,
         
-        `Suprantu, kad gali būti sunku. Jūsų jausmai yra validūs ir suprantami. Kokią sritį domintų labiausiai - streso valdymas, miego gerinimas ar gal emocijų reguliavimas?`
+        `Dėl konkrečių simptomų ar sveikatos problemų visada kreipkitės į gydytoją. Galiu pateikti edukacinę informaciją apie sveikatos temų ar prevencijos principus.`
       ];
       
-      return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+      return healthResponses[Math.floor(Math.random() * healthResponses.length)];
     }
   </script>
 </body>
