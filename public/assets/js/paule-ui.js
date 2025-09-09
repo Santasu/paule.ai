@@ -1,11 +1,10 @@
 /* =======================================================================
-   Paule – Premium Chat Orchestrator • v2.2.0
-   - Visi modeliai startuoja lygiagrečiai (SSE + JSON after soft timeout)
-   - „Pirmas pradėjęs rašyti“ → rodomas aukščiau (kortelė kuriama tik su 1-ąja delta)
-   - Nestabdom kitų, tik greitesnis matomas pirmiau
+   Paule – Premium Chat Orchestrator • v2.3.0 (patvarkyta)
+   - Lygiagretus startas (SSE + JSON po soft timeout)
+   - „Pirmas pradėjęs rašyti“ → aukščiau (kortelė tik su 1-ąja delta)
    - Global "AI mąsto..." kol nėra jokio teksto
-   - Follow-ups tik kai VISI baigė
-   - Klaidos – APAČIOJE, ne kortelėse
+   - Follow-ups tik kai VISI baigė • Klaidos – APAČIOJE
+   - Scroll-lock + „Į naujausią“ mygtukas • MD spalvos + bold glow
    ======================================================================= */
 (function () {
   'use strict';
@@ -59,7 +58,7 @@
     sidebar: document.getElementById('sidebar'),
     btnMobile: document.getElementById('btnMobile'),
     btnNewChat: document.getElementById('btnNewChat'),
-    mobileOverlay: document.getElementById('mobileOverlay'),
+    mobileOverlay: document.getElementById('mobileOverlay') || document.getElementById('drawerOverlay'),
     bottomSection: document.getElementById('bottomSection'),
     songsFeed: document.getElementById('songsFeed'),
     photosFeed: document.getElementById('photosFeed'),
@@ -274,12 +273,18 @@
         resolve();
       };
 
+      // kai kuriuose backend’uose nėra custom „start/done“ – tik onmessage
       es.addEventListener('start', e=>{
         try{ const d = JSON.parse(e.data||'{}'); if (d?.chat_id) state.chatId=d.chat_id; }catch(_){}
       });
 
-      es.addEventListener('delta', e=>{
-        const piece = safeDelta(e.data); if (!piece) return;
+      const handleDelta = (payload)=>{
+        if (payload === '[DONE]'){ // apsidraudimui
+          const panel = state.panels[front]; if (panel) panel.done = true;
+          state.lastRound[back] = (panel?.content||'');
+          finalize(); return;
+        }
+        const piece = safeDelta(payload); if (!piece) return;
         if (!gotAny){
           gotAny=true; state.hasAnyText=true; hideGlobalWait();
           if (!state.firstStarted) state.firstStarted = front;
@@ -288,10 +293,13 @@
         panel.content += piece;
         panel.el.innerHTML = parseMarkdown(panel.content);
         scrollToBottomIfNeeded();
-      });
+      };
+
+      es.addEventListener('delta', e=> handleDelta(e.data||''));
+      es.addEventListener('message', e=> handleDelta(e.data||'')); // jei nesiunčiam „event: delta“
+      es.onmessage = (e)=> handleDelta(e.data||'');                 // universali atsarga
 
       es.addEventListener('error', e=>{
-        // Sukaupiam klaidą apačiai, ne į panelę
         const msg = parseErr(e) || 'Modelio paslauga laikinai nepasiekiama.';
         state.errors.push({ front, name: nameOf(front), msg });
         finalize();
@@ -300,7 +308,6 @@
       es.addEventListener('done', _=>{
         const panel = state.panels[front];
         if (panel) panel.done = true;
-        // saugom „lastRound“ pagal back id
         state.lastRound[back] = (panel?.content||'');
         finalize();
       });
@@ -457,11 +464,46 @@
     if (document.querySelector('._ai-wait')) return;
     const w = document.createElement('div');
     w.className='_ai-wait';
+    w.setAttribute('aria-live','polite');
     w.innerHTML = `<div class="_ai-wait-inner"><div class="dots"><span></span><span></span><span></span></div><div>AI mąsto, palaukite akimirką…</div></div>`;
     el.chatArea?.appendChild(w);
     scrollToBottomIfNeeded();
   }
   function hideGlobalWait(){ const w=document.querySelector('._ai-wait'); if (w){ w.remove(); } }
+
+  // --- Scroll-lock / jump-to-latest ---
+  let jumpBtn;
+  function attachChatScroll(){
+    if (!el.chatArea) return;
+    if (!jumpBtn){
+      jumpBtn = document.createElement('button');
+      jumpBtn.className='jump-latest';
+      jumpBtn.innerHTML = `<img class="ui-icon" src="${ICONS_BASE}/arrow-down.svg" alt=""> Į naujausią`;
+      jumpBtn.addEventListener('click', ()=>{ el.chatArea.scrollTo({top:el.chatArea.scrollHeight, behavior:'smooth'}); jumpBtn.classList.remove('show'); state.stickToBottom=true; });
+      document.body.appendChild(jumpBtn);
+    }
+    const onScroll = ()=>{
+      const nearBottom = (el.chatArea.scrollTop + el.chatArea.clientHeight >= el.chatArea.scrollHeight - 80);
+      state.stickToBottom = !!nearBottom;
+      jumpBtn?.classList.toggle('show', !nearBottom);
+    };
+    el.chatArea.addEventListener('scroll', onScroll, { passive:true });
+    onScroll();
+  }
+  function scrollToBottomIfNeeded(){
+    if (!el.chatArea) return;
+    if (state.stickToBottom){
+      el.chatArea.scrollTo({ top: el.chatArea.scrollHeight });
+      jumpBtn?.classList.remove('show');
+    }else{
+      jumpBtn?.classList.add('show');
+    }
+  }
+  function updateBottomDock(){
+    if (!el.bottomSection || !el.chatArea) return;
+    const h = el.bottomSection.getBoundingClientRect().height || 0;
+    el.chatArea.style.paddingBottom = Math.max(16, Math.ceil(h + 8))+'px';
+  }
 
   // --- Transportai / utils ---
   function buildStreamUrl(qs){
@@ -495,24 +537,29 @@
     requestAnimationFrame(()=>{ node.style.transition='all .25s ease'; node.style.opacity='1'; node.style.transform='translateY(0)'; });
   }
 
-  // --- Markdown (su heading + spalvotu bold) ---
+  // --- Markdown (spalvos + bold glow + „####“ fix) ---
   function parseMarkdown(input){
     let src = String(input||'');
+
+    // pašalinam plikas antraštes streamo gale (pvz. "####" be teksto)
+    src = src.replace(/(^|\n)#{1,6}\s*$/g, '$1');
+
+    const HCOL = { 1:'#111827', 2:'#2563eb', 3:'#7c3aed', 4:'#16a34a', 5:'#f59e0b', 6:'#6b7280' };
     let t = escapeHtml(src);
 
-    // saugom ```code```
+    // saugojam ```code```
     const STORE=[]; t=t.replace(/```([\s\S]*?)```/g,(_,m)=>`@@CB_${STORE.push(m)-1}@@`);
 
     // inline code
-    t = t.replace(/`([^`]+)`/g, (_,m)=> `<code style="background:var(--bg-code,rgba(0,0,0,.06));padding:2px 4px;border-radius:4px">${m}</code>`);
+    t = t.replace(/`([^`]+)`/g, (_,m)=> `<code style="background:rgba(0,0,0,.06);padding:2px 4px;border-radius:4px">${m}</code>`);
 
-    // headings
-    t = t.replace(/^\s*######\s+(.+)$/gm, `<h6 style="margin:.25em 0 .15em;color:var(--accent,#5b7cff);font-weight:700">$1</h6>`);
-    t = t.replace(/^\s*#####\s+(.+)$/gm, `<h5 style="margin:.3em 0 .2em;color:var(--accent,#5b7cff);font-weight:700">$1</h5>`);
-    t = t.replace(/^\s*####\s+(.+)$/gm,  `<h4 style="margin:.35em 0 .2em;color:var(--accent,#5b7cff);font-weight:700">$1</h4>`);
-    t = t.replace(/^\s*###\s+(.+)$/gm,   `<h3 style="margin:.4em 0 .2em;color:var(--accent,#5b7cff);font-weight:700">$1</h3>`);
-    t = t.replace(/^\s*##\s+(.+)$/gm,    `<h2 style="margin:.5em 0 .25em;color:var(--accent,#5b7cff);font-weight:800">$1</h2>`);
-    t = t.replace(/^\s*#\s+(.+)$/gm,     `<h1 style="margin:.6em 0 .3em;color:var(--accent,#5b7cff);font-weight:800;font-size:1.15em">$1</h1>`);
+    // headings (H1—H6 spalvotos)
+    t = t.replace(/^\s*######\s+(.+)$/gm, `<h6 style="margin:.25em 0 .15em;color:${HCOL[6]};font-weight:800">$1</h6>`);
+    t = t.replace(/^\s*#####\s+(.+)$/gm, `<h5 style="margin:.3em 0 .2em;color:${HCOL[5]};font-weight:800">$1</h5>`);
+    t = t.replace(/^\s*####\s+(.+)$/gm,  `<h4 style="margin:.35em 0 .2em;color:${HCOL[4]};font-weight:800">$1</h4>`);
+    t = t.replace(/^\s*###\s+(.+)$/gm,   `<h3 style="margin:.4em 0 .2em;color:${HCOL[3]};font-weight:800">$1</h3>`);
+    t = t.replace(/^\s*##\s+(.+)$/gm,    `<h2 style="margin:.5em 0 .25em;color:${HCOL[2]};font-weight:900">$1</h2>`);
+    t = t.replace(/^\s*#\s+(.+)$/gm,     `<h1 style="margin:.6em 0 .3em;color:${HCOL[1]};font-weight:900;font-size:1.15em">$1</h1>`);
 
     // listai
     t = t.replace(/(^|\n)(?:[-*]\s.+)(?:\n[-*]\s.+)*/g, (block)=>{
@@ -527,14 +574,14 @@
     });
 
     // emphasis
-    t = t.replace(/\*\*([^*]+)\*\*/g, `<strong style="color:var(--accent,#5b7cff)">$1</strong>`);
+    t = t.replace(/\*\*([^*]+)\*\*/g, `<strong style="color:#111827;text-shadow:0 0 1px #5b3cc4">$1</strong>`);
     t = t.replace(/\*([^*]+)\*/g, `<em>$1</em>`);
 
     // newlines
     t = t.replace(/\n/g, '<br>');
 
     // grąžinam code blocks
-    t = t.replace(/@@CB_(\d+)@@/g, (_,i)=> `<pre style="background:var(--bg-code,rgba(0,0,0,.06));padding:10px;border-radius:10px;overflow:auto"><code>${STORE[Number(i)]||''}</code></pre>`);
+    t = t.replace(/@@CB_(\d+)@@/g, (_,i)=> `<pre style="background:rgba(0,0,0,.06);padding:10px;border-radius:10px;overflow:auto"><code>${STORE[Number(i)]||''}</code></pre>`);
 
     return t;
   }
@@ -549,7 +596,17 @@
   function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
   function timeNow(){ return new Date().toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'}); }
   function escapeHtml(x){ const d=document.createElement('div'); d.textContent=(x==null?'':String(x)); return d.innerHTML; }
-  function safeDelta(s){ try{ const o=JSON.parse(s||'{}'); return o.text||o.delta||o.content||''; }catch(_){ return ''; } }
+  function safeDelta(s){
+    if (!s) return '';
+    if (s === '[DONE]') return '';
+    try{
+      const o = JSON.parse(s);
+      return o.text || o.delta || o.content || (o?.choices?.[0]?.delta?.content) || '';
+    }catch(_){
+      // jei ateina paprastas tekstas – grąžinam jį
+      return s;
+    }
+  }
   function uniqueNonEmpty(arr){ const s=new Set(); const out=[]; (arr||[]).forEach(v=>{ const t=String(v||'').trim(); if(t&&!s.has(t)){ s.add(t); out.push(t);} }); return out; }
 
   function toast(title, details){
@@ -586,9 +643,7 @@
     sendAsNewRound(prompt, ['llama']);
   }
   function sendAsNewRound(prompt, fronts){
-    // į chat’ą kaip vartotojo žinutę – kad matytųsi kontekstas
     addUserBubble(prompt);
-    // startuojam orkestra
     resetRound();
     startOrchestrator(prompt, fronts).catch(()=>finalizeRound());
   }
@@ -608,4 +663,108 @@
   // Expose viešai
   window.PauleMain = { state, sendMessage, startDebate, startCompromise, startJudge };
 
+})();  // /assets/js/paule-ui.js (orchestrator)
+
+/* =======================================================================
+   Paule – Modelių žemėlapis • v1.3.0
+   Front (mygtuko id) -> Back (API model id) + transporto gebėjimai
+   ======================================================================= */
+(function () {
+  'use strict';
+
+  // Front (mygtuko id) -> Back (API model id)
+  const FRONT_TO_BACK = Object.freeze({
+    'auto':'auto','paule':'auto','augam-auto':'auto',
+    'chatgpt':'gpt-4o-mini',
+    'claude':'claude-4-sonnet',
+    'gemini':'gemini-2.5-flash',
+    'grok':'grok-4',
+    'deepseek':'deepseek-chat',
+    'llama':'meta-llama/Llama-4-Scout-17B-16E-Instruct'
+  });
+
+  const BACK_TO_FRONT = Object.freeze(
+    Object.entries(FRONT_TO_BACK).reduce((m,[f,b]) => (m[b]=f,m), {})
+  );
+
+  const MODEL_NAME = Object.freeze({
+    'auto':'Paule','paule':'Paule','augam-auto':'Paule',
+    'chatgpt':'ChatGPT','gpt-4o-mini':'ChatGPT',
+    'claude':'Claude','claude-4-sonnet':'Claude',
+    'gemini':'Gemini','gemini-2.5-flash':'Gemini',
+    'grok':'Grok','grok-4':'Grok',
+    'deepseek':'DeepSeek','deepseek-chat':'DeepSeek',
+    'llama':'Llama','meta-llama/Llama-4-Scout-17B-16E-Instruct':'Llama',
+    'judge':'Teisėjas'
+  });
+
+  const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
+  const MODEL_ICON = Object.freeze({
+    'auto': `${ICONS_BASE}/ai.svg`,
+    'paule': `${ICONS_BASE}/ai.svg`,
+    'chatgpt': `${ICONS_BASE}/chatgpt.svg`,
+    'claude': `${ICONS_BASE}/claude-seeklogo.svg`,
+    'gemini': `${ICONS_BASE}/gemini.svg`,
+    'grok': `${ICONS_BASE}/xAI.svg`,
+    'deepseek': `${ICONS_BASE}/deepseek.svg`,
+    'llama': `${ICONS_BASE}/llama.svg`,
+    'judge': `${ICONS_BASE}/legal-contract.svg`
+  });
+
+  // šituos laikom „JSON only“ (SSE pas juos neveikia) → JSON once fallback
+  const NON_SSE_FRONT = new Set(['claude','gemini','grok','claude-4-sonnet','gemini-2.5-flash','grok-4']);
+
+  const lc = s => String(s||'').toLowerCase().trim();
+  function canonicalFrontId(id){
+    if (!id) return 'auto';
+    let s=lc(id);
+    if (!FRONT_TO_BACK[s] && BACK_TO_FRONT[id]) s=BACK_TO_FRONT[id];
+    if (s==='paule' || s==='augam-auto') s='auto';
+    return s;
+  }
+  function getBackId(front){ const f=canonicalFrontId(front); return FRONT_TO_BACK[f]||f||'auto'; }
+  function nameOf(id){ return MODEL_NAME[id] || MODEL_NAME[canonicalFrontId(id)] || String(id); }
+  function iconOf(id){ const f=canonicalFrontId(id); return MODEL_ICON[f] || MODEL_ICON.auto; }
+  function isSSECapable(front){ const f=canonicalFrontId(front); return !NON_SSE_FRONT.has(f); }
+
+  function normalizeModelsInput(list){
+    if (!list) return ['auto'];
+    if (typeof list==='string'){
+      list = list.split(',').map(s=>s.trim()).filter(Boolean);
+    }
+    const set=new Set(list.map(canonicalFrontId).filter(Boolean));
+    if (!set.size) set.add('auto');
+    return Array.from(set);
+  }
+
+  function splitTransports(frontList){
+    const out={stream:[],json:[]};
+    normalizeModelsInput(frontList).forEach(fid=>{
+      if (fid==='auto'){ out.stream.push('auto'); return; }
+      (isSSECapable(fid)?out.stream:out.json).push(fid);
+    });
+    return out;
+  }
+
+  function listAll(){
+    const seen=new Set(); const fronts=Object.keys(FRONT_TO_BACK); const items=[];
+    fronts.forEach(f=>{
+      if (seen.has(f)) return; seen.add(f);
+      const back=FRONT_TO_BACK[f]||f;
+      items.push({ id:f, back, name:nameOf(f), icon:iconOf(f), sse:isSSECapable(f) });
+    });
+    items.push({ id:'judge', back:'meta-llama/Llama-4-Scout-17B-16E-Instruct', name:nameOf('judge'), icon:iconOf('judge'), sse:true });
+    return items;
+  }
+
+  async function ensureCapabilities(){ /* jei reikės – galit įdėti ping’ą */ return true; }
+
+  const API={ FRONT_TO_BACK,BACK_TO_FRONT,MODEL_NAME,MODEL_ICON,NON_SSE_FRONT,
+    canonicalFrontId,getBackId,nameOf,iconOf,isSSECapable,
+    normalizeModelsInput,splitTransports,listAll,ensureCapabilities
+  };
+  try{ Object.freeze(API);}catch(_){}
+  window.PAULE_MODELS=API;
+  window.getBackId=window.getBackId||getBackId;
+  window.nameOf=window.nameOf||nameOf;
 })();
