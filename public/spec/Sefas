@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="lt" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Virtuves šefo AI asistentas</title>
+  
+  <style>
+/* =========================================================
+   UNIVERSALI SPALVŲ SISTEMA
+   ========================================================= */
+:root {
+  --bg-primary: #0a0d14;
+  --bg-secondary: #0f1419;
+  --bg-elevated: #141922;
+  --bg-card: #1a1f2b;
+  --bg-overlay: #1e252f;
+  
+  --text-primary: #e8eaf0;
+  --text-secondary: #b8bcc8;
+  --text-muted: #8a8f9a;
+  --text-hint: #6b7280;
+  
+  --border-soft: #1f2937;
+  --border-medium: #374151;
+  
+  --accent-primary: #6366f1;
+  --accent-primary-hover: #4f46e5;
+  --accent-secondary: #8b5cf6;
+  --accent-ghost: #1e1b4b;
+  
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  --neu-raise: 
+    0 4px 8px rgba(0, 0, 0, 0.3), 
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  
+  --neu-press: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  
+  --neu-float: 
+    0 10px 25px rgba(0, 0, 0, 0.5), 
+    0 4px 8px rgba(0, 0, 0, 0.3);
+  
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --space-4xl: 40px;
+  
+  --transition-fast: 0.15s;
+  --transition-normal: 0.25s;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+}
+
+/* =========================================================
+   HERO SECTION
+   ========================================================= */
+.hero-section {
+  text-align: center;
+  margin-bottom: var(--space-4xl);
+  padding: var(--space-4xl) 0;
+}
+
+.hero-title {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+  margin-bottom: var(--space-lg);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.stats-banner {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+  background: var(--bg-card);
+  padding: var(--space-xl);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  min-width: 120px;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  display: block;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: var(--space-sm);
+}
+
+/* =========================================================
+   FEATURES GRID
+   ========================================================= */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-2xl);
+  padding: 0;
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--neu-float);
+}
+
+.feature-header {
+  position: relative;
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.3), rgba(0,0,0,.7));
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: white;
+  background: rgba(99, 102, 241, 0.9);
+  box-shadow: var(--neu-raise);
+  position: relative;
+  z-index: 2;
+}
+
+.feature-content {
+  padding: var(--space-3xl);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.feature-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+}
+
+.feature-desc {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-xl);
+}
+
+.feature-cta {
+  margin-top: var(--space-xl);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: var(--neu-raise);
+  transition: all var(--transition-normal) ease;
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neu-float);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border: none;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+  color: white;
+  border: none;
+}
+
+.btn-lg {
+  padding: var(--space-lg) var(--space-3xl);
+  font-size: 16px;
+  border-radius: var(--radius-xl);
+}
+
+/* =========================================================
+   MODAL/POPUP SYSTEM
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--neu-float);
+  border: 1px solid var(--border-soft);
+  width: 95%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  background: var(--bg-elevated);
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.modal-close {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.modal-close:hover {
+  background: var(--error);
+  color: white;
+  transform: scale(1.1);
+}
+
+.modal-body {
+  flex: 1;
+  padding: var(--space-xl);
+  overflow-y: auto;
+}
+
+/* =========================================================
+   CHAT SYSTEM - MOVED TO BOTTOM
+   ========================================================= */
+.chat-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-2xl);
+  margin-top: var(--space-4xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  text-align: center;
+}
+
+.chat-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.ai-status {
+  font-size: 14px;
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.chat-messages {
+  padding: var(--space-xl);
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.message {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+  animation: messageIn 0.3s ease;
+  max-width: 80%;
+}
+
+@keyframes messageIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.message.ai .message-avatar {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+}
+
+.message.user .message-avatar {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 2px solid var(--border-medium);
+}
+
+.message-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--neu-raise);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.message.user .message-content {
+  background: var(--accent-primary);
+  color: white;
+  border-color: transparent;
+}
+
+.message-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.message-image {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  aspect-ratio: 1;
+  position: relative;
+  cursor: pointer;
+  transition: transform var(--transition-normal);
+}
+
+.message-image:hover {
+  transform: scale(1.05);
+}
+
+.message-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.typing-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typing {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.chat-input {
+  padding: var(--space-xl);
+  border-top: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+}
+
+.input-group {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-end;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.message-input {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  color: var(--text-primary);
+  resize: none;
+  min-height: 50px;
+  max-height: 120px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-ghost);
+}
+
+.send-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.send-btn:hover {
+  background: var(--accent-primary-hover);
+  transform: scale(1.1);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================================================
+   FEATURE SPECIFIC STYLES
+   ========================================================= */
+.upload-zone {
+  border: 2px dashed var(--border-medium);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4xl);
+  text-align: center;
+  background: var(--bg-elevated);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+  margin: var(--space-xl) 0;
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--accent-primary);
+  background: var(--accent-ghost);
+  transform: scale(1.02);
+}
+
+.cuisine-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.cuisine-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.cuisine-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.recipe-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+}
+
+.recipe-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.recipe-image {
+  height: 120px;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.recipe-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.recipe-content {
+  padding: var(--space-md);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .cuisine-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--space-lg);
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  
+  .feature-card {
+    min-height: 350px;
+  }
+  
+  .stats-banner {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+  
+  .modal {
+    width: 98%;
+    margin: var(--space-sm);
+  }
+  
+  .cuisine-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .chat-messages {
+    max-height: 300px;
+  }
+  
+  .message {
+    max-width: 90%;
+  }
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Loading animation */
+.loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-soft);
+  border-radius: 50%;
+  border-top-color: var(--accent-primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <h1 class="hero-title">Virtuves šefo AI asistentas</h1>
+      <p class="hero-subtitle">
+        Profesionalus kulinarinis padėjėjas su AI analize ir personalizuotais receptų pasiūlymais
+      </p>
+      
+      <!-- Statistics Banner -->
+      <div class="stats-banner">
+        <div class="stat-item">
+          <span class="stat-number">61%</span>
+          <span class="stat-label">Žmonių gamina pirmadieniais</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">88%</span>
+          <span class="stat-label">Sveikiau valgo namuose</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">5</span>
+          <span class="stat-label">Vakarienių per savaitę</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">$166</span>
+          <span class="stat-label">Per mėnesį valgykloms</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Features -->
+    <div class="features-grid">
+      <div class="feature-card" data-feature="fridge">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1556909114-4bdc84c9e1fd?w=400&h=300&fit=crop');">
+          <div class="feature-icon">AI</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Šaldytuvo analizė</h3>
+          <p class="feature-desc">
+            Nufotografuokite šaldytuvo turinį ir per 10 sekundžių gaukite 5-10 personalizuotų receptų iš turimų produktų
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-primary btn-lg">Pradėti analizę</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="cuisines">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop');">
+          <div class="feature-icon" style="background: rgba(0,0,0,0.8); padding: 8px; font-size: 10px;">
+            🇮🇹🇫🇷🇯🇵🇲🇽🇮🇳
+          </div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">10 pasaulio virtuvių</h3>
+          <p class="feature-desc">
+            Tyrinėkite autentiškas kulinarines tradicijas nuo Italijos iki Japonijos su detaliais receptais ir patarimais
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-secondary btn-lg">Keliauti po virtuves</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="trending">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1563379091339-03246963d51a?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🔥</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Dabar populiaru</h3>
+          <p class="feature-desc">
+            Šios savaitės madingiausi receptai socialiniuose tinkluose, sezoniniai patiekalai ir sveikos mitybos tendencijos
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Peržiūrėti trends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="personal">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop');">
+          <div class="feature-icon">👤</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Asmeninė dieta</h3>
+          <p class="feature-desc">
+            Pritaikyta pagal jūsų mitybos poreikius, alergijas, sveikatos tikslus ir šeimos narių preferencijas
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Sukurti profilį</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="recipes">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1556909114-4bdc84c9e1fd?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📚</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Receptų biblioteka</h3>
+          <p class="feature-desc">
+            Daugiau nei 10,000 ištikrintų receptų su video instrukcijomis, naudotojų atsiliepimais ir variantais
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Naršyti receptus</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="learning">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🎓</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Kulinarijos mokykla</h3>
+          <p class="feature-desc">
+            Video pamokos su profesionaliais šefais, žingsnis po žingsnio mokymai ir sertifikatų programos
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Pradėti mokytis</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Section - Moved to bottom -->
+    <div class="chat-section">
+      <div class="chat-header">
+        <div class="chat-title">🧑‍🍳 AI Šefas</div>
+        <div class="ai-status">
+          <span class="status-dot"></span>
+          Aktyvus ir pasiruošęs padėti su receptais ir kulinarijos patarimais
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message ai">
+          <div class="message-avatar">AI</div>
+          <div class="message-content">
+            Sveiki! Esu jūsų asmeninis AI šefas. Galiu padėti rasti receptus, analizuoti produktus ar atsakyti į kulinarijos klausimus. Kaip galiu padėti šiandien?
+          </div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <div class="input-group">
+          <textarea 
+            class="message-input" 
+            id="messageInput" 
+            placeholder="Užduokite klausimą apie gaminimą, receptus ar produktus..."
+            rows="1"
+          ></textarea>
+          <button class="send-btn" id="sendBtn">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Feature Title</h2>
+        <button class="modal-close" id="modalClose">×</button>
+      </div>
+      <div class="modal-body" id="modalContent">
+        <!-- Content will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global state
+    let currentFeature = null;
+    let chatHistory = [];
+    let isGeneratingImages = false;
+    let messageCount = 0;
+
+    // DOM elements
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const modalClose = document.getElementById('modalClose');
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Recipe images for AI generation
+    const recipeImages = {
+      pasta: [
+        'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1563379091339-03246963d51a?w=300&h=300&fit=crop'
+      ],
+      soup: [
+        'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1558818498-28c1e002b655?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=300&h=300&fit=crop'
+      ],
+      salad: [
+        'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1547496502-affa22d38842?w=300&h=300&fit=crop'
+      ],
+      meat: [
+        'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1558030006-450675393462?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300&h=300&fit=crop'
+      ],
+      dessert: [
+        'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=300&h=300&fit=crop'
+      ],
+      mixed: [
+        'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&h=300&fit=crop'
+      ]
+    };
+
+    // Feature content templates
+    const featureContent = {
+      fridge: {
+        title: '🔍 Šaldytuvo AI analizė',
+        content: `
+          <div class="upload-zone" id="fridgeUpload">
+            <h3>📷 Įkelkite šaldytuvo nuotrauką</h3>
+            <p style="color: var(--text-muted); margin-top: 8px;">Vilkite nuotrauką čia arba spustelėkite pasirinkti failą</p>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>🚀 Kaip veikia AI analizė:</h4>
+            <ol style="margin: 16px 0; padding-left: 20px; color: var(--text-secondary);">
+              <li>Nufotografuokite šaldytuvo turinį (gali būti kelios nuotraukos)</li>
+              <li>AI atpažins visus produktus per 10 sekundžių</li>
+              <li>Gaukite 5-10 personalizuotų receptų</li>
+              <li>Kiekvienas receptas bus su AI generuotomis nuotraukomis</li>
+            </ol>
+          </div>
+
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>📊 Statistikos faktai:</h4>
+            <p style="color: var(--text-secondary); margin-top: 8px;">
+              • 88% žmonių valgo sveikiau namuose nei valgyklose<br>
+              • Vidutiniškai taupoma $166/mėn praleidžiamų valgykloms<br>
+              • 61% žmonių gamina vakarienę pirmadieniais<br>
+              • AI receptai su nuotraukomis 3x populiaresni
+            </p>
+          </div>
+        `
+      },
+      
+      cuisines: {
+        title: '🌍 10 pasaulio virtuvių',
+        content: `
+          <div class="cuisine-grid">
+            <div class="cuisine-card" data-cuisine="italian">
+              <div style="font-size: 32px; margin-bottom: 12px;">🇮🇹</div>
+              <h4>Italų virtuvė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Pasta, pizza, risotto</p>
+            </div>
+            <div class="cuisine-card" data-cuisine="french">
+              <div style="font-size: 32px; margin-bottom: 12px;">🇫🇷</div>
+              <h4>Prancūzų virtuvė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Rafinuotas skonis</p>
+            </div>
+            <div class="cuisine-card" data-cuisine="japanese">
+              <div style="font-size: 32px; margin-bottom: 12px;">🇯🇵</div>
+              <h4>Japonų virtuvė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Sushi, ramen, tempura</p>
+            </div>
+            <div class="cuisine-card" data-cuisine="mexican">
+              <div style="font-size: 32px; margin-bottom: 12px;">🇲🇽</div>
+              <h4>Meksikos virtuvė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Tacos, enchiladas</p>
+            </div>
+            <div class="cuisine-card" data-cuisine="indian">
+              <div style="font-size: 32px; margin-bottom: 12px;">🇮🇳</div>
+              <h4>Indijos virtuvė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Prieskoniai, curry</p>
+            </div>
+            <div class="cuisine-card" data-cuisine="thai">
+              <div style="font-size: 32px; margin-bottom: 12px;">🇹🇭</div>
+              <h4>Tailando virtuvė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Pad thai, tom yum</p>
+            </div>
+            <div class="cuisine-card" data-cuisine="chinese">
+              <div style="font-size: 32px; margin-bottom: 12px;">🇨🇳</div>
+              <h4>Kinų virtuvė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Wok, dim sum</p>
+            </div>
+            <div class="cuisine-card" data-cuisine="korean">
+              <div style="font-size: 32px; margin-bottom: 12px;">🇰🇷</div>
+              <h4>Korėjos virtuvė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Kimchi, bulgogi</p>
+            </div>
+            <div class="cuisine-card" data-cuisine="spanish">
+              <div style="font-size: 32px; margin-bottom: 12px;">🇪🇸</div>
+              <h4>Ispanų virtuvė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Paella, tapas</p>
+            </div>
+            <div class="cuisine-card" data-cuisine="greek">
+              <div style="font-size: 32px; margin-bottom: 12px;">🇬🇷</div>
+              <h4>Graikų virtuvė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Moussaka, gyros</p>
+            </div>
+          </div>
+        `
+      },
+      
+      trending: {
+        title: '🔥 Dabar populiaru',
+        content: `
+          <h4>📈 2025 metų kulinarijos tendencijos:</h4>
+          <div class="recipe-grid" style="margin: 20px 0;">
+            <div class="recipe-card" data-recipe="fermented">
+              <div class="recipe-image">
+                <img src="https://images.unsplash.com/photo-1553621042-f6e147245754?w=300&h=200&fit=crop" alt="Fermentuoti produktai">
+              </div>
+              <div class="recipe-content">
+                <h5>Fermentuoti produktai</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Kimchi, kombucha, sauerkraut</p>
+              </div>
+            </div>
+            <div class="recipe-card" data-recipe="onepot">
+              <div class="recipe-image">
+                <img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300&h=200&fit=crop" alt="One-pot receptai">
+              </div>
+              <div class="recipe-content">
+                <h5>One-pot receptai</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Viskas vienoje keptuvėje</p>
+              </div>
+            </div>
+            <div class="recipe-card" data-recipe="airfryer">
+              <div class="recipe-image">
+                <img src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=300&h=200&fit=crop" alt="Air fryer receptai">
+              </div>
+              <div class="recipe-content">
+                <h5>Air fryer stebuklai</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Sveiki kepsniai be aliejaus</p>
+              </div>
+            </div>
+            <div class="recipe-card" data-recipe="plantbased">
+              <div class="recipe-image">
+                <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=200&fit=crop" alt="Augaliniai receptai">
+              </div>
+              <div class="recipe-content">
+                <h5>Plant-based mėsa</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Sveiki pakaitalai</p>
+              </div>
+            </div>
+            <div class="recipe-card" data-recipe="lowcarb">
+              <div class="recipe-image">
+                <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?w=300&h=200&fit=crop" alt="Low carb">
+              </div>
+              <div class="recipe-content">
+                <h5>Low-carb patiekalai</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Mažai angliavandenių</p>
+              </div>
+            </div>
+            <div class="recipe-card" data-recipe="protein">
+              <div class="recipe-image">
+                <img src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&h=200&fit=crop" alt="High protein">
+              </div>
+              <div class="recipe-content">
+                <h5>High-protein mėsa</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Daug baltymų</p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      
+      personal: {
+        title: '👤 Asmeninė dietos programa',
+        content: `
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🎯 Jūsų sveikatos tikslai:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="goal" value="lose"> Numesti svorio
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="goal" value="gain"> Priaugti svorio
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="goal" value="maintain"> Palaikyti dabartinį svorį
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="goal" value="health"> Sveikiau maitintis
+              </label>
+            </div>
+          </div>
+          
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🚫 Alergijos ir apribojimai:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="allergy" value="gluten"> Be gliuteno
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="allergy" value="lactose"> Be laktozės
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="allergy" value="nuts"> Be riešutų
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="allergy" value="vegetarian"> Vegetariška
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="allergy" value="vegan"> Veganiška
+              </label>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="createPersonalPlan()">Sukurti asmeninį planą</button>
+          </div>
+        `
+      },
+      
+      recipes: {
+        title: '📚 Receptų biblioteka',
+        content: `
+          <div class="recipe-grid">
+            <div class="recipe-card" data-recipe="carbonara">
+              <div class="recipe-image">
+                <img src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=300&h=200&fit=crop" alt="Carbonara">
+              </div>
+              <div class="recipe-content">
+                <h5>Carbonara klasika</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">⭐⭐⭐⭐⭐ (4.8) • 20 min</p>
+              </div>
+            </div>
+            <div class="recipe-card" data-recipe="tomyum">
+              <div class="recipe-image">
+                <img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300&h=200&fit=crop" alt="Tom Yum">
+              </div>
+              <div class="recipe-content">
+                <h5>Tom Yum sriuba</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">⭐⭐⭐⭐⭐ (4.9) • 30 min</p>
+              </div>
+            </div>
+            <div class="recipe-card" data-recipe="caesar">
+              <div class="recipe-image">
+                <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=200&fit=crop" alt="Cezario salotos">
+              </div>
+              <div class="recipe-content">
+                <h5>Cezario salotos</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">⭐⭐⭐⭐ (4.7) • 15 min</p>
+              </div>
+            </div>
+            <div class="recipe-card" data-recipe="stroganoff">
+              <div class="recipe-image">
+                <img src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&h=200&fit=crop" alt="Beef Stroganoff">
+              </div>
+              <div class="recipe-content">
+                <h5>Beef Stroganoff</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">⭐⭐⭐⭐⭐ (4.6) • 45 min</p>
+              </div>
+            </div>
+            <div class="recipe-card" data-recipe="risotto">
+              <div class="recipe-image">
+                <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=300&h=200&fit=crop" alt="Risotto">
+              </div>
+              <div class="recipe-content">
+                <h5>Grybų risotto</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">⭐⭐⭐⭐ (4.5) • 35 min</p>
+              </div>
+            </div>
+            <div class="recipe-card" data-recipe="pancakes">
+              <div class="recipe-image">
+                <img src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=300&h=200&fit=crop" alt="Pancakes">
+              </div>
+              <div class="recipe-content">
+                <h5>Amerikietiški blynai</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">⭐⭐⭐⭐⭐ (4.9) • 15 min</p>
+              </div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <h4>🔍 Filtrai:</h4>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;">
+              <button class="btn" style="font-size: 12px; padding: 6px 12px;">Greiti (≤30min)</button>
+              <button class="btn" style="font-size: 12px; padding: 6px 12px;">Sveiki</button>
+              <button class="btn" style="font-size: 12px; padding: 6px 12px;">Vegetariški</button>
+              <button class="btn" style="font-size: 12px; padding: 6px 12px;">Be gliuteno</button>
+              <button class="btn" style="font-size: 12px; padding: 6px 12px;">Desertai</button>
+            </div>
+          </div>
+        `
+      },
+      
+      learning: {
+        title: '🎓 Kulinarijos mokykla',
+        content: `
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🔰 Pradedantiesiems</h4>
+            <p style="color: var(--text-secondary); margin: 8px 0;">
+              Baziniai metodai, peilių naudojimas, pagrindinis gaminimas
+            </p>
+            <div style="font-size: 12px; color: var(--text-muted);">4 savaitės • 12 pamokų</div>
+            <button class="btn btn-primary" style="margin-top: 12px;" onclick="startCourse('beginner')">Pradėti kursą</button>
+          </div>
+          
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>⚡ Pažengusiems</h4>
+            <p style="color: var(--text-secondary); margin: 8px 0;">
+              Profesionalūs triukai, sudėtingi patiekalai, prezentacija
+            </p>
+            <div style="font-size: 12px; color: var(--text-muted);">8 savaitės • 24 pamokos</div>
+            <button class="btn btn-secondary" style="margin-top: 12px;" onclick="startCourse('advanced')">Pradėti kursą</button>
+          </div>
+          
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🏆 Master Class</h4>
+            <p style="color: var(--text-secondary); margin: 8px 0;">
+              Pamokos su garsiausiais šefais, sertifikatų programos
+            </p>
+            <div style="font-size: 12px; color: var(--text-muted);">12 savaičių • 36 pamokos</div>
+            <button class="btn" style="margin-top: 12px;" onclick="startCourse('master')">Pradėti kursą</button>
+          </div>
+        `
+      }
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Feature card clicks
+      document.querySelectorAll('.feature-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const feature = this.dataset.feature;
+          openModal(feature);
+        });
+      });
+
+      // Modal close events
+      modalClose.addEventListener('click', closeModal);
+      
+      modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) {
+          closeModal();
+        }
+      });
+
+      // Escape key to close
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+          closeModal();
+        }
+      });
+
+      // Chat functionality
+      sendBtn.addEventListener('click', sendMessage);
+      
+      messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Auto-resize textarea
+      messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      });
+    });
+
+    function openModal(feature) {
+      currentFeature = feature;
+      const content = featureContent[feature];
+      
+      if (content) {
+        modalTitle.innerHTML = content.title;
+        modalContent.innerHTML = content.content;
+        modalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Bind events for new content
+        bindContentEvents();
+      }
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        modalContent.innerHTML = '';
+        modalTitle.innerHTML = '';
+        currentFeature = null;
+      }, 300);
+    }
+
+    function bindContentEvents() {
+      // Upload zone
+      const uploadZone = document.getElementById('fridgeUpload');
+      if (uploadZone) {
+        uploadZone.addEventListener('click', openFileDialog);
+        uploadZone.addEventListener('dragover', handleDragOver);
+        uploadZone.addEventListener('drop', handleDrop);
+      }
+
+      // Cuisine cards
+      document.querySelectorAll('.cuisine-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const cuisine = this.dataset.cuisine;
+          const cuisineNames = {
+            italian: 'Italų',
+            french: 'Prancūzų', 
+            japanese: 'Japonų',
+            mexican: 'Meksikos',
+            indian: 'Indijos',
+            thai: 'Tailando',
+            chinese: 'Kinų',
+            korean: 'Korėjos',
+            spanish: 'Ispanų',
+            greek: 'Graikų'
+          };
+          sendChatMessage(`Noriu sužinoti apie ${cuisineNames[cuisine]} virtuvę ir receptus`);
+          closeModal();
+        });
+      });
+
+      // Recipe cards
+      document.querySelectorAll('.recipe-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const recipe = this.dataset.recipe;
+          const recipeNames = {
+            carbonara: 'Carbonara pasta',
+            tomyum: 'Tom Yum sriuba',
+            caesar: 'Cezario salotos',
+            stroganoff: 'Beef Stroganoff',
+            fermented: 'Fermentuoti produktai',
+            onepot: 'One-pot receptai',
+            airfryer: 'Air fryer receptai',
+            plantbased: 'Augaliniai patiekalai',
+            risotto: 'Grybų risotto',
+            pancakes: 'Amerikietiški blynai',
+            lowcarb: 'Low-carb patiekalai',
+            protein: 'High-protein receptai'
+          };
+          sendChatMessage(`Norėčiau išmokti gaminti ${recipeNames[recipe]}. Galite parodyti receptą su nuotraukomis?`);
+          closeModal();
+        });
+      });
+    }
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+      
+      sendChatMessage(message);
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+    }
+
+    function sendChatMessage(message) {
+      // Add user message
+      addChatMessage(message, true);
+      chatHistory.push({ role: 'user', content: message });
+      messageCount++;
+      
+      // Show typing indicator
+      const typingIndicator = addTypingIndicator();
+      
+      // Simulate AI processing
+      setTimeout(() => {
+        removeTypingIndicator(typingIndicator);
+        
+        // Generate AI response
+        const response = generateAIResponse(message);
+        addChatMessage(response.text, false);
+        chatHistory.push({ role: 'assistant', content: response.text });
+        
+        // Generate images after 2-3 messages and if response includes recipes
+        if (messageCount >= 2 && response.generateImages) {
+          setTimeout(() => {
+            generateRecipeImages(response.imageType);
+          }, 1000);
+        }
+      }, 1000 + Math.random() * 1500);
+    }
+
+    function addChatMessage(content, isUser = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+      
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${isUser ? '👤' : 'AI'}</div>
+        <div class="message-content">${content}</div>
+      `;
+      
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message ai typing-indicator-msg';
+      typingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          <div class="typing-indicator">
+            <span>AI atsako</span>
+            <div class="typing-dots">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      chatMessages.appendChild(typingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return typingDiv;
+    }
+
+    function removeTypingIndicator(indicator) {
+      if (indicator && indicator.parentNode) {
+        indicator.remove();
+      }
+    }
+
+    function generateAIResponse(message) {
+      const msg = message.toLowerCase();
+      
+      // Recipe-related responses with image generation
+      if (msg.includes('receptas') || msg.includes('receptų') || msg.includes('gaminti')) {
+        const responses = [
+          {
+            text: `Puiku! Štai ${getRecipeFromMessage(msg)} receptas:<br><br><strong>Ingredientai:</strong><br>• Pagrindiniai produktai pagal klasikinį receptą<br>• Prieskoniai ir žolelės<br><br><strong>Gaminimo žingsniai:</strong><br>1. Paruošiame ingredientus<br>2. Gaminame pagal tradicinius metodus<br>3. Pateikiame gražiai<br><br>Dabar generuoju patiekalo nuotraukas! 📸`,
+            generateImages: true,
+            imageType: getImageTypeFromMessage(msg)
+          }
+        ];
+        return responses[0];
+      }
+      
+      // Upload response
+      if (msg.includes('nuotrauk') || msg.includes('įkel')) {
+        return {
+          text: `Puiku! Analizuoju jūsų šaldytuvo nuotrauką...<br><br><strong>Aptikti produktai:</strong><br>• Pienas, kiaušiniai, sviestas<br>• Pomidorai, salotos, agurkai<br>• Vištienos krūtinėlė<br>• Sūris (3 rūšys)<br><br>Dabar siūlysiu receptus su AI generuotomis nuotraukomis! 🔍`,
+          generateImages: true,
+          imageType: 'mixed'
+        };
+      }
+      
+      // Cuisine responses
+      if (msg.includes('virtuvė') || msg.includes('virtuvės')) {
+        return {
+          text: `Puiki virtuvės pasirinkimas! Štai keletas autentiškų receptų su tradiciniais metodais ir šiuolaikiniais sprendimais.<br><br>Generuoju nuotraukas tipinių patiekalų, kad pamatytumėte galutinį rezultatą! 🌍`,
+          generateImages: true,
+          imageType: 'pasta'
+        };
+      }
+      
+      // Default responses
+      const defaultResponses = [
+        {
+          text: `Supratau jūsų klausimą! 61% žmonių gamina daugiau namie nei anksčiau. Galiu pasiūlyti kelis sprendimus su AI generuotomis nuotraukomis, kad pamatytumėte, kaip turi atrodyti patiekalas.`,
+          generateImages: true,
+          imageType: 'salad'
+        },
+        {
+          text: `Puikus klausimas! Pagal statistikas, 88% žmonių valgo sveikiau namuose. Pasiūlysiu receptų variantus su vizualiais pavyzdžiais.`,
+          generateImages: true,
+          imageType: 'soup'
+        },
+        {
+          text: `Dėkoju už klausimą! Kulinarijos srityje yra daug įdomių sprendimų. Galiu pasiūlyti receptus su detaliais instrukcijomis ir nuotraukomis.`,
+          generateImages: false,
+          imageType: null
+        }
+      ];
+      
+      return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+    }
+
+    function getRecipeFromMessage(msg) {
+      if (msg.includes('carbonara')) return 'Carbonara';
+      if (msg.includes('sriuba') || msg.includes('tom yum')) return 'Tom Yum sriubos';
+      if (msg.includes('salotos') || msg.includes('caesar')) return 'Cezario salotų';
+      if (msg.includes('stroganoff')) return 'Beef Stroganoff';
+      if (msg.includes('risotto')) return 'grybų risotto';
+      if (msg.includes('blynai') || msg.includes('pancakes')) return 'amerikietiškų blynų';
+      return 'klasikinio';
+    }
+
+    function getImageTypeFromMessage(msg) {
+      if (msg.includes('pasta') || msg.includes('carbonara') || msg.includes('risotto')) return 'pasta';
+      if (msg.includes('sriuba') || msg.includes('soup')) return 'soup';
+      if (msg.includes('salotos') || msg.includes('salad')) return 'salad';
+      if (msg.includes('mėsa') || msg.includes('meat') || msg.includes('stroganoff')) return 'meat';
+      if (msg.includes('blynai') || msg.includes('pancakes') || msg.includes('desertas')) return 'dessert';
+      return 'mixed'; // default
+    }
+
+    async function generateRecipeImages(imageType = 'pasta') {
+      if (isGeneratingImages) return;
+      isGeneratingImages = true;
+      
+      // Add loading message with image placeholders
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'message ai';
+      loadingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          🎨 Generuoju AI receptų nuotraukas...
+          <div class="message-images">
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+          </div>
+          <p style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">Paspauskite ant nuotraukos detalesniems instrukcijoms</p>
+        </div>
+      `;
+      
+      chatMessages.appendChild(loadingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // Simulate image generation delay
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Replace with actual images
+      const images = recipeImages[imageType] || recipeImages.pasta;
+      const imageElements = loadingDiv.querySelectorAll('.message-image');
+      
+      images.slice(0, 3).forEach((imageUrl, index) => {
+        if (imageElements[index]) {
+          imageElements[index].innerHTML = `<img src="${imageUrl}" alt="AI Generated Recipe Image" data-recipe-step="${index + 1}">`;
+          imageElements[index].addEventListener('click', () => {
+            handleImageClick(imageType, index + 1);
+          });
+        }
+      });
+      
+      // Update message text
+      const messageContent = loadingDiv.querySelector('.message-content');
+      messageContent.firstChild.textContent = '✨ AI sugeneravo receptų nuotraukas:';
+      
+      isGeneratingImages = false;
+    }
+
+    function handleImageClick(imageType, step) {
+      const stepInstructions = {
+        pasta: [
+          'Žingsnis 1: Užvirinkite sūdytą vandenį didelėje keptuvėje. Įmeskite makaronus ir virkite al dente konsistencijos.',
+          'Žingsnis 2: Atskiroje keptuvėje kepkite šoninę iki kristalinės. Pridėkite smulkintą česnaką ir kepkite dar 1 minutę.',
+          'Žingsnis 3: Išvirtuose makaronuose sumaišykite kiaušinių mišinį su sūriu. Patiekite iš karto su šviežiais žolelėmis.'
+        ],
+        soup: [
+          'Žingsnis 1: Paruoškite visus ingredientus - supjaustykite daržoves, paruoškite prieskonius ir sultinį.',
+          'Žingsnis 2: Keptuvėje kepkite daržoves iki minkštumo, pridėkite prieskonius ir sultinį. Virinkite 20-25 minutes.',
+          'Žingsnis 3: Prieskoninkite pagal skonį, puoškite šviežiomis žolelėmis ir pateikite su duona.'
+        ],
+        salad: [
+          'Žingsnis 1: Kruopščiai nuplaukite ir nusausinkite salotas. Supjaustykite pomidorus ir agurkus.',
+          'Žingsnis 2: Paruoškite padažą - sumaišykite alyvų aliejų, citrinų sultis, druską ir piprą.',
+          'Žingsnis 3: Sumaišykite visus ingredientus, paberkite sūriu ir iš karto patiekite.'
+        ],
+        meat: [
+          'Žingsnis 1: Paruoškite mėsą - nusausinkite ir prieskoninkite druska bei pipirais už 30 min iki kepimo.',
+          'Žingsnis 2: Kepkite stipriame karštyje po 3-4 minutes kiekvieną pusę, kad susidarytų skani plėvelė.',
+          'Žingsnis 3: Leiskite mėsai pailsėti 5 minutes, tada pjaukite ir patiekite su garnyru.'
+        ],
+        dessert: [
+          'Žingsnis 1: Paruoškite tešlą - sumaišykite sausus ingredientus vienoje dubenyje, šlapius - kitoje.',
+          'Žingsnis 2: Atsargiai sumaišykite abi mases. Kepkite vidutiniame karštyje iki auksinės spalvos.',
+          'Žingsnis 3: Atvėsinkite ir puoškite pagal skonį - uogomis, šokoladu ar glajumi.'
+        ],
+        mixed: [
+          'Žingsnis 1: Paruoškite visus ingredientus pagal receptą - supjaustykite, pasverskite, sumatuokite.',
+          'Žingsnis 2: Laikykitės receptūros ir gaminimo laiko. Stebėkite procesą ir koreguokite prieskonius.',
+          'Žingsnis 3: Patiekite gražiai išdėstę lėkštėje, papuoškite žolelėmis ar padažu.'
+        ]
+      };
+      
+      const instructions = stepInstructions[imageType] || stepInstructions.mixed;
+      const instruction = instructions[step - 1] || instructions[0];
+      
+      setTimeout(() => {
+        addChatMessage(`📝 ${instruction}`, false);
+      }, 500);
+    }
+
+    // File upload functions
+    function openFileDialog() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.multiple = true;
+      input.onchange = function(e) {
+        const files = e.target.files;
+        if (files.length > 0) {
+          handleFileUpload(files);
+        }
+      };
+      input.click();
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('dragover');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileUpload(files);
+      }
+    }
+
+    function handleFileUpload(files) {
+      const uploadZone = document.getElementById('fridgeUpload');
+      if (uploadZone) {
+        uploadZone.innerHTML = `
+          <div style="color: var(--success);">
+            <h3>✅ Analizuojama...</h3>
+            <p style="margin-top: 8px;">Įkelta ${files.length} nuotrauka(-os)</p>
+          </div>
+        `;
+        
+        // Close modal and trigger chat message
+        closeModal();
+        sendChatMessage(`Įkėliau ${files.length} šaldytuvo nuotrauką(-as) analizei`);
+      }
+    }
+
+    // Additional functions for interactive elements
+    function createPersonalPlan() {
+      closeModal();
+      sendChatMessage('Norėčiau sukurti asmeninę dietos programą pagal mano poreikius');
+    }
+
+    function startCourse(level) {
+      const levels = {
+        beginner: 'pradedančiųjų',
+        advanced: 'pažengusiųjų', 
+        master: 'Master Class'
+      };
+      closeModal();
+      sendChatMessage(`Norėčiau pradėti ${levels[level]} kulinarijos kursą`);
+    }
+
+    // Initialize
+    console.log('🚀 Virtuves šefo AI sistema su chat ir foto generavimu paleista!');
+  </script>
+</body>
+</html>
