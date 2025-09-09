@@ -1,69 +1,114 @@
-// /api/stream.js  (Vercel, Node)
-module.exports = async (req, res) => {
-  // CORS ir preflight (jei prireiks)
+// /api/stream.js – SSE vieningu formatu.
+// GET /api/stream?model=<backId>&message=...&chat_id=...
+// Eventai:
+//   event:start   data: {"model":"...","chat_id":"..."}
+//   event:delta   data: {"text":"..."}
+//   event:done    data: {"finish_reason":"stop"}
+//   event:error   data: {"message":"..."}
+// Suderinamumas: jei ?mode=once – grąžina JSON kaip /api/complete (legacy).
+
+export const config = { runtime: 'nodejs' };
+
+export default async function handler(req, res) {
+  // Legacy „mode=once“
+  if ((req.method === 'POST' || req.method === 'GET') && (req.query.mode === 'once')) {
+    return onceCompat(req, res);
+  }
+
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', '*');
-    res.statusCode = 204;
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(204).end();
+  }
+  if (req.method !== 'GET') {
+    return res.status(405).json({ ok:false, error:'Method Not Allowed' });
+  }
+
+  // HEAD/probe galime užbaigti greitai
+  const { model='', message='', chat_id='', probe } = req.query;
+  const chatId = chat_id || ('chat_'+Date.now()+'_'+Math.random().toString(36).slice(2));
+
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders && res.flushHeaders();
+
+  const writeEvent = (event, dataObj) => {
+    const payload = (typeof dataObj==='string') ? dataObj : JSON.stringify(dataObj||{});
+    res.write(`event: ${event}\n`);
+    res.write(`data: ${payload}\n\n`);
+  };
+
+  // start
+  writeEvent('start', { model, chat_id: chatId });
+
+  // jei tik „probe“ – baigiam
+  if (String(probe||'') === '1') {
+    writeEvent('done', { finish_reason:'probe' });
     return res.end();
   }
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
-  // Parametrai
-  const url = new URL(req.url, 'http://localhost');
-  const q   = Object.fromEntries(url.searchParams.entries());
-  const body = (req.method === 'POST' && req.headers['content-type']?.includes('application/json'))
-    ? await new Promise(r => { let s=''; req.on('data',c=>s+=c); req.on('end',()=>{ try{r(JSON.parse(s||'{}'))}catch(_){r({})} }); })
-    : {};
+  // ČIA integruok tikrą srautą iš tiekėjo (OpenAI, Anthropic, Google ir t.t.)
+  // Dabar – demo „tokenizacija“:
+  const text = demoStreamText(message, model);
+  const chunks = simulateChunks(text);
 
-  const mode   = String(q.mode || body.mode || '').toLowerCase();
-  const msg    = String(body.message || q.message || 'Labas!');
-  const models = String(body.models || q.models || '').split(',').map(s=>s.trim()).filter(Boolean);
-  const chatId = String(q.chat_id || body.chat_id || ('chat_'+Date.now()));
-
-  // ---- JSON atsakymas (mode=once) ----
-  if (mode === 'once') {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-store');
-
-    const list = models.length ? models : ['auto'];
-    const answers = list.map(m => ({
-      model: m,
-      text: `(${m}) JSON once atsakymas: „${msg}“`
-    }));
-
-    return res.end(JSON.stringify({ ok: true, chat_id: chatId, answers }));
-  }
-
-  // ---- SSE stream (numatytoji šaka) ----
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-cache, no-transform');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no');
-  res.flushHeaders?.();
-
-  // start event (pasigauna UI, jei siunčiam)
-  res.write(`event: start\ndata: ${JSON.stringify({ chat_id: chatId })}\n\n`);
-
-  const chunks = [
-    `Pradžia: ${msg}`,
-    '…dirbam…',
-    '…testuojam SSE…',
-    'Baigta.'
-  ];
-  let i = 0;
-  const timer = setInterval(() => {
-    const t = chunks[i++];
-    if (t) {
-      res.write(`data: ${JSON.stringify({ choices:[{ delta:{ role:'assistant', content: t } }] })}\n\n`);
-    } else {
+  let i=0;
+  const timer = setInterval(()=>{
+    if (i>=chunks.length){
       clearInterval(timer);
-      res.write('data: [DONE]\n\n');
-      res.end();
+      writeEvent('done', { finish_reason:'stop' });
+      return res.end();
     }
-  }, 450);
+    writeEvent('delta', { text: chunks[i++] });
+  }, 40);
 
-  req.on('close', () => { clearInterval(timer); try{ res.end(); } catch(_){} });
-};
+  req.on('close', ()=>{ try{ clearInterval(timer);}catch(_){ } try{res.end();}catch(_){ } });
+}
+
+// Legacy: POST /api/stream?mode=once – kad sena UI dalis nenulūžtų
+async function onceCompat(req, res){
+  if (req.method==='OPTIONS'){
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(204).end();
+  }
+  let body={};
+  if (req.method==='POST'){
+    body = await new Promise((resolve,reject)=>{
+      let b=''; req.on('data',c=>b+=c); req.on('end',()=>{try{resolve(JSON.parse(b||'{}'))}catch(e){reject(e)}}); });
+  }
+  const models = String(body.models||req.query.models||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const message = body.message || req.query.message || '';
+  const chat_id = body.chat_id || ('chat_'+Date.now()+'_'+Math.random().toString(36).slice(2));
+
+  const answers = models.map(m=>({ model:m, text: demoComplete(message,m) }));
+
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  return res.status(200).json({ ok:true, chat_id, answers });
+}
+
+function demoStreamText(message, model){
+  const q = String(message||'').toLowerCase();
+  if (q.match(/\b2\s*x\s*2\b/) || q.includes('2x2')) return `(${model}) 4`;
+  return `(${model}) ${message||'Sveikas!'}`;
+}
+function simulateChunks(text){
+  const out=[]; const t=String(text||'');
+  for (let i=0;i<t.length;i+=Math.max(1, Math.floor(Math.random()*3))){
+    out.push(t.slice(i,i+1));
+  }
+  return out;
+}
+function demoComplete(message, model){
+  const q = String(message||'').toLowerCase();
+  let a = '';
+  if (q.match(/\b2\s*x\s*2\b/) || q.includes('2x2')) a = '4';
+  else a = 'Atsakymas į: ' + message;
+  return `(${model}) ${a}`;
+}
