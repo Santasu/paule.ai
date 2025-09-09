@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="lt" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pardavimų AI asistentas</title>
+  
+  <style>
+/* =========================================================
+   UNIVERSALI SPALVŲ SISTEMA
+   ========================================================= */
+:root {
+  --bg-primary: #0a0d14;
+  --bg-secondary: #0f1419;
+  --bg-elevated: #141922;
+  --bg-card: #1a1f2b;
+  --bg-overlay: #1e252f;
+  
+  --text-primary: #e8eaf0;
+  --text-secondary: #b8bcc8;
+  --text-muted: #8a8f9a;
+  --text-hint: #6b7280;
+  
+  --border-soft: #1f2937;
+  --border-medium: #374151;
+  
+  --accent-primary: #10b981;
+  --accent-primary-hover: #059669;
+  --accent-secondary: #3b82f6;
+  --accent-ghost: #064e3b;
+  
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  --neu-raise: 
+    0 4px 8px rgba(0, 0, 0, 0.3), 
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  
+  --neu-press: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  
+  --neu-float: 
+    0 10px 25px rgba(0, 0, 0, 0.5), 
+    0 4px 8px rgba(0, 0, 0, 0.3);
+  
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --space-4xl: 40px;
+  
+  --transition-fast: 0.15s;
+  --transition-normal: 0.25s;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+}
+
+/* =========================================================
+   HERO SECTION
+   ========================================================= */
+.hero-section {
+  text-align: center;
+  margin-bottom: var(--space-4xl);
+  padding: var(--space-4xl) 0;
+}
+
+.hero-title {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+  margin-bottom: var(--space-lg);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.stats-banner {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+  background: var(--bg-card);
+  padding: var(--space-xl);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  min-width: 120px;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  display: block;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: var(--space-sm);
+}
+
+/* =========================================================
+   FEATURES GRID
+   ========================================================= */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-2xl);
+  padding: 0;
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--neu-float);
+}
+
+.feature-header {
+  position: relative;
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.3), rgba(0,0,0,.7));
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: white;
+  background: rgba(16, 185, 129, 0.9);
+  box-shadow: var(--neu-raise);
+  position: relative;
+  z-index: 2;
+}
+
+.feature-content {
+  padding: var(--space-3xl);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.feature-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+}
+
+.feature-desc {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-xl);
+}
+
+.feature-cta {
+  margin-top: var(--space-xl);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: var(--neu-raise);
+  transition: all var(--transition-normal) ease;
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neu-float);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border: none;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+  color: white;
+  border: none;
+}
+
+.btn-lg {
+  padding: var(--space-lg) var(--space-3xl);
+  font-size: 16px;
+  border-radius: var(--radius-xl);
+}
+
+/* =========================================================
+   MODAL/POPUP SYSTEM
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--neu-float);
+  border: 1px solid var(--border-soft);
+  width: 95%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  background: var(--bg-elevated);
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.modal-close {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.modal-close:hover {
+  background: var(--error);
+  color: white;
+  transform: scale(1.1);
+}
+
+.modal-body {
+  flex: 1;
+  padding: var(--space-xl);
+  overflow-y: auto;
+}
+
+/* =========================================================
+   CHAT SYSTEM
+   ========================================================= */
+.chat-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-2xl);
+  margin-top: var(--space-4xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  text-align: center;
+}
+
+.chat-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.ai-status {
+  font-size: 14px;
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.chat-messages {
+  padding: var(--space-xl);
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.message {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+  animation: messageIn 0.3s ease;
+  max-width: 80%;
+}
+
+@keyframes messageIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.message.ai .message-avatar {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+}
+
+.message.user .message-avatar {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 2px solid var(--border-medium);
+}
+
+.message-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--neu-raise);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.message.user .message-content {
+  background: var(--accent-primary);
+  color: white;
+  border-color: transparent;
+}
+
+.message-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.message-image {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  aspect-ratio: 1;
+  position: relative;
+  cursor: pointer;
+  transition: transform var(--transition-normal);
+}
+
+.message-image:hover {
+  transform: scale(1.05);
+}
+
+.message-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.typing-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typing {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.chat-input {
+  padding: var(--space-xl);
+  border-top: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+}
+
+.input-group {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-end;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.message-input {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  color: var(--text-primary);
+  resize: none;
+  min-height: 50px;
+  max-height: 120px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-ghost);
+}
+
+.send-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.send-btn:hover {
+  background: var(--accent-primary-hover);
+  transform: scale(1.1);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================================================
+   FEATURE SPECIFIC STYLES
+   ========================================================= */
+.upload-zone {
+  border: 2px dashed var(--border-medium);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4xl);
+  text-align: center;
+  background: var(--bg-elevated);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+  margin: var(--space-xl) 0;
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--accent-primary);
+  background: var(--accent-ghost);
+  transform: scale(1.02);
+}
+
+.lead-stages-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.stage-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.stage-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.sales-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.tool-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+}
+
+.tool-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.tool-image {
+  height: 120px;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tool-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tool-content {
+  padding: var(--space-md);
+}
+
+.crm-pipeline {
+  display: flex;
+  justify-content: space-between;
+  margin: var(--space-xl) 0;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.pipeline-stage {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  min-width: 150px;
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  flex: 1;
+}
+
+.stage-number {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.stage-label {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .lead-stages-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .crm-pipeline {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--space-lg);
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  
+  .feature-card {
+    min-height: 350px;
+  }
+  
+  .stats-banner {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+  
+  .modal {
+    width: 98%;
+    margin: var(--space-sm);
+  }
+  
+  .lead-stages-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chat-messages {
+    max-height: 300px;
+  }
+  
+  .message {
+    max-width: 90%;
+  }
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Loading animation */
+.loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-soft);
+  border-radius: 50%;
+  border-top-color: var(--accent-primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <h1 class="hero-title">Pardavimų AI asistentas</h1>
+      <p class="hero-subtitle">
+        Profesionalus pardavimų padėjėjas su AI analize, CRM automatizavimu ir klientų aptarnavimo optimizavimu
+      </p>
+      
+      <!-- Statistics Banner -->
+      <div class="stats-banner">
+        <div class="stat-item">
+          <span class="stat-number">4.7x</span>
+          <span class="stat-label">Didesnė konversija su AI</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">73%</span>
+          <span class="stat-label">Trumpesnis pardavimų ciklas</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">12min</span>
+          <span class="stat-label">Lead kvalifikavimo laikas</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">€2.3K</span>
+          <span class="stat-label">Vidutinis deal size</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Features -->
+    <div class="features-grid">
+      <div class="feature-card" data-feature="lead-qualification">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1553484771-371a605b060b?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🎯</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Lead kvalifikavimas</h3>
+          <p class="feature-desc">
+            AI automatiškai analizuoja ir kvalifikuoja potencialius klientus pagal BANT, MEDDIC ir kitus metodus per 2 minutes
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-primary btn-lg">Kvalifikuoti leads</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="pipeline-management">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📊</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Pardavimų piltuvas</h3>
+          <p class="feature-desc">
+            Realaus laiko pardavimų piltuvo valdymas su AI prognostika, rizikos analize ir rekomendacijomis
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-secondary btn-lg">Valdyti pipeline</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="sales-scripts">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop');">
+          <div class="feature-icon">💬</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Pardavimų skriptai</h3>
+          <p class="feature-desc">
+            AI sugeneruoja personalizuotus skriptus, email šablonus ir call scenarios pagal klientų profilius
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Generuoti skriptus</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="proposals">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📋</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Pasiūlymų kūrimas</h3>
+          <p class="feature-desc">
+            Automatinis pasiūlymų generavimas su kainų optimizavimu, competitive analysis ir ROI skaičiavimais
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Kurti pasiūlymus</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="crm-integration">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🔗</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">CRM integracija</h3>
+          <p class="feature-desc">
+            Seamless integracija su Salesforce, HubSpot, Pipedrive ir kitais CRM su AI duomenų papildymu
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Integruoti CRM</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="performance-analytics">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📈</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Pardavimų analitika</h3>
+          <p class="feature-desc">
+            Detali performanso analizė su AI insights, forecast accuracy ir team performance optimization
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Analizuoti duomenis</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Section -->
+    <div class="chat-section">
+      <div class="chat-header">
+        <div class="chat-title">💼 AI Pardavimų ekspertas</div>
+        <div class="ai-status">
+          <span class="status-dot"></span>
+          Aktyvus ir pasiruošęs padėti su pardavimų strategijomis ir klientų aptarnavimu
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message ai">
+          <div class="message-avatar">AI</div>
+          <div class="message-content">
+            Sveiki! Esu jūsų asmeninis AI pardavimų ekspertas. Galiu padėti kvalifikuoti leads, valdyti pipeline, kurti pasiūlymus ar analizuoti pardavimų duomenis. Kaip galiu padėti šiandien?
+          </div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <div class="input-group">
+          <textarea 
+            class="message-input" 
+            id="messageInput" 
+            placeholder="Užduokite klausimą apie pardavimus, CRM ar klientų aptarnavimą..."
+            rows="1"
+          ></textarea>
+          <button class="send-btn" id="sendBtn">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Feature Title</h2>
+        <button class="modal-close" id="modalClose">×</button>
+      </div>
+      <div class="modal-body" id="modalContent">
+        <!-- Content will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global state
+    let currentFeature = null;
+    let chatHistory = [];
+    let isGeneratingContent = false;
+    let messageCount = 0;
+
+    // DOM elements
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const modalClose = document.getElementById('modalClose');
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Sales content images for AI generation
+    const salesContent = {
+      pipeline: [
+        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=300&h=300&fit=crop'
+      ],
+      leads: [
+        'https://images.unsplash.com/photo-1553484771-371a605b060b?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=300&h=300&fit=crop'
+      ],
+      proposals: [
+        'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=300&h=300&fit=crop'
+      ],
+      crm: [
+        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1553484771-371a605b060b?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop'
+      ],
+      mixed: [
+        'https://images.unsplash.com/photo-1553484771-371a605b060b?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=300&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop'
+      ]
+    };
+
+    // Feature content templates
+    const featureContent = {
+      'lead-qualification': {
+        title: '🎯 AI Lead kvalifikavimas',
+        content: `
+          <div class="upload-zone" id="leadUpload">
+            <h3>📊 Įkelkite lead duomenis</h3>
+            <p style="color: var(--text-muted); margin-top: 8px;">CSV failas, CRM eksportas arba kontaktų sąrašas</p>
+          </div>
+          
+          <div class="lead-stages-grid">
+            <div class="stage-card" data-stage="cold">
+              <div style="font-size: 32px; margin-bottom: 12px;">❄️</div>
+              <h4>Cold Leads</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Pirminis kontaktas</p>
+            </div>
+            <div class="stage-card" data-stage="warm">
+              <div style="font-size: 32px; margin-bottom: 12px;">🔥</div>
+              <h4>Warm Leads</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Suinteresuoti</p>
+            </div>
+            <div class="stage-card" data-stage="hot">
+              <div style="font-size: 32px; margin-bottom: 12px;">⚡</div>
+              <h4>Hot Leads</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Pirkimui pasiruošę</p>
+            </div>
+            <div class="stage-card" data-stage="qualified">
+              <div style="font-size: 32px; margin-bottom: 12px;">✅</div>
+              <h4>Qualified</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Patvirtinti klientai</p>
+            </div>
+          </div>
+
+          <div style="margin: 24px 0;">
+            <h4>🤖 AI kvalifikavimo kriterijai:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • BANT (Budget, Authority, Need, Timeline) analizė<br>
+                • MEDDIC (Metrics, Economic buyer, Decision criteria, Decision process, Identify pain, Champion) metodas<br>
+                • Behavioral scoring pagal website, email engagement<br>
+                • Predictive scoring su machine learning
+              </p>
+            </div>
+          </div>
+        `
+      },
+      
+      'pipeline-management': {
+        title: '📊 AI Pardavimų piltuvas',
+        content: `
+          <div class="crm-pipeline">
+            <div class="pipeline-stage">
+              <div class="stage-number">23</div>
+              <div class="stage-label">Prospecting</div>
+            </div>
+            <div class="pipeline-stage">
+              <div class="stage-number">18</div>
+              <div class="stage-label">Qualification</div>
+            </div>
+            <div class="pipeline-stage">
+              <div class="stage-number">12</div>
+              <div class="stage-label">Proposal</div>
+            </div>
+            <div class="pipeline-stage">
+              <div class="stage-number">7</div>
+              <div class="stage-label">Negotiation</div>
+            </div>
+            <div class="pipeline-stage">
+              <div class="stage-number">5</div>
+              <div class="stage-label">Closed Won</div>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>📈 AI Insights:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Conversion rate tarp stage'ų: 78% → 67% → 58% → 71%<br>
+                • Vidutinis deal size: €2,300 (↑15% šį mėnesį)<br>
+                • Average sales cycle: 45 dienos (↓8 dienos)<br>
+                • Pipeline health score: 8.4/10 (Excellent)
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="analyzePipeline()">Analizuoti pipeline</button>
+          </div>
+        `
+      },
+      
+      'sales-scripts': {
+        title: '💬 AI Pardavimų skriptai',
+        content: `
+          <div class="sales-tools-grid">
+            <div class="tool-card" data-script="cold-call">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=300&h=200&fit=crop" alt="Cold Call">
+              </div>
+              <div class="tool-content">
+                <h5>Cold Call skriptai</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Personalizuoti opening lines</p>
+              </div>
+            </div>
+            <div class="tool-card" data-script="email-sequences">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1553484771-371a605b060b?w=300&h=200&fit=crop" alt="Email Sequences">
+              </div>
+              <div class="tool-content">
+                <h5>Email sekos</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Follow-up automatizavimas</p>
+              </div>
+            </div>
+            <div class="tool-card" data-script="objection-handling">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop" alt="Objection Handling">
+              </div>
+              <div class="tool-content">
+                <h5>Objection handling</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Atsakymai į prieštaravimus</p>
+              </div>
+            </div>
+            <div class="tool-card" data-script="closing-techniques">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=300&h=200&fit=crop" alt="Closing Techniques">
+              </div>
+              <div class="tool-content">
+                <h5>Closing technikos</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Deal uždarymo metodai</p>
+              </div>
+            </div>
+            <div class="tool-card" data-script="linkedin-outreach">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=300&h=200&fit=crop" alt="LinkedIn Outreach">
+              </div>
+              <div class="tool-content">
+                <h5>LinkedIn outreach</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">B2B networking žinutės</p>
+              </div>
+            </div>
+            <div class="tool-card" data-script="demo-scripts">
+              <div class="tool-image">
+                <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop" alt="Demo Scripts">
+              </div>
+              <div class="tool-content">
+                <h5>Demo skriptai</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Produkto pristatymai</p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      
+      'proposals': {
+        title: '📋 AI Pasiūlymų generatorius',
+        content: `
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>📝 Pasiūlymo tipas:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="proposal-type" value="software"> Software sprendimas
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="proposal-type" value="consulting"> Konsultacijos
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="proposal-type" value="service"> Paslaugos
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="radio" name="proposal-type" value="product"> Fizinis produktas
+              </label>
+            </div>
+          </div>
+          
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>💰 Kainų strategija:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="pricing" value="competitive" checked> Competitive pricing analizė
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="pricing" value="roi" checked> ROI skaičiavimas klientui
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="pricing" value="packages" checked> Pakuočių pasiūlymai
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="pricing" value="discounts"> Nuolaidų schema
+              </label>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="generateProposal()">Generuoti pasiūlymą</button>
+          </div>
+        `
+      },
+      
+      'crm-integration': {
+        title: '🔗 CRM AI integracija',
+        content: `
+          <div style="margin: 24px 0;">
+            <h4>🔌 Palaikomi CRM sistemas:</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 16px 0;">
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; text-align: center; cursor: pointer;" data-crm="salesforce">
+                <h5>Salesforce</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Enterprise CRM</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; text-align: center; cursor: pointer;" data-crm="hubspot">
+                <h5>HubSpot</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Inbound marketing</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; text-align: center; cursor: pointer;" data-crm="pipedrive">
+                <h5>Pipedrive</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Sales pipeline</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; text-align: center; cursor: pointer;" data-crm="zendesk">
+                <h5>Zendesk Sell</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Customer service</p>
+              </div>
+            </div>
+          </div>
+          
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🤖 AI papildymai:</h4>
+            <p style="color: var(--text-secondary); margin-top: 8px;">
+              • Automatinis lead scoring ir prioritization<br>
+              • Email ir call automation su personalizacija<br>
+              • Predictive analytics ir sales forecasting<br>
+              • Deal risk analysis ir rekomendacijos<br>
+              • Customer sentiment analysis iš komunikacijos
+            </p>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="integrateCRM()">Pradėti integraciją</button>
+          </div>
+        `
+      },
+      
+      'performance-analytics': {
+        title: '📈 AI Pardavimų analitika',
+        content: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0;">
+            <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; text-align: center;">
+              <div style="font-size: 24px; font-weight: 800; color: var(--accent-primary);">4.7x</div>
+              <div style="color: var(--text-secondary); font-size: 12px;">Konversijos pagerinimas</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; text-align: center;">
+              <div style="font-size: 24px; font-weight: 800; color: var(--accent-primary);">73%</div>
+              <div style="color: var(--text-secondary); font-size: 12px;">Trumpesnis sales cycle</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; text-align: center;">
+              <div style="font-size: 24px; font-weight: 800; color: var(--accent-primary);">€2.3K</div>
+              <div style="color: var(--text-secondary); font-size: 12px;">Vidutinis deal size</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; text-align: center;">
+              <div style="font-size: 24px; font-weight: 800; color: var(--accent-primary);">94%</div>
+              <div style="color: var(--text-secondary); font-size: 12px;">Forecast accuracy</div>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>📊 Analitikos sritys:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Individual ir team performance tracking<br>
+                • Pipeline velocity ir conversion rates analizė<br>
+                • Customer acquisition cost (CAC) optimizavimas<br>
+                • Churn prediction ir retention strategies<br>
+                • Revenue forecasting su AI algorithms
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="viewAnalytics()">Peržiūrėti pilną dashboard</button>
+          </div>
+        `
+      }
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Feature card clicks
+      document.querySelectorAll('.feature-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const feature = this.dataset.feature;
+          openModal(feature);
+        });
+      });
+
+      // Modal close events
+      modalClose.addEventListener('click', closeModal);
+      
+      modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) {
+          closeModal();
+        }
+      });
+
+      // Escape key to close
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+          closeModal();
+        }
+      });
+
+      // Chat functionality
+      sendBtn.addEventListener('click', sendMessage);
+      
+      messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Auto-resize textarea
+      messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      });
+    });
+
+    function openModal(feature) {
+      currentFeature = feature;
+      const content = featureContent[feature];
+      
+      if (content) {
+        modalTitle.innerHTML = content.title;
+        modalContent.innerHTML = content.content;
+        modalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Bind events for new content
+        bindContentEvents();
+      }
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        modalContent.innerHTML = '';
+        modalTitle.innerHTML = '';
+        currentFeature = null;
+      }, 300);
+    }
+
+    function bindContentEvents() {
+      // Upload zone
+      const uploadZone = document.getElementById('leadUpload');
+      if (uploadZone) {
+        uploadZone.addEventListener('click', openFileDialog);
+        uploadZone.addEventListener('dragover', handleDragOver);
+        uploadZone.addEventListener('drop', handleDrop);
+      }
+
+      // Stage cards
+      document.querySelectorAll('.stage-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const stage = this.dataset.stage;
+          const stageNames = {
+            cold: 'Cold leads',
+            warm: 'Warm leads',
+            hot: 'Hot leads',
+            qualified: 'Qualified leads'
+          };
+          sendChatMessage(`Noriu analizuoti ${stageNames[stage]} ir gauti AI rekomendacijas`);
+          closeModal();
+        });
+      });
+
+      // Tool cards
+      document.querySelectorAll('.tool-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const script = this.dataset.script;
+          const scriptNames = {
+            'cold-call': 'cold call skriptų',
+            'email-sequences': 'email sekų',
+            'objection-handling': 'objection handling skriptų',
+            'closing-techniques': 'closing technikų',
+            'linkedin-outreach': 'LinkedIn outreach žinučių',
+            'demo-scripts': 'demo skriptų'
+          };
+          sendChatMessage(`Norėčiau generuoti ${scriptNames[script]} su AI pagalba`);
+          closeModal();
+        });
+      });
+
+      // CRM cards
+      document.querySelectorAll('[data-crm]').forEach(card => {
+        card.addEventListener('click', function() {
+          const crm = this.dataset.crm;
+          const crmNames = {
+            salesforce: 'Salesforce',
+            hubspot: 'HubSpot',
+            pipedrive: 'Pipedrive',
+            zendesk: 'Zendesk Sell'
+          };
+          sendChatMessage(`Noriu integruoti AI su ${crmNames[crm]} sistema`);
+          closeModal();
+        });
+      });
+    }
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+      
+      sendChatMessage(message);
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+    }
+
+    function sendChatMessage(message) {
+      // Add user message
+      addChatMessage(message, true);
+      chatHistory.push({ role: 'user', content: message });
+      messageCount++;
+      
+      // Show typing indicator
+      const typingIndicator = addTypingIndicator();
+      
+      // Simulate AI processing
+      setTimeout(() => {
+        removeTypingIndicator(typingIndicator);
+        
+        // Generate AI response
+        const response = generateAIResponse(message);
+        addChatMessage(response.text, false);
+        chatHistory.push({ role: 'assistant', content: response.text });
+        
+        // Generate content after 2-3 messages and if response includes it
+        if (messageCount >= 2 && response.generateContent) {
+          setTimeout(() => {
+            generateSalesContent(response.contentType);
+          }, 1000);
+        }
+      }, 1000 + Math.random() * 1500);
+    }
+
+    function addChatMessage(content, isUser = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+      
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${isUser ? '👤' : 'AI'}</div>
+        <div class="message-content">${content}</div>
+      `;
+      
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message ai typing-indicator-msg';
+      typingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          <div class="typing-indicator">
+            <span>AI atsako</span>
+            <div class="typing-dots">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      chatMessages.appendChild(typingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return typingDiv;
+    }
+
+    function removeTypingIndicator(indicator) {
+      if (indicator && indicator.parentNode) {
+        indicator.remove();
+      }
+    }
+
+    function generateAIResponse(message) {
+      const msg = message.toLowerCase();
+      
+      // Lead qualification responses
+      if (msg.includes('lead') || msg.includes('kvalifikav')) {
+        const responses = [
+          {
+            text: `Analizuoju jūsų leads pagal AI kriterijus:<br><br><strong>Kvalifikavimo rezultatai:</strong><br>• Hot leads: 7 (pirkimui pasiruošę per 30 dienų)<br>• Warm leads: 15 (reikia nurturing)<br>• Cold leads: 23 (ilgalaikis follow-up)<br>• Qualified: 5 (immediate action required)<br><br>Generuoju detalizuotą analizę su rekomendacijomis! 🎯`,
+            generateContent: true,
+            contentType: 'leads'
+          }
+        ];
+        return responses[0];
+      }
+      
+      // Pipeline management responses
+      if (msg.includes('pipeline') || msg.includes('piltuv')) {
+        return {
+          text: `Analizuoju jūsų pardavimų piltuvą su AI insights:<br><br><strong>Pipeline health:</strong><br>• Current pipeline value: €127K<br>• Weighted forecast: €89K (70% confidence)<br>• Average deal size: €2,300<br>• Sales velocity: 12% faster nei praėjusį mėnesį<br><br>Generuoju vizualų pipeline report'ą! 📊`,
+          generateContent: true,
+          contentType: 'pipeline'
+        };
+      }
+      
+      // Script generation responses
+      if (msg.includes('skript') || msg.includes('email') || msg.includes('call')) {
+        return {
+          text: `Kuriu personalizuotus ${getScriptFromMessage(msg)} su AI:<br><br><strong>Skriptų elementai:</strong><br>• Opening hooks pagal klientų profilius<br>• Objection handling responses<br>• Value propositions ir social proof<br>• Closing techniques<br><br>Generuoju ready-to-use skriptus! 💬`,
+          generateContent: true,
+          contentType: 'leads'
+        };
+      }
+      
+      // Proposal responses
+      if (msg.includes('pasiūly') || msg.includes('proposal')) {
+        return {
+          text: `Kuriu AI-powered pasiūlymą:<br><br><strong>Pasiūlymo komponentai:</strong><br>• Executive summary su value proposition<br>• ROI skaičiavimas klientui<br>• Competitive analysis ir differentiation<br>• Implementation timeline ir pricing<br><br>Generuoju professional pasiūlymą! 📋`,
+          generateContent: true,
+          contentType: 'proposals'
+        };
+      }
+      
+      // CRM integration responses
+      if (msg.includes('crm') || msg.includes('integr') || msg.includes('salesforce') || msg.includes('hubspot')) {
+        return {
+          text: `Konfigūruoju ${getCRMFromMessage(msg)} AI integraciją:<br><br><strong>Integration features:</strong><br>• Automatic lead scoring ir qualification<br>• Predictive analytics ir forecasting<br>• Email automation su personalizacija<br>• Performance tracking ir optimization<br><br>Generuoju integration roadmap! 🔗`,
+          generateContent: true,
+          contentType: 'crm'
+        };
+      }
+      
+      // Analytics responses
+      if (msg.includes('analitik') || msg.includes('duomen') || msg.includes('dashboard')) {
+        return {
+          text: `Analizuoju jūsų pardavimų performance:<br><br><strong>Key metrics:</strong><br>• Conversion rate: 23% (↑5% šį mėnesį)<br>• Sales cycle: 45 dienos (↓8 dienos)<br>• Customer LTV: €12,500<br>• Team quota attainment: 107%<br><br>Generuoju comprehensive analytics report! 📈`,
+          generateContent: true,
+          contentType: 'pipeline'
+        };
+      }
+      
+      // Default responses
+      const defaultResponses = [
+        {
+          text: `Supratau jūsų pardavimų poreikius! AI sprendimai padidina conversion rate 4.7x. Galiu pasiūlyti konkrečias strategijas su duomenų analize.`,
+          generateContent: true,
+          contentType: 'mixed'
+        },
+        {
+          text: `Puikus klausimas! 73% įmonių su AI pardavimų tools trumpina sales cycle. Pasiūlysiu optimizavimo sprendimus.`,
+          generateContent: true,
+          contentType: 'pipeline'
+        },
+        {
+          text: `Dėkoju už klausimą! Pardavimų srityje AI gali automatizuoti lead scoring, optimizuoti pipeline ir personalizuoti komunikaciją. Galiu parodyti konkrečius sprendimus.`,
+          generateContent: false,
+          contentType: null
+        }
+      ];
+      
+      return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+    }
+
+    function getScriptFromMessage(msg) {
+      if (msg.includes('cold call')) return 'cold call skriptus';
+      if (msg.includes('email')) return 'email sequences';
+      if (msg.includes('linkedin')) return 'LinkedIn outreach žinutes';
+      if (msg.includes('demo')) return 'demo skriptus';
+      if (msg.includes('closing')) return 'closing technikas';
+      return 'pardavimų skriptus';
+    }
+
+    function getCRMFromMessage(msg) {
+      if (msg.includes('salesforce')) return 'Salesforce';
+      if (msg.includes('hubspot')) return 'HubSpot';
+      if (msg.includes('pipedrive')) return 'Pipedrive';
+      if (msg.includes('zendesk')) return 'Zendesk';
+      return 'CRM';
+    }
+
+    async function generateSalesContent(contentType = 'mixed') {
+      if (isGeneratingContent) return;
+      isGeneratingContent = true;
+      
+      // Add loading message with content placeholders
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'message ai';
+      loadingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          🎨 Generuoju AI pardavimų turinį...
+          <div class="message-images">
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+          </div>
+          <p style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">Paspauskite ant turinio detalesniems aprašymams</p>
+        </div>
+      `;
+      
+      chatMessages.appendChild(loadingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // Simulate content generation delay
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Replace with actual content
+      const content = salesContent[contentType] || salesContent.mixed;
+      const imageElements = loadingDiv.querySelectorAll('.message-image');
+      
+      content.slice(0, 3).forEach((contentUrl, index) => {
+        if (imageElements[index]) {
+          imageElements[index].innerHTML = `<img src="${contentUrl}" alt="AI Generated Sales Content" data-content-type="${contentType}" data-step="${index + 1}">`;
+          imageElements[index].addEventListener('click', () => {
+            handleContentClick(contentType, index + 1);
+          });
+        }
+      });
+      
+      // Update message text
+      const messageContent = loadingDiv.querySelector('.message-content');
+      messageContent.firstChild.textContent = '✨ AI sugeneravo pardavimų turinį:';
+      
+      isGeneratingContent = false;
+    }
+
+    function handleContentClick(contentType, step) {
+      const contentInstructions = {
+        leads: [
+          'Lead scoring matrix: A-tier (90+ points) - budget >€10K, decision maker, immediate need | B-tier (70-89) - qualified budget, influencer, 3-6 mėn timeline',
+          'Qualification script: "Hi [Name], based on your [specific trigger event], I believe we can help you [specific value]. Do you have 15 minutes to discuss [specific pain point]?"',
+          'Follow-up sequence: Day 1 - intro email, Day 3 - value-add content, Day 7 - case study, Day 14 - breakup email su social proof'
+        ],
+        pipeline: [
+          'Pipeline velocity formula: (Opportunities × Average deal size × Win rate) ÷ Sales cycle length = €89K monthly velocity',
+          'Stage progression rules: Prospecting→Qualification (BANT verified), Qualification→Proposal (budget approved), Proposal→Negotiation (champion identified)',
+          'Risk analysis: Red flags - no response 7+ days, budget concerns raised, multiple stakeholders not engaged, competitor mention'
+        ],
+        proposals: [
+          'Executive summary template: "Your investment of €[X] will deliver €[Y] in value over [timeframe], representing [ROI]% return and [payback period] payback"',
+          'Value proposition structure: Current state pain point → Our solution benefit → Quantified business impact → Implementation timeline',
+          'Pricing psychology: Present 3 options (anchor high, optimize middle, basic low), emphasize total cost of inaction vs investment'
+        ],
+        crm: [
+          'Salesforce AI setup: Einstein Lead Scoring, Opportunity Insights, Forecasting, automated activity capture, predictive analytics',
+          'HubSpot workflow: Lead rotation rules, email sequences based on behavior, deal stage automation, custom scoring properties',
+          'Integration checklist: Data mapping, field synchronization, workflow automation, reporting dashboards, user training, go-live plan'
+        ],
+        mixed: [
+          'Sales methodology: SPIN (Situation, Problem, Implication, Need-payoff) + MEDDIC qualification for complex B2B sales',
+          'Activity metrics: 50 calls/day, 20% connect rate, 5% meeting conversion, 30-day follow-up cycle, 2.5 touches per lead',
+          'Performance KPIs: Pipeline coverage 3:1, forecast accuracy 90%+, quota attainment 100%+, customer satisfaction 8.5+ NPS'
+        ]
+      };
+      
+      const instructions = contentInstructions[contentType] || contentInstructions.mixed;
+      const instruction = instructions[step - 1] || instructions[0];
+      
+      setTimeout(() => {
+        addChatMessage(`📝 ${instruction}`, false);
+      }, 500);
+    }
+
+    // File upload functions
+    function openFileDialog() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.csv,.xlsx,.xls';
+      input.multiple = true;
+      input.onchange = function(e) {
+        const files = e.target.files;
+        if (files.length > 0) {
+          handleFileUpload(files);
+        }
+      };
+      input.click();
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('dragover');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileUpload(files);
+      }
+    }
+
+    function handleFileUpload(files) {
+      const uploadZone = document.getElementById('leadUpload');
+      if (uploadZone) {
+        uploadZone.innerHTML = `
+          <div style="color: var(--success);">
+            <h3>✅ Analizuojama...</h3>
+            <p style="margin-top: 8px;">Įkelta ${files.length} failas(-ai)</p>
+          </div>
+        `;
+        
+        // Close modal and trigger chat message
+        closeModal();
+        sendChatMessage(`Įkėliau ${files.length} lead duomenų failą(-us) AI analizei`);
+      }
+    }
+
+    // Additional functions for interactive elements
+    function analyzePipeline() {
+      closeModal();
+      sendChatMessage('Prašau analizuoti mano pardavimų piltuvą su AI insights');
+    }
+
+    function generateProposal() {
+      closeModal();
+      sendChatMessage('Norėčiau sugeneruoti profesionalų pasiūlymą su AI pagalba');
+    }
+
+    function integrateCRM() {
+      closeModal();
+      sendChatMessage('Noriu pradėti CRM sistemos integraciją su AI funkcijomis');
+    }
+
+    function viewAnalytics() {
+      closeModal();
+      sendChatMessage('Prašau parodyti detalų pardavimų analitikos dashboard');
+    }
+
+    // Initialize
+    console.log('🚀 Pardavimų AI asistentas su content generavimu paleistas!');
+  </script>
+</body>
+</html>
