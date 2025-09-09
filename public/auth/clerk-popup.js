@@ -9,80 +9,102 @@
     }
   }
 
-  async function loadClerk(pk) {
-    if (!pk) throw new Error('Publishable key is missing');
-    if (window.Clerk && window.Clerk.loaded) return window.Clerk;
+  function getPk() {
+    try {
+      const s = document.currentScript;
+      return (s && (s.getAttribute('data-pk') || s.dataset.pk) || '').trim();
+    } catch (_) { return ''; }
+  }
 
-    await new Promise((resolve, reject) => {
+  function loadClerkLibrary() {
+    return new Promise((resolve, reject) => {
+      if (window.Clerk && window.Clerk.version) return resolve();
       const s = document.createElement('script');
       s.async = true;
       s.crossOrigin = 'anonymous';
       s.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
       s.onload = resolve;
-      s.onerror = () => reject(new Error('Failed to load Clerk JS'));
+      s.onerror = () => reject(new Error('Nepavyko užkrauti Clerk JS'));
       document.head.appendChild(s);
     });
-
-    await window.Clerk.load({ publishableKey: pk });
-    return window.Clerk;
   }
 
-  function getPk() {
-    try {
-      const cur = document.currentScript;
-      const pk = (cur && (cur.getAttribute('data-pk') || cur.dataset.pk)) || '';
-      return pk.trim();
-    } catch (_) { return ''; }
-  }
-
-  function renderSignedOut(Clerk, mount) {
+  function renderSignedOut(clerk, mount) {
     mount.innerHTML = '';
     const btn = document.createElement('button');
     btn.className = 'btn ghost';
     btn.type = 'button';
     btn.textContent = 'Prisijungti';
     btn.addEventListener('click', () => {
-      Clerk.openSignIn({
-        afterSignInUrl: window.location.href,
-        afterSignUpUrl: window.location.href
-      });
+      let triedModal = false;
+      try {
+        clerk.openSignIn({
+          afterSignInUrl: window.location.href,
+          afterSignUpUrl: window.location.href
+        });
+        triedModal = true;
+      } catch (e) {
+        console.error('[Clerk] openSignIn error:', e);
+      }
+      // Fallback: jei modalas neatsidarė – redirect į Clerk puslapį
+      setTimeout(() => {
+        const hasModal = document.querySelector('[data-clerk-modal], .cl-component');
+        if (!hasModal && triedModal) {
+          clerk.redirectToSignIn({
+            afterSignInUrl: window.location.href,
+            afterSignUpUrl: window.location.href
+          });
+        }
+      }, 500);
     });
     mount.appendChild(btn);
   }
 
-  function renderSignedIn(Clerk, mount) {
+  function renderSignedIn(clerk, mount) {
     mount.innerHTML = '';
     const holder = document.createElement('div');
     holder.id = 'clerk-user-button';
     mount.appendChild(holder);
-    Clerk.mountUserButton(holder, { appearance: { elements: { userButtonAvatarBox: { cursor: 'pointer' } } } });
+    clerk.mountUserButton(holder, {
+      appearance: { elements: { userButtonAvatarBox: { cursor: 'pointer' } } }
+    });
   }
 
   ready(async () => {
     const mount = document.getElementById('clerk-auth');
     if (!mount) return;
 
-    const pk = getPk();
-    // jei kažkada norėtum iš API – bandom atsargiai
-    const finalPk = pk || (await fetch('/api/clerk/pk').then(r => r.ok ? r.text() : '').catch(() => '')).trim();
-
-    if (!finalPk) {
+    // 1) Publishable Key – pirmiausia iš <script data-pk>, jei neranda – bandome iš /api/clerk/pk
+    let pk = getPk();
+    if (!pk) {
+      try {
+        pk = (await fetch('/api/clerk/pk').then(r => r.ok ? r.text() : '')).trim();
+      } catch (_) { /* tyliai */ }
+    }
+    if (!pk) {
       mount.innerHTML = '<span style="color:#c00;font-size:12px">Clerk PK nerastas</span>';
       return;
     }
 
     try {
-      const Clerk = await loadClerk(finalPk);
+      await loadClerkLibrary();
+
+      // Svarbu: kuriame NAUJĄ egzempliorių ir tik tada .load()
+      const ClerkCtor = window.Clerk;
+      const clerk = new ClerkCtor(pk);
+      await clerk.load();
 
       const paint = () => {
-        if (Clerk.user) renderSignedIn(Clerk, mount);
-        else renderSignedOut(Clerk, mount);
+        if (clerk.user) renderSignedIn(clerk, mount);
+        else renderSignedOut(clerk, mount);
       };
 
       paint();
-      Clerk.addListener(paint); // atnaujina po prisijungimo/atsijungimo
+      // atnaujina UI po sign-in / sign-out
+      clerk.addListener(paint);
+      console.log('[Clerk] init OK');
     } catch (e) {
-      console.error('[Clerk]', e);
+      console.error('[Clerk] inicializavimo klaida:', e);
       mount.innerHTML = '<span style="color:#c00;font-size:12px">Clerk inicializavimo klaida</span>';
     }
   });
