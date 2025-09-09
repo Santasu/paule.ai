@@ -104,7 +104,17 @@
     .message-input{ padding-bottom:48px !important; }
   }
 
-  /* ===== Svarbu: jokių :has() – valdome klase ===== */
+  /* Global wait („AI mąsto…“) */
+  ._ai-wait{ display:flex; gap:10px; align-items:center; opacity:.85; font-size:14px; margin:10px auto; width:fit-content; }
+  ._ai-wait .dots{ display:inline-flex; gap:4px }
+  ._ai-wait .dots span{ width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.4; display:inline-block; animation:bl .9s infinite alternate }
+  ._ai-wait .dots span:nth-child(2){ animation-delay:.15s } ._ai-wait .dots span:nth-child(3){ animation-delay:.3s }
+  @keyframes bl{ to{ opacity:1; transform:translateY(-2px) } }
+
+  /* Klaidos kortelė */
+  .error-card{ background:var(--bg-danger,rgba(220,20,60,.08)); border:1px solid var(--border-danger,rgba(220,20,60,.35)); }
+
+  /* Svarbu: jokių :has() – valdome klase */
   .bubble.hidden{ display:none !important; }
   </style>
 
@@ -423,9 +433,10 @@
     </div>
   </div>
 
-  <!-- ===== Minimal JS: tema, modeliai, siuntimas, streaming ===== -->
+  <!-- ===== Orchestrator JS (viskas viename) ===== -->
   <script>
   (function(){
+    'use strict';
     const root=document.documentElement;
     const sidebar=document.getElementById('sidebar');
     const overlay=document.getElementById('drawerOverlay');
@@ -439,9 +450,38 @@
     const chatArea  = document.getElementById('chatArea');
     const followBar = document.getElementById('followSuggestBar');
     const inputDeck = document.getElementById('inputSuggestDeck');
-    const restBase  = (window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)||'/api';
-    const streamBase= (window.PAULE_CONFIG&&window.PAULE_CONFIG.restStream)||'/api/stream';
 
+    const API_BASE   = (window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)  || '/api';
+    const SSE_URL    = (window.PAULE_CONFIG&&window.PAULE_CONFIG.restStream)|| '/api/stream';
+    const COMPLETE_URL = API_BASE + '/complete';
+    const SUGGEST_URL  = API_BASE + '/suggest';
+
+    /* ===== Modelių žemėlapis (front -> back) ===== */
+    const FRONT_TO_BACK={
+      auto:'gpt-4o-mini',
+      chatgpt:'gpt-4o-mini',
+      claude:'claude-4-sonnet',
+      gemini:'gemini-2.5-flash',
+      grok:'grok-4',
+      deepseek:'deepseek-chat',
+      llama:'meta-llama/Llama-4-Scout-17B-16E-Instruct'
+    };
+    /* Šitie – JSON fallback (ne SSE) */
+    const NON_SSE_FRONT = new Set(['claude','gemini','grok']);
+
+    /* ===== Bendra round būsena ===== */
+    const state = {
+      chatId:null,
+      panels:{},          // frontId -> { el, content, done }
+      startedOrder:[],    // pagal pirmą delta
+      firstStarted:null,
+      pending:0,          // kiek frontų dar laukiam
+      errors:[],          // {front, name, msg}
+      hasAnyText:false,
+      suggestShown:false
+    };
+
+    /* ===== Tema / UI smulkmenos ===== */
     function setLogoByTheme(){
       const dark = root.getAttribute('data-theme') === 'dark';
       logo.src = dark ? '/assets/icon/paule-logo-dark.webp' : '/assets/icon/paule-logo.webp';
@@ -454,6 +494,7 @@
       const b=e.target.closest('[data-theme]'); if(!b) return;
       root.setAttribute('data-theme', b.getAttribute('data-theme'));
       themeDropdown.classList.remove('open');
+      setLogoByTheme();
     });
 
     function openDrawer(){ sidebar.classList.add('open'); overlay.classList.add('show'); document.body.style.overflow='hidden'; }
@@ -461,20 +502,10 @@
     btnMobile?.addEventListener('click', openDrawer);
     overlay?.addEventListener('click', closeDrawer);
 
-    // ===== Modelių pasirinkimas
-    const MODEL_MAP={
-      auto:   'gpt-4o-mini',
-      chatgpt:'gpt-4o-mini',
-      claude: 'claude-3-5-sonnet',
-      gemini: 'gemini-1.5-flash',
-      grok:   'grok-2',
-      deepseek:'deepseek-chat',
-      llama:  'meta-llama/Llama-4-Scout-17B-16E-Instruct'
-    };
+    // ===== Modelių pasirinkimas (multi-pick; „auto“ – vienas)
     modelList.addEventListener('click', (e)=>{
       const b=e.target.closest('.model-pill'); if(!b) return;
       if(b.dataset.model==='auto'){
-        // "Paule" – paliekam vieną aktyvų
         modelList.querySelectorAll('.model-pill').forEach(x=>x.classList.remove('active'));
         b.classList.add('active'); b.setAttribute('aria-pressed','true');
       }else{
@@ -484,56 +515,47 @@
       }
     });
 
-    // ===== UI helperiai
-    function chip(text, onClick){ const b=document.createElement('div'); b.className='suggest-chip'; b.textContent=text; b.title=text; b.tabIndex=0;
-      b.addEventListener('click', onClick);
-      b.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onClick();} });
-      return b;
-    }
-    function decisionChip(mode, label){
-      const b=document.createElement('div'); b.className='decision-chip'; b.dataset.mode=mode; b.textContent=' '+label;
-      const ico=document.createElement('img'); ico.className='ui-icon'; ico.src='/assets/icon/ai.svg'; ico.alt=''; b.prepend(ico);
-      b.addEventListener('click', ()=>{ insertToInput(promptFor(mode)); });
-      return b;
-    }
-    function insertToInput(text){
-      msgInput.value=text;
-      msgInput.focus();
-      msgInput.dispatchEvent(new Event('input',{bubbles:true}));
+    // ===== Helpers
+    function timeNow(){ return new Date().toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'}); }
+    function escapeHtml(x){ const d=document.createElement('div'); d.textContent=(x==null?'':String(x)); return d.innerHTML; }
+    function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+    function stripMd(s){ return String(s||'').replace(/`{1,3}[\s\S]*?`{1,3}/g,'').replace(/[*_#>-]/g,''); }
+    function uniqueNonEmpty(arr){ const s=new Set(); const out=[]; (arr||[]).forEach(v=>{ const t=String(v||'').trim(); if(t&&!s.has(t)){ s.add(t); out.push(t);} }); return out; }
+
+    function parseMarkdown(input){
+      let src = String(input||'');
+      let t = escapeHtml(src);
+      const STORE=[]; t=t.replace(/```([\s\S]*?)```/g,(_,m)=>`@@CB_${STORE.push(m)-1}@@`);
+      t = t.replace(/`([^`]+)`/g, (_,m)=> `<code style="background:var(--bg-code,rgba(0,0,0,.06));padding:2px 4px;border-radius:4px">${m}</code>`);
+      t = t.replace(/^\s*###\s+(.+)$/gm,   `<h3 style="margin:.4em 0 .2em;color:var(--accent,#5b7cff);font-weight:700">$1</h3>`);
+      t = t.replace(/^\s*##\s+(.+)$/gm,    `<h2 style="margin:.5em 0 .25em;color:var(--accent,#5b7cff);font-weight:800">$1</h2>`);
+      t = t.replace(/^\s*#\s+(.+)$/gm,     `<h1 style="margin:.6em 0 .3em;color:var(--accent,#5b7cff);font-weight:800;font-size:1.15em">$1</h1>`);
+      t = t.replace(/(^|\n)(?:[-*]\s.+)(?:\n[-*]\s.+)*/g, (block)=>{
+        const lines = block.trim().split('\n').map(l=> l.replace(/^[-*]\s+/,'').trim());
+        return `\n<ul style="margin:.25em 0 .25em .9em; padding:0; list-style:disc inside;">` +
+          lines.map(li=>`<li>${li}</li>`).join('') + `</ul>`;
+      });
+      t = t.replace(/(^|\n)(?:\d+[.)]\s.+)(?:\n\d+[.)]\s.+)*/g, (block)=>{
+        const lines = block.trim().split('\n').map(l=> l.replace(/^\d+[.)]\s+/,'').trim());
+        return `\n<ol style="margin:.25em 0 .25em 1.1em; padding:0; list-style:decimal inside;">` +
+          lines.map(li=>`<li>${li}</li>`).join('') + `</ol>`;
+      });
+      t = t.replace(/\*\*([^*]+)\*\*/g, `<strong style="color:var(--accent,#5b7cff)">$1</strong>`);
+      t = t.replace(/\*([^*]+)\*/g, `<em>$1</em>`);
+      t = t.replace(/\n/g, '<br>');
+      t = t.replace(/@@CB_(\d+)@@/g, (_,i)=> `<pre style="background:var(--bg-code,rgba(0,0,0,.06));padding:10px;border-radius:10px;overflow:auto"><code>${STORE[Number(i)]||''}</code></pre>`);
+      return t;
     }
 
-    function renderFollowups(userMsg, aiMsg){
-      // jei nieko nėra – slėpti juostą
-      if (!userMsg && !aiMsg){ followBar.classList.remove('show'); followBar.innerHTML=''; return; }
-
-      const STOCK = ['Paaiškink detaliau','Duok pavyzdį','Sutrumpink iki 3 sakinių','Sukurk veiksmų planą','Kokie KPI?','Alternatyvus sprendimas'];
-      followBar.innerHTML='';
-      // 1) AI režimai
-      followBar.appendChild( decisionChip('debate','AI ginčas') );
-      followBar.appendChild( decisionChip('judge','Teisėjas') );
-      followBar.appendChild( decisionChip('compromise','Kompromisas') );
-      // 2) pasiūlymai iš API (jei veikia), kitaip – stock
-      fetch(restBase+'/suggest', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message:userMsg||'', answer:aiMsg||'', count:6 }) })
-        .then(r=>r.ok?r.json():null)
-        .then(j=>{
-          const list=(j&&j.ok&&Array.isArray(j.suggestions)&&j.suggestions.length)?j.suggestions:STOCK;
-          list.slice(0,6).forEach(t=> followBar.appendChild( chip(t, ()=>insertToInput(t)) ));
-          followBar.classList.add('show');
-        })
-        .catch(()=>{
-          STOCK.slice(0,6).forEach(t=> followBar.appendChild( chip(t, ()=>insertToInput(t)) ));
-          followBar.classList.add('show');
-        });
+    function showGlobalWait(){
+      if (document.querySelector('._ai-wait')) return;
+      const w = document.createElement('div');
+      w.className='_ai-wait';
+      w.innerHTML = `<div class="dots"><span></span><span></span><span></span></div><div>AI mąsto, palaukite akimirką…</div>`;
+      chatArea?.appendChild(w);
+      chatArea?.scrollTo({top: chatArea.scrollHeight});
     }
-
-    function promptFor(mode){
-      switch(mode){
-        case 'debate': return 'Surengk AI ginčą: argumentai UŽ ir PRIEŠ, pabaigoje santrauka ir rekomendacija.';
-        case 'judge': return 'Tu esi Teisėjas. Įvertink pateiktus argumentus, nurodyk, kas teisus ir kodėl, remkis faktais.';
-        case 'compromise': return 'Rask kompromisą tarp dviejų pozicijų: žingsniai, rizikos, sėkmės kriterijai.';
-        default: return '';
-      }
-    }
+    function hideGlobalWait(){ const w=document.querySelector('._ai-wait'); if (w){ w.remove(); } }
 
     // ===== Žinučių burbulai
     function appendUserBubble(text){
@@ -544,7 +566,7 @@
         <div class="bubble" data-model="user">
           <div class="bubble-card">
             <div class="msg-content"></div>
-            <div class="msg-meta"><span class="model-tag">Jūs</span><span>now</span></div>
+            <div class="msg-meta"><span class="model-tag">Jūs</span><span>${timeNow()}</span></div>
           </div>
         </div>`;
       chatArea.appendChild(wrap);
@@ -553,98 +575,263 @@
       return wrap;
     }
 
-    function createAIBubble(modelKey){
-      const wrap=document.createElement('div'); wrap.className='message';
-      const mdl=(modelKey||'').split('/').pop();
-      wrap.innerHTML=`<div class="avatar"><img class="ui-icon" src="/assets/icon/ai.svg" alt=""></div>
-        <div class="bubble hidden" data-model="${mdl}"><div class="bubble-card">
-          <div class="msg-content"></div>
-          <div class="msg-meta"><span class="model-tag">${mdl}</span><span>streaming…</span></div>
-        </div></div>`;
-      chatArea.appendChild(wrap);
-      chatArea.scrollTo({top:chatArea.scrollHeight,behavior:'smooth'});
-      return wrap;
+    function ensurePanel(frontId){
+      if (state.panels[frontId]) return state.panels[frontId];
+      const n = document.createElement('div'); n.className='message';
+      n.innerHTML = `<div class="avatar"><img class="ui-icon" src="/assets/icon/ai.svg" alt=""></div>
+        <div class="bubble" data-model="${frontId}">
+          <div class="bubble-card">
+            <button class="copy-btn" title="Kopijuoti"
+             onclick="(function(b){const t=b.closest('.bubble-card')?.querySelector('.msg-content')?.innerText||'';navigator.clipboard.writeText(t).catch(()=>{});b.classList.add('ok');setTimeout(()=>b.classList.remove('ok'),900)})(this)"
+             style="position:absolute;right:8px;top:8px;font-size:12px;border:1px solid var(--border);background:var(--bg-primary);padding:4px 6px;border-radius:6px;cursor:pointer;opacity:.8">⧉</button>
+            <div class="msg-content"></div>
+            <div class="msg-meta"><span class="model-tag">${frontId}</span><span>${timeNow()}</span></div>
+          </div>
+        </div>`;
+      n.style.opacity='0'; n.style.transform='translateY(16px)';
+      chatArea?.appendChild(n);
+      requestAnimationFrame(()=>{ n.style.transition='all .25s ease'; n.style.opacity='1'; n.style.transform='translateY(0)'; });
+      const contentEl = n.querySelector('.msg-content');
+      const panel = { el: contentEl, content:'', done:false };
+      state.panels[frontId]=panel;
+      state.startedOrder.push(frontId);
+      return panel;
     }
 
-    // ===== SSE / JSON klientas
-    async function streamOnce(model, text, outEl, chatId, bubbleEl){
-      const q=new URLSearchParams({ model, models:model, message:text, max_tokens:'4096', chat_id:chatId, _t:Date.now().toString() });
-      const resp=await fetch(`${streamBase}?${q}`, { headers:{ 'Accept':'text/event-stream' }});
-      const ct=(resp.headers.get('content-type')||'').toLowerCase();
+    // ===== Orchestrator
+    function resetRound(){
+      state.chatId = 'chat_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
+      state.panels={}; state.startedOrder=[]; state.firstStarted=null;
+      state.pending=0; state.errors=[]; state.hasAnyText=false; state.suggestShown=false;
+      followBar.innerHTML=''; followBar.classList.remove('show');
+      showGlobalWait();
+    }
 
-      let opened=false; const openNow=()=>{ if(!opened){ bubbleEl.classList.remove('hidden'); opened=true; } };
+    async function startOrchestrator(text, fronts){
+      const streamFronts = fronts.filter(f=> !NON_SSE_FRONT.has(f));
+      const jsonFronts   = fronts.filter(f=>  NON_SSE_FRONT.has(f));
 
-      // JSON fallback
-      if(!ct.includes('text/event-stream')){
-        try{
-          const j=await resp.json();
-          const txt=j?.answers?.[0]?.text||j?.text||'';
-          if(txt){ openNow(); outEl.textContent += txt; }
-        }catch(_){
-          const txt=await resp.text();
-          if(txt){ openNow(); outEl.textContent += txt; }
-        }
-        return;
+      state.pending = streamFronts.length + jsonFronts.length;
+
+      // SSE VISIEMS
+      streamFronts.forEach(f=>{
+        const back = FRONT_TO_BACK[f]||f;
+        runSSE({ front:f, back, text, chatId:state.chatId })
+          .catch(()=>{}).finally(()=>decPending());
+      });
+
+      // JSON GRUPEI – po soft timeout
+      if (jsonFronts.length){
+        setTimeout(()=>{
+          runJSONOnce({ fronts: jsonFronts, text, chatId: state.chatId })
+            .catch(()=>{}); // decPending viduje
+        }, 1000);
       }
 
-      // SSE
-      const reader=resp.body.getReader();
-      const dec=new TextDecoder();
-      let buf='';
-      for(;;){
-        const {done,value}=await reader.read(); if(done) break;
-        buf+=dec.decode(value,{stream:true});
-        let i; while((i=buf.indexOf('\n\n'))>=0){
-          const frame=buf.slice(0,i).trim(); buf=buf.slice(i+2);
-          if(!frame) continue;
-          const line=frame.split('\n').find(l=>l.startsWith('data:')); if(!line) continue;
-          const data=line.slice(5).trim();
-          if(data==='[DONE]'){ buf=''; break; }
-          let piece='';
+      // Kietas deadline, jei kas pakibo
+      setTimeout(()=>{ if (state.pending>0) finalizeRound(); }, 20000);
+    }
+
+    function decPending(){
+      state.pending = Math.max(0, state.pending-1);
+      if (state.pending===0) finalizeRound();
+    }
+
+    function finalizeRound(){
+      hideGlobalWait();
+      // klaidos – apačioje
+      if (state.errors.length){
+        const wrap = document.createElement('div');
+        state.errors.forEach(er=>{
+          const n = document.createElement('div'); n.className='message';
+          n.innerHTML = `<div class="avatar"><img class="ui-icon" src="/assets/icon/ai.svg" alt=""></div>
+            <div class="bubble"><div class="bubble-card error-card">
+              <div class="msg-content"><strong>${escapeHtml(er.name||er.front||'Modelis')}</strong> – atsakymo nepavyko gauti.<br><span class="dim">${escapeHtml(er.msg||'Klaida')}</span></div>
+              <div class="msg-meta"><span>${escapeHtml(er.name||er.front||'Modelis')}</span><span>${timeNow()}</span></div>
+            </div></div>`;
+          wrap.appendChild(n);
+        });
+        chatArea.appendChild(wrap);
+        chatArea.scrollTo({top:chatArea.scrollHeight});
+      }
+      // follow-ups – tik kai VISI baigė
+      if (!state.suggestShown){
+        state.suggestShown=true;
+        showFollowUps();
+      }
+    }
+
+    function parseErrEvent(e){
+      try{
+        const data = (e&&e.data)? JSON.parse(e.data):{};
+        return data?.message || 'Klaida';
+      }catch(_){ return 'Klaida'; }
+    }
+
+    // SSE runner
+    function runSSE({ front, back, text, chatId }){
+      return new Promise(async (resolve) => {
+        const qs=new URLSearchParams({ model: back, models: back, message:text, max_tokens:'4096', chat_id:chatId, _t:Date.now().toString() });
+        const resp=await fetch(`${SSE_URL}?${qs}`, { headers:{ 'Accept':'text/event-stream' }});
+        const ct=(resp.headers.get('content-type')||'').toLowerCase();
+
+        if(!ct.includes('text/event-stream')){
+          // serveris grąžino JSON – pabandom jį
           try{
-            const j=JSON.parse(data);
-            piece = j?.choices?.[0]?.delta?.content ?? j?.text ?? j?.data ?? '';
-          }catch{ piece = data; }
-          if(piece){ openNow(); outEl.textContent += piece; }
+            const j=await resp.json();
+            const txt=j?.answers?.[0]?.text||j?.text||'';
+            if (txt){
+              if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
+              const p = ensurePanel(front);
+              p.content += txt;
+              p.el.innerHTML = parseMarkdown(p.content);
+            } else {
+              state.errors.push({front, name:front, msg:'Tuščias atsakymas (JSON).'});
+            }
+          }catch(err){
+            state.errors.push({front, name:front, msg:'Neskaidomas atsakymas (JSON).'});
+          }
+          return resolve();
         }
+
+        const reader=resp.body.getReader();
+        const dec=new TextDecoder();
+        let buf='', gotAny=false;
+
+        for(;;){
+          const {done,value}=await reader.read(); if(done) break;
+          buf+=dec.decode(value,{stream:true});
+          let i; while((i=buf.indexOf('\n\n'))>=0){
+            const frame=buf.slice(0,i).trim(); buf=buf.slice(i+2);
+            if(!frame) continue;
+            const dataLine = frame.split('\n').find(l=> l.startsWith('data:'));
+            const eventLine = frame.split('\n').find(l=> l.startsWith('event:'));
+            const ev = eventLine ? eventLine.replace(/^event:\s*/,'').trim() : 'message';
+            if(!dataLine) continue;
+            const data = dataLine.replace(/^data:\s*/,'').trim();
+            if (data==='[DONE]'){ buf=''; break; }
+
+            if (ev==='error'){
+              if (!gotAny) state.errors.push({front, name:front, msg: parseErrEvent({data})});
+              continue;
+            }
+
+            let piece='';
+            try{
+              const j=JSON.parse(data);
+              piece = j?.choices?.[0]?.delta?.content ?? j?.text ?? j?.data ?? '';
+            }catch{ piece = data; }
+
+            if(piece){
+              if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
+              gotAny=true;
+              const p = ensurePanel(front);
+              p.content += piece;
+              p.el.innerHTML = parseMarkdown(p.content);
+              chatArea.scrollTo({top:chatArea.scrollHeight});
+            }
+          }
+        }
+        const p = state.panels[front]; if (p) p.done=true;
+        resolve();
+      });
+    }
+
+    // JSON once runner (vienu šūviu keliems NON_SSE)
+    async function runJSONOnce({ fronts, text, chatId }){
+      const backIds = fronts.map(f=> FRONT_TO_BACK[f]||f).join(',');
+      try{
+        const res = await fetch(COMPLETE_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message:text, models:backIds, chat_id:chatId, max_tokens:4096 })});
+        if (!res.ok) throw new Error('HTTP '+res.status);
+        const j = await res.json();
+        const answers = Array.isArray(j?.answers)? j.answers : [];
+        const gotFronts = new Set();
+        for (const ans of answers){
+          const back = ans.model||'';
+          const front = fronts.find(f=> (FRONT_TO_BACK[f]||f)===back) || fronts[0];
+          gotFronts.add(front);
+          const txt = ans.text||'';
+          if (txt){
+            if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
+            const p = ensurePanel(front);
+            // „typing“ imitacija (be sub-sub animacijų, kad būtų greita)
+            p.content += txt;
+            p.el.innerHTML = parseMarkdown(p.content);
+            chatArea.scrollTo({top:chatArea.scrollHeight});
+          } else {
+            state.errors.push({ front, name:front, msg:'Tuščias atsakymas (JSON fallback).' });
+          }
+        }
+        fronts.forEach(f=>{ if(!gotFronts.has(f)) state.errors.push({ front:f, name:f, msg:'Nepavyko gauti atsakymo (JSON fallback).' }); });
+      }catch(e){
+        fronts.forEach(f=> state.errors.push({ front:f, name:f, msg:'Nepavyko gauti atsakymo (JSON).' }) );
+      }finally{
+        // mažinam pending kiekvienam json frontui
+        fronts.forEach(()=>decPending());
       }
+    }
+
+    // ===== Follow-ups + AI režimai (apačioje) – tik kai visi baigė
+    function decisionChip(mode, label){
+      const b=document.createElement('div'); b.className='decision-chip'; b.dataset.mode=mode; b.textContent=' '+label;
+      const ico=document.createElement('img'); ico.className='ui-icon'; ico.src='/assets/icon/ai.svg'; ico.alt=''; b.prepend(ico);
+      b.addEventListener('click', ()=>{
+        msgInput.value = promptFor(mode);
+        msgInput.focus();
+        msgInput.dispatchEvent(new Event('input',{bubbles:true}));
+      });
+      return b;
+    }
+    function promptFor(mode){
+      switch(mode){
+        case 'debate': return 'Surengk AI ginčą: argumentai UŽ ir PRIEŠ, pabaigoje santrauka ir rekomendacija.';
+        case 'judge': return 'Tu esi Teisėjas. Įvertink pateiktus argumentus, nurodyk, kas teisus ir kodėl, remkis faktais.';
+        case 'compromise': return 'Rask kompromisą tarp dviejų pozicijų: žingsniai, rizikos, sėkmės kriterijai.';
+        default: return '';
+      }
+    }
+    async function showFollowUps(){
+      const bestFront = state.firstStarted || Object.keys(state.panels)[0] || 'auto';
+      const bestText  = (state.panels[bestFront]?.content || '').slice(0, 4000);
+      const payload   = { message:(window.__LAST_USER_MSG__||''), answer: stripMd(bestText), count: 6 };
+      followBar.innerHTML='';
+      followBar.appendChild( decisionChip('debate','AI ginčas') );
+      followBar.appendChild( decisionChip('judge','Teisėjas') );
+      followBar.appendChild( decisionChip('compromise','Kompromisas') );
+
+      try{
+        const r=await fetch(SUGGEST_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+        const j= r.ok ? await r.json() : null;
+        const list = Array.isArray(j?.suggestions) && j.suggestions.length ? j.suggestions :
+          ['Paaiškink detaliau','Duok pavyzdį','Sukurk veiksmų planą','Kokie pavojai?','Kokie KPI?','Alternatyvus sprendimas'];
+        uniqueNonEmpty(list).slice(0,6).forEach(t=>{
+          const b=document.createElement('div'); b.className='suggest-chip'; b.textContent=t; b.title=t; b.tabIndex=0;
+          b.onclick=()=>{ msgInput.value=t; msgInput.focus(); };
+          b.onkeydown=(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); b.click(); } };
+          followBar.appendChild(b);
+        });
+      }catch(_){
+        ['Paaiškink detaliau','Duok pavyzdį','Sukurk veiksmų planą','Kokie pavojai?','Kokie KPI?','Alternatyvus sprendimas']
+          .forEach(t=>{ const b=document.createElement('div'); b.className='suggest-chip'; b.textContent=t; b.onclick=()=>{ msgInput.value=t; msgInput.focus(); }; followBar.appendChild(b); });
+      }
+      followBar.classList.add('show');
     }
 
     // ===== Pagrindinis siuntimas
     async function doSend(){
       const text=(msgInput.value||'').trim(); if(!text) return;
+      window.__LAST_USER_MSG__ = text;
       msgInput.value=''; inputDeck.classList.remove('show'); followBar.classList.remove('show'); followBar.innerHTML='';
-      const userNode=appendUserBubble(text);
+      appendUserBubble(text);
 
-      // aktyvūs modeliai
-      let keys=[...modelList.querySelectorAll('.model-pill.active')].map(b=>b.dataset.model);
-      if(!keys.length) keys=['auto'];
-      // jei „auto“ – vienas modelis (gpt-4o-mini)
-      if(keys.length===1 && keys[0]==='auto') keys=['chatgpt'];
+      // aktyvūs front'ai
+      let fronts=[...modelList.querySelectorAll('.model-pill.active')].map(b=>b.dataset.model);
+      if(!fronts.length) fronts=['auto'];
+      if(fronts.length===1 && fronts[0]==='auto'){ fronts=['chatgpt','deepseek','llama']; } // „auto“ – sensownas trio
 
-      const models=keys.map(k=>MODEL_MAP[k]).filter(Boolean);
-      const chatId='chat_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
-
-      let lastAssistantText='';
-
-      for(const k of keys){
-        const bubble=createAIBubble(k);
-        const out = bubble.querySelector('.msg-content');
-        const bubbleEl = bubble.querySelector('.bubble');
-        try{
-          await streamOnce(MODEL_MAP[k], text, out, chatId, bubbleEl);
-          lastAssistantText = out.textContent || lastAssistantText;
-        }catch(err){
-          bubbleEl.classList.remove('hidden');
-          out.textContent = '⚠️ Klaida gaunant atsakymą.';
-          console.error(err);
-        }
-      }
-
-      // follow-ups ir AI režimai apačioje – tik jei gavome bent kažką
-      if(lastAssistantText && lastAssistantText.trim()){
-        renderFollowups(text, lastAssistantText);
-      }
+      // startuojam orkestra
+      resetRound();
+      startOrchestrator(text, fronts);
     }
 
     // ===== Inline deck (įvesties pasiūlymai – neauto-siuntimas)
@@ -670,10 +857,6 @@
     window.PauleMain = { sendMessage: doSend };
   })();
   </script>
-
-  <!-- (neprivaloma) išoriniai skriptai, jei naudoji -->
-  <!-- <script src="/assets/js/models.js?v=1.3.0" defer></script> -->
-  <!-- <script src="/assets/js/paule-ui.js?v=1.2.1" defer></script> -->
 </body>
 </html>
 
