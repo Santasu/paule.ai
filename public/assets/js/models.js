@@ -1,25 +1,29 @@
 /* =======================================================================
-   Paule – Models helper (frontend) • v1.2.1
+   Paule – Models helper (frontend) • v1.3.0
    Centralizuotas modelių žemėlapis + utilitai UI’ui / transportui.
    Naudoja globalų: window.PAULE_MODELS
    ======================================================================= */
 (function () {
   'use strict';
 
+  // ---- Žemėlapiai ----
   const FRONT_TO_BACK = Object.freeze({
-    'auto':'auto','paule':'auto','augam-auto':'auto',
-    'chatgpt':'gpt-4o-mini',
-    'claude':'claude-4-sonnet',
-    'gemini':'gemini-2.5-flash',
-    'grok':'grok-4',
+    // Aliases
+    'auto': 'auto', 'paule': 'auto', 'augam-auto': 'auto',
+    // „Front“ pavadinimai -> „Back“ identifikatoriai
+    'chatgpt': 'gpt-4o-mini',
+    'claude':  'claude-4-sonnet',
+    'gemini':  'gemini-2.5-flash',
+    'grok':    'grok-4',
     'deepseek':'deepseek-chat',
-    'llama':'meta-llama/Llama-4-Scout-17B-16E-Instruct'
+    'llama':   'meta-llama/Llama-4-Scout-17B-16E-Instruct',
   });
 
-  const BACK_TO_FRONT = Object.freeze(
-    Object.entries(FRONT_TO_BACK).reduce((m,[f,b]) => (m[b]=f, m), {})
-  );
+  // Atvirkštinis lookup (back -> front jei žinomas)
+  const BACK_TO_FRONT = Object.freeze(Object.entries(FRONT_TO_BACK)
+    .reduce((m,[f,b]) => (m[b]=f, m), {}));
 
+  // Draugiški vardai
   const MODEL_NAME = Object.freeze({
     'auto':'Paule','paule':'Paule','augam-auto':'Paule',
     'chatgpt':'ChatGPT','gpt-4o-mini':'ChatGPT',
@@ -31,6 +35,7 @@
     'judge':'Teisėjas'
   });
 
+  // Piktogramos (keisk kelią pagal savo /assets)
   const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
   const MODEL_ICON = Object.freeze({
     'auto': `${ICONS_BASE}/ai.svg`,
@@ -44,12 +49,13 @@
     'judge': `${ICONS_BASE}/legal-contract.svg`
   });
 
-  // JSON-once modeliai (kol kas be SSE)
+  // Modeliai, kuriems NENAUDOJAM SSE (grupavimui – „json once“)
   const NON_SSE_FRONT = new Set([
     'claude','grok','gemini',
     'claude-4-sonnet','grok-4','gemini-2.5-flash'
   ]);
 
+  // ---- Utilitai ----
   const lc = s => String(s||'').toLowerCase().trim();
 
   function canonicalFrontId(id){
@@ -81,7 +87,9 @@
 
   function normalizeModelsInput(list){
     if (!list) return ['auto'];
-    if (typeof list === 'string') list = list.split(',').map(s=>s.trim()).filter(Boolean);
+    if (typeof list === 'string') {
+      list = list.split(',').map(s=>s.trim()).filter(Boolean);
+    }
     const set = new Set(list.map(canonicalFrontId).filter(Boolean));
     if (set.size===0) set.add('auto');
     return Array.from(set);
@@ -96,6 +104,15 @@
     return out;
   }
 
+  // ✅ Nauja: kad UI nebedegintų klaidos, pridėta ensureCapabilities()
+  function ensureCapabilities(frontList){
+    const list = normalizeModelsInput(frontList);
+    const groups = splitTransports(list);
+    const transports = {};
+    list.forEach(fid => transports[fid] = isSSECapable(fid) ? 'stream' : 'json');
+    return { list, groups, transports };
+  }
+
   function listAll(){
     const seen = new Set();
     const fronts = Object.keys(FRONT_TO_BACK);
@@ -103,21 +120,31 @@
     fronts.forEach(f=>{
       if (seen.has(f)) return; seen.add(f);
       const back = FRONT_TO_BACK[f] || f;
-      items.push({ id:f, back, name:nameOf(f), icon:iconOf(f), sse:isSSECapable(f) });
+      items.push({
+        id: f,
+        back,
+        name: nameOf(f),
+        icon: iconOf(f),
+        sse: isSSECapable(f)
+      });
     });
     items.push({ id:'judge', back:'meta-llama/Llama-4-Scout-17B-16E-Instruct', name:nameOf('judge'), icon:iconOf('judge'), sse:true });
     return items;
   }
 
+  // ---- Exportas ----
   const API = {
     FRONT_TO_BACK, BACK_TO_FRONT, MODEL_NAME, MODEL_ICON, NON_SSE_FRONT,
     canonicalFrontId, getBackId, nameOf, iconOf, isSSECapable,
-    normalizeModelsInput, splitTransports, listAll
+    normalizeModelsInput, splitTransports, listAll,
+    ensureCapabilities // <- svarbu UI’ui
   };
 
   try { Object.freeze(API); } catch(_){}
   window.PAULE_MODELS = API;
 
+  // Suderinamumas: jei PauleMain laukia šių funkcijų globaliai
   window.getBackId = window.getBackId || getBackId;
   window.nameOf    = window.nameOf    || nameOf;
+
 })();
