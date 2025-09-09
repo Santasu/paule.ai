@@ -44,6 +44,9 @@
     { "src": "^/wp-json/paule/v1/music/create$","dest": "/api/music/create.js" },
     { "src": "^/wp-json/paule/v1/music/status$","dest": "/api/music/status.js" },
 
+    { "src": "^/api/clerk/pk$", "dest": "/api/clerk/pk.js" }
+
+
     { "src": "^/$", "dest": "/public/index.html" },
     { "src": "^(?!/api)(.*)$", "dest": "/public$1" }
   ]
