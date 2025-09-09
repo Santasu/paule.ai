@@ -1,5 +1,4 @@
-Build Failed
-The `vercel.json` schema validation failed with the following message: `rewrites[36].missing[0]` should NOT have additional property `path` o sitas kur semiautomatic buvo vieke gerai tai patvarkyk kad nebutu neamonju tokiu.   dabar sita sutvarkyk Kad viektu:  {
+  {
   "version": 2,
   "framework": null,
   "builds": [
