@@ -1,67 +1,53 @@
-{
+Build Failed
+The `vercel.json` schema validation failed with the following message: `rewrites[36].missing[0]` should NOT have additional property `path` o sitas kur semiautomatic buvo vieke gerai tai patvarkyk kad nebutu neamonju tokiu.   dabar sita sutvarkyk Kad viektu:  {
   "version": 2,
-
-  "functions": {
-    "api/**/*.js": { "runtime": "nodejs20.x", "maxDuration": 60 }
-  },
-
+  "framework": null,
   "builds": [
     { "src": "api/**/*.js", "use": "@vercel/node" },
     { "src": "public/**/*", "use": "@vercel/static" }
   ],
+  "routes": [
+    { "src": "^/api/stream$",              "dest": "/api/stream.js" },
+    { "src": "^/api/complete$",            "dest": "/api/complete.js" },
+    { "src": "^/api/suggest$",             "dest": "/api/suggest.js" },
+    { "src": "^/api/models$",              "dest": "/api/models.js" },
+    { "src": "^/api/diagnostics$",         "dest": "/api/diagnostics.js" },
+    { "src": "^/api/library/recent$",      "dest": "/api/library/recent.js" },
 
-  "rewrites": [
-    { "source": "/api/stream",              "destination": "/api/stream.js" },
-    { "source": "/api/complete",            "destination": "/api/complete.js" },
-    { "source": "/api/suggest",             "destination": "/api/suggest.js" },
-    { "source": "/api/models",              "destination": "/api/models.js" },
-    { "source": "/api/diagnostics",         "destination": "/api/diagnostics.js" },
-    { "source": "/api/library/recent",      "destination": "/api/library/recent.js" },
+    { "src": "^/api/flux/create$",         "dest": "/api/flux/create.js" },
+    { "src": "^/api/comic/create$",        "dest": "/api/comic/create.js" },
+    { "src": "^/api/runway/image$",        "dest": "/api/runway/image.js" },
+    { "src": "^/api/runway/status$",       "dest": "/api/runway/status.js" },
+    { "src": "^/api/music/create$",        "dest": "/api/music/create.js" },
+    { "src": "^/api/music/status$",        "dest": "/api/music/status.js" },
+    { "src": "^/api/clerk/pk$",            "dest": "/api/clerk/pk.js" },
+    
+    { "src": "^/api/paule/v1/stream$",     "dest": "/api/stream.js" },
+    { "src": "^/api/paule/v1/complete$",   "dest": "/api/complete.js" },
+    { "src": "^/api/paule/v1/suggest$",    "dest": "/api/suggest.js" },
+    { "src": "^/api/paule/v1/models$",     "dest": "/api/models.js" },
+    { "src": "^/api/paule/v1/diagnostics$","dest": "/api/diagnostics.js" },
+    { "src": "^/api/paule/v1/flux/create$","dest": "/api/flux/create.js" },
+    { "src": "^/api/paule/v1/comic/create$","dest": "/api/comic/create.js" },
+    { "src": "^/api/paule/v1/runway/image$","dest": "/api/runway/image.js" },
+    { "src": "^/api/paule/v1/runway/status$","dest": "/api/runway/status.js" },
+    { "src": "^/api/paule/v1/music/create$","dest": "/api/music/create.js" },
+    { "src": "^/api/paule/v1/music/status$","dest": "/api/music/status.js" },
 
-    { "source": "/api/flux/create",         "destination": "/api/flux/create.js" },
-    { "source": "/api/comic/create",        "destination": "/api/comic/create.js" },
-    { "source": "/api/runway/image",        "destination": "/api/runway/image.js" },
-    { "source": "/api/runway/status",       "destination": "/api/runway/status.js" },
-    { "source": "/api/music/create",        "destination": "/api/music/create.js" },
-    { "source": "/api/music/status",        "destination": "/api/music/status.js" },
-    { "source": "/api/clerk/pk",            "destination": "/api/clerk/pk.js" },
+    { "src": "^/wp-json/paule/v1/stream$",   "dest": "/api/stream.js" },
+    { "src": "^/wp-json/paule/v1/complete$", "dest": "/api/complete.js" },
+    { "src": "^/wp-json/paule/v1/suggest$",  "dest": "/api/suggest.js" },
+    { "src": "^/wp-json/paule/v1/models$",   "dest": "/api/models.js" },
+    { "src": "^/wp-json/paule/v1/diagnostics$","dest": "/api/diagnostics.js" },
+    { "src": "^/wp-json/paule/v1/flux/create$","dest": "/api/flux/create.js" },
+    { "src": "^/wp-json/paule/v1/comic/create$","dest": "/api/comic/create.js" },
+    { "src": "^/wp-json/paule/v1/runway/image$","dest": "/api/runway/image.js" },
+    { "src": "^/wp-json/paule/v1/runway/status$","dest": "/api/runway/status.js" },
+    { "src": "^/wp-json/paule/v1/music/create$","dest": "/api/music/create.js" },
+    { "src": "^/wp-json/paule/v1/music/status$","dest": "/api/music/status.js" },
 
-    { "source": "/api/paule/v1/stream",       "destination": "/api/stream.js" },
-    { "source": "/api/paule/v1/complete",     "destination": "/api/complete.js" },
-    { "source": "/api/paule/v1/suggest",      "destination": "/api/suggest.js" },
-    { "source": "/api/paule/v1/models",       "destination": "/api/models.js" },
-    { "source": "/api/paule/v1/diagnostics",  "destination": "/api/diagnostics.js" },
-    { "source": "/api/paule/v1/flux/create",  "destination": "/api/flux/create.js" },
-    { "source": "/api/paule/v1/comic/create", "destination": "/api/comic/create.js" },
-    { "source": "/api/paule/v1/runway/image", "destination": "/api/runway/image.js" },
-    { "source": "/api/paule/v1/runway/status","destination": "/api/runway/status.js" },
-    { "source": "/api/paule/v1/music/create", "destination": "/api/music/create.js" },
-    { "source": "/api/paule/v1/music/status", "destination": "/api/music/status.js" },
-
-    { "source": "/wp-json/paule/v1/stream",        "destination": "/api/stream.js" },
-    { "source": "/wp-json/paule/v1/complete",      "destination": "/api/complete.js" },
-    { "source": "/wp-json/paule/v1/suggest",       "destination": "/api/suggest.js" },
-    { "source": "/wp-json/paule/v1/models",        "destination": "/api/models.js" },
-    { "source": "/wp-json/paule/v1/diagnostics",   "destination": "/api/diagnostics.js" },
-    { "source": "/wp-json/paule/v1/flux/create",   "destination": "/api/flux/create.js" },
-    { "source": "/wp-json/paule/v1/comic/create",  "destination": "/api/comic/create.js" },
-    { "source": "/wp-json/paule/v1/runway/image",  "destination": "/api/runway/image.js" },
-    { "source": "/wp-json/paule/v1/runway/status", "destination": "/api/runway/status.js" },
-    { "source": "/wp-json/paule/v1/music/create",  "destination": "/api/music/create.js" },
-    { "source": "/wp-json/paule/v1/music/status",  "destination": "/api/music/status.js" },
-
-    { "source": "/", "destination": "/index.html" },
-
-    {
-      "source": "/((?!api).*)",
-      "destination": "/index.html",
-      "missing": [{ "type": "file", "path": "/$1" }]
-    }
-  ],
-
-  "headers": [
-    { "source": "/index.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
-    { "source": "/assets/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }
+    { "src": "^/$", "dest": "/public/index.html" },
+    { "src": "^(?!/api)(.*)$", "dest": "/public$1" }
   ]
 }
 
