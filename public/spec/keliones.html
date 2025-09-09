@@ -1,1 +1,1845 @@
+<!DOCTYPE html>
+<html lang="lt" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kelionių AI asistentas</title>
+  
+  <style>
+/* =========================================================
+   UNIVERSALI SPALVŲ SISTEMA
+   ========================================================= */
+:root {
+  --bg-primary: #0a0d14;
+  --bg-secondary: #0f1419;
+  --bg-elevated: #141922;
+  --bg-card: #1a1f2b;
+  --bg-overlay: #1e252f;
+  
+  --text-primary: #e8eaf0;
+  --text-secondary: #b8bcc8;
+  --text-muted: #8a8f9a;
+  --text-hint: #6b7280;
+  
+  --border-soft: #1f2937;
+  --border-medium: #374151;
+  
+  --accent-primary: #0ea5e9;
+  --accent-primary-hover: #0284c7;
+  --accent-secondary: #06b6d4;
+  --accent-ghost: #0c4a6e;
+  
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  --neu-raise: 
+    0 4px 8px rgba(0, 0, 0, 0.3), 
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  
+  --neu-press: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  
+  --neu-float: 
+    0 10px 25px rgba(0, 0, 0, 0.5), 
+    0 4px 8px rgba(0, 0, 0, 0.3);
+  
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --space-4xl: 40px;
+  
+  --transition-fast: 0.15s;
+  --transition-normal: 0.25s;
+}
 
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+}
+
+/* =========================================================
+   HERO SECTION
+   ========================================================= */
+.hero-section {
+  text-align: center;
+  margin-bottom: var(--space-4xl);
+  padding: var(--space-4xl) 0;
+  position: relative;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(6, 182, 212, 0.1));
+  border-radius: var(--radius-2xl);
+}
+
+.hero-title {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+  margin-bottom: var(--space-lg);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.stats-banner {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+  background: var(--bg-card);
+  padding: var(--space-xl);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  min-width: 120px;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  display: block;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: var(--space-sm);
+}
+
+/* =========================================================
+   FEATURES GRID
+   ========================================================= */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-4xl);
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-2xl);
+  padding: 0;
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--neu-float);
+}
+
+.feature-header {
+  position: relative;
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.3), rgba(0,0,0,.7));
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: white;
+  background: rgba(14, 165, 233, 0.9);
+  box-shadow: var(--neu-raise);
+  position: relative;
+  z-index: 2;
+}
+
+.feature-content {
+  padding: var(--space-3xl);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.feature-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+}
+
+.feature-desc {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-xl);
+}
+
+.feature-cta {
+  margin-top: var(--space-xl);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: var(--neu-raise);
+  transition: all var(--transition-normal) ease;
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neu-float);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border: none;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+  color: white;
+  border: none;
+}
+
+.btn-lg {
+  padding: var(--space-lg) var(--space-3xl);
+  font-size: 16px;
+  border-radius: var(--radius-xl);
+}
+
+/* =========================================================
+   MODAL/POPUP SYSTEM
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--neu-float);
+  border: 1px solid var(--border-soft);
+  width: 95%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  background: var(--bg-elevated);
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.modal-close {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.modal-close:hover {
+  background: var(--error);
+  color: white;
+  transform: scale(1.1);
+}
+
+.modal-body {
+  flex: 1;
+  padding: var(--space-xl);
+  overflow-y: auto;
+}
+
+/* =========================================================
+   CHAT SYSTEM
+   ========================================================= */
+.chat-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-2xl);
+  margin-top: var(--space-4xl);
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  text-align: center;
+}
+
+.chat-title {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.ai-status {
+  font-size: 14px;
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.chat-messages {
+  padding: var(--space-xl);
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.message {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+  animation: messageIn 0.3s ease;
+  max-width: 80%;
+}
+
+@keyframes messageIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.message.ai .message-avatar {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+}
+
+.message.user .message-avatar {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 2px solid var(--border-medium);
+}
+
+.message-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--neu-raise);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.message.user .message-content {
+  background: var(--accent-primary);
+  color: white;
+  border-color: transparent;
+}
+
+/* =========================================================
+   HORIZONTAL PHOTO GRID (3 photos side by side)
+   ========================================================= */
+.message-images {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.message-image {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  aspect-ratio: 16/9;
+  position: relative;
+  cursor: pointer;
+  transition: transform var(--transition-normal);
+}
+
+.message-image:hover {
+  transform: scale(1.05);
+}
+
+.message-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.typing-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typing {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.chat-input {
+  padding: var(--space-xl);
+  border-top: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+}
+
+.input-group {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-end;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.message-input {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  color: var(--text-primary);
+  resize: none;
+  min-height: 50px;
+  max-height: 120px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-ghost);
+}
+
+.send-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.send-btn:hover {
+  background: var(--accent-primary-hover);
+  transform: scale(1.1);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================================================
+   FEATURE SPECIFIC STYLES
+   ========================================================= */
+.upload-zone {
+  border: 2px dashed var(--border-medium);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4xl);
+  text-align: center;
+  background: var(--bg-elevated);
+  transition: all var(--transition-normal) ease;
+  cursor: pointer;
+  margin: var(--space-xl) 0;
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--accent-primary);
+  background: var(--accent-ghost);
+  transform: scale(1.02);
+}
+
+.destinations-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.destination-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.destination-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.destination-image {
+  height: 120px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.destination-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.7));
+  display: flex;
+  align-items: flex-end;
+  padding: var(--space-md);
+}
+
+.destination-name {
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.travel-types-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.travel-type-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.travel-type-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.budget-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.budget-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.budget-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+}
+
+.budget-amount {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--accent-primary);
+  margin-bottom: var(--space-sm);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .destinations-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .travel-types-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--space-lg);
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  
+  .feature-card {
+    min-height: 350px;
+  }
+  
+  .stats-banner {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+  
+  .modal {
+    width: 98%;
+    margin: var(--space-sm);
+  }
+  
+  .destinations-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .travel-types-grid,
+  .budget-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .chat-messages {
+    max-height: 300px;
+  }
+  
+  .message {
+    max-width: 90%;
+  }
+  
+  .message-images {
+    grid-template-columns: 1fr;
+  }
+  
+  .message-image {
+    aspect-ratio: 16/9;
+  }
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Loading animation */
+.loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-soft);
+  border-radius: 50%;
+  border-top-color: var(--accent-primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <h1 class="hero-title">Kelionių AI asistentas</h1>
+      <p class="hero-subtitle">
+        Profesionalus kelionių planavimas su AI optimizacija, destinacijų analize ir personalizuotais maršrutais visam pasauliui
+      </p>
+      
+      <!-- Statistics Banner -->
+      <div class="stats-banner">
+        <div class="stat-item">
+          <span class="stat-number">195+</span>
+          <span class="stat-label">Šalių duomenų bazė</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">89%</span>
+          <span class="stat-label">Sutaupo kelionėse</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">15min</span>
+          <span class="stat-label">Kelionės planavimas</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">€1.2K</span>
+          <span class="stat-label">Vidutinis taupymas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Features -->
+    <div class="features-grid">
+      <div class="feature-card" data-feature="destination-discovery">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🌍</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Destinacijų atradimas</h3>
+          <p class="feature-desc">
+            AI rekomenduoja tobulas destinacijas pagal jūsų pomėgius, biudžetą, laiką ir unikalius poreikius
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-primary btn-lg">Atrasti vietą</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="itinerary-planning">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1539650116574-75c0c6d73a5e?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📅</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Maršruto planavimas</h3>
+          <p class="feature-desc">
+            Automatinis dienos planas su optimal routing, laiko optimizavimu ir hidden gems atradimais
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-secondary btn-lg">Planuoti maršrutą</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="budget-optimization">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=300&fit=crop');">
+          <div class="feature-icon">💰</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Biudžeto optimizavimas</h3>
+          <p class="feature-desc">
+            Smart budget allocation, kainų stebėjimas, nuolaidų paieška ir cost-saving strategijos
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Optimizuoti biudžetą</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="local-experiences">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🎭</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Vietiniai išgyvenimai</h3>
+          <p class="feature-desc">
+            Autentiški vietiniai išgyvenimai, kultūriniai renginiai, hidden spots ir local insider tips
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Išgyventi vietiniškai</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="travel-assistant">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&h=300&fit=crop');">
+          <div class="feature-icon">🧳</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Kelionės asistentas</h3>
+          <p class="feature-desc">
+            24/7 AI pagalba kelionėje: realaus laiko weather, transport updates, emergency assistance
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Aktyvuoti asistentą</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" data-feature="photo-memories">
+        <div class="feature-header" style="background-image: url('https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400&h=300&fit=crop');">
+          <div class="feature-icon">📸</div>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Atminimo kūrimas</h3>
+          <p class="feature-desc">
+            AI photo spots rekomendacijos, best timing for photos, automatic trip documentaion ir sharing
+          </p>
+          <div class="feature-cta">
+            <button class="btn btn-lg">Kurti atmintis</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Section -->
+    <div class="chat-section">
+      <div class="chat-header">
+        <div class="chat-title">✈️ AI Kelionių ekspertas</div>
+        <div class="ai-status">
+          <span class="status-dot"></span>
+          Aktyvus ir pasiruošęs padėti planuoti jūsų svajonių kelionę
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message ai">
+          <div class="message-avatar">AI</div>
+          <div class="message-content">
+            Sveiki! Esu jūsų asmeninis AI kelionių ekspertas. Galiu padėti planuoti maršrutus, rasti tobulas destinacijas, optimizuoti biudžetą ar atsakyti į bet kokius kelionių klausimus. Kur norėtumėte keliauti?
+          </div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <div class="input-group">
+          <textarea 
+            class="message-input" 
+            id="messageInput" 
+            placeholder="Užduokite klausimą apie keliones, destinacijas ar maršrutų planavimą..."
+            rows="1"
+          ></textarea>
+          <button class="send-btn" id="sendBtn">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Feature Title</h2>
+        <button class="modal-close" id="modalClose">×</button>
+      </div>
+      <div class="modal-body" id="modalContent">
+        <!-- Content will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global state
+    let currentFeature = null;
+    let chatHistory = [];
+    let isGeneratingContent = false;
+    let messageCount = 0;
+
+    // DOM elements
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const modalClose = document.getElementById('modalClose');
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Travel content images for AI generation (beautiful destinations)
+    const travelContent = {
+      destinations: [
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1571501679680-de32f1e7aad4?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=500&h=300&fit=crop'
+      ],
+      itinerary: [
+        'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1539650116574-75c0c6d73a5e?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?w=500&h=300&fit=crop'
+      ],
+      experiences: [
+        'https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=500&h=300&fit=crop'
+      ],
+      beach: [
+        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1473116763249-2faaef81ccda?w=500&h=300&fit=crop'
+      ],
+      mountains: [
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1464822759844-d150baef493e?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1454391304352-2bf4678b1a7a?w=500&h=300&fit=crop'
+      ],
+      cities: [
+        'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1571501679680-de32f1e7aad4?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=500&h=300&fit=crop'
+      ],
+      mixed: [
+        'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop'
+      ]
+    };
+
+    // Feature content templates
+    const featureContent = {
+      'destination-discovery': {
+        title: '🌍 AI Destinacijų atradimas',
+        content: `
+          <div class="upload-zone" id="preferencesUpload">
+            <h3>🎯 Papasakokite apie savo pomėgius</h3>
+            <p style="color: var(--text-muted); margin-top: 8px;">Įkelkite nuotraukas vietų, kurios patinka, arba aprašykite</p>
+          </div>
+          
+          <div class="destinations-grid">
+            <div class="destination-card" data-destination="europe">
+              <div class="destination-image" style="background-image: url('https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop');">
+                <div class="destination-overlay">
+                  <div class="destination-name">Europa</div>
+                </div>
+              </div>
+            </div>
+            <div class="destination-card" data-destination="asia">
+              <div class="destination-image" style="background-image: url('https://images.unsplash.com/photo-1480796927426-f609979314bd?w=300&h=200&fit=crop');">
+                <div class="destination-overlay">
+                  <div class="destination-name">Azija</div>
+                </div>
+              </div>
+            </div>
+            <div class="destination-card" data-destination="america">
+              <div class="destination-image" style="background-image: url('https://images.unsplash.com/photo-1485871981521-5b1fd3805b89?w=300&h=200&fit=crop');">
+                <div class="destination-overlay">
+                  <div class="destination-name">Amerika</div>
+                </div>
+              </div>
+            </div>
+            <div class="destination-card" data-destination="oceania">
+              <div class="destination-image" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop');">
+                <div class="destination-overlay">
+                  <div class="destination-name">Okeanija</div>
+                </div>
+              </div>
+            </div>
+            <div class="destination-card" data-destination="africa">
+              <div class="destination-image" style="background-image: url('https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=300&h=200&fit=crop');">
+                <div class="destination-overlay">
+                  <div class="destination-name">Afrika</div>
+                </div>
+              </div>
+            </div>
+            <div class="destination-card" data-destination="arctic">
+              <div class="destination-image" style="background-image: url('https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop');">
+                <div class="destination-overlay">
+                  <div class="destination-name">Arktis</div>
+                </div>
+              </div>
+            </div>
+            <div class="destination-card" data-destination="tropical">
+              <div class="destination-image" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop');">
+                <div class="destination-overlay">
+                  <div class="destination-name">Tropikai</div>
+                </div>
+              </div>
+            </div>
+            <div class="destination-card" data-destination="mountains">
+              <div class="destination-image" style="background-image: url('https://images.unsplash.com/photo-1464822759844-d150baef493e?w=300&h=200&fit=crop');">
+                <div class="destination-overlay">
+                  <div class="destination-name">Kalnai</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin: 24px 0;">
+            <h4>🤖 AI rekomendacijų algoritmas:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Climate preferences ir seasonal optimization<br>
+                • Budget-activity matching ir value score<br>
+                • Cultural interests ir experience type<br>
+                • Travel style assessment (adventure vs relaxation)<br>
+                • Hidden gems discovery su local insights
+              </p>
+            </div>
+          </div>
+        `
+      },
+      
+      'itinerary-planning': {
+        title: '📅 AI Maršruto planavimas',
+        content: `
+          <div class="travel-types-grid">
+            <div class="travel-type-card" data-type="adventure">
+              <div style="font-size: 48px; margin-bottom: 12px;">🏔️</div>
+              <h4>Nuotykių kelionė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Hiking, extreme sports, nature</p>
+            </div>
+            <div class="travel-type-card" data-type="cultural">
+              <div style="font-size: 48px; margin-bottom: 12px;">🏛️</div>
+              <h4>Kultūrinė kelionė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Museums, history, architecture</p>
+            </div>
+            <div class="travel-type-card" data-type="relaxation">
+              <div style="font-size: 48px; margin-bottom: 12px;">🏖️</div>
+              <h4>Poilsio kelionė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Beach, spa, slow travel</p>
+            </div>
+            <div class="travel-type-card" data-type="culinary">
+              <div style="font-size: 48px; margin-bottom: 12px;">🍽️</div>
+              <h4>Kulinarinė kelionė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Food tours, cooking classes</p>
+            </div>
+            <div class="travel-type-card" data-type="photography">
+              <div style="font-size: 48px; margin-bottom: 12px;">📸</div>
+              <h4>Fotografijos kelionė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Instagram spots, landscapes</p>
+            </div>
+            <div class="travel-type-card" data-type="business">
+              <div style="font-size: 48px; margin-bottom: 12px;">💼</div>
+              <h4>Verslo kelionė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Meetings, conferences, efficiency</p>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>⚡ Smart routing technologijos:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Optimal route calculation su traffic data<br>
+                • Time-based activity scheduling (sunrise, sunset)<br>
+                • Queue avoidance ir peak time optimization<br>
+                • Weather-responsive planning ir backup options<br>
+                • Local events integration ir crowd predictions
+              </p>
+            </div>
+          </div>
+        `
+      },
+      
+      'budget-optimization': {
+        title: '💰 AI Biudžeto optimizavimas',
+        content: `
+          <div class="budget-options">
+            <div class="budget-card" data-budget="budget">
+              <div class="budget-amount">€500-1000</div>
+              <h4>Budget kelionė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">Hostels, public transport, local food</p>
+            </div>
+            <div class="budget-card" data-budget="mid-range">
+              <div class="budget-amount">€1000-2500</div>
+              <h4>Mid-range kelionė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">3* hotels, mixed transport, dining out</p>
+            </div>
+            <div class="budget-card" data-budget="luxury">
+              <div class="budget-amount">€2500+</div>
+              <h4>Luxury kelionė</h4>
+              <p style="color: var(--text-secondary); font-size: 12px;">5* hotels, private transport, fine dining</p>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>💡 Smart savings strategijos:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Dynamic pricing monitoring ir alerts<br>
+                • Seasonal optimization ir shoulder season deals<br>
+                • Multi-city routing ir stopover benefits<br>
+                • Local vs tourist prices intelligence<br>
+                • Cashback ir loyalty points maximization
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>📊 Biudžeto paskirstymas:</h4>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0;">
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 20px; font-weight: 700; color: var(--accent-primary);">35%</div>
+                <div style="color: var(--text-secondary); font-size: 12px;">Accommodation</div>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 20px; font-weight: 700; color: var(--accent-primary);">25%</div>
+                <div style="color: var(--text-secondary); font-size: 12px;">Transport</div>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 20px; font-weight: 700; color: var(--accent-primary);">25%</div>
+                <div style="color: var(--text-secondary); font-size: 12px;">Food & Drinks</div>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 20px; font-weight: 700; color: var(--accent-primary);">15%</div>
+                <div style="color: var(--text-secondary); font-size: 12px;">Activities</div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      
+      'local-experiences': {
+        title: '🎭 AI Vietiniai išgyvenimai',
+        content: `
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🌟 Experience kategorijos:</h4>
+            <div style="margin: 16px 0;">
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="experience" value="culinary" checked> Kulinariniai išgyvenimai
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="experience" value="cultural" checked> Kultūriniai renginiai
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="experience" value="adventure" checked> Nuotykių veiklos
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="experience" value="artisan"> Amatininkų dirbtuvės
+              </label>
+              <label style="display: block; margin: 8px 0;">
+                <input type="checkbox" name="experience" value="nature"> Gamtos tyrinėjimai
+              </label>
+            </div>
+          </div>
+          
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🔍 Hidden gems algoritmas:</h4>
+            <div style="margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Local insider recommendations database<br>
+                • Off-the-beaten-path discovery engine<br>
+                • Seasonal events ir festival tracking<br>
+                • Authentic vs tourist trap filtering<br>
+                • Real-time availability ir booking integration
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="discoverExperiences()">Atrasti išgyvenimus</button>
+          </div>
+        `
+      },
+      
+      'travel-assistant': {
+        title: '🧳 AI Kelionės asistentas',
+        content: `
+          <div style="margin: 24px 0;">
+            <h4>📱 Real-time assistance:</h4>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 16px 0;">
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>🌤️ Weather tracking</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Hourly forecasts ir activity recommendations</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>🚌 Transport updates</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Live delays, route changes, alternatives</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>🏨 Accommodation help</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Check-in assistance, amenities guide</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>🆘 Emergency support</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Local emergency numbers, embassy contacts</p>
+              </div>
+            </div>
+          </div>
+          
+          <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <h4>🔧 Travel tools:</h4>
+            <p style="color: var(--text-secondary); margin-top: 8px;">
+              • Language translation ir phrase book<br>
+              • Currency conversion ir local prices<br>
+              • Offline maps ir navigation<br>
+              • Document storage ir backup<br>
+              • Expense tracking ir budget alerts
+            </p>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="activateAssistant()">Aktyvuoti asistentą</button>
+          </div>
+        `
+      },
+      
+      'photo-memories': {
+        title: '📸 AI Atminimo kūrimas',
+        content: `
+          <div style="margin: 24px 0;">
+            <h4>📷 Photo optimization:</h4>
+            <div style="background: var(--bg-elevated); padding: 20px; border-radius: 16px; margin: 16px 0;">
+              <p style="color: var(--text-secondary);">
+                • Golden hour ir blue hour timing<br>
+                • Best viewpoints ir angle recommendations<br>
+                • Crowd avoidance ir timing optimization<br>
+                • Weather-based photo planning<br>
+                • Instagram-worthy spots database
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin: 24px 0;">
+            <h4>🎨 Memory creation features:</h4>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 16px 0;">
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>📱 Auto documentation</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">GPS-tagged photos, activity logging</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>🎞️ Trip highlights</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Automatic video compilation</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>📖 Travel journal</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">AI-generated trip summaries</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 8px;">
+                <h5>🌐 Social sharing</h5>
+                <p style="color: var(--text-secondary); font-size: 12px;">Optimized content for platforms</p>
+              </div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="createMemories()">Pradėti kurti atmintis</button>
+          </div>
+        `
+      }
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Feature card clicks
+      document.querySelectorAll('.feature-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const feature = this.dataset.feature;
+          openModal(feature);
+        });
+      });
+
+      // Modal close events
+      modalClose.addEventListener('click', closeModal);
+      
+      modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) {
+          closeModal();
+        }
+      });
+
+      // Escape key to close
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+          closeModal();
+        }
+      });
+
+      // Chat functionality
+      sendBtn.addEventListener('click', sendMessage);
+      
+      messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Auto-resize textarea
+      messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      });
+    });
+
+    function openModal(feature) {
+      currentFeature = feature;
+      const content = featureContent[feature];
+      
+      if (content) {
+        modalTitle.innerHTML = content.title;
+        modalContent.innerHTML = content.content;
+        modalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Bind events for new content
+        bindContentEvents();
+      }
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        modalContent.innerHTML = '';
+        modalTitle.innerHTML = '';
+        currentFeature = null;
+      }, 300);
+    }
+
+    function bindContentEvents() {
+      // Upload zone
+      const uploadZone = document.getElementById('preferencesUpload');
+      if (uploadZone) {
+        uploadZone.addEventListener('click', openFileDialog);
+        uploadZone.addEventListener('dragover', handleDragOver);
+        uploadZone.addEventListener('drop', handleDrop);
+      }
+
+      // Destination cards
+      document.querySelectorAll('.destination-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const destination = this.dataset.destination;
+          const destinationNames = {
+            europe: 'Europą',
+            asia: 'Aziją',
+            america: 'Ameriką',
+            oceania: 'Oceaniją',
+            africa: 'Afriką',
+            arctic: 'Arktį',
+            tropical: 'tropikus',
+            mountains: 'kalnus'
+          };
+          sendChatMessage(`Noriu keliauti į ${destinationNames[destination]}. Rekomenduokite geriausias vietas!`);
+          closeModal();
+        });
+      });
+
+      // Travel type cards
+      document.querySelectorAll('.travel-type-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const type = this.dataset.type;
+          const typeNames = {
+            adventure: 'nuotykių kelionę',
+            cultural: 'kultūrinę kelionę',
+            relaxation: 'poilsio kelionę',
+            culinary: 'kulinarinę kelionę',
+            photography: 'fotografijos kelionę',
+            business: 'verslo kelionę'
+          };
+          sendChatMessage(`Planuoju ${typeNames[type]}. Padėkite sukurti tobulą maršrutą!`);
+          closeModal();
+        });
+      });
+
+      // Budget cards
+      document.querySelectorAll('.budget-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const budget = this.dataset.budget;
+          const budgetNames = {
+            budget: 'budget kelionę',
+            'mid-range': 'mid-range kelionę',
+            luxury: 'luxury kelionę'
+          };
+          sendChatMessage(`Planuoju ${budgetNames[budget]}. Kaip optimizuoti biudžetą?`);
+          closeModal();
+        });
+      });
+    }
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+      
+      sendChatMessage(message);
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+    }
+
+    function sendChatMessage(message) {
+      // Add user message
+      addChatMessage(message, true);
+      chatHistory.push({ role: 'user', content: message });
+      messageCount++;
+      
+      // Show typing indicator
+      const typingIndicator = addTypingIndicator();
+      
+      // Simulate AI processing
+      setTimeout(() => {
+        removeTypingIndicator(typingIndicator);
+        
+        // Generate AI response
+        const response = generateAIResponse(message);
+        addChatMessage(response.text, false);
+        chatHistory.push({ role: 'assistant', content: response.text });
+        
+        // Generate content after 2 messages (not first one)
+        if (messageCount >= 2 && response.generateContent) {
+          setTimeout(() => {
+            generateTravelContent(response.contentType);
+          }, 1000);
+        }
+      }, 1000 + Math.random() * 1500);
+    }
+
+    function addChatMessage(content, isUser = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+      
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${isUser ? '👤' : 'AI'}</div>
+        <div class="message-content">${content}</div>
+      `;
+      
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message ai typing-indicator-msg';
+      typingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          <div class="typing-indicator">
+            <span>AI atsako</span>
+            <div class="typing-dots">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      chatMessages.appendChild(typingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return typingDiv;
+    }
+
+    function removeTypingIndicator(indicator) {
+      if (indicator && indicator.parentNode) {
+        indicator.remove();
+      }
+    }
+
+    function generateAIResponse(message) {
+      const msg = message.toLowerCase();
+      
+      // Destination responses
+      if (msg.includes('keliauti') || msg.includes('viet') || msg.includes('destinacij')) {
+        const responses = [
+          {
+            text: `Puikus pasirinkimas! Analizuoju jūsų pageidavimus ir kuriu personalizuotą kelionės planą:<br><br><strong>Rekomendacijos:</strong><br>• Top 3 destinacijos pagal jūsų stilių<br>• Optimal travel dates ir weather conditions<br>• Budget breakdown ir money-saving tips<br>• Must-see attractions ir hidden gems<br><br>Generuoju destinacijų vizualizacijas! ✈️`,
+            generateContent: true,
+            contentType: getDestinationTypeFromMessage(msg)
+          }
+        ];
+        return responses[0];
+      }
+      
+      // Itinerary planning responses
+      if (msg.includes('maršrut') || msg.includes('plan') || msg.includes('itinerary')) {
+        return {
+          text: `Kuriu optimizuotą kelionės maršrutą jums:<br><br><strong>Smart routing:</strong><br>• Day-by-day detailed itinerary<br>• Optimal timing ir route efficiency<br>• Local transportation options<br>• Activity booking recommendations<br><br>Generuoju interactive travel map! 🗺️`,
+          generateContent: true,
+          contentType: 'itinerary'
+        };
+      }
+      
+      // Budget responses
+      if (msg.includes('biudžet') || msg.includes('kain') || msg.includes('pinig')) {
+        return {
+          text: `Optimizuoju jūsų kelionės biudžetą:<br><br><strong>Smart savings:</strong><br>• Best booking timing ir price alerts<br>• Local vs tourist pricing intelligence<br>• Money-saving tips ir deals<br>• Emergency fund recommendations<br><br>Generuoju budget breakdown charts! 💰`,
+          generateContent: true,
+          contentType: 'destinations'
+        };
+      }
+      
+      // Experience responses
+      if (msg.includes('išgyven') || msg.includes('veikl') || msg.includes('dalyk')) {
+        return {
+          text: `Rekomenduoju autentiškus vietinius išgyvenimus:<br><br><strong>Local experiences:</strong><br>• Hidden gems ir off-the-beaten-path spots<br>• Cultural events ir seasonal festivals<br>• Local food scenes ir culinary tours<br>• Adventure activities ir outdoor experiences<br><br>Generuoju experience gallery! 🎭`,
+          generateContent: true,
+          contentType: 'experiences'
+        };
+      }
+      
+      // Specific destination responses
+      if (msg.includes('europ') || msg.includes('paryži') || msg.includes('romai') || msg.includes('london')) {
+        return {
+          text: `Europa - puikus pasirinkimas! Rekomenduoju šias destinacijas:<br><br><strong>Top European gems:</strong><br>• Cultural capitals su rich history<br>• Scenic routes ir breathtaking landscapes<br>• Culinary hotspots ir wine regions<br>• Budget-friendly ir luxury options<br><br>Rodau gražiausias Europos vietas! 🇪🇺`,
+          generateContent: true,
+          contentType: 'cities'
+        };
+      }
+      
+      if (msg.includes('paplūdi') || msg.includes('beach') || msg.includes('jūr') || msg.includes('ocean')) {
+        return {
+          text: `Paplūdimio kelionė - tobulas pasirinkimas poilsiui! <br><br><strong>Paradise destinations:</strong><br>• Crystal clear waters ir white sand beaches<br>• Water sports ir diving opportunities<br>• Beachfront resorts ir luxury amenities<br>• Sunset spots ir romantic settings<br><br>Rodau nuostabiausius paplūdimius! 🏖️`,
+          generateContent: true,
+          contentType: 'beach'
+        };
+      }
+      
+      if (msg.includes('kaln') || msg.includes('mountain') || msg.includes('hiking') || msg.includes('alps')) {
+        return {
+          text: `Kalnų nuotykiai - fantastiška idėja active travelers! <br><br><strong>Mountain adventures:</strong><br>• Spectacular hiking trails ir viewpoints<br>• Alpine villages ir mountain culture<br>• Winter sports ir summer activities<br>• Photography opportunities ir natural beauty<br><br>Rodau breathtaking mountain destinations! 🏔️`,
+          generateContent: true,
+          contentType: 'mountains'
+        };
+      }
+      
+      // Default responses
+      const defaultResponses = [
+        {
+          text: `Kelionių planavimas su AI yra 89% efektyvesnis! Galiu padėti rasti tobulą destinaciją, optimizuoti maršrutą ir sutaupyti pinigų. Kokie jūsų kelionių tikslai?`,
+          generateContent: false,
+          contentType: null
+        },
+        {
+          text: `Turiu 195+ šalių duomenų bazę su realiu laiku informacija. Galiu rekomenduoti destinacijas pagal jūsų stilių ir biudžetą. Apie kokią kelionę svajojate?`,
+          generateContent: false,
+          contentType: null
+        }
+      ];
+      
+      return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+    }
+
+    function getDestinationTypeFromMessage(msg) {
+      if (msg.includes('europ') || msg.includes('paryž') || msg.includes('london')) return 'cities';
+      if (msg.includes('paplūdi') || msg.includes('beach') || msg.includes('jūr')) return 'beach';
+      if (msg.includes('kaln') || msg.includes('mountain') || msg.includes('alps')) return 'mountains';
+      if (msg.includes('azij') || msg.includes('amerik') || msg.includes('afrik')) return 'destinations';
+      return 'mixed';
+    }
+
+    async function generateTravelContent(contentType = 'mixed') {
+      if (isGeneratingContent) return;
+      isGeneratingContent = true;
+      
+      // Add loading message with horizontal photo placeholders
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'message ai';
+      loadingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          🎨 Generuoju AI kelionių turinį...
+          <div class="message-images">
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+            <div class="message-image">
+              <div class="image-loading">
+                <div class="loading"></div>
+              </div>
+            </div>
+          </div>
+          <p style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">Paspauskite ant nuotraukų detalesniems aprašymams</p>
+        </div>
+      `;
+      
+      chatMessages.appendChild(loadingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // Simulate content generation delay
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Replace with actual content (horizontal layout)
+      const content = travelContent[contentType] || travelContent.mixed;
+      const imageElements = loadingDiv.querySelectorAll('.message-image');
+      
+      content.slice(0, 3).forEach((contentUrl, index) => {
+        if (imageElements[index]) {
+          imageElements[index].innerHTML = `<img src="${contentUrl}" alt="AI Generated Travel Content" data-content-type="${contentType}" data-step="${index + 1}">`;
+          imageElements[index].addEventListener('click', () => {
+            handleContentClick(contentType, index + 1);
+          });
+        }
+      });
+      
+      // Update message text
+      const messageContent = loadingDiv.querySelector('.message-content');
+      messageContent.firstChild.textContent = '✨ AI sugeneravo kelionių turinį:';
+      
+      isGeneratingContent = false;
+    }
+
+    function handleContentClick(contentType, step) {
+      const contentInstructions = {
+        destinations: [
+          'Santorini, Graikija: Iconic blue domes, sunset views in Oia, luxury cave hotels. Best time: April-October. Budget: €80-300/night.',
+          'Kyoto, Japonija: Ancient temples, bamboo forest, geisha districts. Cherry blossom season: March-May. Must-try: kaiseki dining.',
+          'Banff, Kanada: Turquoise lakes, mountain peaks, wildlife spotting. Summer hiking, winter skiing. Stay: Fairmont Chateau.'
+        ],
+        itinerary: [
+          'Day 1 morning: Arrival, hotel check-in, walking tour of old town (2-3 hours). Lunch at local bistro. Afternoon: main museum visit.',
+          'Day 2: Full day adventure - mountain hiking or city exploration. Pack lunch, start early 8 AM. Return by 6 PM for dinner.',
+          'Day 3: Relaxed morning, shopping district visit. Afternoon cultural site. Evening: sunset viewpoint, farewell dinner.'
+        ],
+        experiences: [
+          'Local cooking class: Learn traditional recipes with family-run restaurant. Duration: 4 hours. Includes market visit, cooking, dining. €65-85.',
+          'Guided photography tour: Hidden gems with local photographer. Golden hour timing. Small groups max 6 people. €45-75.',
+          'Cultural festival: Traditional music, dance, local crafts. Seasonal timing important. Free entry, food vendors, family-friendly.'
+        ],
+        beach: [
+          'Maldives: Overwater bungalows, crystal waters, snorkeling reefs. All-inclusive resorts €200-800/night. Best weather: Nov-Apr.',
+          'Bali, Indonesia: Beach clubs, volcanic black sand, temple visits. Budget: €20-150/night. Surf season: Apr-Oct.',
+          'Amalfi Coast, Italy: Cliffside towns, lemon groves, boat tours. Luxury hotels €150-500/night. Best time: May-Sep.'
+        ],
+        mountains: [
+          'Swiss Alps: Cable car rides, hiking trails, alpine lakes. Stay in mountain huts €40-120. Summer: hiking, winter: skiing.',
+          'Dolomites, Italy: Via ferrata climbing, panoramic views, mountain dining. Best months: Jun-Sep. Difficulty levels available.',
+          'Torres del Paine, Chile: Trekking circuits, glacier views, wildlife spotting. Camping + refugios. Season: Oct-Apr.'
+        ],
+        cities: [
+          'Paris, France: Louvre pre-booking essential, Seine river cruise, Montmartre walks. Metro day pass €7.50. Avoid August crowds.',
+          'Prague, Czech Republic: Castle tours, beer halls, Charles Bridge dawn visit. Budget-friendly: €30-80/night. Year-round destination.',
+          'Barcelona, Spain: Gaudí architecture, tapas tours, beach proximity. Park Güell timed entry. Best weather: Apr-Jun, Sep-Nov.'
+        ],
+        mixed: [
+          'Travel timing: Shoulder seasons offer 30-50% savings, fewer crowds, pleasant weather. Book flights Tuesday 3 PM for best deals.',
+          'Packing essentials: Universal adapter, portable charger, copies of documents in cloud storage. Pack one week before departure.',
+          'Cultural tips: Learn basic local phrases, respect dress codes, tip according to local customs. Research cultural no-nos beforehand.'
+        ]
+      };
+      
+      const instructions = contentInstructions[contentType] || contentInstructions.mixed;
+      const instruction = instructions[step - 1] || instructions[0];
+      
+      setTimeout(() => {
+        addChatMessage(`📝 ${instruction}`, false);
+      }, 500);
+    }
+
+    // File upload functions
+    function openFileDialog() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.multiple = true;
+      input.onchange = function(e) {
+        const files = e.target.files;
+        if (files.length > 0) {
+          handleFileUpload(files);
+        }
+      };
+      input.click();
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('dragover');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileUpload(files);
+      }
+    }
+
+    function handleFileUpload(files) {
+      const uploadZone = document.getElementById('preferencesUpload');
+      if (uploadZone) {
+        uploadZone.innerHTML = `
+          <div style="color: var(--success);">
+            <h3>✅ Analizuojama...</h3>
+            <p style="margin-top: 8px;">Įkelta ${files.length} nuotrauka(-os)</p>
+          </div>
+        `;
+        
+        // Close modal and trigger chat message
+        closeModal();
+        sendChatMessage(`Įkėliau ${files.length} nuotrauką(-as) mano kelionių stilius AI analizei`);
+      }
+    }
+
+    // Additional functions for interactive elements
+    function discoverExperiences() {
+      closeModal();
+      sendChatMessage('Noriu atrasti autentiškus vietinius išgyvenimus su AI pagalba');
+    }
+
+    function activateAssistant() {
+      closeModal();
+      sendChatMessage('Prašau aktyvuoti AI kelionės asistentą realaus laiko pagalbai');
+    }
+
+    function createMemories() {
+      closeModal();
+      sendChatMessage('Noriu pradėti kurti kelionės atmintis su AI photo recommendations');
+    }
+
+    // Initialize
+    console.log('🚀 Kelionių AI asistentas su content generavimu paleistas!');
+  </script>
+</body>
+</html>
