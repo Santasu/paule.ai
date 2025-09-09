@@ -3,17 +3,12 @@
   "framework": null,
   "builds": [
     { "src": "api/**/*.js", "use": "@vercel/node" },
-    { "src": "public/**",   "use": "@vercel/static" }
+    { "src": "public/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "^/api/(.*)$", "dest": "/api/$1.js" },
-
-    { "src": "^/wp-json/(?:augam|paule)/v1/(.*)$", "dest": "/api/$1" },
-    { "src": "^/(?:augam|paule)/v1/(.*)$",         "dest": "/api/$1" },
-
     { "handle": "filesystem" },
 
-    { "src": "^/$", "dest": "/index.html" },
-    { "src": "^(?!/api)(.*)$", "dest": "$1" }
+    // --- SPA fallback (viskas kas NE /api ir nėra tikras failas) -> index.html
+    { "src": "^(?!/api)(?!/_static)(?!/_next)(?!/assets)(?!/spec)(?!/favicon\\.ico)(?!/robots\\.txt)(/.*)$", "dest": "/index.html" }
   ]
 }
