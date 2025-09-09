@@ -12,11 +12,18 @@
   <link rel="apple-touch-icon" href="/assets/icon/apple-touch-icon.png">
   <meta name="theme-color" content="#111827"/>
 
+  <!-- 🔒 Anti-cache, kad matytum naujausią versiją -->
+  <meta http-equiv="Cache-Control" content="no-store, max-age=0, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <!-- Greitesnis prisijungimas prie to paties hosto (SSE) -->
   <link rel="preconnect" href="/" crossorigin>
+  <!-- Preconnect Clerk CDN (modalas) -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
   <!-- Pagrindinis CSS -->
-  <link rel="stylesheet" href="/assets/css/paule.css?v=1.0.0">
+  <link rel="stylesheet" href="/assets/css/paule.css?v=1.0.9">
 
   <!-- ===== PATCH: išdėstymas, mobilus, chips apačioje ===== -->
   <style>
@@ -139,7 +146,7 @@
         runwayImage:restBase+'/runway/image', runwayStatus:restBase+'/runway/status'
       };
       var CFG={mode:MODE,restBase:routes.base,restStream:routes.stream,restStreamSSE:routes.stream,sseDefault:1,
-        pluginBase:'/assets',iconsBase:'/assets/icon',featuresBase:'/assets/features',routes:routes,version:'paule-1.0.7'};
+        pluginBase:'/assets',iconsBase:'/assets/icon',featuresBase:'/assets/features',routes:routes,version:'paule-1.0.9'};
       window.PAULE_CONFIG=CFG; window.AUGAM_CONFIG=CFG;
       try{Object.defineProperty(window,'API_BASE',{configurable:true,get:function(){return CFG.restBase;},set:function(_){}});}catch(e){}
       window.__SET_API_BASE__=function(v){};
@@ -252,6 +259,14 @@
       }
     };
   </script>
+
+  <!-- 🔵 Clerk Frontend JS iš CDN (publishable key – tavo) -->
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="pk_live_Y2xlcmsucGF1bGUuYWkk"
+    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
+  </script>
 </head>
 <body>
 
@@ -282,10 +297,8 @@
         <img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tema
       </button>
 
-      <!-- ČIA įsikels mūsų vieno failo Clerk widgetas -->
-   <div id="clerk-auth" class="login-anchor"></div>
-
-
+      <!-- ČIA įsikels mūsų Clerk mygtukai -->
+      <div id="clerk-auth" class="login-anchor"></div>
 
       <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)" type="button">
         <img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu
@@ -546,7 +559,6 @@
       t = t.replace(/^\s*####\s+(.+)$/gm,  `<h4 style="margin:.35em 0 .2em;color:${GREY[3]};font-weight:800">$1</h4>`);
       t = t.replace(/^\s*###\s+(.+)$/gm,   `<h3 style="margin:.4em 0 .2em;color:${GREY[2]};font-weight:800">$1</h3>`);
       t = t.replace(/^\s*##\s+(.+)$/gm,    `<h2 style="margin:.5em 0 .25em;color:${GREY[1]};font-weight:900">$1</h2>`);
-      t = t.replace(/^\s*#\s+(.+)$/gm,     `<h1 style="margin:.6em 0 .3em;color:${GREY[0]};font-weight:900;font-size:1.15em">$1</h1>`);
       t = t.replace(/(^|\n)(?:[-*]\s.+)(?:\n[-*]\s.+)*/g, (block)=>{
         const lines = block.trim().split('\n').map(l=> l.replace(/^[-*]\s+/,'').trim());
         return `\n<ul style="margin:.25em 0 .25em .9em; padding:0; list-style:disc inside;">` +
@@ -829,10 +841,52 @@
   })();
   </script>
 
-  <!-- 🟢 Įjungiam vieno failo Clerk widgetą -->
- <!-- ten kur top-actions -->
-<script defer src="/auth/clerk-popup.js"></script>
+  <!-- 🟢 Clerk UI montavimas (popup mygtukai) -->
+  <script>
+    (function(){
+      const root = document.getElementById('clerk-auth');
+      function renderFallback(){
+        if (!root) return;
+        root.innerHTML = '<button class="btn ghost" type="button">Prisijungti</button>';
+      }
+      // Palaukiame kol Clerk JS įsikraus
+      window.addEventListener('load', async () => {
+        try{
+          const clerk = window.Clerk;
+          if (!clerk || !clerk.load) { renderFallback(); return; }
+          await clerk.load(); // publishable key – iš data atributo
+          const rerender = () => {
+            if (!root) return;
+            root.innerHTML = '';
+            if (clerk.user){
+              const holder = document.createElement('div');
+              root.appendChild(holder);
+              // įmontuoja gražų user menu (avatar, sign out ir t.t.)
+              clerk.mountUserButton(holder, { appearance: { elements: { userButtonAvatarBox: 'rounded-xl' } } });
+            } else {
+              const inBtn = document.createElement('button');
+              inBtn.className = 'btn ghost';
+              inBtn.type = 'button';
+              inBtn.textContent = 'Prisijungti';
+              inBtn.onclick = () => clerk.openSignIn({ afterSignInUrl: '/' });
 
+              const upBtn = document.createElement('button');
+              upBtn.className = 'btn ghost';
+              upBtn.type = 'button';
+              upBtn.textContent = 'Registruotis';
+              upBtn.onclick = () => clerk.openSignUp({ afterSignUpUrl: '/' });
+
+              root.append(inBtn, upBtn);
+            }
+          };
+          rerender();
+          // Perpiešiam kai pasikeičia sesija
+          clerk.addListener(rerender);
+        }catch(_){ renderFallback(); }
+      });
+    })();
+  </script>
 
 </body>
 </html>
+
