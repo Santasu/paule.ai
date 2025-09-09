@@ -18,6 +18,7 @@
   <!-- Pagrindinis CSS -->
   <link rel="stylesheet" href="/assets/css/paule.css?v=1.0.0">
 
+  <!-- ===== PATCH: išdėstymas, mobilus, chips apačioje ===== -->
   <style>
   :root{
     --logo-w: 3cm;
@@ -34,12 +35,14 @@
 
   .models-in-topbar{ gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .topbar{ position:sticky; top:0; left:0; right:0; z-index:1000; }
-  #chatArea{ padding-top: calc(3cm + 6px) !important; z-index:1; }
-  @media (max-height: 750px){ #chatArea{ padding-top: 24px !important; } }
+  #chatArea{ padding-top: 18px; z-index:1; min-height: calc(100vh - 240px); }
 
   .message.user{ flex-direction:row-reverse; }
   .message.user .bubble{ margin-left:auto; }
   .bottom-section{ z-index:1100; padding-bottom:max(10px, env(safe-area-inset-bottom)); }
+
+  /* jei šablonas įterptų antrą apačios juostą – slėpti */
+  .bottom-section ~ .bottom-section{ display:none !important; }
 
   @media (max-width: 768px){
     .topbar{
@@ -88,11 +91,6 @@
   .suggest-chip:hover, .decision-chip:hover{ background:rgba(0,0,0,.05); }
   .suggest-chip:active, .decision-chip:active{ transform:scale(.98); }
 
-  /* spalvoti apvadai „AI ginčas / Teisėjas / Kompromisas“ */
-  .decision-chip[data-mode="debate"]{ border-color:#7c3aed; }
-  .decision-chip[data-mode="judge"]{  border-color:#16a34a; }
-  .decision-chip[data-mode="compromise"]{ border-color:#2563eb; }
-
   /* Inline deck – į pačią įvestį */
   .input-container{ position:relative; }
   .input-suggest-deck{
@@ -129,17 +127,23 @@
   }
   .jump-latest.show{ display:flex; }
 
-  /* Burbulo „fullscreen“ */
+  /* Burbulas – „Maximize“ + „drag-to-resize“ */
   .bubble.fullscreen{
     position:fixed; left:0; right:0; top:var(--topbar-h); bottom:0;
     z-index:2000; margin:0!important; padding:12px var(--gutter,16px);
     background:var(--bg-primary);
   }
   .bubble.fullscreen .bubble-card{ height:100%; overflow:auto; }
-  .bubble-card{ resize:vertical; overflow:auto; }
+  .bubble-card{ resize:both; overflow:auto; min-height:64px; max-height:70vh; contain:layout paint; }
 
-  /* Svarbu: jokių :has() – valdome klase */
-  .bubble.hidden{ display:none !important; }
+  /* H1–H6 – neryškūs juodi atspalviai; bold – juodas */
+  .msg-content h1{color:#111827}
+  .msg-content h2{color:#1f2937}
+  .msg-content h3{color:#374151}
+  .msg-content h4{color:#4b5563}
+  .msg-content h5{color:#6b7280}
+  .msg-content h6{color:#9ca3af}
+  .msg-content strong{ color:#111827; font-weight:700; text-shadow:none }
   </style>
 
   <!-- 🔧 Konfigūracija -->
@@ -154,8 +158,8 @@
         runwayImage:restBase+'/runway/image', runwayStatus:restBase+'/runway/status'
       };
       var CFG={mode:MODE,restBase:routes.base,restStream:routes.stream,restStreamSSE:routes.stream,sseDefault:1,
-        pluginBase:'/assets',iconsBase:'/assets/icon',featuresBase:'/assets/features',routes:routes,version:'paule-1.0.6'};
-      window.PAULE_CONFIG=CFG;
+        pluginBase:'/assets',iconsBase:'/assets/icon',featuresBase:'/assets/features',routes:routes,version:'paule-1.0.7'};
+      window.PAULE_CONFIG=CFG; window.AUGAM_CONFIG=CFG;
       try{Object.defineProperty(window,'API_BASE',{configurable:true,get:function(){return CFG.restBase;},set:function(_){}});}catch(e){}
       window.__SET_API_BASE__=function(v){};
     })();
@@ -400,7 +404,7 @@
       <div class="chat-area" id="chatArea">
         <section class="welcome" id="welcome" aria-label="Pradinis ekranas">
           <h1 class="hero-title">KAIP GALIU PADĖTI ŠIANDIEN?</h1>
-          <p>Pasirinkite AI specialistą kairėje arba pradėkite pokalbį žemiau. Viršuje galite rinktis vieną ar kelis modelius. 👇</p>
+          <p>Pasirink viršuje modelius ir parašyk užklausą. Visi modeliai atsakys paraleliai. 👇</p>
 
           <div class="welcome-grid">
             <a class="welcome-card" href="#" data-action="song">
@@ -435,15 +439,17 @@
 
   <!-- ===== BOTTOM INPUT ===== -->
   <div class="bottom-section after-message" id="bottomSection" data-responsive="true">
+    <!-- ▶ Follow-up -->
     <div class="follow-suggest-bar" id="followSuggestBar" aria-live="polite"></div>
 
     <div class="input-bar" id="inputBar">
       <div class="input-container" id="inputContainer">
-        <label for="messageInput" class="sr-only">Žinutė specialistui</label>
-        <textarea class="message-input" id="messageInput" rows="1" placeholder="Žinutė specialistui…" autocomplete="on" autocapitalize="sentences" autocorrect="on" spellcheck="true"></textarea>
+        <label for="messageInput" class="sr-only">Parašyk čia…</label>
+        <textarea class="message-input" id="messageInput" rows="1" placeholder="Parašyk čia savo tekstą – modeliai atsakys…" autocomplete="on" autocapitalize="sentences" autocorrect="on" spellcheck="true"></textarea>
         <button class="send-btn" id="sendBtn" aria-label="Siųsti" type="button">
           <img class="ui-icon" src="/assets/icon/arrow-top.svg" alt="">
         </button>
+        <!-- ▶ Inline kortelės į pačią įvestį -->
         <div class="input-suggest-deck" id="inputSuggestDeck" aria-live="polite"></div>
       </div>
     </div>
@@ -476,7 +482,6 @@
     const followBar = document.getElementById('followSuggestBar');
     const inputDeck = document.getElementById('inputSuggestDeck');
     const loginAnchor = document.getElementById('loginAnchor');
-    const btnLogin = document.getElementById('btnLogin');
 
     const API_BASE   = (window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)  || '/api';
     const SSE_URL    = (window.PAULE_CONFIG&&window.PAULE_CONFIG.restStream)|| '/api/stream';
@@ -486,7 +491,7 @@
 
     /* ===== Modelių žemėlapis (front -> back) ===== */
     const FRONT_TO_BACK={
-      paule:'meta-llama/Llama-4-Scout-17B-16E-Instruct', // „Paule“ = Llama (vizualas tik)
+      paule:'meta-llama/Llama-4-Scout-17B-16E-Instruct', // „Paule“ = Llama
       chatgpt:'gpt-4o-mini',
       claude:'claude-4-sonnet',
       gemini:'gemini-2.5-flash',
@@ -494,8 +499,9 @@
       deepseek:'deepseek-chat',
       llama:'meta-llama/Llama-4-Scout-17B-16E-Instruct'
     };
-    // tik deepseek – SSE; visi kiti JSON:
-    const NON_SSE_FRONT = new Set(['paule','chatgpt','claude','gemini','grok','llama']);
+
+    // JSON tik: Claude, Gemini, Grok. Visi kiti – SSE (įskaitant ChatGPT).
+    const NON_SSE_FRONT = new Set(['claude','gemini','grok']);
 
     const MODEL_ICON = {
       paule:`${ICONS_BASE}/llama.svg`,
@@ -543,18 +549,16 @@
       logo.setAttribute('alt', dark ? 'Paule logotipas – tamsi tema' : 'Paule logotipas – šviesi tema');
     }
 
-    /* ===== Clerk (login modal su Google) ===== */
+    /* ===== Clerk (login modal su Google) – jei yra raktas ===== */
     window.addEventListener('load', async ()=>{
       try{
         if(!window.Clerk) return;
         await window.Clerk.load();
         const mountUser = ()=>{
           if (window.Clerk.user){
-            // prisijungta – rodome user button
             loginAnchor.innerHTML = '<div id="clerkUserButton"></div>';
             window.Clerk.mountUserButton('#clerkUserButton');
           }else{
-            // neprisijungta – rodome mygtuką
             loginAnchor.innerHTML = '<button class="btn ghost" id="btnLogin"><img class="ui-icon" src="/assets/icon/google.svg" alt=""> Prisijungti</button>';
             document.getElementById('btnLogin')?.addEventListener('click', ()=> window.Clerk.openSignIn({ appearance:{ elements:{ card:{ borderRadius:'14px' }}}}));
           }
@@ -565,9 +569,6 @@
     });
 
     /* ===== Drawer ===== */
-    const btnMobile=document.getElementById('btnMobile');
-    const overlay=document.getElementById('drawerOverlay');
-    const sidebar=document.getElementById('sidebar');
     btnMobile?.addEventListener('click', ()=>{ sidebar.classList.add('open'); overlay.classList.add('show'); });
     overlay?.addEventListener('click', ()=>{ sidebar.classList.remove('open'); overlay.classList.remove('show'); });
 
@@ -600,20 +601,20 @@
     function stripMd(s){ return String(s||'').replace(/`{1,3}[\s\S]*?`{1,3}/g,'').replace(/[*_#>-]/g,''); }
     function uniqueNonEmpty(arr){ const s=new Set(); const out=[]; (arr||[]).forEach(v=>{ const t=String(v||'').trim(); if(t&&!s.has(t)){ s.add(t); out.push(t);} }); return out; }
 
-    /* ===== Markdown (švarus, su spalvom) ===== */
+    /* ===== Markdown (pilki Hx + juodas bold) ===== */
     function parseMarkdown(input){
       let src = String(input||'');
       src = src.replace(/(^|\n)#{1,6}\s*$/g, '$1'); // nuimam plikas antraštes
-      const HCOL = { 1:'#111827', 2:'#2563eb', 3:'#7c3aed', 4:'#16a34a', 5:'#f59e0b', 6:'#6b7280' };
+      const GREY=['#111827','#1f2937','#374151','#4b5563','#6b7280','#9ca3af'];
       let t = escapeHtml(src);
       const STORE=[]; t=t.replace(/```([\s\S]*?)```/g,(_,m)=>`@@CB_${STORE.push(m)-1}@@`);
       t = t.replace(/`([^`]+)`/g, (_,m)=> `<code style="background:rgba(0,0,0,.06);padding:2px 4px;border-radius:4px">${m}</code>`);
-      t = t.replace(/^\s*######\s+(.+)$/gm, `<h6 style="margin:.25em 0 .15em;color:${HCOL[6]};font-weight:800">$1</h6>`);
-      t = t.replace(/^\s*#####\s+(.+)$/gm, `<h5 style="margin:.3em 0 .2em;color:${HCOL[5]};font-weight:800">$1</h5>`);
-      t = t.replace(/^\s*####\s+(.+)$/gm,  `<h4 style="margin:.35em 0 .2em;color:${HCOL[4]};font-weight:800">$1</h4>`);
-      t = t.replace(/^\s*###\s+(.+)$/gm,   `<h3 style="margin:.4em 0 .2em;color:${HCOL[3]};font-weight:800">$1</h3>`);
-      t = t.replace(/^\s*##\s+(.+)$/gm,    `<h2 style="margin:.5em 0 .25em;color:${HCOL[2]};font-weight:900">$1</h2>`);
-      t = t.replace(/^\s*#\s+(.+)$/gm,     `<h1 style="margin:.6em 0 .3em;color:${HCOL[1]};font-weight:900;font-size:1.15em">$1</h1>`);
+      t = t.replace(/^\s*######\s+(.+)$/gm, `<h6 style="margin:.25em 0 .15em;color:${GREY[5]};font-weight:800">$1</h6>`);
+      t = t.replace(/^\s*#####\s+(.+)$/gm, `<h5 style="margin:.3em 0 .2em;color:${GREY[4]};font-weight:800">$1</h5>`);
+      t = t.replace(/^\s*####\s+(.+)$/gm,  `<h4 style="margin:.35em 0 .2em;color:${GREY[3]};font-weight:800">$1</h4>`);
+      t = t.replace(/^\s*###\s+(.+)$/gm,   `<h3 style="margin:.4em 0 .2em;color:${GREY[2]};font-weight:800">$1</h3>`);
+      t = t.replace(/^\s*##\s+(.+)$/gm,    `<h2 style="margin:.5em 0 .25em;color:${GREY[1]};font-weight:900">$1</h2>`);
+      t = t.replace(/^\s*#\s+(.+)$/gm,     `<h1 style="margin:.6em 0 .3em;color:${GREY[0]};font-weight:900;font-size:1.15em">$1</h1>`);
       t = t.replace(/(^|\n)(?:[-*]\s.+)(?:\n[-*]\s.+)*/g, (block)=>{
         const lines = block.trim().split('\n').map(l=> l.replace(/^[-*]\s+/,'').trim());
         return `\n<ul style="margin:.25em 0 .25em .9em; padding:0; list-style:disc inside;">` +
@@ -624,7 +625,7 @@
         return `\n<ol style="margin:.25em 0 .25em 1.1em; padding:0; list-style:decimal inside;">` +
           lines.map(li=>`<li>${li}</li>`).join('') + `</ol>`;
       });
-      t = t.replace(/\*\*([^*]+)\*\*/g, `<strong style="color:#111827;text-shadow:0 0 1px #5b3cc4">$1</strong>`);
+      t = t.replace(/\*\*([^*]+)\*\*/g, `<strong style="color:#111827;font-weight:700">${'$1'}</strong>`);
       t = t.replace(/\*([^*]+)\*/g, `<em>$1</em>`);
       t = t.replace(/\n/g, '<br>');
       t = t.replace(/@@CB_(\d+)@@/g, (_,i)=> `<pre style="background:rgba(0,0,0,.06);padding:10px;border-radius:10px;overflow:auto"><code>${STORE[Number(i)]||''}</code></pre>`);
@@ -668,7 +669,7 @@
                 onclick="(function(b){const bub=b.closest('.bubble');bub.classList.toggle('fullscreen');})(this)"
                 style="font-size:12px;border:1px solid var(--border);background:var(--bg-primary);padding:4px 6px;border-radius:6px;cursor:pointer;opacity:.8">↗︎</button>
             </div>
-            <div class="msg-content"></div>
+            <div class="msg-content"><em style="opacity:.6">…</em></div>
             <div class="msg-meta"><span class="model-tag">${name}</span><span>${timeNow()}</span></div>
           </div>
         </div>`;
@@ -704,11 +705,12 @@
     }
 
     async function startOrchestrator(text, fronts){
-      const streamFronts = fronts.filter(f=> !NON_SSE_FRONT.has(f));
-      const jsonFronts   = fronts.filter(f=>  NON_SSE_FRONT.has(f));
+      // skaidom pagal transportą
+      const streamFronts = fronts.filter(f=> !NON_SSE_FRONT.has(f)); // paule/llama, chatgpt, deepseek
+      const jsonFronts   = fronts.filter(f=>  NON_SSE_FRONT.has(f)); // claude, gemini, grok
       state.pending = streamFronts.length + jsonFronts.length;
 
-      // SSE – tik deepseek
+      // SSE – visiems, kurie moka (panel sukuriama tik gavus 1-ą delta)
       streamFronts.forEach(f=>{
         const back = FRONT_TO_BACK[f]||f;
         runSSE({ front:f, back, text, chatId:state.chatId })
@@ -716,16 +718,14 @@
           .finally(()=>decPending());
       });
 
-      // JSON grupė – po soft timeout (paralleliai su SSE)
+      // JSON – iškart (be vėlinimo), kad startuotų kartu
       if (jsonFronts.length){
-        setTimeout(()=>{
-          runJSONOnce({ fronts: jsonFronts, text, chatId: state.chatId })
-            .catch(()=>{}); // decPending viduje
-        }, 1000);
+        runJSONOnce({ fronts: jsonFronts, text, chatId: state.chatId })
+          .catch(()=>{}); // decPending viduje
       }
 
-      // Hard deadline
-      setTimeout(()=>{ if (state.pending>0){ state.pending=0; finalizeRound(); } }, 20000);
+      // Hard deadline – jei kas pakibo
+      setTimeout(()=>{ if (state.pending>0){ state.pending=0; finalizeRound(); } }, 22000);
     }
 
     function decPending(){
@@ -748,7 +748,6 @@
         });
         chatArea.appendChild(wrap); autoscrollIfNeeded();
       }
-      // follow-ups (tik jei yra ats).
       if (!state.suggestShown){
         state.suggestShown=true;
         showFollowUps();
@@ -762,7 +761,7 @@
       }catch(_){ return 'Klaida'; }
     }
 
-    // SSE runner
+    // SSE runner (kortelė tik kai gaunam pirmą delta)
     async function runSSE({ front, back, text, chatId }){
       try{
         const qs=new URLSearchParams({ model: back, models: back, message:text, max_tokens:'4096', chat_id:chatId, _t:Date.now().toString() });
@@ -826,7 +825,7 @@
       }
     }
 
-    // JSON once (keli modeliai)
+    // JSON once (Claude, Gemini, Grok) – paleidžiam iškart
     async function runJSONOnce({ fronts, text, chatId }){
       const backIds = fronts.map(f=> FRONT_TO_BACK[f]||f).join(',');
       try{
@@ -846,11 +845,11 @@
             await typeInto(p, txt);
             p.done=true;
           } else {
-            state.errors.push({ front, name:front, msg:'Tuščias atsakymas (JSON fallback).' });
+            state.errors.push({ front, name:front, msg:'Tuščias atsakymas (JSON).' });
           }
           decPending();
         }
-        fronts.forEach(f=>{ if(!gotFronts.has(f)){ state.errors.push({ front:f, name:f, msg:'Nepavyko gauti atsakymo (JSON fallback).' }); decPending(); } });
+        fronts.forEach(f=>{ if(!gotFronts.has(f)){ state.errors.push({ front:f, name:f, msg:'Nepavyko gauti atsakymo (JSON).' }); decPending(); } });
       }catch(e){
         fronts.forEach(f=> { state.errors.push({ front:f, name:f, msg:'Nepavyko gauti atsakymo (JSON).' }); decPending(); });
       }
@@ -871,7 +870,7 @@
       }
     }
 
-    /* ===== Follow-ups (tik jei yra ir be demo fallback) ===== */
+    /* ===== Follow-ups (jei yra) ===== */
     async function showFollowUps(){
       const bestFront = state.firstStarted || Object.keys(state.panels)[0];
       if (!bestFront) return;
@@ -890,14 +889,14 @@
           followBar.appendChild(b);
         });
         followBar.classList.add('show');
-      }catch(_){ /* jei nepavyko – nieko nerodom */ }
+      }catch(_){ /* tyliai */ }
     }
 
     /* ===== Siuntimas ===== */
     sendBtn.addEventListener('click', (e)=>{ e.preventDefault(); doSend(); });
     msgInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); doSend(); }});
-    msgInput.addEventListener('focus', ()=>{ if(!msgInput.value.trim()) renderInline(['Užduok kitą klausimą','Paprašyk pavyzdžio']); });
-    msgInput.addEventListener('input', ()=>{ if(msgInput.value.length===0) renderInline(['Užduok kitą klausimą','Paprašyk pavyzdžio']); else inputDeck.classList.remove('show'); });
+    msgInput.addEventListener('focus', ()=>{ if(!msgInput.value.trim()) renderInline(['Paaiškink detaliau','Duok pavyzdį','Sutrumpink iki 3 sakinių','Sukurk veiksmų planą','Kokie KPI?']); });
+    msgInput.addEventListener('input', ()=>{ if(msgInput.value.length===0) renderInline(['Paaiškink detaliau','Duok pavyzdį','Sutrumpink iki 3 sakinių','Sukurk veiksmų planą','Kokie KPI?']); else inputDeck.classList.remove('show'); });
 
     async function doSend(){
       const text=(msgInput.value||'').trim(); if(!text) return;
@@ -907,7 +906,7 @@
 
       // aktyvūs front'ai
       let fronts=[...modelList.querySelectorAll('.model-pill.active')].map(b=>b.dataset.model).filter(Boolean);
-      if(!fronts.length) fronts=['paule']; // default – „Paule“ (llama)
+      if(!fronts.length) fronts=['paule','chatgpt','deepseek']; // saugus default (visi SSE)
 
       resetRound();
       startOrchestrator(text, fronts);
@@ -923,10 +922,9 @@
       if ((list||[]).length) inputDeck.classList.add('show'); else inputDeck.classList.remove('show');
     }
 
-    // Modelių pasirinkimas (multi-pick; „Paule“ – atskirai)
+    // Modelių pasirinkimas (multi-pick)
     modelList.addEventListener('click', (e)=>{
       const b=e.target.closest('.model-pill'); if(!b) return;
-      const id=b.dataset.model;
       b.classList.toggle('active');
       b.setAttribute('aria-pressed', b.classList.contains('active')?'true':'false');
     });
