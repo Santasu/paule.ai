@@ -1,10 +1,9 @@
 /* =======================================================================
-   Paule – Premium Chat Orchestrator • v2.0.0
+   Paule – Premium Chat Orchestrator • v2.0.1
    - „Pirmas atsakęs laimi“
    - SSE gyvas srautas + JSON „typing“ imitacija
-   - Follow-up „gratis“ klausimai (3–5 chip’ai)
-   - Teisėjas / Ginčas / Kompromisas – palikta
-   API bazė iš window.PAULE_CONFIG (index.html).
+   - Follow-up chip'ai
+   - Teisėjas / Ginčas / Kompromisas
    ======================================================================= */
 (function () {
   'use strict';
@@ -17,10 +16,10 @@
   const MODELS_URL = (CFG.routes && CFG.routes.models) || (API_BASE + '/models');
   const SUGGEST_URL = API_BASE + '/suggest';
 
-  const SOFT_TIMEOUT_MS = 1200;      // po kiek startuojam papildomus fallback
-  const HARD_DEADLINE_MS = 10000;    // absoliutus limitas
-  const TYPE_MIN_DELAY = 8, TYPE_MAX_DELAY = 16;      // ms/žodis
-  const SENTENCE_PAUSE_MIN = 120, SENTENCE_PAUSE_MAX = 220; // ms pauzės
+  const SOFT_TIMEOUT_MS = 1200;         // po kiek startuojam JSON fallback
+  const HARD_DEADLINE_MS = 12000;       // absoliutus limitas vienam ratui
+  const TYPE_MIN_DELAY = 8, TYPE_MAX_DELAY = 16;
+  const SENTENCE_PAUSE_MIN = 120, SENTENCE_PAUSE_MAX = 220;
   const ICONS_BASE = (CFG.iconsBase || '/assets/icon');
 
   // --- Bendra būsena ---
@@ -30,14 +29,14 @@
     isStreaming:false,
     chatId:null,
     lastUserText:'',
-    lastRound:{}, // backId -> full text
+    lastRound:{},                 // backId -> full text
     hasMessagesStarted:false,
     stickToBottom:true,
     decisionBarShown:false,
     primaryChosen:false,
-    controllers:[], // AbortController sąrašas
-    modelPanels:{}, // key -> {element, content, completed, model(front), locked}
-    boundPanels:{}, // backId -> frontId
+    controllers:[],               // AbortController sąrašas
+    modelPanels:{},               // frontId -> {element, content, completed, model(front)}
+    boundPanels:{},               // backId -> frontId
   };
 
   // --- DOM ---
@@ -66,9 +65,16 @@
       applyTheme(); bindEvents(); setInitialModelSelection(); updateBottomDock(); attachChatScroll();
       if (el.chatArea) el.chatArea.querySelectorAll('.message,.thinking')?.forEach(n=>n.remove());
       startFeedsAutoRefresh();
-      await window.PAULE_MODELS.ensureCapabilities();
+
+      // jeigu models.js turi ensureCapabilities – kviečiam; jei ne – tęsiam
+      try {
+        if (window.PAULE_MODELS && typeof window.PAULE_MODELS.ensureCapabilities === 'function') {
+          await window.PAULE_MODELS.ensureCapabilities();
+        }
+      } catch(_){/* tylim */}
+
       log('🚀 Paule Orchestrator įkeltas.');
-    }catch(e){ console.error('[PAULE]init', e); toast('Inicializacijos klaida: '+e.message); }
+    }catch(e){ console.error('[PAULE]init', e); toast('Inicializacijos klaida', e.message); }
   }
 
   // --- Tema ---
@@ -130,7 +136,7 @@
   // --- Siuntimas ---
   async function sendMessage(){
     const text = (el.messageInput?.value || '').trim(); if (!text) return;
-    stopAll(); // jei buvo srautų
+    stopAll();
 
     state.lastUserText = text;
     if (!state.hasMessagesStarted){ state.hasMessagesStarted = true; updateBottomDock(); }
@@ -141,7 +147,6 @@
     const front = getActiveFront();
     preallocatePanels(front);
 
-    // startuojam orchestratorių
     try{
       await runOrchestrator(text, front);
     }catch(e){
@@ -168,7 +173,7 @@
   // --- UI burbulai ---
   const MODEL_ICON = {
     chatgpt:`${ICONS_BASE}/chatgpt.svg`, claude:`${ICONS_BASE}/claude-seeklogo.svg`,
-    gemini:`${ICONS_BASE}/gemini.svg`, grok:`${ICONS_BASE}/xAI.svg`,
+    gemini:`${ICONS_BASE}/gemini.svg`,  grok:`${ICONS_BASE}/xAI.svg`,
     deepseek:`${ICONS_BASE}/deepseek.svg`, llama:`${ICONS_BASE}/llama.svg`,
     auto:`${ICONS_BASE}/ai.svg`, paule:`${ICONS_BASE}/ai.svg`, judge:`${ICONS_BASE}/legal-contract.svg`
   };
@@ -208,30 +213,33 @@
     state.modelPanels = {}; state.boundPanels = {};
     frontList.forEach(fid=>{
       const cont = addModelBubble(fid, true);
-      state.modelPanels[fid] = { element: cont, content: '', completed:false, model: fid, locked:false };
+      state.modelPanels[fid] = { element: cont, content: '', completed:false, model: fid };
     });
   }
 
   // --- Orchestrator („pirmas atsakęs laimi“) ---
   async function runOrchestrator(message, frontList){
     state.isStreaming=true; el.sendBtn && (el.sendBtn.disabled=true);
-    const { splitTransports, getBackId } = window.PAULE_MODELS;
+    const { splitTransports, getBackId, canonicalFrontId } = window.PAULE_MODELS || {
+      splitTransports:(x)=>({stream:x||[],json:[]}),
+      getBackId:(x)=>x, canonicalFrontId:(x)=>x
+    };
+
     const parts = splitTransports(frontList||[]);
     const streamF = parts.stream || [];
     const jsonF   = parts.json   || [];
     const chatId = state.chatId || ('chat_'+Date.now()+'_'+Math.random().toString(36).slice(2));
     state.chatId = chatId; state.lastRound={}; state.primaryChosen=false;
 
-    // susiejimai
+    // susiejimai front<->back
     [...streamF, ...jsonF].forEach(fid=>{
       const back = getBackId(fid);
       state.boundPanels[fid]=fid; state.boundPanels[back]=fid;
     });
 
-    // Paleidžiam visus runner’ius lygiagrečiai
     const runners = [];
 
-    // SSE runner’iai
+    // SSE – visi paraleliai
     streamF.forEach(fid=>{
       const back = getBackId(fid);
       runners.push( runSSE({ front:fid, back, message, chatId }) );
@@ -244,10 +252,7 @@
       gate.then(()=>{ if (!state.primaryChosen) runners.push(jsonRunner()); });
     }
 
-    // Apsaugos nuo „nebylaus“ srauto
     const hardStop = new Promise((_,rej)=> setTimeout(()=>rej(new Error('timeout')), HARD_DEADLINE_MS));
-
-    // laukiam visų (bet UI baigs vos tik užsipildys)
     try{ await Promise.race([Promise.allSettled(runners), hardStop]); }catch(_){}
 
     state.isStreaming=false; el.sendBtn && (el.sendBtn.disabled=false);
@@ -261,7 +266,6 @@
       if (!panel) return resolve();
 
       addThinking(panel.element, nameOf(front));
-      const ctrl = new AbortController(); state.controllers.push(ctrl);
 
       const url = buildStreamUrl({ model: back, models: back, message, max_tokens:4096, chat_id:chatId, _t:Date.now() });
       const es = new EventSource(url);
@@ -281,7 +285,7 @@
 
       es.addEventListener('delta', e=>{
         gotAny=true;
-        if (!state.primaryChosen){ state.primaryChosen = true; } // pirmas – laimi (UI jau rodo)
+        if (!state.primaryChosen){ state.primaryChosen = true; }
         const txt = safeDelta(e.data);
         if (!txt) return;
         panel.content += txt;
@@ -289,66 +293,62 @@
         scrollToBottomIfNeeded();
       });
 
+      es.addEventListener('error', e=>{
+        // serveris siunčia `event: error` su JSON {message:"..."} – parodome
+        let msg='';
+        try{ const d=JSON.parse(e.data||'{}'); msg = d?.message||''; }catch(_){}
+        if (!msg && !gotAny) msg = 'Modelio paslauga laikinai nepasiekiama.';
+        showPanelError(panel.element, msg);
+        finalize();
+      });
+
       es.addEventListener('done', _=>{
         panel.completed=true;
         state.lastRound[back] = panel.content||'';
-        // follow-ups tik jei pirmasis baigė kaip „pagrindinis“
-        if (state.primaryChosen && isPanelPrimary(front)) injectFollowUps(panel.element, panel.content||'');
+        if (state.primaryChosen && panel.content) injectFollowUps(panel.element, panel.content||'');
         finalize();
       });
 
-      es.addEventListener('error', _=>{
-        finalize();
-      });
-
-      // Abort support
-      ctrl.signal.addEventListener('abort', ()=>{ try{es.close();}catch(_){ } finalize(); });
+      // Network klaida (EventSource onerror)
+      es.onerror = function(){ if (!gotAny) showPanelError(panel.element, 'Ryšio klaida (SSE).'); finalize(); };
     });
-  }
-  function isPanelPrimary(frontId){
-    // Paprasta taisyklė: pirmas, kurio delta atėjo, tapo primary.
-    // Mūsų UI neturi atskiro flag’o – primary = tas, kuris pirmas išėjo į srautą.
-    // Kadangi turim vieną burbulą per modelį, laikom true visiems, kurie prisidėjo iki state.primaryChosen=true.
-    // Praktikoje – nebūtina atskirti, follow-ups dedam tik vienam kartui: tik pirmai „done“ po primaryChosen.
-    return true;
   }
 
   // --- JSON once runner (grupė) + typing imitacija ---
   async function runJSONOnce({ fronts, message, chatId }){
     if (!fronts || !fronts.length) return;
     try{
-      const res = await postJSON(COMPLETE_URL, {
-        message, models: fronts.map(f=> window.PAULE_MODELS.getBackId(f)).join(','),
-        chat_id: chatId, max_tokens:4096
-      });
+      const backList = fronts.map(f=> (window.PAULE_MODELS?window.PAULE_MODELS.getBackId(f):f)).join(',');
+      const res = await postJSON(COMPLETE_URL, { message, models: backList, chat_id: chatId, max_tokens:4096 });
       if (!res || !res.answers || !Array.isArray(res.answers)) throw new Error('Bad JSON');
-      // Kiekvienam modelio atsakymui – į savo panelį per „typing“ imitaciją
+
       for (const ans of res.answers){
         const back = ans.model || '';
-        const front = state.boundPanels[back] || window.PAULE_MODELS.canonicalFrontId(back) || fronts[0];
+        const front = state.boundPanels[back] || (window.PAULE_MODELS?window.PAULE_MODELS.canonicalFrontId(back):fronts[0]);
         const panel = state.modelPanels[front];
         if (!panel) continue;
         rmThinking(panel.element);
-        // jeigu dar neturėjom primary, šitas taps primary (pirmas parodytas)
         if (!state.primaryChosen) state.primaryChosen = true;
         await typeInto(panel, ans.text||'');
         panel.completed=true;
-        state.lastRound[ back || window.PAULE_MODELS.getBackId(front) ] = panel.content||'';
+        state.lastRound[ back || (window.PAULE_MODELS?window.PAULE_MODELS.getBackId(front):front) ] = panel.content||'';
         if (state.primaryChosen) injectFollowUps(panel.element, panel.content||'');
       }
     }catch(e){
       // Fallback į /api/stream?mode=once (suderinamumas)
       try{
-        const data = await postStreamOnceCompat({ message, models: fronts.map(f=> window.PAULE_MODELS.getBackId(f)).join(','), chat_id: chatId });
+        const data = await postStreamOnceCompat({
+          message, models: fronts.map(f=> (window.PAULE_MODELS?window.PAULE_MODELS.getBackId(f):f)).join(','), chat_id: chatId
+        });
         (data.answers||[]).forEach(async (ans)=>{
           const back = ans.model || '';
-          const front = state.boundPanels[back] || window.PAULE_MODELS.canonicalFrontId(back) || fronts[0];
+          const front = state.boundPanels[back] || (window.PAULE_MODELS?window.PAULE_MODELS.canonicalFrontId(back):fronts[0]);
           const panel = state.modelPanels[front]; if (!panel) return;
           rmThinking(panel.element);
           if (!state.primaryChosen) state.primaryChosen = true;
           await typeInto(panel, ans.text||'');
           panel.completed=true;
-          state.lastRound[ back || window.PAULE_MODELS.getBackId(front) ] = panel.content||'';
+          state.lastRound[ back || (window.PAULE_MODELS?window.PAULE_MODELS.getBackId(front):front) ] = panel.content||'';
           injectFollowUps(panel.element, panel.content||'');
         });
       }catch(_){
@@ -411,12 +411,9 @@
   // --- Typing imitacija JSON atsakymams ---
   function randomBetween(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
   function splitWordsPreserve(text){
-    // grąžinam žodžių/sakinių „porcijas“
     const parts = [];
     const tokens = String(text||'').split(/(\s+)/);
-    for (let i=0;i<tokens.length;i++){
-      parts.push(tokens[i]);
-    }
+    for (let i=0;i<tokens.length;i++){ parts.push(tokens[i]); }
     return parts;
   }
   async function typeInto(panel, text){
@@ -440,6 +437,15 @@
   function rmThinking(container){
     if (!container) return;
     const t = container.querySelector('.thinking'); if (t){ t.style.opacity='0'; t.style.transition='opacity .25s'; setTimeout(()=>t.remove(), 240); }
+  }
+  function showPanelError(container, msg){
+    if (!container) return;
+    const text = escapeHtml(msg||'Klaida');
+    const box = document.createElement('div');
+    box.style.cssText = 'margin-top:8px;font-size:12px;padding:8px;border-radius:8px;background:var(--bg-danger,rgba(220,20,60,.08));border:1px solid var(--border-danger,rgba(220,20,60,.35));color:var(--fg-danger,#d22);';
+    box.innerHTML = `⚠️ ${text}`;
+    container.appendChild(box);
+    scrollToBottomIfNeeded();
   }
   function appendFade(node){
     node.style.opacity='0'; node.style.transform='translateY(16px)';
@@ -471,7 +477,7 @@
     }
   }
 
-  // --- Ginčas/Teisėjas/Kompromisas (palikta iš tavo logikos, tik su nauju streamAPI) ---
+  // --- Ginčas/Teisėjas/Kompromisas ---
   function startDebate(){
     addSystemMessage('🔁 Pradedamas AI ginčas – kiekvienas modelis pateiks 3–5 argumentus.');
     const front = getActiveFront();
@@ -497,7 +503,7 @@
     addSystemMessage('⚖️ Teisėjas vertina atsakymus…');
     const judgeKey = 'judge';
     const cont = addModelBubble('judge', true);
-    state.modelPanels = { [judgeKey]: { element: cont, content:'', completed:false, model:'judge', locked:true } };
+    state.modelPanels = { [judgeKey]: { element: cont, content:'', completed:false, model:'judge' } };
     state.boundPanels = {};
     const prompt = `Tu esi „Teisėjas“.\nĮvertink pateiktus atsakymus ir parink geriausią.\nGrąžink: • Verdiktas • Kodėl • Kurio modelio idėja • 2 silpnybės kitų variantų • Finalus planas.\n\n${answers}`;
     runOrchestrator(prompt, ['llama']);
@@ -534,21 +540,64 @@
     }).join('');
   }
 
-  // --- Utils ---
+  // --- Markdown ---
   function stripMd(s){ return String(s||'').replace(/`{1,3}[\s\S]*?`{1,3}/g,'').replace(/[*_#>-]/g,''); }
   function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
   function timeNow(){ return new Date().toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'}); }
   function escapeHtml(x){ const d=document.createElement('div'); d.textContent=(x==null?'':String(x)); return d.innerHTML; }
   function safeDelta(s){ try{ const o=JSON.parse(s||'{}'); return o.text||o.delta||o.content||''; }catch(_){ return ''; } }
-  function parseMarkdown(s){
-    let t = escapeHtml(String(s || ''));
-    t = t.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-    t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
-    t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    t = t.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+  function parseMarkdown(input){
+    let src = String(input||'');
+
+    // 1) Escape HTML
+    let t = escapeHtml(src);
+
+    // 2) Apsaugom ```code blocks``` – įdedam placeholder'ius
+    const CODE_STORE = [];
+    t = t.replace(/```([\s\S]*?)```/g, (_,code)=>{
+      const i = CODE_STORE.push(code)-1;
+      return `@@CODEBLOCK_${i}@@`;
+    });
+
+    // 3) Inline `code`
+    t = t.replace(/`([^`]+)`/g, (_,m)=> `<code style="background:var(--bg-code,rgba(0,0,0,.06));padding:2px 4px;border-radius:4px">${m}</code>`);
+
+    // 4) Heading'ai # ## ###
+    t = t.replace(/^###\s+(.+)$/gm, `<h3 style="margin:.4em 0 .2em;color:var(--accent,#5b7cff);font-weight:700">$1</h3>`);
+    t = t.replace(/^##\s+(.+)$/gm,  `<h2 style="margin:.5em 0 .25em;color:var(--accent,#5b7cff);font-weight:800">$1</h2>`);
+    t = t.replace(/^#\s+(.+)$/gm,   `<h1 style="margin:.6em 0 .3em;color:var(--accent,#5b7cff);font-weight:800;font-size:1.15em">$1</h1>`);
+
+    // 5) Sąrašai: - item / * item
+    t = t.replace(/(^|\n)(?:[-*]\s.+)(?:\n[-*]\s.+)*/g, (block)=>{
+      const lines = block.trim().split('\n').map(l=> l.replace(/^[-*]\s+/,'').trim());
+      return `\n<ul style="margin:.25em 0 .25em .9em; padding:0; list-style:disc inside;">` +
+        lines.map(li=>`<li>${li}</li>`).join('') + `</ul>`;
+    });
+
+    // 6) Numeruoti sąrašai: 1. item
+    t = t.replace(/(^|\n)(?:\d+[.)]\s.+)(?:\n\d+[.)]\s.+)*/g, (block)=>{
+      const lines = block.trim().split('\n').map(l=> l.replace(/^\d+[.)]\s+/,'').trim());
+      return `\n<ol style="margin:.25em 0 .25em 1.1em; padding:0; list-style:decimal inside;">` +
+        lines.map(li=>`<li>${li}</li>`).join('') + `</ol>`;
+    });
+
+    // 7) **bold** su akcento spalva, *italic*
+    t = t.replace(/\*\*([^*]+)\*\*/g, `<strong style="color:var(--accent,#5b7cff)">$1</strong>`);
+    t = t.replace(/\*([^*]+)\*/g, `<em>$1</em>`);
+
+    // 8) Dvigubi tarpai → <br> (po antraščių ir listų likusiam tekstui)
     t = t.replace(/\n/g, '<br>');
+
+    // 9) Grąžinam code blocks
+    t = t.replace(/@@CODEBLOCK_(\d+)@@/g, (_,i)=>{
+      const code = CODE_STORE[Number(i)]||'';
+      return `<pre style="background:var(--bg-code,rgba(0,0,0,.06));padding:10px;border-radius:10px;overflow:auto"><code>${code}</code></pre>`;
+    });
+
     return t;
   }
+
   function toast(title, details){
     const n=document.createElement('div');
     n.className='error-notification';
