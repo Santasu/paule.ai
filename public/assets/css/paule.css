@@ -474,7 +474,7 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 
 /* ====== PRICING / FOOTER / COOKIE BAR PATCH ====== */
 
-/* Planai (Stripe) */
+/* Stripe „Planai“ sekcija */
 .pricing-section{
   width:min(1100px,96%);
   margin:28px auto 16px;
@@ -492,7 +492,7 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 .section-sub{ color:var(--text-secondary); margin:0 0 16px }
 stripe-pricing-table{ display:block; width:100% }
 
-/* Poraštė – kairėje apačioje mažomis raidėmis */
+/* Poraštė kairėje apačioje – mažos raidės */
 .site-footer{
   width:min(1100px,96%);
   margin:6px auto 18px;
@@ -505,9 +505,9 @@ stripe-pricing-table{ display:block; width:100% }
 .site-footer .footer-link:hover{ color:var(--accent) }
 .site-footer .sep{ margin:0 8px; opacity:.4 }
 
-/* Cookie bar */
+/* Cookie bar: pakeltas, kad neuždengtų siuntimo */
 .cookie-bar{
-  position:fixed; left:12px; right:12px; bottom:120px; /* pakelta kad neuždengtų siuntimo */
+  position:fixed; left:12px; right:12px; bottom:120px;
   z-index:1200; display:flex; gap:10px; align-items:center;
   padding:12px; border-radius:12px;
   background:var(--bg-primary); border:1px solid var(--border);
@@ -519,13 +519,9 @@ stripe-pricing-table{ display:block; width:100% }
   .cookie-bar{ left:8px; right:8px; bottom:110px; padding:10px; font-size:13px }
 }
 
-/* „Į naujausią“ – dar šiek tiek aukščiau, kad nieko neuždengtų */
+/* „Į naujausią“ – dar šiek tiek aukščiau */
 .jump-latest{ bottom:120px; }
 @media (max-width:768px){ .jump-latest{ bottom:110px; } }
 
-/* Tamsi tema – logotipas */
+/* Tamsi tema – perjungti logotipą */
 :root[data-theme="dark"] #brandLogo{ content: url('/assets/icon/paule-logo-dark.webp'); }
-
-/* Kad placeholder „Parašyk čia…“ nedubliuotų vizualiai chate */
-#chatArea .message .msg-content [data-placeholder]{ display:none !important; }
-
