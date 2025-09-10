@@ -29,25 +29,21 @@
   <!-- Minimalūs inline guard'ai ir pataisos -->
   <style>
     :root{
-      --icon-xxs:13px;           /* vienodas mažas ikonų dydis (topbar + chate) */
-      --pill-scale:0.7;          /* ~30% mažesni modelių „pillai“ */
+      --icon-xxs:13px;
+      --pill-scale:0.7;
     }
 
-    /* Chat matomumas mobiliam */
     #chatArea{min-height:calc(100vh - 240px);overflow:auto}
     @supports(height:100dvh){#chatArea{min-height:calc(100dvh - 240px)}}
 
-    /* „Į naujausią“ tik ikona ir 2 cm nuo apačios */
     .jump-latest{bottom:2cm!important}
     .jump-latest span{display:none}
     .jump-latest img{width:16px;height:16px}
 
-    /* Ikonos – visur vienodos mažos */
     .models-in-topbar .ui-icon,
     .avatar img,
     .message .avatar img{width:var(--icon-xxs);height:var(--icon-xxs)}
 
-    /* Modelių „pillai“ – sumažinti ~30% */
     .models-in-topbar{display:flex;gap:8px;flex-wrap:wrap}
     .models-in-topbar .model-pill{
       transform:scale(var(--pill-scale));
@@ -55,7 +51,6 @@
       white-space:nowrap;
     }
 
-    /* Įvesties dėžė susiaurinama po 3cm iš abiejų pusių (desktop) */
     #bottomSection .input-bar .input-container{
       width:calc(100% - 6cm);
       margin:0 3cm;
@@ -64,11 +59,9 @@
       #bottomSection .input-bar .input-container{width:100%;margin:0}
     }
 
-    /* Pašalinam inline pasiūlymus ir placeholder’ą */
     #inputSuggestDeck, #followSuggestBar{display:none !important}
     #messageInput::placeholder{color:transparent}
 
-    /* Modal sistema (2 tipai) */
     .modal-overlay{
       position:fixed; inset:0; display:none; place-items:center; z-index:9999;
       background:rgba(0,0,0,.66);
@@ -93,7 +86,6 @@
     .modal-body{padding:0; height:100%; overflow:auto}
     .modal-sheet-inner{padding:8px 6px 28px}
 
-    /* Suskleidžiami „AI specialistai“ kairėje */
     .side-section.collapsible .side-title{
       display:flex; align-items:center; justify-content:space-between; cursor:pointer;
     }
@@ -101,7 +93,6 @@
     .side-section.collapsible.collapsed .specialist-grid{display:none}
     .side-section.collapsible.collapsed .side-title .car{transform:rotate(-90deg)}
 
-    /* HERO – 6 kortelės */
     .welcome-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
     .welcome-card{display:block; border-radius:16px; overflow:hidden; position:relative}
     .welcome-card img{width:100%; display:block}
@@ -109,11 +100,15 @@
     .welcome-card span{position:absolute; left:12px; bottom:12px; color:#e5e7eb; font-size:12px}
     @media (max-width:900px){.welcome-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
-    /* Klaidos kortelė – „dim“ */
     .dim{opacity:.65}
-
-    /* Planų sekcija – naudosim per modalą */
     .pricing-section{margin-top:8px}
+
+    /* 🔧 Typing dots – labai minimalistinis */
+    .typing-dots{display:inline-flex;gap:4px;align-items:center;opacity:.7}
+    .typing-dots i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--fg-muted,#6b7280);animation:tdot 1s infinite}
+    .typing-dots i:nth-child(2){animation-delay:.15s}
+    .typing-dots i:nth-child(3){animation-delay:.3s}
+    @keyframes tdot{0%{transform:translateY(0)}50%{transform:translateY(-2px)}100%{transform:translateY(0)}}
   </style>
 
   <!-- App konfigūracija -->
@@ -285,7 +280,6 @@
     </nav>
 
     <div class="top-actions" id="topActions" role="navigation" aria-label="Pagrindiniai veiksmai">
-      <!-- „Planai“ – atidarom kaip SHEET modal (nebe scroll į vidų) -->
       <a class="btn ghost" data-nav="pricing" href="#pricing" role="button">
         <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Planai
       </a>
@@ -299,7 +293,6 @@
         <img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tema
       </button>
 
-      <!-- Vienas prisijungimo mygtukas per Clerk -->
       <div id="clerk-auth" class="login-anchor">
         <button class="btn ghost" id="loginFallback" type="button"
           onclick="(window.Clerk&&window.Clerk.openSignIn?window.Clerk.openSignIn({afterSignInUrl:'/',afterSignUpUrl:'/' }):alert('Kraunama…'));">
@@ -317,14 +310,12 @@
 
   <div class="layout" id="layoutRoot">
     <aside class="sidebar" id="sidebar" role="complementary" aria-label="Šoninė navigacija">
-      <!-- AI specialistai – collapsible -->
       <section class="side-section collapsible" id="specSection">
         <div class="side-title">
           <span>AI specialistai</span>
           <span class="car">▾</span>
         </div>
         <div class="specialist-grid" id="specialistGrid">
-          <!-- Visi atsidarys TOOL modale -->
           <a class="chip" href="/spec/sefas.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/chef-knife.svg" alt=""> Šefas</a>
           <a class="chip" href="/spec/marketing.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/marketing-megaphone.svg" alt=""> Marketing</a>
           <a class="chip" href="/spec/pardavimai.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/sales-handshake.svg" alt=""> Pardavimai</a>
@@ -576,7 +567,6 @@
     modal.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
     window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal.classList.contains('show')) closeModal(); });
 
-    /* „Planai“ – atidarom SHEET modalu (paimame paslėptą #pricing turinį) */
     (function(){
       const link=document.querySelector('a[data-nav="pricing"][href="#pricing"]');
       const source=document.getElementById('pricing');
@@ -589,7 +579,6 @@
       });
     })();
 
-    /* Specialistų atidarymas TOOL modale (dinamiškai parsiunčiam html) */
     document.getElementById('specialistGrid')?.addEventListener('click', async (e)=>{
       const a=e.target.closest('a[data-modal="tool"]'); if(!a) return;
       e.preventDefault();
@@ -602,7 +591,6 @@
       }
     });
 
-    /* Footer teisinių/puslapių atidarymas kaip SHEET */
     function hijackSheet(selector){
       document.querySelectorAll(selector).forEach(a=>{
         a.addEventListener('click', async (e)=>{
@@ -662,7 +650,7 @@
                 onclick="(function(b){const bub=b.closest('.bubble');bub.classList.toggle('fullscreen');})(this)"
                 style="font-size:12px;border:1px solid var(--border);background:var(--bg-primary);padding:4px 6px;border-radius:6px;cursor:pointer;opacity:.8">↗︎</button>
             </div>
-            <div class="msg-content"><em style="opacity:.6">…</em></div>
+            <div class="msg-content"><span class="typing-dots"><i></i><i></i><i></i></span></div>
             <div class="msg-meta"><span class="model-tag">${name}</span><span>${timeNow()}</span></div>
           </div>
         </div>`;
@@ -674,6 +662,15 @@
       state.panels[front]=panel;
       state.startedOrder.push(front);
       return panel;
+    }
+
+    function preparePanels(fronts){ // 🔧 iš anksto, kad neliktų „global wait“
+      (fronts||[]).forEach(f=>{
+        if (!state.panels[f]) {
+          const p = ensurePanel(f);
+          if (p && p.el) p.el.innerHTML = `<span class="typing-dots"><i></i><i></i><i></i></span>`;
+        }
+      });
     }
 
     function addUserBubble(text){
@@ -694,26 +691,24 @@
       wrap.querySelector('.msg-content').textContent=text;
     }
 
-    function showGlobalWait(){
-      if (document.querySelector('._ai-wait')) return;
-      const w = document.createElement('div');
-      w.className='._ai-wait _ai-wait';
-      w.setAttribute('aria-live','polite');
-      w.innerHTML = `<div class="dots" aria-hidden="true"><span></span><span></span><span></span></div><div>AI mąsto, palaukite akimirką…</div>`;
-      chatArea.appendChild(w);
-    }
-    function hideGlobalWait(){ document.querySelector('._ai-wait')?.remove(); }
+    // 🔧 Global wait – visiškai išjungtas (no-op), kad nieko neužstotų
+    function showGlobalWait(){ /* no-op */ }
+    function hideGlobalWait(){ /* no-op */ }
 
     function resetRound(){
       state.chatId = 'chat_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
       state.panels={}; state.startedOrder=[]; state.firstStarted=null;
       state.pending=0; state.errors=[]; state.hasAnyText=false;
-      showGlobalWait();
+      showGlobalWait(); // no-op
     }
 
     async function startOrchestrator(text, fronts){
       const streamFronts = fronts.filter(f=> !NON_SSE_FRONT.has(f));
       const jsonFronts   = fronts.filter(f=>  NON_SSE_FRONT.has(f));
+
+      // 🔧 kortelės prieš užklausas
+      preparePanels([...streamFronts, ...jsonFronts]);
+
       state.pending = streamFronts.length + jsonFronts.length;
 
       streamFronts.forEach(f=>{
@@ -729,7 +724,7 @@
 
     function decPending(){ state.pending = Math.max(0, state.pending-1); if (state.pending===0) finalizeRound(); }
     function finalizeRound(){
-      hideGlobalWait();
+      hideGlobalWait(); // no-op
       if (state.errors.length){
         const wrap = document.createElement('div');
         state.errors.forEach(er=>{
@@ -761,7 +756,6 @@
             const j=await resp.json();
             const txt=j?.answers?.[0]?.text||j?.text||'';
             if (txt){
-              if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
               const p = ensurePanel(front);
               p.content += txt; p.el.innerHTML = p.content;
             } else { state.errors.push({front, name:front, msg:'Tuščias atsakymas (JSON).'}); }
@@ -771,7 +765,7 @@
 
         const reader=resp.body.getReader();
         const dec=new TextDecoder();
-        let buf='', gotAny=false;
+        let buf='';
         for(;;){
           const {done,value}=await reader.read(); if(done) break;
           buf+=dec.decode(value,{stream:true});
@@ -785,7 +779,7 @@
             const data = dataLine.replace(/^data:\s*/,'').trim();
             if (data==='[DONE]'){ buf=''; break; }
             if (ev==='error'){
-              if (!gotAny) state.errors.push({front, name:front, msg: parseErrEvent({data})});
+              state.errors.push({front, name:front, msg: parseErrEvent({data})});
               continue;
             }
             let piece='';
@@ -794,8 +788,6 @@
               piece = j?.choices?.[0]?.delta?.content ?? j?.text ?? j?.data ?? '';
             }catch{ piece = data; }
             if(piece){
-              if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
-              gotAny=true;
               const p = ensurePanel(front);
               p.content += piece; p.el.innerHTML = p.content;
             }
@@ -819,10 +811,12 @@
           gotFronts.add(front);
           const txt = ans.text||'';
           if (txt){
-            if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
             const p = ensurePanel(front);
             p.content += txt; p.el.innerHTML = p.content; p.done=true;
-          } else { state.errors.push({ front, name:front, msg:'Tuščias atsakymas (JSON).' }); }
+          } else {
+            const emsg = ans.error ? String(ans.error) : 'Tuščias atsakymas (JSON).';
+            state.errors.push({ front, name:front, msg: emsg });
+          }
           decPending();
         }
         fronts.forEach(f=>{ if(!gotFronts.has(f)){ state.errors.push({ front:f, name:f, msg:'Nepavyko gauti atsakymo (JSON).' }); decPending(); } });
@@ -844,7 +838,6 @@
       startOrchestrator(text, fronts);
     }
 
-    /* Input UX */
     msgInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); doSend(); }});
     sendBtn.addEventListener('click', (e)=>{ e.preventDefault(); doSend(); });
     sendBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); doSend(); }, {passive:false});
@@ -897,7 +890,7 @@
           const clerk = window.Clerk;
           if (!clerk || !clerk.load) { renderFallback(); return; }
 
-          await clerk.load(); // publishable key paimamas iš <script> data atributo
+          await clerk.load();
 
           const rerender = () => {
             if (!root) return;
@@ -911,7 +904,7 @@
               loginBtn.onclick = () => clerk.openSignIn({ afterSignInUrl: '/', afterSignUpUrl: '/' });
               root.append(loginBtn);
 
-              // Auto atidarymas po 3 s (tik vieną kartą per sesiją)
+              const SHOWN_KEY='auth_auto_shown_v1';
               if (!sessionStorage.getItem(SHOWN_KEY)){
                 setTimeout(()=>{
                   if (!window.Clerk?.user){
@@ -975,3 +968,4 @@
 
 </body>
 </html>
+
