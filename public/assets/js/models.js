@@ -1,4 +1,7 @@
-// /assets/js/models.js
+/* =======================================================================
+   Paule – Modelių žemėlapis • v1.3.0
+   Front (mygtuko id) -> Back (API model id) + transporto gebėjimai
+   ======================================================================= */
 (function () {
   'use strict';
 
@@ -6,9 +9,9 @@
   const FRONT_TO_BACK = Object.freeze({
     'auto':'auto','paule':'auto','augam-auto':'auto',
     'chatgpt':'gpt-4o-mini',
-    'claude':'claude-4-sonnet',       // JSON only
-    'gemini':'gemini-2.5-flash',      // JSON only
-    'grok':'grok-4',                  // JSON only
+    'claude':'claude-4-sonnet',
+    'gemini':'gemini-2.5-flash',
+    'grok':'grok-4',
     'deepseek':'deepseek-chat',
     'llama':'meta-llama/Llama-4-Scout-17B-16E-Instruct'
   });
@@ -17,7 +20,6 @@
     Object.entries(FRONT_TO_BACK).reduce((m,[f,b]) => (m[b]=f,m), {})
   );
 
-  const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
   const MODEL_NAME = Object.freeze({
     'auto':'Paule','paule':'Paule','augam-auto':'Paule',
     'chatgpt':'ChatGPT','gpt-4o-mini':'ChatGPT',
@@ -29,6 +31,8 @@
     'judge':'Teisėjas'
   });
 
+  // FIX: „ir“ -> „&&“
+  const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
   const MODEL_ICON = Object.freeze({
     'auto': `${ICONS_BASE}/ai.svg`,
     'paule': `${ICONS_BASE}/ai.svg`,
@@ -41,7 +45,7 @@
     'judge': `${ICONS_BASE}/legal-contract.svg`
   });
 
-  // JSON ONLY: Claude, Gemini, Grok
+  // šituos laikom „JSON only“ (SSE pas juos neveikia) → JSON once fallback
   const NON_SSE_FRONT = new Set(['claude','gemini','grok','claude-4-sonnet','gemini-2.5-flash','grok-4']);
 
   const lc = s => String(s||'').toLowerCase().trim();
@@ -87,7 +91,7 @@
     return items;
   }
 
-  async function ensureCapabilities(){ return true; }
+  async function ensureCapabilities(){ /* jei reikės – galit įdėti ping’ą */ return true; }
 
   const API={ FRONT_TO_BACK,BACK_TO_FRONT,MODEL_NAME,MODEL_ICON,NON_SSE_FRONT,
     canonicalFrontId,getBackId,nameOf,iconOf,isSSECapable,
@@ -98,3 +102,4 @@
   window.getBackId=window.getBackId||getBackId;
   window.nameOf=window.nameOf||nameOf;
 })();
+
