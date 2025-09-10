@@ -744,7 +744,5 @@
   // Expose viešai
   window.PauleMain = { state, sendMessage, startDebate, startCompromise, startJudge };
 
-})();  // /assets/js/paule-ui.js (orchestrator)
-
-
+})();  
 
