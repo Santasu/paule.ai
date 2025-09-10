@@ -494,7 +494,7 @@
     const FRONT_TO_BACK={
       paule:'meta-llama/Llama-4-Scout-17B-16E-Instruct',
       chatgpt:'gpt-4o-mini',
-      claude:'claude-4-sonnet',
+      claude:'claude-3.5-sonnet-latest',   // ✅ atnaujinta
       gemini:'gemini-2.5-flash',
       grok:'grok-4',
       deepseek:'deepseek-chat',
@@ -672,7 +672,7 @@
       return panel;
     }
 
-    function preparePanels(fronts){ // 🔧 iš anksto, kad neliktų „global wait“
+    function preparePanels(fronts){
       (fronts||[]).forEach(f=>{
         if (!state.panels[f]) {
           const p = ensurePanel(f);
@@ -681,25 +681,7 @@
       });
     }
 
-    function addUserBubble(text){
-      document.getElementById('welcome')?.remove();
-      const wrap=document.createElement('div'); wrap.className='message user';
-      wrap.innerHTML = `
-        <div class="avatar"><img class="ui-icon" src="/assets/icon/user.svg" alt=""></div>
-        <div class="bubble" data-model="user">
-          <div class="bubble-card">
-            <button class="copy-btn" title="Kopijuoti" type="button"
-              onclick="(function(b){try{const t=b.closest('.bubble-card')?.querySelector('.msg-content')?.innerText||'';navigator.clipboard.writeText(t).catch(()=>{});b.classList.add('ok');setTimeout(()=>b.classList.remove('ok'),900);}catch(_){}})(this)"
-              style="position:absolute;right:8px;top:8px;font-size:12px;border:1px solid var(--border);background:var(--bg-primary);padding:4px 6px;border-radius:6px;cursor:pointer;opacity:.8">⧉</button>
-            <div class="msg-content"></div>
-            <div class="msg-meta"><span class="model-tag">Jūs</span><span>${timeNow()}</span></div>
-          </div>
-        </div>`;
-      chatArea.appendChild(wrap);
-      wrap.querySelector('.msg-content').textContent=text;
-    }
-
-    // 🔧 Global wait – visiškai išjungtas (no-op), kad nieko neužstotų
+    // 🧹 Nebebus globalaus „AI mąsto“ overlay – jokio bloko srautui
     function showGlobalWait(){ /* no-op */ }
     function hideGlobalWait(){ /* no-op */ }
 
@@ -714,7 +696,6 @@
       const streamFronts = fronts.filter(f=> !NON_SSE_FRONT.has(f));
       const jsonFronts   = fronts.filter(f=>  NON_SSE_FRONT.has(f));
 
-      // 🔧 kortelės prieš užklausas
       preparePanels([...streamFronts, ...jsonFronts]);
 
       state.pending = streamFronts.length + jsonFronts.length;
@@ -857,7 +838,6 @@
     });
 
     window.PauleMain = { sendMessage: doSend };
-    /* ➕ Eksportuojam modalą, kad galėtume atidaryti auth sheet'ą */
     window.PauleModal = { open: openModal, close: closeModal };
   })();
   </script>
@@ -897,7 +877,6 @@
         try { await c.load(); return c; } catch(_) { return null; }
       }
 
-      // Vieša funkcija – atidaro auth modalą
       window.openAuth = async function(){
         if (!window.PauleModal) return alert('Kraunama…');
         window.PauleModal.open('sheet', authHtml());
@@ -925,7 +904,6 @@
         btnIn.onclick = async () => (await loadClerk())?.openSignIn({ afterSignInUrl:'/', afterSignUpUrl:'/' });
         btnUp.onclick = async () => (await loadClerk())?.openSignUp({  afterSignUpUrl:'/' });
 
-        // jei vartotojas pats uždaro – nebesiūlyti automatiškai šiame seanse
         const closeBtn = document.querySelector('#modal .modal-close');
         const onClose = () => { try{ sessionStorage.setItem(AUTH_KEY,'1'); }catch(_){ } };
         closeBtn?.addEventListener('click', onClose, { once:true });
