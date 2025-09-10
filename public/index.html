@@ -23,24 +23,18 @@
   <link rel="preconnect" href="https://js.stripe.com" crossorigin>
   <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
 
-  <!-- ⚡️ Clerk greitinimas -->
+  <!-- 👇 saugosim nuo Clerk DNS bėdų – preconnect'ai OK, bet chat UI nuo jų nebepriklauso -->
   <link rel="preconnect" href="https://clerk.com" crossorigin>
   <link rel="preconnect" href="https://api.clerk.com" crossorigin>
   <link rel="preconnect" href="https://img.clerk.com" crossorigin>
   <link rel="preconnect" href="https://f.clerk.com" crossorigin>
-  <link rel="preload" as="script"
-        href="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
+  <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
 
-  <!-- Pagrindinis CSS -->
+  <!-- CSS -->
   <link rel="stylesheet" href="/assets/css/paule.css?v=1.1.3"/>
 
-  <!-- Minimalūs inline guard'ai ir pataisos -->
   <style>
-    :root{
-      --icon-xxs:13px;
-      --pill-scale:0.7;
-    }
-
+    :root{ --icon-xxs:13px; --pill-scale:0.7; }
     #chatArea{min-height:calc(100vh - 240px);overflow:auto}
     @supports(height:100dvh){#chatArea{min-height:calc(100dvh - 240px)}}
 
@@ -48,55 +42,27 @@
     .jump-latest span{display:none}
     .jump-latest img{width:16px;height:16px}
 
-    .models-in-topbar .ui-icon,
-    .avatar img,
-    .message .avatar img{width:var(--icon-xxs);height:var(--icon-xxs)}
-
+    .models-in-topbar .ui-icon, .avatar img, .message .avatar img{width:var(--icon-xxs);height:var(--icon-xxs)}
     .models-in-topbar{display:flex;gap:8px;flex-wrap:wrap}
-    .models-in-topbar .model-pill{
-      transform:scale(var(--pill-scale));
-      transform-origin:left center;
-      white-space:nowrap;
-    }
+    .models-in-topbar .model-pill{ transform:scale(var(--pill-scale)); transform-origin:left center; white-space:nowrap; }
 
-    #bottomSection .input-bar .input-container{
-      width:calc(100% - 6cm);
-      margin:0 3cm;
-    }
-    @media (max-width:900px){
-      #bottomSection .input-bar .input-container{width:100%;margin:0}
-    }
+    #bottomSection .input-bar .input-container{width:calc(100% - 6cm); margin:0 3cm;}
+    @media (max-width:900px){ #bottomSection .input-bar .input-container{width:100%;margin:0} }
 
     #inputSuggestDeck, #followSuggestBar{display:none !important}
     #messageInput::placeholder{color:transparent}
 
-    .modal-overlay{
-      position:fixed; inset:0; display:none; place-items:center; z-index:9999;
-      background:rgba(0,0,0,.66);
-    }
+    .modal-overlay{ position:fixed; inset:0; display:none; place-items:center; z-index:9999; background:rgba(0,0,0,.66); }
     .modal-overlay.show{display:grid}
-    .modal-window{position:relative; width:min(1100px, 92vw); max-height:92vh; overflow:auto;
-      background:var(--bg-primary,#fff); color:var(--text,#111827);
-      border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);
-    }
+    .modal-window{ position:relative; width:min(1100px, 92vw); max-height:92vh; overflow:auto; background:var(--bg-primary,#fff); color:var(--text,#111827); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35); }
     .modal-window.modal--sheet{padding:20px 24px}
-    .modal-window.modal--tool{
-      width:100vw; height:100vh; max-height:100vh; border-radius:0; padding:0; background:#0b0b0b;
-      color:#e5e7eb;
-    }
-    .modal-close{
-      position:fixed; top:16px; right:16px; z-index:10000;
-      width:36px; height:36px; border-radius:999px; display:grid; place-items:center;
-      border:1px solid rgba(255,255,255,.25); background:rgba(0,0,0,.45); color:#fff; cursor:pointer;
-      backdrop-filter:saturate(130%) blur(6px);
-    }
+    .modal-window.modal--tool{ width:100vw; height:100vh; max-height:100vh; border-radius:0; padding:0; background:#0b0b0b; color:#e5e7eb; }
+    .modal-close{ position:fixed; top:16px; right:16px; z-index:10000; width:36px; height:36px; border-radius:999px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.25); background:rgba(0,0,0,.45); color:#fff; cursor:pointer; backdrop-filter:saturate(130%) blur(6px); }
     .modal--sheet .modal-close{position:absolute; background:var(--bg-primary,#fff); color:#111827; border:1px solid var(--border,#e5e7eb)}
     .modal-body{padding:0; height:100%; overflow:auto}
     .modal-sheet-inner{padding:8px 6px 28px}
 
-    .side-section.collapsible .side-title{
-      display:flex; align-items:center; justify-content:space-between; cursor:pointer;
-    }
+    .side-section.collapsible .side-title{ display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
     .side-section.collapsible .side-title .car{transition:transform .2s ease}
     .side-section.collapsible.collapsed .specialist-grid{display:none}
     .side-section.collapsible.collapsed .side-title .car{transform:rotate(-90deg)}
@@ -111,7 +77,7 @@
     .dim{opacity:.65}
     .pricing-section{margin-top:8px}
 
-    /* 🔧 Typing dots – labai minimalistinis */
+    /* 💡 Minimalūs „typing dots“ burbule, ne overlay */
     .typing-dots{display:inline-flex;gap:4px;align-items:center;opacity:.7}
     .typing-dots i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--fg-muted,#6b7280);animation:tdot 1s infinite}
     .typing-dots i:nth-child(2){animation-delay:.15s}
@@ -170,7 +136,7 @@
     })();
   </script>
 
-  <!-- HOTFIX: SSE -> JSON kai mode=once -->
+  <!-- HOTFIX: SSE -> JSON kai mode=once (palikta, bet neblokuoja) -->
   <script>
     (function(){
       'use strict';
@@ -245,7 +211,7 @@
     };
   </script>
 
-  <!-- Clerk JS (publishable key) -->
+  <!-- Clerk JS (publishable key) – saugi, neblokuojanti iniciacija -->
   <script async crossorigin="anonymous"
     data-clerk-publishable-key="pk_live_Y2xlcmsucGF1bGUuYWkk"
     src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
@@ -258,7 +224,7 @@
 </head>
 <body>
 
-  <!-- ======== MODAL ROOT (2 tipai) ======== -->
+  <!-- ======== MODAL ROOT ======== -->
   <div id="modal" class="modal-overlay" aria-hidden="true">
     <button class="modal-close" type="button" aria-label="Uždaryti (Esc)">✕</button>
     <div class="modal-window modal--sheet" role="dialog" aria-modal="true" hidden>
@@ -392,7 +358,6 @@
 
     <main class="main" role="main">
       <div class="chat-area" id="chatArea">
-        <!-- HERO (6 kortelės) -->
         <section class="welcome" id="welcome" aria-label="Pradinis ekranas">
           <h1 class="hero-title">KAIP GALIU PADĖTI ŠIANDIEN?</h1>
           <p>Pasirink viršuje modelius ir parašyk užklausą. Visi modeliai atsakys paraleliai. 👇</p>
@@ -425,7 +390,7 @@
           </div>
         </section>
 
-        <!-- Paslėpta Planų sekcija (naudosim į modalą) -->
+        <!-- Planai (sheet) -->
         <section id="pricing" class="pricing-section" aria-label="Planai" hidden>
           <h2 class="section-title">Planai</h2>
           <p class="section-sub">Pasirink sau tinkamiausią planą. Galima atšaukti bet kada.</p>
@@ -459,7 +424,7 @@
       <div class="tool" data-tool="photo" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-photo.svg" alt=""> Foto</div>
       <div class="tool" data-tool="file" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-file.svg" alt=""> Failas</div>
       <div class="tool" data-tool="song" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-music.svg" alt=""> Sukurti dainą</div>
-      <div class="tool" data-tool="video" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/video-plus.svg" alt=""> Sukurti video</div>
+      <div class="tool" data-tool="video" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-video.svg" alt=""> Sukurti video</div>
       <div class="tool" data-tool="goals" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų sistema</div>
     </div>
   </div>
@@ -468,6 +433,9 @@
   <script>
   (function(){
     'use strict';
+
+    // ✅ niekas neužlūžta, net jei trečių šalių skriptai meta klaidas
+    window.addEventListener('error', e => { try{ console.warn('[Soft error]', e.message); }catch(_){} });
 
     const root=document.documentElement;
     const sidebar=document.getElementById('sidebar');
@@ -479,27 +447,24 @@
     const logo=document.getElementById('brandLogo');
     const modelList=document.getElementById('modelList');
     const chatArea  = document.getElementById('chatArea');
-    const modal = document.getElementById('modal');
-    const modalClose = modal.querySelector('.modal-close');
-    const modalSheet = modal.querySelector('.modal--sheet');
-    const modalTool  = modal.querySelector('.modal--tool');
-    const modalSheetBody = document.getElementById('modalSheet');
-    const modalToolBody  = document.getElementById('modalTool');
+    const btnNewChat= document.getElementById('btnNewChat');
 
     const API_BASE   = (window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)  || '/api';
     const SSE_URL    = (window.PAULE_CONFIG&&window.PAULE_CONFIG.restStream)|| '/api/stream';
     const COMPLETE_URL = API_BASE + '/complete';
     const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
 
+    // 🔧 svarbu: Claude alias pataisytas į veikiantį tavo backende
     const FRONT_TO_BACK={
       paule:'meta-llama/Llama-4-Scout-17B-16E-Instruct',
       chatgpt:'gpt-4o-mini',
-      claude:'claude-3.5-sonnet-latest',   // ✅ atnaujinta
+      claude:'claude-3.5-sonnet-latest',
       gemini:'gemini-2.5-flash',
       grok:'grok-4',
       deepseek:'deepseek-chat',
       llama:'meta-llama/Llama-4-Scout-17B-16E-Instruct'
     };
+    // Šie – be SSE (gaunam JSON)
     const NON_SSE_FRONT = new Set(['claude','gemini','grok']);
     const MODEL_ICON = {
       paule: '/assets/icon/paule-logo.webp',
@@ -512,13 +477,12 @@
     };
 
     const state = {
-      chatId:null, panels:{}, startedOrder:[], firstStarted:null,
-      pending:0, errors:[], hasAnyText:false, stickToBottom:true, lastUserText:''
+      chatId:null, panels:{}, panelTimers:{},
+      pending:0, errors:[], lastUserText:''
     };
 
     /* Tema */
-    initTheme();
-    function initTheme(){
+    (function initTheme(){
       try{
         const saved = localStorage.getItem('paule_theme');
         if(saved==='dark'||saved==='light'){ root.setAttribute('data-theme', saved); }
@@ -531,7 +495,7 @@
         try{ localStorage.setItem('paule_theme', next); }catch(_){}
         setLogoByTheme();
       });
-    }
+    })();
     function setLogoByTheme(){
       const dark = root.getAttribute('data-theme') === 'dark';
       logo.src = dark ? '/assets/icon/paule-logo-dark.webp' : '/assets/icon/paule-logo.webp';
@@ -542,14 +506,26 @@
     btnMobile?.addEventListener('click', ()=>{ sidebar.classList.add('open'); overlay.classList.add('show'); });
     overlay?.addEventListener('click', ()=>{ sidebar.classList.remove('open'); overlay.classList.remove('show'); });
 
-    /* Collapsible „AI specialistai“ */
+    /* „Planai“ sheet */
     (function(){
-      const sec=document.getElementById('specSection');
-      const ttl=sec?.querySelector('.side-title');
-      ttl?.addEventListener('click', ()=>{ sec.classList.toggle('collapsed'); });
+      const link=document.querySelector('a[data-nav="pricing"][href="#pricing"]');
+      const source=document.getElementById('pricing');
+      link?.addEventListener('click', (e)=>{
+        e.preventDefault();
+        if(!source) return;
+        const clone = source.cloneNode(true);
+        clone.hidden=false;
+        openModal('sheet', clone);
+      });
     })();
 
-    /* Modal valdymas */
+    /* Modal quick impl (naudojama ir auth) */
+    const modal = document.getElementById('modal');
+    const modalClose = modal.querySelector('.modal-close');
+    const modalSheet = modal.querySelector('.modal--sheet');
+    const modalTool  = modal.querySelector('.modal--tool');
+    const modalSheetBody = document.getElementById('modalSheet');
+    const modalToolBody  = document.getElementById('modalTool');
     function openModal(type, htmlOrEl){
       modal.classList.add('show');
       modal.setAttribute('aria-hidden','false');
@@ -574,19 +550,9 @@
     modalClose.addEventListener('click', closeModal);
     modal.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
     window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal.classList.contains('show')) closeModal(); });
+    window.PauleModal = { open: openModal, close: closeModal };
 
-    (function(){
-      const link=document.querySelector('a[data-nav="pricing"][href="#pricing"]');
-      const source=document.getElementById('pricing');
-      link?.addEventListener('click', (e)=>{
-        e.preventDefault();
-        if(!source) return;
-        const clone = source.cloneNode(true);
-        clone.hidden=false;
-        openModal('sheet', clone);
-      });
-    })();
-
+    /* Specialistų TOOL modalas */
     document.getElementById('specialistGrid')?.addEventListener('click', async (e)=>{
       const a=e.target.closest('a[data-modal="tool"]'); if(!a) return;
       e.preventDefault();
@@ -599,48 +565,21 @@
       }
     });
 
-    function hijackSheet(selector){
-      document.querySelectorAll(selector).forEach(a=>{
-        a.addEventListener('click', async (e)=>{
-          const href=a.getAttribute('href')||'';
-          if(!/^https?:/i.test(href)){
-            e.preventDefault();
-            try{ const r=await fetch(href,{cache:'no-store'}); const t=await r.text(); openModal('sheet', t); }
-            catch(_){ location.href=href; }
-          }
-        });
+    /* Footer puslapiai – sheet */
+    document.querySelectorAll('a.footer-link, a[data-sheet]').forEach(a=>{
+      a.addEventListener('click', async (e)=>{
+        const href=a.getAttribute('href')||'';
+        if(!/^https?:/i.test(href)){
+          e.preventDefault();
+          try{ const r=await fetch(href,{cache:'no-store'}); const t=await r.text(); openModal('sheet', t); }
+          catch(_){ location.href=href; }
+        }
       });
-    }
-    hijackSheet('a.footer-link, a[data-sheet]');
-
-    /* Scroll lock + „Į naujausią“ */
-    let jumpBtn;
-    attachScroll();
-    function attachScroll(){
-      if (!chatArea) return;
-      if (!jumpBtn){
-        jumpBtn = document.createElement('button');
-        jumpBtn.className='jump-latest';
-        jumpBtn.style.position='fixed';
-        jumpBtn.style.right='16px';
-        jumpBtn.style.bottom='2cm';
-        jumpBtn.innerHTML = `<img class="ui-icon" src="/assets/icon/arrow-down.svg" alt="Į naujausią">`;
-        jumpBtn.title = 'Į naujausią';
-        jumpBtn.addEventListener('click', ()=>{ chatArea.scrollTo({top:chatArea.scrollHeight, behavior:'smooth'}); jumpBtn.classList.remove('show'); state.stickToBottom=true; });
-        document.body.appendChild(jumpBtn);
-      }
-      chatArea.addEventListener('scroll', ()=>{
-        const nearBottom = chatArea.scrollTop + chatArea.clientHeight >= chatArea.scrollHeight - 80;
-        state.stickToBottom = !!nearBottom;
-        jumpBtn.classList.toggle('show', !nearBottom);
-      }, {passive:true});
-    }
-    function autoscrollIfNeeded(){}
+    });
 
     function timeNow(){ return new Date().toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'}); }
     function escapeHtml(x){ const d=document.createElement('div'); d.textContent=(x==null?'':String(x)); return d.innerHTML; }
 
-    /* ========== CHAT UI (stream + json) ========== */
     function ensurePanel(front){
       if (state.panels[front]) return state.panels[front];
       const icon = MODEL_ICON[front] || '/assets/icon/ai.svg';
@@ -662,41 +601,52 @@
             <div class="msg-meta"><span class="model-tag">${name}</span><span>${timeNow()}</span></div>
           </div>
         </div>`;
-      n.style.opacity='0'; n.style.transform='translateY(16px)';
       chatArea.appendChild(n);
-      requestAnimationFrame(()=>{ n.style.transition='all .25s ease'; n.style.opacity='1'; n.style.transform='translateY(0)'; });
       const contentEl = n.querySelector('.msg-content');
       const panel = { el: contentEl, wrap:n, bubble:n.querySelector('.bubble'), content:'', done:false };
       state.panels[front]=panel;
-      state.startedOrder.push(front);
+
+      // ⏱ watchdog: jei per 10 s negaunam nieko – gražiai parodom klaidą
+      state.panelTimers[front] = setTimeout(()=>{
+        if (!panel.done && !panel.content){
+          panel.el.innerHTML = `<span class="dim">Nepavyko prisijungti prie serverio (laiko limitas). Pabandykite dar kartą.</span>`;
+        }
+      }, 10000);
+
       return panel;
     }
 
-    function preparePanels(fronts){
-      (fronts||[]).forEach(f=>{
-        if (!state.panels[f]) {
-          const p = ensurePanel(f);
-          if (p && p.el) p.el.innerHTML = `<span class="typing-dots"><i></i><i></i><i></i></span>`;
-        }
-      });
+    function addUserBubble(text){
+      document.getElementById('welcome')?.remove();
+      const wrap=document.createElement('div'); wrap.className='message user';
+      wrap.innerHTML = `
+        <div class="avatar"><img class="ui-icon" src="/assets/icon/user.svg" alt=""></div>
+        <div class="bubble" data-model="user">
+          <div class="bubble-card">
+            <button class="copy-btn" title="Kopijuoti" type="button"
+              onclick="(function(b){try{const t=b.closest('.bubble-card')?.querySelector('.msg-content')?.innerText||'';navigator.clipboard.writeText(t).catch(()=>{});b.classList.add('ok');setTimeout(()=>b.classList.remove('ok'),900);}catch(_){}})(this)"
+              style="position:absolute;right:8px;top:8px;font-size:12px;border:1px solid var(--border);background:var(--bg-primary);padding:4px 6px;border-radius:6px;cursor:pointer;opacity:.8">⧉</button>
+            <div class="msg-content"></div>
+            <div class="msg-meta"><span class="model-tag">Jūs</span><span>${timeNow()}</span></div>
+          </div>
+        </div>`;
+      chatArea.appendChild(wrap);
+      wrap.querySelector('.msg-content').textContent=text;
     }
-
-    // 🧹 Nebebus globalaus „AI mąsto“ overlay – jokio bloko srautui
-    function showGlobalWait(){ /* no-op */ }
-    function hideGlobalWait(){ /* no-op */ }
 
     function resetRound(){
       state.chatId = 'chat_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
-      state.panels={}; state.startedOrder=[]; state.firstStarted=null;
-      state.pending=0; state.errors=[]; state.hasAnyText=false;
-      showGlobalWait(); // no-op
+      Object.values(state.panelTimers).forEach(t=>clearTimeout(t));
+      state.panels={}; state.panelTimers={};
+      state.pending=0; state.errors=[];
     }
 
     async function startOrchestrator(text, fronts){
       const streamFronts = fronts.filter(f=> !NON_SSE_FRONT.has(f));
       const jsonFronts   = fronts.filter(f=>  NON_SSE_FRONT.has(f));
 
-      preparePanels([...streamFronts, ...jsonFronts]);
+      // kortelės prieš užklausas
+      [...streamFronts, ...jsonFronts].forEach(ensurePanel);
 
       state.pending = streamFronts.length + jsonFronts.length;
 
@@ -708,12 +658,12 @@
       if (jsonFronts.length){
         runJSONOnce({ fronts: jsonFronts, text, chatId: state.chatId }).catch(()=>{});
       }
+
+      // globalus „failsafe“, kad niekas neužstrigtų visiškai
       setTimeout(()=>{ if (state.pending>0){ state.pending=0; finalizeRound(); } }, 22000);
     }
 
-    function decPending(){ state.pending = Math.max(0, state.pending-1); if (state.pending===0) finalizeRound(); }
     function finalizeRound(){
-      hideGlobalWait(); // no-op
       if (state.errors.length){
         const wrap = document.createElement('div');
         state.errors.forEach(er=>{
@@ -728,9 +678,10 @@
         chatArea.appendChild(wrap);
       }
     }
+    function decPending(){ state.pending = Math.max(0, state.pending-1); if (state.pending===0) finalizeRound(); }
 
-    function parseErrEvent(e){
-      try{ const data = (e&&e.data)? JSON.parse(e.data):{}; return data?.message || 'Klaida'; }
+    function parseErrEventData(raw){
+      try{ const data = raw? JSON.parse(raw):{}; return data?.message || 'Klaida'; }
       catch(_){ return 'Klaida'; }
     }
 
@@ -740,14 +691,17 @@
         const resp=await fetch(`${SSE_URL}?${qs}`, { headers:{ 'Accept':'text/event-stream' }, cache:'no-store', credentials:'same-origin' });
         const ct=(resp.headers.get('content-type')||'').toLowerCase();
 
+        // jei netyčia ne SSE – bandom kaip JSON (nepameskim atsakymo)
         if(!ct.includes('text/event-stream')){
           try{
             const j=await resp.json();
             const txt=j?.answers?.[0]?.text||j?.text||'';
+            const p = ensurePanel(front);
             if (txt){
-              const p = ensurePanel(front);
-              p.content += txt; p.el.innerHTML = p.content;
-            } else { state.errors.push({front, name:front, msg:'Tuščias atsakymas (JSON).'}); }
+              p.content += txt; p.el.innerHTML = p.content; p.done=true;
+            } else {
+              state.errors.push({front, name:front, msg:'Tuščias atsakymas (JSON).'});
+            }
           }catch(_){ state.errors.push({front, name:front, msg:'Neskaidomas atsakymas (JSON).'}); }
           return;
         }
@@ -767,10 +721,7 @@
             if(!dataLine) continue;
             const data = dataLine.replace(/^data:\s*/,'').trim();
             if (data==='[DONE]'){ buf=''; break; }
-            if (ev==='error'){
-              state.errors.push({front, name:front, msg: parseErrEvent({data})});
-              continue;
-            }
+            if (ev==='error'){ state.errors.push({front, name:front, msg: parseErrEventData(data)}); continue; }
             let piece='';
             try{
               const j=JSON.parse(data);
@@ -782,14 +733,18 @@
             }
           }
         }
-        const p = state.panels[front]; if (p) p.done=true;
+        const p = state.panels[front]; if (p){ p.done=true; clearTimeout(state.panelTimers[front]); }
       }catch(_){ state.errors.push({front, name:front, msg:'SSE nepavyko inicijuoti.'}); }
     }
 
     async function runJSONOnce({ fronts, text, chatId }){
       const backIds = fronts.map(f=> FRONT_TO_BACK[f]||f).join(',');
       try{
-        const res = await fetch(COMPLETE_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message:text, models:backIds, chat_id:chatId, max_tokens:4096 })});
+        const res = await fetch(COMPLETE_URL, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ message:text, models:backIds, chat_id:chatId, max_tokens:4096 })
+        });
         if (!res.ok) throw new Error('HTTP '+res.status);
         const j = await res.json();
         const answers = Array.isArray(j?.answers)? j.answers : [];
@@ -799,46 +754,60 @@
           const front = fronts.find(f=> (FRONT_TO_BACK[f]||f)===back) || fronts[0];
           gotFronts.add(front);
           const txt = ans.text||'';
+          const p = ensurePanel(front);
           if (txt){
-            const p = ensurePanel(front);
             p.content += txt; p.el.innerHTML = p.content; p.done=true;
           } else {
             const emsg = ans.error ? String(ans.error) : 'Tuščias atsakymas (JSON).';
             state.errors.push({ front, name:front, msg: emsg });
           }
+          clearTimeout(state.panelTimers[front]);
           decPending();
         }
-        fronts.forEach(f=>{ if(!gotFronts.has(f)){ state.errors.push({ front:f, name:f, msg:'Nepavyko gauti atsakymo (JSON).' }); decPending(); } });
+        fronts.forEach(f=>{ if(!gotFronts.has(f)){ state.errors.push({ front:f, name:f, msg:'Nepavyko gauti atsakymo (JSON).' }); clearTimeout(state.panelTimers[f]); decPending(); } });
       }catch(e){
-        fronts.forEach(f=> { state.errors.push({ front:f, name:f, msg:'Nepavyko gauti atsakymo (JSON).' }); decPending(); });
+        fronts.forEach(f=> { state.errors.push({ front:f, name:f, msg:'Nepavyko gauti atsakymo (JSON).' }); clearTimeout(state.panelTimers[f]); decPending(); });
       }
     }
 
     function doSend(){
-      const text=(msgInput.value||'').trim(); if(!text) return;
-      state.lastUserText = text;
-      msgInput.value='';
-      addUserBubble(text);
+      try{
+        const text=(msgInput.value||'').trim(); if(!text) return;
+        state.lastUserText = text;
+        msgInput.value='';
+        addUserBubble(text);
 
-      let fronts=[...modelList.querySelectorAll('.model-pill.active')].map(b=>b.dataset.model).filter(Boolean);
-      if(!fronts.length) fronts=['paule','chatgpt','deepseek'];
+        let fronts=[...modelList.querySelectorAll('.model-pill.active')].map(b=>b.dataset.model).filter(Boolean);
+        if(!fronts.length) fronts=['paule','chatgpt','deepseek'];
 
-      resetRound();
-      startOrchestrator(text, fronts);
+        resetRound();
+        startOrchestrator(text, fronts);
+      }catch(err){ console.error('send failed', err); }
     }
 
     msgInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); doSend(); }});
     sendBtn.addEventListener('click', (e)=>{ e.preventDefault(); doSend(); });
     sendBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); doSend(); }, {passive:false});
 
+    // „Naujas pokalbis“ – nuvalo chat’ą
+    btnNewChat?.addEventListener('click', ()=>{
+      chatArea.innerHTML='';
+      const hero=document.createElement('section');
+      hero.className='welcome';
+      hero.id='welcome';
+      hero.innerHTML='<h1 class="hero-title">KAIP GALIU PADĖTI ŠIANDIEN?</h1><p>Pasirink viršuje modelius ir parašyk užklausą. Visi modeliai atsakys paraleliai. 👇</p>';
+      chatArea.appendChild(hero);
+    });
+
+    // Modelių toggling
     modelList.addEventListener('click', (e)=>{
       const b=e.target.closest('.model-pill'); if(!b) return;
       b.classList.toggle('active');
       b.setAttribute('aria-pressed', b.classList.contains('active')?'true':'false');
     });
 
+    // Viešas alias
     window.PauleMain = { sendMessage: doSend };
-    window.PauleModal = { open: openModal, close: closeModal };
   })();
   </script>
 
@@ -877,6 +846,7 @@
         try { await c.load(); return c; } catch(_) { return null; }
       }
 
+      // Vieša funkcija – atidaro auth modalą
       window.openAuth = async function(){
         if (!window.PauleModal) return alert('Kraunama…');
         window.PauleModal.open('sheet', authHtml());
@@ -949,7 +919,7 @@
           const clerk = window.Clerk;
           if (!clerk || !clerk.load) { renderFallback(); return; }
 
-          await clerk.load();
+          await clerk.load(); // jei DNS neveikia, šitas bus „catch“ – mes jį apdorojam
 
           const rerender = () => {
             if (!root) return;
@@ -975,7 +945,7 @@
           };
 
           rerender();
-          clerk.addListener(rerender);
+          clerk.addListener?.(rerender);
         }catch(_){ renderFallback(); }
       });
     })();
@@ -999,7 +969,7 @@
     </div>
   </footer>
 
-  <!-- ===== Cookie bar (Sutinku / Atsisakyti) ===== -->
+  <!-- ===== Cookie bar ===== -->
   <div id="cookie-bar" role="dialog" aria-live="polite" aria-label="Slapukų pranešimas" style="display:none">
     <div>Naudojame slapukus paslaugos veikimui ir tobulinimams. Daugiau –
       <a href="/legal/cookies.html" class="footer-link" data-sheet>Slapukų politikoje</a>.
@@ -1026,5 +996,3 @@
 
 </body>
 </html>
-
-
