@@ -34,7 +34,7 @@ function seedFrom(msg, ans){
   return s.split(/\s+/).filter(Boolean).slice(0, 20);
 }
 function synthesizeShort(words, n){
-  const stock = ['Paaiškink detaliau','Duok pavyzdį','Sukurk veiksmų planą','Kokie pavojai?','Kokie KPI?','Alternatyvus sprendimas','Sutrumpink iki 3 sakinių','Išversk į anglų','Ką daryti toliau?'];
+  const stock = [];
   const out = [];
   for (let i=0;i<n;i++){
     if (i < stock.length) out.push(stock[i]);
