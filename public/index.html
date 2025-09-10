@@ -265,7 +265,7 @@
     async
     crossorigin="anonymous"
     data-clerk-publishable-key="pk_live_Y2xlcmsucGF1bGUuYWkk"
-    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
+    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js?v=4">
   </script>
 </head>
 <body>
@@ -297,10 +297,8 @@
         <img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tema
       </button>
 
-     <div id="clerk-auth" class="login-anchor"></div>
-     <script defer src="/auth/clerk-popup.js?v=3" data-pk="pk_live_Y2xlcmsucGF1bGUuYWkk"></script>
-
-
+      <!-- Vienintelė Clerk montavimo vieta -->
+      <div id="clerk-auth" class="login-anchor"></div>
 
       <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)" type="button">
         <img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu
@@ -843,52 +841,61 @@
   })();
   </script>
 
-  <!-- 🟢 Clerk UI montavimas (popup mygtukai) -->
+  <!-- 🟢 Clerk UI montavimas (vienas mygtukas, modalas su email+Google) -->
   <script>
-    (function(){
-      const root = document.getElementById('clerk-auth');
-      function renderFallback(){
-        if (!root) return;
-        root.innerHTML = '<button class="btn ghost" type="button">Prisijungti</button>';
+    window.addEventListener('load', async () => {
+      const mount = document.getElementById('clerk-auth');
+      if (!mount) return;
+
+      try {
+        await window.Clerk.load(); // publishable key perduotas per data-* atribute
+      } catch (e) {
+        console.error('[Clerk] load error:', e);
+        mount.innerHTML = '<button class="btn ghost" type="button" disabled>Prisijungti</button>';
+        return;
       }
-      // Palaukiame kol Clerk JS įsikraus
-      window.addEventListener('load', async () => {
-        try{
-          const clerk = window.Clerk;
-          if (!clerk || !clerk.load) { renderFallback(); return; }
-          await clerk.load(); // publishable key – iš data atributo
-          const rerender = () => {
-            if (!root) return;
-            root.innerHTML = '';
-            if (clerk.user){
-              const holder = document.createElement('div');
-              root.appendChild(holder);
-              // įmontuoja gražų user menu (avatar, sign out ir t.t.)
-              clerk.mountUserButton(holder, { appearance: { elements: { userButtonAvatarBox: 'rounded-xl' } } });
-            } else {
-              const inBtn = document.createElement('button');
-              inBtn.className = 'btn ghost';
-              inBtn.type = 'button';
-              inBtn.textContent = 'Prisijungti';
-              inBtn.onclick = () => clerk.openSignIn({ afterSignInUrl: '/' });
 
-              const upBtn = document.createElement('button');
-              upBtn.className = 'btn ghost';
-              upBtn.type = 'button';
-              upBtn.textContent = 'Registruotis';
-              upBtn.onclick = () => clerk.openSignUp({ afterSignUpUrl: '/' });
-
-              root.append(inBtn, upBtn);
+      const paint = () => {
+        mount.innerHTML = '';
+        if (window.Clerk.user) {
+          const holder = document.createElement('div');
+          mount.appendChild(holder);
+          window.Clerk.mountUserButton(holder, {
+            appearance: {
+              variables: { borderRadius: '12px' }
             }
-          };
-          rerender();
-          // Perpiešiam kai pasikeičia sesija
-          clerk.addListener(rerender);
-        }catch(_){ renderFallback(); }
-      });
-    })();
+          });
+        } else {
+          const btn = document.createElement('button');
+          btn.className = 'btn ghost';
+          btn.type = 'button';
+          btn.textContent = 'Prisijungti';
+          btn.addEventListener('click', () => {
+            window.Clerk.openSignIn({
+              afterSignInUrl: window.location.href,
+              afterSignUpUrl: window.location.href,
+              appearance: {
+                variables: { colorPrimary: '#4f46e5', borderRadius: '14px' },
+                layout: { socialButtonsPlacement: 'bottom', socialButtonsVariant: 'button' }
+              },
+              localization: {
+                signIn: { start: { title: 'Prisijunk', subtitle: 'El. paštas ir slaptažodis', actionText: 'Neturi paskyros?', actionLink: 'Registruokis' } },
+                formFieldLabel__emailAddress: 'El. paštas',
+                formFieldLabel__password: 'Slaptažodis',
+                formButtonPrimary: 'Prisijungti',
+                socialButtonsBlockButton: 'Prisijungti su {{provider}}'
+              }
+            });
+          });
+          mount.appendChild(btn);
+        }
+      };
+
+      paint();
+      window.Clerk.addListener(paint);
+      console.log('[Clerk] init OK');
+    });
   </script>
 
 </body>
 </html>
-
