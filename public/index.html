@@ -23,6 +23,14 @@
   <link rel="preconnect" href="https://js.stripe.com" crossorigin>
   <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
 
+  <!-- ⚡️ Clerk greitinimas -->
+  <link rel="preconnect" href="https://clerk.com" crossorigin>
+  <link rel="preconnect" href="https://api.clerk.com" crossorigin>
+  <link rel="preconnect" href="https://img.clerk.com" crossorigin>
+  <link rel="preconnect" href="https://f.clerk.com" crossorigin>
+  <link rel="preload" as="script"
+        href="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
+
   <!-- Pagrindinis CSS -->
   <link rel="stylesheet" href="/assets/css/paule.css?v=1.1.3"/>
 
@@ -295,7 +303,7 @@
 
       <div id="clerk-auth" class="login-anchor">
         <button class="btn ghost" id="loginFallback" type="button"
-          onclick="(window.Clerk&&window.Clerk.openSignIn?window.Clerk.openSignIn({afterSignInUrl:'/',afterSignUpUrl:'/' }):alert('Kraunama…'));">
+          onclick="window.openAuth ? openAuth() : (window.Clerk&&window.Clerk.openSignIn?window.Clerk.openSignIn({afterSignInUrl:'/',afterSignUpUrl:'/' }):alert('Kraunama…'));">
           <img class="ui-icon google" src="/assets/icon/google.svg" alt=""> Prisijungti
         </button>
       </div>
@@ -849,14 +857,87 @@
     });
 
     window.PauleMain = { sendMessage: doSend };
+    /* ➕ Eksportuojam modalą, kad galėtume atidaryti auth sheet'ą */
+    window.PauleModal = { open: openModal, close: closeModal };
   })();
   </script>
 
-  <!-- ===== Clerk UI montavimas (su auto atidarymu po 3 s) ===== -->
+  <!-- ===== Google-first AUTH modal (sheet) ===== -->
+  <script>
+    (function(){
+      const AUTH_KEY = 'auth_dismissed_v2';
+
+      function authHtml(){
+        return `
+          <div style="max-width:520px;margin:0 auto;padding:24px">
+            <h3 style="margin:0 0 6px;font-weight:800">Prisijungti</h3>
+            <p class="dim" style="margin:0 0 18px">Greitai, paprastai ir saugiai.</p>
+
+            <button id="authGoogle" type="button"
+              style="width:100%;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid var(--border,#e5e7eb);background:#fff;cursor:pointer;font-weight:600">
+              <img class="ui-icon" src="/assets/icon/google.svg" alt="" style="width:18px;height:18px"> Prisijungti su Google
+            </button>
+
+            <div class="dim" style="text-align:center;margin:14px 0">arba</div>
+
+            <div style="display:flex;gap:8px;justify-content:center">
+              <button id="authEmailIn" class="btn ghost"  type="button">Prisijungti el. paštu</button>
+              <button id="authEmailUp" class="btn ghost"  type="button">Registruotis</button>
+            </div>
+
+            <div class="dim" style="margin-top:16px;font-size:12px">
+              Tęsdami sutinkate su mūsų <a href="/legal/privacy.html" class="footer-link" data-sheet>privatumo politika</a>.
+            </div>
+          </div>`;
+      }
+
+      async function loadClerk(){
+        const c = window.Clerk;
+        if (!c || !c.load) return null;
+        try { await c.load(); return c; } catch(_) { return null; }
+      }
+
+      // Vieša funkcija – atidaro auth modalą
+      window.openAuth = async function(){
+        if (!window.PauleModal) return alert('Kraunama…');
+        window.PauleModal.open('sheet', authHtml());
+
+        const host = document.getElementById('modalSheet');
+        const btnG = host.querySelector('#authGoogle');
+        const btnIn= host.querySelector('#authEmailIn');
+        const btnUp= host.querySelector('#authEmailUp');
+
+        btnG.onclick = async () => {
+          const clerk = await loadClerk();
+          if (clerk?.authenticateWithRedirect){
+            clerk.authenticateWithRedirect({
+              strategy: 'oauth_google',
+              redirectUrl: '/',
+              redirectUrlComplete: '/'
+            });
+          } else if (clerk?.openSignIn){
+            clerk.openSignIn({ afterSignInUrl:'/', afterSignUpUrl:'/' });
+          } else {
+            alert('Kraunama…');
+          }
+        };
+
+        btnIn.onclick = async () => (await loadClerk())?.openSignIn({ afterSignInUrl:'/', afterSignUpUrl:'/' });
+        btnUp.onclick = async () => (await loadClerk())?.openSignUp({  afterSignUpUrl:'/' });
+
+        // jei vartotojas pats uždaro – nebesiūlyti automatiškai šiame seanse
+        const closeBtn = document.querySelector('#modal .modal-close');
+        const onClose = () => { try{ sessionStorage.setItem(AUTH_KEY,'1'); }catch(_){ } };
+        closeBtn?.addEventListener('click', onClose, { once:true });
+      };
+    })();
+  </script>
+
+  <!-- ===== Clerk UI montavimas (auto atidarymas po 3 s) ===== -->
   <script>
     (function(){
       const root = document.getElementById('clerk-auth');
-      const SHOWN_KEY='auth_auto_shown_v1';
+      const SHOWN_KEY='auth_auto_shown_v2';
 
       function svgGoogle(){
         const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -865,7 +946,7 @@
         const p1=document.createElementNS(s.namespaceURI,'path'); p1.setAttribute('fill','#EA4335'); p1.setAttribute('d','M533.5 278.4c0-18.5-1.7-36.4-5-53.6H272v101.5h147.5c-6.4 34.5-25.9 63.7-55.2 83.2v69.1h89.2c52.2-48.1 80-119 80-200.2z');
         const p2=document.createElementNS(s.namespaceURI,'path'); p2.setAttribute('fill','#34A853'); p2.setAttribute('d','M272 544.3c74 0 136-24.5 181.4-66.5l-89.2-69.1c-24.8 16.6-56.5 26.5-92.3 26.5-70.9 0-131-47.8-152.5-112.1H27.3v70.4C72.3 486.1 165.4 544.3 272 544.3z');
         const p3=document.createElementNS(s.namespaceURI,'path'); p3.setAttribute('fill','#4A90E2'); p3.setAttribute('d','M119.5 322.9c-5.6-16.6-8.8-34.3-8.8-52.9s3.2-36.3 8.8-52.9V146.7H27.3C9.7 182.4 0 222.1 0 270s9.7 87.6 27.3 123.3l92.2-70.4z');
-        const p4=document.createElementNS(s.namespaceURI,'path'); p4.setAttribute('fill','#FBBC05'); p4.setAttribute('d','M272 107.7c40.3 0 76.5 13.9 105 41.2l78.7-78.7C408 25.2 346 0 272 0 165.4 0 72.3 58.2 27.3 146.7l92.2 70.4C141 155.8 201.1 107.7 272 107.7z');
+        const p4=document.createElementNS(s.namespaceURI,'path'); p4.setAttribute('fill','#FBBC05'); p4.setAttribute('d','M272 107.7c40.3 0 76.5 13.9 105 41.2l-78.7-78.7C408 25.2 346 0 272 0 165.4 0 72.3 58.2 27.3 146.7l92.2 70.4C141 155.8 201.1 107.7 272 107.7z');
         s.append(p1,p2,p3,p4); return s;
       }
 
@@ -881,7 +962,7 @@
         if (!root) return;
         root.innerHTML = '';
         const inBtn = button('btn ghost', 'Prisijungti', true);
-        inBtn.onclick = ()=> alert('Kraunama…');
+        inBtn.onclick = () => window.openAuth ? openAuth() : alert('Kraunama…');
         root.append(inBtn);
       }
 
@@ -901,14 +982,13 @@
               clerk.mountUserButton(holder, { appearance: { elements: { userButtonAvatarBox: 'rounded-xl' } } });
             } else {
               const loginBtn  = button('btn ghost', 'Prisijungti', true);
-              loginBtn.onclick = () => clerk.openSignIn({ afterSignInUrl: '/', afterSignUpUrl: '/' });
+              loginBtn.onclick = () => openAuth();
               root.append(loginBtn);
 
-              const SHOWN_KEY='auth_auto_shown_v1';
               if (!sessionStorage.getItem(SHOWN_KEY)){
                 setTimeout(()=>{
-                  if (!window.Clerk?.user){
-                    clerk.openSignIn({ afterSignInUrl:'/', afterSignUpUrl:'/' });
+                  if (!window.Clerk?.user && window.openAuth){
+                    openAuth();
                     sessionStorage.setItem(SHOWN_KEY,'1');
                   }
                 }, 3000);
@@ -968,4 +1048,5 @@
 
 </body>
 </html>
+
 
