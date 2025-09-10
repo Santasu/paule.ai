@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="lt" data-theme="light" data-backend="vercel">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>Paule – Premium AI Chat</title>
 
@@ -17,7 +17,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <!-- CDNs -->
+  <!-- Host + Clerk + Stripe -->
   <link rel="preconnect" href="/" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://js.stripe.com" crossorigin>
@@ -26,59 +26,106 @@
   <!-- Pagrindinis CSS -->
   <link rel="stylesheet" href="/assets/css/paule.css?v=1.1.3"/>
 
-  <!-- Mini apsaugos ir tavo pageidauti UI pataisymai -->
+  <!-- Minimalūs inline guard'ai ir pataisos -->
   <style>
-    /* Chat aukštis telefone */
+    :root{
+      --icon-xxs:13px;           /* vienodas mažas ikonų dydis */
+      --pill-scale:0.7;          /* ~30% mažesni modelių „pillai“ */
+    }
+    /* Chat matomumas mobiliam */
     #chatArea{min-height:calc(100vh - 240px);overflow:auto}
     @supports(height:100dvh){#chatArea{min-height:calc(100dvh - 240px)}}
 
-    /* „Į naujausią“ – tik ikona ir 2 cm nuo apačios */
+    /* „Į naujausią“ tik ikona ir 2 cm nuo apačios */
     .jump-latest{bottom:2cm!important}
     .jump-latest span{display:none}
     .jump-latest img{width:16px;height:16px}
 
-    /* Ikonų dydžiai: viršuje ir chate vienodi (13px) */
-    .models-in-topbar .ui-icon{width:13px;height:13px}
-    .message .avatar img{width:13px;height:13px}
+    /* Ikonos – visur vienodos mažos */
+    .models-in-topbar .ui-icon,
+    .avatar img,
+    .message .avatar img{width:var(--icon-xxs);height:var(--icon-xxs)}
 
-    /* Įvesties juosta susiaurinta po 3 cm iš abiejų pusių */
-    .input-bar .input-container{max-width:calc(100% - 6cm);margin:0 auto}
+    /* Modelių „pillai“ – sumažinti */
+    .models-in-topbar{display:flex;gap:8px;flex-wrap:wrap}
+    .models-in-topbar .model-pill{
+      transform:scale(var(--pill-scale));
+      transform-origin:left center;
+      white-space:nowrap;
+    }
 
-    /* Pasiūlymų juostos nerodyti (jos tave erzino) */
-    #followSuggestBar, #inputSuggestDeck{display:none!important}
+    /* Įvesties dėžė susiaurinama po 3cm iš abiejų pusių */
+    #bottomSection .input-bar .input-container{
+      width:calc(100% - 6cm);
+      margin:0 3cm;
+    }
+    @media (max-width:900px){
+      #bottomSection .input-bar .input-container{width:100%;margin:0}
+    }
 
-    /* „Planai“ sekcija puslapyje paslėpta – atsidarys popup'e */
-    #pricing{display:none}
+    /* Pašalinam inline pasiūlymus ir placeholder’ą */
+    #inputSuggestDeck, #followSuggestBar{display:none !important}
+    #messageInput::placeholder{color:transparent}
 
-    /* === Modals (2 tipai) === */
-    .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9999;background:rgba(0,0,0,.65)}
-    .overlay.show{display:flex}
+    /* Modal sistema (2 tipai) */
+    .modal-overlay{
+      position:fixed; inset:0; display:none; place-items:center; z-index:9999;
+      background:rgba(0,0,0,.66);
+    }
+    .modal-overlay.show{display:grid}
+    .modal-window{position:relative; width:min(1100px, 92vw); max-height:92vh; overflow:auto;
+      background:var(--bg-primary,#fff); color:var(--text,#111827);
+      border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);
+    }
+    .modal-window.modal--sheet{padding:20px 24px}
+    .modal-window.modal--tool{
+      width:100vw; height:100vh; max-height:100vh; border-radius:0; padding:0; background:#0b0b0b;
+      color:#e5e7eb;
+    }
+    .modal-close{
+      position:fixed; top:16px; right:16px; z-index:10000;
+      width:36px; height:36px; border-radius:999px; display:grid; place-items:center;
+      border:1px solid rgba(255,255,255,.25); background:rgba(0,0,0,.45); color:#fff; cursor:pointer;
+      backdrop-filter:saturate(130%) blur(6px);
+    }
+    .modal--sheet .modal-close{position:absolute; background:var(--bg-primary,#fff); color:#111827; border:1px solid var(--border,#e5e7eb)}
+    .modal-body{padding:0; height:100%; overflow:auto}
+    .modal-sheet-inner{padding:8px 6px 28px}
 
-    /* WIDE modal – dokumentams, planams */
-    .modal-wide{width:min(1100px,92vw);max-height:min(90vh,100dvh);border-radius:14px;background:var(--bg-primary,#fff);color:var(--fg,#111);box-shadow:0 20px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden}
-    [data-theme="dark"] .modal-wide{background:#0b0f14;color:#e5e7eb}
-    .modal-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border,rgba(0,0,0,.08))}
-    .modal-title{font-weight:700}
-    .modal-close{border:none;background:transparent;cursor:pointer;font-size:20px;line-height:1;padding:6px;border-radius:8px}
-    .modal-close:hover{background:rgba(0,0,0,.08)}
-    .modal-body{overflow:auto;padding:14px}
+    /* Suskleidžiami „AI specialistai“ kairėje */
+    .side-section.collapsible .side-title{
+      display:flex; align-items:center; justify-content:space-between; cursor:pointer;
+    }
+    .side-section.collapsible .side-title .car{transition:transform .2s ease}
+    .side-section.collapsible.collapsed .specialist-grid{display:none}
+    .side-section.collapsible.collapsed .side-title .car{transform:rotate(-90deg)}
 
-    /* FULL modal – viso ekrano juodas, įrankiams/spec. */
-    .modal-fullbox{position:relative;width:100vw;height:100vh;background:#000}
-    .modal-fullbox iframe{position:absolute;inset:0;border:0;width:100%;height:100%}
-    .modal-fullbox .modal-close{position:absolute;top:12px;right:12px;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25)}
-    .modal-fullbox .modal-close:hover{background:rgba(255,255,255,.2)}
+    /* HERO – 6 kortelės */
+    .welcome-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+    .welcome-card{display:block; border-radius:16px; overflow:hidden; position:relative}
+    .welcome-card img{width:100%; display:block}
+    .welcome-card b{position:absolute; left:12px; bottom:34px; color:#fff}
+    .welcome-card span{position:absolute; left:12px; bottom:12px; color:#e5e7eb; font-size:12px}
+    @media (max-width:900px){.welcome-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+    /* Klaidos kortelė – „dim“ palaikymas (jei tema neturi) */
+    .dim{opacity:.65}
+
+    /* Planų sekcija šone nenaud. – rodysim per modalą, bet palieku stilius */
+    .pricing-section{margin-top:8px}
   </style>
 
   <!-- App konfigūracija -->
   <script>
-    (function(){
+    (function () {
       var MODE=(document.documentElement.getAttribute('data-backend')||'').trim().toLowerCase()==='vercel'?'vercel':'wp';
       var restBase=MODE==='vercel'?'/api':'/wp-json/paule/v1';
-      var routes={base:restBase,stream:restBase+'/stream',models:restBase+'/models',diagnostics:restBase+'/diagnostics',
-        comicCreate:restBase+'/comic/create',fluxCreate:restBase+'/flux/create',
-        musicCreate:restBase+'/music/create',musicStatus:restBase+'/music/status',
-        runwayImage:restBase+'/runway/image',runwayStatus:restBase+'/runway/status'};
+      var routes={
+        base:restBase, stream:restBase+'/stream', models:restBase+'/models', diagnostics:restBase+'/diagnostics',
+        comicCreate:restBase+'/comic/create', fluxCreate:restBase+'/flux/create',
+        musicCreate:restBase+'/music/create', musicStatus:restBase+'/music/status',
+        runwayImage:restBase+'/runway/image', runwayStatus:restBase+'/runway/status'
+      };
       var CFG={mode:MODE,restBase:routes.base,restStream:routes.stream,restStreamSSE:routes.stream,sseDefault:1,
         pluginBase:'/assets',iconsBase:'/assets/icon',featuresBase:'/assets/features',routes:routes,version:'paule-1.1.3'};
       window.PAULE_CONFIG=CFG; window.AUGAM_CONFIG=CFG;
@@ -119,32 +166,67 @@
     })();
   </script>
 
-  <!-- HOTFIX: SSE->JSON, kai /stream?mode=once -->
+  <!-- HOTFIX: SSE -> JSON kai mode=once -->
   <script>
     (function(){
-      'use strict'; if(!window.fetch) return;
+      'use strict';
+      if (!window.fetch) return;
       const prevFetch = window.fetch;
+
       async function toJsonFromSSE(resp, models){
-        const reader=resp.body?.getReader?.(); if(!reader) return null;
-        const dec=new TextDecoder(); let buf='',text='';
-        for(;;){ const it=await reader.read(); if(it.done) break;
-          buf+=dec.decode(it.value,{stream:true}); let idx;
-          while((idx=buf.indexOf('\n\n'))>=0){ const frame=buf.slice(0,idx).trim(); buf=buf.slice(idx+2);
-            if(!frame) continue; const dl=frame.split('\n').find(l=>l.startsWith('data:')); if(!dl) continue;
-            const payload=dl.replace(/^data:\s*/,'').trim(); if(payload==='[DONE]'){buf='';break;}
-            try{ const j=JSON.parse(payload); const piece=j?.choices?.[0]?.delta?.content ?? j?.text ?? ''; if(typeof piece==='string') text+=piece; }catch(_){}
+        const reader  = resp.body?.getReader?.();
+        if (!reader) return null;
+        const dec = new TextDecoder();
+        let buf = '', text = '';
+        for(;;){
+          const it = await reader.read();
+          if (it.done) break;
+          buf += dec.decode(it.value, {stream:true});
+          let idx;
+          while ((idx = buf.indexOf('\n\n')) >= 0){
+            const frame = buf.slice(0, idx).trim(); buf = buf.slice(idx+2);
+            if (!frame) continue;
+            const dataLine = frame.split('\n').find(l => l.startsWith('data:'));
+            if (!dataLine) continue;
+            const payload = dataLine.replace(/^data:\s*/,'').trim();
+            if (payload === '[DONE]') { buf=''; break; }
+            try{
+              const j = JSON.parse(payload);
+              const piece = j?.choices?.[0]?.delta?.content ?? j?.text ?? '';
+              if (typeof piece === 'string') text += piece;
+            }catch(_){}
           }
         }
-        const answers=(models&&models.length?models:['auto']).map(m=>({model:m,text})); return {ok:true,answers};
+        const answers = (models && models.length ? models : ['auto']).map(m => ({ model:m, text }));
+        return { ok:true, answers };
       }
-      window.fetch=async function(input,init){
-        const url=typeof input==='string'?input:(input&&input.url)||'';
-        const meth=(init&&init.method)||(typeof input!=='string'&&input&&input.method)||'GET';
-        const isOnce=/\/api\/stream(?:\?|$)/.test(url)&&/mode=once/.test(url)&&String(meth).toUpperCase()==='POST';
-        if(!isOnce) return prevFetch(input,init);
-        let models=[]; try{ const raw=(init&&init.body)?String(init.body):''; if(raw){ const b=JSON.parse(raw); if(typeof b.models==='string'){models=b.models.split(',').map(s=>s.trim()).filter(Boolean);} } }catch(_){}
-        const resp=await prevFetch(input,init); const ct=(resp.headers.get('content-type')||'').toLowerCase();
-        if(ct.includes('text/event-stream')){ const json=await toJsonFromSSE(resp,models); if(json){ return new Response(JSON.stringify(json),{status:200,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}}); } }
+
+      window.fetch = async function(input, init){
+        const url  = typeof input==='string' ? input : (input && input.url) || '';
+        const meth = (init && init.method) || (typeof input!=='string' && input && input.method) || 'GET';
+        const isStreamOnce = /\/api\/stream(?:\?|$)/.test(url) && /mode=once/.test(url) && String(meth).toUpperCase()==='POST';
+        if (!isStreamOnce) return prevFetch(input, init);
+
+        let models = [];
+        try {
+          const raw = (init && init.body) ? String(init.body) : '';
+          if (raw) {
+            const b = JSON.parse(raw);
+            if (typeof b.models === 'string') { models = b.models.split(',').map(s=>s.trim()).filter(Boolean); }
+          }
+        } catch(_){}
+
+        const resp = await prevFetch(input, init);
+        const ct   = (resp.headers.get('content-type')||'').toLowerCase();
+        if (ct.includes('text/event-stream')) {
+          const json = await toJsonFromSSE(resp, models);
+          if (json) {
+            return new Response(JSON.stringify(json), {
+              status: 200,
+              headers: { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store' }
+            });
+          }
+        }
         return resp;
       };
     })();
@@ -152,13 +234,18 @@
 
   <!-- Global alias -->
   <script>
-    window.sendMessage=function(){ if(window.PauleMain && typeof window.PauleMain.sendMessage==='function'){ return window.PauleMain.sendMessage(); } };
+    window.sendMessage = function(){
+      if (window.PauleMain && typeof window.PauleMain.sendMessage === 'function'){
+        return window.PauleMain.sendMessage();
+      }
+    };
   </script>
 
-  <!-- Clerk JS -->
+  <!-- Clerk JS (publishable key) -->
   <script async crossorigin="anonymous"
     data-clerk-publishable-key="pk_live_Y2xlcmsucGF1bGUuYWkk"
-    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
+  </script>
 
   <noscript>
     <style>.nojs{position:fixed;inset:auto 0 0 0;background:#111827;color:#fff;padding:12px 16px;text-align:center;font:14px/1.4 system-ui}</style>
@@ -167,14 +254,27 @@
 </head>
 <body>
 
+  <!-- ======== MODAL ROOT (2 tipai) ======== -->
+  <div id="modal" class="modal-overlay" aria-hidden="true">
+    <button class="modal-close" type="button" aria-label="Uždaryti (Esc)">✕</button>
+    <div class="modal-window modal--sheet" role="dialog" aria-modal="true" hidden>
+      <div class="modal-sheet-inner" id="modalSheet"></div>
+    </div>
+    <div class="modal-window modal--tool" role="dialog" aria-modal="true" hidden>
+      <div class="modal-body" id="modalTool"></div>
+    </div>
+  </div>
+
   <!-- ===== TOPBAR ===== -->
-  <header class="topbar" id="topbar" role="banner">
+  <header class="topbar" data-no-clip="true" id="topbar" role="banner">
     <a class="brand" href="/" aria-label="Paule">
       <img id="brandLogo" class="brand-icon" src="/assets/icon/paule-logo.webp" alt="Paule logotipas">
     </a>
 
     <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
-      <button class="model-pill active" data-model="paule" aria-pressed="true" type="button"><img class="ui-icon" src="/assets/icon/paule-logo.webp" alt=""> Paule</button>
+      <button class="model-pill active" data-model="paule" aria-pressed="true" type="button">
+        <img class="ui-icon" src="/assets/icon/paule-logo.webp" alt=""> Paule
+      </button>
       <button class="model-pill" data-model="chatgpt" type="button"><img class="ui-icon" src="/assets/icon/chatgpt.svg" alt=""> ChatGPT</button>
       <button class="model-pill" data-model="claude" type="button"><img class="ui-icon" src="/assets/icon/claude-seeklogo.svg" alt=""> Claude</button>
       <button class="model-pill" data-model="gemini" type="button"><img class="ui-icon" src="/assets/icon/gemini.svg" alt=""> Gemini</button>
@@ -184,16 +284,31 @@
     </nav>
 
     <div class="top-actions" id="topActions" role="navigation" aria-label="Pagrindiniai veiksmai">
-      <a class="btn ghost" data-nav="pricing" href="#pricing" role="button"><img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Planai</a>
-      <a class="btn ghost" data-nav="community" href="/community" role="button"><img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė</a>
-      <button class="btn ghost" id="btnNewChat" type="button"><img class="ui-icon" src="/assets/icon/nav-new-chat.svg" alt=""> Naujas pokalbis</button>
-      <button class="btn ghost" id="btnTheme" type="button" aria-label="Perjungti temą"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tema</button>
+      <!-- „Planai“ – atidarom kaip SHEET modal (nebe scroll į vidų) -->
+      <a class="btn ghost" data-nav="pricing" href="#pricing" role="button">
+        <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Planai
+      </a>
+      <a class="btn ghost" data-nav="community" href="/community" role="button">
+        <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė
+      </a>
+      <button class="btn ghost" id="btnNewChat" type="button">
+        <img class="ui-icon" src="/assets/icon/nav-new-chat.svg" alt=""> Naujas pokalbis
+      </button>
+      <button class="btn ghost" id="btnTheme" type="button" aria-label="Perjungti temą">
+        <img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tema
+      </button>
 
-      <!-- Auth -->
-      <div id="clerk-auth" class="login-anchor"></div>
-      <button class="btn ghost" id="btnGoogle" type="button"><img class="ui-icon google" src="/assets/icon/google.svg" alt=""> Prisijungti su Google</button>
+      <!-- Vienas prisijungimo mygtukas per Clerk -->
+      <div id="clerk-auth" class="login-anchor">
+        <button class="btn ghost" id="loginFallback" type="button"
+          onclick="(window.Clerk&&window.Clerk.openSignIn?window.Clerk.openSignIn({afterSignInUrl:'/',afterSignUpUrl:'/' }):alert('Kraunama…'));">
+          <img class="ui-icon google" src="/assets/icon/google.svg" alt=""> Prisijungti
+        </button>
+      </div>
 
-      <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)" type="button"><img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu</button>
+      <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)" type="button">
+        <img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu
+      </button>
     </div>
   </header>
 
@@ -201,29 +316,26 @@
 
   <div class="layout" id="layoutRoot">
     <aside class="sidebar" id="sidebar" role="complementary" aria-label="Šoninė navigacija">
-      <section class="side-section mobile-only" style="display:none" id="mobileQuick">
-        <a class="project-item" href="/community"><img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė</a>
-        <div class="control-group" style="display:flex;gap:8px;margin-top:8px">
-          <button class="chip" data-set-theme="light" type="button"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Šviesi</button>
-          <button class="chip" data-set-theme="dark" type="button"><img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tamsi</button>
+      <!-- AI specialistai – collapsible -->
+      <section class="side-section collapsible" id="specSection">
+        <div class="side-title">
+          <span>AI specialistai</span>
+          <span class="car">▾</span>
         </div>
-      </section>
-
-      <section class="side-section">
-        <div class="side-title">AI specialistai</div>
         <div class="specialist-grid" id="specialistGrid">
-          <a class="chip" href="/spec/sefas.html"><img class="ui-icon" src="/assets/icon/chef-knife.svg" alt=""> Šefas</a>
-          <a class="chip" href="/spec/marketing.html"><img class="ui-icon" src="/assets/icon/marketing-megaphone.svg" alt=""> Marketing</a>
-          <a class="chip" href="/spec/pardavimai.html"><img class="ui-icon" src="/assets/icon/sales-handshake.svg" alt=""> Pardavimai</a>
-          <a class="chip" href="/spec/verslas.html"><img class="ui-icon" src="/assets/icon/business-strategy.svg" alt=""> Verslas</a>
-          <a class="chip" href="/spec/finansai.html"><img class="ui-icon" src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
-          <a class="chip" href="/spec/keliones.html"><img class="ui-icon" src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
-          <a class="chip" href="/spec/renginiai.html"><img class="ui-icon" src="/assets/icon/event-planning.svg" alt=""> Renginiai</a>
-          <a class="chip" href="/spec/tikslai.html"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
-          <a class="chip" href="/spec/teisininkas.html"><img class="ui-icon" src="/assets/icon/legal-contract.svg" alt=""> Teisininkas</a>
-          <a class="chip" href="/spec/psichologas.html"><img class="ui-icon" src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
-          <a class="chip" href="/spec/sportas.html"><img class="ui-icon" src="/assets/icon/run.svg" alt=""> Sportas</a>
-          <a class="chip" href="/spec/programuotojas.html"><img class="ui-icon" src="/assets/icon/code.svg" alt=""> Programuotojas</a>
+          <!-- Visi atsidarys TOOL modale -->
+          <a class="chip" href="/spec/sefas.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/chef-knife.svg" alt=""> Šefas</a>
+          <a class="chip" href="/spec/marketing.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/marketing-megaphone.svg" alt=""> Marketing</a>
+          <a class="chip" href="/spec/pardavimai.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/sales-handshake.svg" alt=""> Pardavimai</a>
+          <a class="chip" href="/spec/verslas.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/business-strategy.svg" alt=""> Verslas</a>
+          <a class="chip" href="/spec/finansai.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
+          <a class="chip" href="/spec/keliones.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
+          <a class="chip" href="/spec/renginiai.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/event-planning.svg" alt=""> Renginiai</a>
+          <a class="chip" href="/spec/tikslai.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
+          <a class="chip" href="/spec/teisininkas.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/legal-contract.svg" alt=""> Teisininkas</a>
+          <a class="chip" href="/spec/psichologas.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
+          <a class="chip" href="/spec/sportas.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/run.svg" alt=""> Sportas</a>
+          <a class="chip" href="/spec/programuotojas.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/code.svg" alt=""> Programuotojas</a>
         </div>
       </section>
 
@@ -266,7 +378,9 @@
       <section class="side-section">
         <div class="side-title">Projektai</div>
         <div class="control-group" id="projectsList">
-          <div class="project-item" data-project="new" role="button" tabindex="0"><img class="ui-icon" src="/assets/icon/plus.svg" alt=""> Naujas projektas</div>
+          <div class="project-item" data-project="new" role="button" tabindex="0">
+            <img class="ui-icon" src="/assets/icon/plus.svg" alt=""> Naujas projektas
+          </div>
         </div>
       </section>
 
@@ -278,17 +392,48 @@
 
     <main class="main" role="main">
       <div class="chat-area" id="chatArea">
-        <!-- HERO -->
+        <!-- HERO (6 kortelės) -->
         <section class="welcome" id="welcome" aria-label="Pradinis ekranas">
           <h1 class="hero-title">KAIP GALIU PADĖTI ŠIANDIEN?</h1>
           <p>Pasirink viršuje modelius ir parašyk užklausą. Visi modeliai atsakys paraleliai. 👇</p>
 
           <div class="welcome-grid">
-            <a class="welcome-card" href="/spec/tikslai.html"><img src="/assets/hero/goals.webp" alt=""><b>Tikslų sistema (AI)</b><span>Vizija → užduotys → realūs rezultatai.</span></a>
-            <a class="welcome-card" href="/spec/marketing.html"><img src="/assets/hero/song-photo.webp" alt=""><b>Marketing</b><span>Strategijos, turinys, kampanijos.</span></a>
-            <a class="welcome-card" href="/spec/verslas.html"><img src="/assets/hero/mindmap.webp" alt=""><b>Verslas</b><span>Idėjos → veiksmai → KPI.</span></a>
-            <a class="welcome-card" href="/spec/renginiai.html"><img src="/assets/hero/video.webp" alt=""><b>Renginiai</b><span>Planavimas ir scenarijai.</span></a>
+            <a class="welcome-card" href="#" data-action="song">
+              <img src="/assets/hero/music.webp" alt="">
+              <b>Sukurti dainą</b><span>Pasveikink draugą unikalia gimtadienio daina.</span>
+            </a>
+            <a class="welcome-card" href="#" data-action="song-photo">
+              <img src="/assets/hero/song-photo.webp" alt="">
+              <b>Daina iš nuotraukos</b><span>Įkelk kadrą ir gauk originalią melodiją su žodžiais.</span>
+            </a>
+            <a class="welcome-card" href="#" data-action="photo">
+              <img src="/assets/hero/photo.webp" alt="">
+              <b>Sukurti nuotrauką</b><span>Produktai, scenos, peizažai, selfiai ir animacija.</span>
+            </a>
+            <a class="welcome-card" href="#" data-action="mindmap">
+              <img src="/assets/hero/mindmap.webp" alt="">
+              <b>Minčių žemėlapis</b><span>Susitelk į esmę ir didink produktyvumą.</span>
+            </a>
+            <a class="welcome-card" href="/spec/tikslai.html" data-modal="tool">
+              <img src="/assets/hero/goals.webp" alt="">
+              <b>Tikslų sistema (AI)</b><span>Vizija → užduotys → realūs rezultatai.</span>
+            </a>
+            <a class="welcome-card" href="#" data-action="video">
+              <img src="/assets/hero/video.webp" alt="">
+              <b>Sukurti video</b><span>Reels ir Stories iš teksto ar nuotraukų.</span>
+            </a>
           </div>
+        </section>
+
+        <!-- Paslėpta Planų sekcija (naudosim į modalą) -->
+        <section id="pricing" class="pricing-section" aria-label="Planai" hidden>
+          <h2 class="section-title">Planai</h2>
+          <p class="section-sub">Pasirink sau tinkamiausią planą. Galima atšaukti bet kada.</p>
+          <stripe-pricing-table
+            pricing-table-id="prctbl_1S5mCdGfWPiTH9M4MOXoL4f3"
+            publishable-key="pk_test_51S5jh4GfWPiTH9M4gRYoHhV9LiZBjn7FPavf9nXPFIvbBLjQ89oyMRvKu0FRIhqx8boX4IHvtvRbQUdUWnvJwmaf00NszDYZC7">
+          </stripe-pricing-table>
+          <noscript>Norint matyti kainas, įjunkite JavaScript.</noscript>
         </section>
       </div>
     </main>
@@ -301,9 +446,10 @@
     <div class="input-bar" id="inputBar">
       <div class="input-container" id="inputContainer">
         <label for="messageInput" class="sr-only">Parašyk čia…</label>
-        <!-- Tuščias placeholder (jo nenori) -->
         <textarea class="message-input" id="messageInput" rows="1" placeholder="" autocomplete="on" autocapitalize="sentences" autocorrect="on" spellcheck="true"></textarea>
-        <button class="send-btn" id="sendBtn" aria-label="Siųsti" type="button"><img class="ui-icon" src="/assets/icon/arrow-top.svg" alt=""></button>
+        <button class="send-btn" id="sendBtn" aria-label="Siųsti" type="button">
+          <img class="ui-icon" src="/assets/icon/arrow-top.svg" alt="">
+        </button>
         <div class="input-suggest-deck" id="inputSuggestDeck" aria-live="polite"></div>
       </div>
     </div>
@@ -318,24 +464,6 @@
     </div>
   </div>
 
-  <!-- ====== MODALS (WIDE + FULL) ====== -->
-  <div id="modalWide" class="overlay" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal-wide" role="document">
-      <div class="modal-head">
-        <div class="modal-title" id="modalWideTitle">Dialogas</div>
-        <button class="modal-close" type="button" aria-label="Uždaryti" data-close="wide">×</button>
-      </div>
-      <div class="modal-body" id="modalWideBody"></div>
-    </div>
-  </div>
-
-  <div id="modalFull" class="overlay" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal-fullbox">
-      <button class="modal-close" type="button" aria-label="Uždaryti" data-close="full">×</button>
-      <iframe id="modalFullFrame" src="about:blank" title="Įrankis"></iframe>
-    </div>
-  </div>
-
   <!-- ===== Orchestrator JS ===== -->
   <script>
   (function(){
@@ -343,100 +471,188 @@
 
     const root=document.documentElement;
     const sidebar=document.getElementById('sidebar');
-    const overlayBg=document.getElementById('drawerOverlay');
+    const overlay=document.getElementById('drawerOverlay');
     const btnMobile=document.getElementById('btnMobile');
     const msgInput=document.getElementById('messageInput');
     const sendBtn=document.getElementById('sendBtn');
     const btnTheme=document.getElementById('btnTheme');
     const logo=document.getElementById('brandLogo');
     const modelList=document.getElementById('modelList');
-    const chatArea=document.getElementById('chatArea');
-    const followBar=document.getElementById('followSuggestBar');
-    const inputDeck=document.getElementById('inputSuggestDeck');
+    const chatArea  = document.getElementById('chatArea');
+    const inputDeck = document.getElementById('inputSuggestDeck');
+    const modal = document.getElementById('modal');
+    const modalClose = modal.querySelector('.modal-close');
+    const modalSheet = modal.querySelector('.modal--sheet');
+    const modalTool  = modal.querySelector('.modal--tool');
+    const modalSheetBody = document.getElementById('modalSheet');
+    const modalToolBody  = document.getElementById('modalTool');
 
     const API_BASE   = (window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)  || '/api';
     const SSE_URL    = (window.PAULE_CONFIG&&window.PAULE_CONFIG.restStream)|| '/api/stream';
     const COMPLETE_URL = API_BASE + '/complete';
     const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
 
-    const FRONT_TO_BACK={paule:'meta-llama/Llama-4-Scout-17B-16E-Instruct',chatgpt:'gpt-4o-mini',claude:'claude-4-sonnet',gemini:'gemini-2.5-flash',grok:'grok-4',deepseek:'deepseek-chat',llama:'meta-llama/Llama-4-Scout-17B-16E-Instruct'};
-    const NON_SSE_FRONT=new Set(['claude','gemini','grok']);
-    const MODEL_ICON={paule:'/assets/icon/paule-logo.webp',chatgpt:`${ICONS_BASE}/chatgpt.svg`,claude:`${ICONS_BASE}/claude-seeklogo.svg`,gemini:`${ICONS_BASE}/gemini.svg`,grok:`${ICONS_BASE}/xAI.svg`,deepseek:`${ICONS_BASE}/deepseek.svg`,llama:`${ICONS_BASE}/llama.svg`};
+    const FRONT_TO_BACK={
+      paule:'meta-llama/Llama-4-Scout-17B-16E-Instruct',
+      chatgpt:'gpt-4o-mini',
+      claude:'claude-4-sonnet',
+      gemini:'gemini-2.5-flash',
+      grok:'grok-4',
+      deepseek:'deepseek-chat',
+      llama:'meta-llama/Llama-4-Scout-17B-16E-Instruct'
+    };
+    const NON_SSE_FRONT = new Set(['claude','gemini','grok']);
+    const MODEL_ICON = {
+      paule: '/assets/icon/paule-logo.webp',
+      chatgpt:`${ICONS_BASE}/chatgpt.svg`,
+      claude:`${ICONS_BASE}/claude-seeklogo.svg`,
+      gemini:`${ICONS_BASE}/gemini.svg`,
+      grok:`${ICONS_BASE}/xAI.svg`,
+      deepseek:`${ICONS_BASE}/deepseek.svg`,
+      llama:`${ICONS_BASE}/llama.svg`
+    };
 
-    const state={chatId:null,panels:{},startedOrder:[],firstStarted:null,pending:0,errors:[],hasAnyText:false,suggestShown:false,stickToBottom:true,lastUserText:''};
+    const state = {
+      chatId:null, panels:{}, startedOrder:[], firstStarted:null,
+      pending:0, errors:[], hasAnyText:false, stickToBottom:true, lastUserText:''
+    };
 
-    /* Tema + logo */
+    /* Tema */
     initTheme();
-    function initTheme(){try{const saved=localStorage.getItem('paule_theme'); if(saved==='dark'||saved==='light'){root.setAttribute('data-theme',saved);} }catch(_){}
+    function initTheme(){
+      try{
+        const saved = localStorage.getItem('paule_theme');
+        if(saved==='dark'||saved==='light'){ root.setAttribute('data-theme', saved); }
+      }catch(_){}
       setLogoByTheme();
-      btnTheme?.addEventListener('click',()=>{const cur=root.getAttribute('data-theme')==='dark'?'dark':'light'; const next=cur==='dark'?'light':'dark'; root.setAttribute('data-theme',next); try{localStorage.setItem('paule_theme',next);}catch(_){} setLogoByTheme();});
+      btnTheme?.addEventListener('click', ()=>{
+        const cur = root.getAttribute('data-theme')==='dark'?'dark':'light';
+        const next = cur==='dark'?'light':'dark';
+        root.setAttribute('data-theme', next);
+        try{ localStorage.setItem('paule_theme', next); }catch(_){}
+        setLogoByTheme();
+      });
     }
-    function setLogoByTheme(){const dark=root.getAttribute('data-theme')==='dark'; logo.src=dark?'/assets/icon/paule-logo-dark.webp':'/assets/icon/paule-logo.webp'; logo.alt=dark?'Paule logotipas – tamsi tema':'Paule logotipas – šviesi tema';}
+    function setLogoByTheme(){
+      const dark = root.getAttribute('data-theme') === 'dark';
+      logo.src = dark ? '/assets/icon/paule-logo-dark.webp' : '/assets/icon/paule-logo.webp';
+      logo.setAttribute('alt', dark ? 'Paule logotipas – tamsi tema' : 'Paule logotipas – šviesi tema');
+    }
 
-    /* Drawer (mobilus) */
-    btnMobile?.addEventListener('click',()=>{sidebar.classList.add('open'); overlayBg.classList.add('show');});
-    overlayBg?.addEventListener('click',()=>{sidebar.classList.remove('open'); overlayBg.classList.remove('show');});
+    /* Drawer */
+    btnMobile?.addEventListener('click', ()=>{ sidebar.classList.add('open'); overlay.classList.add('show'); });
+    overlay?.addEventListener('click', ()=>{ sidebar.classList.remove('open'); overlay.classList.remove('show'); });
 
-    /* Scroll + „Į naujausią“ */
+    /* Collapsible „AI specialistai“ */
+    (function(){
+      const sec=document.getElementById('specSection');
+      const ttl=sec?.querySelector('.side-title');
+      ttl?.addEventListener('click', ()=>{ sec.classList.toggle('collapsed'); });
+    })();
+
+    /* Modal valdymas */
+    function openModal(type, htmlOrEl){
+      modal.classList.add('show');
+      modal.setAttribute('aria-hidden','false');
+      document.body.style.overflow='hidden';
+      modalSheet.hidden=true; modalTool.hidden=true;
+      if(type==='sheet'){
+        modalSheet.hidden=false;
+        modalSheetBody.innerHTML='';
+        if(typeof htmlOrEl==='string') modalSheetBody.innerHTML=htmlOrEl; else if(htmlOrEl) modalSheetBody.appendChild(htmlOrEl);
+      }else{
+        modalTool.hidden=false;
+        modalToolBody.innerHTML='';
+        if(typeof htmlOrEl==='string') modalToolBody.innerHTML=htmlOrEl; else if(htmlOrEl) modalToolBody.appendChild(htmlOrEl);
+      }
+    }
+    function closeModal(){
+      modal.classList.remove('show');
+      modal.setAttribute('aria-hidden','true');
+      document.body.style.overflow='';
+      modalSheetBody.innerHTML=''; modalToolBody.innerHTML='';
+    }
+    modalClose.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal.classList.contains('show')) closeModal(); });
+
+    /* „Planai“ – atidarom SHEET modalu (paimame paslėptą #pricing turinį) */
+    (function(){
+      const link=document.querySelector('a[data-nav="pricing"][href="#pricing"]');
+      const source=document.getElementById('pricing');
+      link?.addEventListener('click', (e)=>{
+        e.preventDefault();
+        if(!source) return;
+        const clone = source.cloneNode(true);
+        clone.hidden=false;
+        openModal('sheet', clone);
+      });
+    })();
+
+    /* Specialistų atidarymas TOOL modale (dinamiškai parsiunčiam html) */
+    document.getElementById('specialistGrid')?.addEventListener('click', async (e)=>{
+      const a=e.target.closest('a[data-modal="tool"]'); if(!a) return;
+      e.preventDefault();
+      try{
+        const res = await fetch(a.getAttribute('href'), {cache:'no-store'}); 
+        const html = await res.text();
+        openModal('tool', html);
+      }catch(err){
+        openModal('tool', `<div style="padding:24px">Nepavyko įkelti. Bandykite dar kartą.</div>`);
+      }
+    });
+
+    /* FOOTER teisiniai – atidaryti kaip SHEET jei yra to paties domeno puslapiai */
+    function hijackSheet(selector){
+      document.querySelectorAll(selector).forEach(a=>{
+        a.addEventListener('click', async (e)=>{
+          const href=a.getAttribute('href')||'';
+          if(!/^https?:/i.test(href)){ // lokalus kelias
+            e.preventDefault();
+            try{ const r=await fetch(href,{cache:'no-store'}); const t=await r.text(); openModal('sheet', t); }
+            catch(_){ location.href=href; }
+          }
+        });
+      });
+    }
+    hijackSheet('a.footer-link, a[data-sheet]');
+
+    /* Scroll lock + „Į naujausią“ */
     let jumpBtn;
     attachScroll();
     function attachScroll(){
-      if(!chatArea) return;
-      if(!jumpBtn){
-        jumpBtn=document.createElement('button'); jumpBtn.className='jump-latest';
-        jumpBtn.style.position='fixed'; jumpBtn.style.right='16px'; jumpBtn.style.bottom='2cm';
-        jumpBtn.innerHTML=`<img class="ui-icon" src="/assets/icon/arrow-down.svg" alt="Į naujausią">`;
-        jumpBtn.title='Į naujausią';
-        jumpBtn.addEventListener('click',()=>{chatArea.scrollTo({top:chatArea.scrollHeight,behavior:'smooth'}); jumpBtn.classList.remove('show'); state.stickToBottom=true;});
+      if (!chatArea) return;
+      if (!jumpBtn){
+        jumpBtn = document.createElement('button');
+        jumpBtn.className='jump-latest';
+        jumpBtn.style.position='fixed';
+        jumpBtn.style.right='16px';
+        jumpBtn.style.bottom='2cm';
+        jumpBtn.innerHTML = `<img class="ui-icon" src="/assets/icon/arrow-down.svg" alt="Į naujausią">`;
+        jumpBtn.title = 'Į naujausią';
+        jumpBtn.addEventListener('click', ()=>{ chatArea.scrollTo({top:chatArea.scrollHeight, behavior:'smooth'}); jumpBtn.classList.remove('show'); state.stickToBottom=true; });
         document.body.appendChild(jumpBtn);
       }
-      chatArea.addEventListener('scroll',()=>{const near=chatArea.scrollTop+chatArea.clientHeight>=chatArea.scrollHeight-80; state.stickToBottom=!!near; jumpBtn.classList.toggle('show',!near);},{passive:true});
+      chatArea.addEventListener('scroll', ()=>{
+        const nearBottom = chatArea.scrollTop + chatArea.clientHeight >= chatArea.scrollHeight - 80;
+        state.stickToBottom = !!nearBottom;
+        jumpBtn.classList.toggle('show', !nearBottom);
+      }, {passive:true});
     }
-    function autoscrollIfNeeded(){ if(state.stickToBottom) chatArea.scrollTo({top:chatArea.scrollHeight}); else jumpBtn?.classList.add('show'); }
+    function autoscrollIfNeeded(){ if (state.stickToBottom) chatArea.scrollTo({ top: chatArea.scrollHeight }); else jumpBtn?.classList.add('show'); }
 
-    function timeNow(){return new Date().toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'});}
-    function escapeHtml(x){const d=document.createElement('div'); d.textContent=(x==null?'':String(x)); return d.innerHTML;}
-    function stripMd(s){return String(s||'').replace(/`{1,3}[\s\S]*?`{1,3}/g,'').replace(/[*_#>-]/g,'');}
+    function timeNow(){ return new Date().toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'}); }
+    function escapeHtml(x){ const d=document.createElement('div'); d.textContent=(x==null?'':String(x)); return d.innerHTML; }
+    function stripMd(s){ return String(s||'').replace(/`{1,3}[\s\S]*?`{1,3}/g,'').replace(/[*_#>-]/g,''); }
 
-    function parseMarkdown(input){
-      let src=String(input||''); src=src.replace(/(^|\n)#{1,6}\s*$/g,'$1');
-      const GREY=['#111827','#1f2937','#374151','#4b5563','#6b7280','#9ca3af'];
-      let t=escapeHtml(src); const STORE=[]; t=t.replace(/```([\s\S]*?)```/g,(_,m)=>`@@CB_${STORE.push(m)-1}@@`);
-      t=t.replace(/`([^`]+)`/g,(_,m)=>`<code style="background:rgba(0,0,0,.06);padding:2px 4px;border-radius:4px">${m}</code>`);
-      t=t.replace(/^\s*######\s+(.+)$/gm,`<h6 style="margin:.25em 0 .15em;color:${GREY[5]};font-weight:800">$1</h6>`);
-      t=t.replace(/^\s*#####\s+(.+)$/gm,`<h5 style="margin:.3em 0 .2em;color:${GREY[4]};font-weight:800">$1</h5>`);
-      t=t.replace(/^\s*####\s+(.+)$/gm, `<h4 style="margin:.35em 0 .2em;color:${GREY[3]};font-weight:800">$1</h4>`);
-      t=t.replace(/^\s*###\s+(.+)$/gm,  `<h3 style="margin:.4em 0 .2em;color:${GREY[2]};font-weight:800">$1</h3>`);
-      t=t.replace(/^\s*##\s+(.+)$/gm,   `<h2 style="margin:.5em 0 .25em;color:${GREY[1]};font-weight:900">$1</h2>`);
-      t=t.replace(/(^|\n)(?:[-*]\s.+)(?:\n[-*]\s.+)*/g,(block)=>{const lines=block.trim().split('\n').map(l=>l.replace(/^[-*]\s+/,'').trim()); return `\n<ul style="margin:.25em 0 .25em .9em; list-style:disc inside;">${lines.map(li=>`<li>${li}</li>`).join('')}</ul>`;});
-      t=t.replace(/(^|\n)(?:\d+[.)]\s.+)(?:\n\d+[.)]\s.+)*/g,(block)=>{const lines=block.trim().split('\n').map(l=>l.replace(/^\d+[.)]\s+/,'').trim()); return `\n<ol style="margin:.25em 0 .25em 1.1em; list-style:decimal inside;">${lines.map(li=>`<li>${li}</li>`).join('')}</ol>`;});
-      t=t.replace(/\*\*([^*]+)\*\*/g,`<strong style="color:#111827;font-weight:700">${'$1'}</strong>`);
-      t=t.replace(/\*([^*]+)\*/g,`<em>$1</em>`); t=t.replace(/\n/g,'<br>');
-      t=t.replace(/@@CB_(\d+)@@/g,(_,i)=>`<pre style="background:rgba(0,0,0,.06);padding:10px;border-radius:10px;overflow:auto"><code>${STORE[Number(i)]||''}</code></pre>`);
-      return t;
-    }
-
-    function addUserBubble(text){
-      document.getElementById('welcome')?.remove();
-      const wrap=document.createElement('div'); wrap.className='message user';
-      wrap.innerHTML=`<div class="avatar"><img class="ui-icon" src="/assets/icon/user.svg" alt=""></div>
-        <div class="bubble" data-model="user"><div class="bubble-card">
-          <button class="copy-btn" title="Kopijuoti" type="button"
-            onclick="(function(b){try{const t=b.closest('.bubble-card')?.querySelector('.msg-content')?.innerText||'';navigator.clipboard.writeText(t).catch(()=>{});b.classList.add('ok');setTimeout(()=>b.classList.remove('ok'),900);}catch(_){}})(this)"
-            style="position:absolute;right:8px;top:8px;font-size:12px;border:1px solid var(--border);background:var(--bg-primary);padding:4px 6px;border-radius:6px;cursor:pointer;opacity:.8">⧉</button>
-          <div class="msg-content"></div>
-          <div class="msg-meta"><span class="model-tag">Jūs</span><span>${timeNow()}</span></div></div></div>`;
-      chatArea.appendChild(wrap);
-      wrap.querySelector('.msg-content').textContent=text;
-      autoscrollIfNeeded();
-    }
-
+    /* ========== CHAT UI (stream + json) ========== */
     function ensurePanel(front){
-      if(state.panels[front]) return state.panels[front];
-      const icon=MODEL_ICON[front]||'/assets/icon/ai.svg';
-      const name=front.charAt(0).toUpperCase()+front.slice(1);
-      const n=document.createElement('div'); n.className='message';
-      n.innerHTML=`<div class="avatar"><img class="ui-icon" src="${icon}" alt=""></div>
+      if (state.panels[front]) return state.panels[front];
+      const icon = MODEL_ICON[front] || '/assets/icon/ai.svg';
+      const name = front.charAt(0).toUpperCase()+front.slice(1);
+      const n = document.createElement('div'); n.className='message';
+      n.innerHTML = `
+        <div class="avatar"><img class="ui-icon" src="${icon}" alt=""></div>
         <div class="bubble" data-model="${front}">
           <div class="bubble-card">
             <div style="position:absolute;right:8px;top:8px;display:flex;gap:6px">
@@ -453,240 +669,277 @@
         </div>`;
       n.style.opacity='0'; n.style.transform='translateY(16px)';
       chatArea.appendChild(n);
-      requestAnimationFrame(()=>{n.style.transition='all .25s ease'; n.style.opacity='1'; n.style.transform='translateY(0)';});
-      const contentEl=n.querySelector('.msg-content');
-      const panel={el:contentEl,wrap:n,bubble:n.querySelector('.bubble'),content:'',done:false};
-      state.panels[front]=panel; state.startedOrder.push(front); return panel;
+      requestAnimationFrame(()=>{ n.style.transition='all .25s ease'; n.style.opacity='1'; n.style.transform='translateY(0)'; });
+      const contentEl = n.querySelector('.msg-content');
+      const panel = { el: contentEl, wrap:n, bubble:n.querySelector('.bubble'), content:'', done:false };
+      state.panels[front]=panel;
+      state.startedOrder.push(front);
+      return panel;
+    }
+
+    function addUserBubble(text){
+      document.getElementById('welcome')?.remove();
+      const wrap=document.createElement('div'); wrap.className='message user';
+      wrap.innerHTML = `
+        <div class="avatar"><img class="ui-icon" src="/assets/icon/user.svg" alt=""></div>
+        <div class="bubble" data-model="user">
+          <div class="bubble-card">
+            <button class="copy-btn" title="Kopijuoti" type="button"
+              onclick="(function(b){try{const t=b.closest('.bubble-card')?.querySelector('.msg-content')?.innerText||'';navigator.clipboard.writeText(t).catch(()=>{});b.classList.add('ok');setTimeout(()=>b.classList.remove('ok'),900);}catch(_){}})(this)"
+              style="position:absolute;right:8px;top:8px;font-size:12px;border:1px solid var(--border);background:var(--bg-primary);padding:4px 6px;border-radius:6px;cursor:pointer;opacity:.8">⧉</button>
+            <div class="msg-content"></div>
+            <div class="msg-meta"><span class="model-tag">Jūs</span><span>${timeNow()}</span></div>
+          </div>
+        </div>`;
+      chatArea.appendChild(wrap);
+      wrap.querySelector('.msg-content').textContent=text;
+      autoscrollIfNeeded();
     }
 
     function showGlobalWait(){
-      if(document.querySelector('._ai-wait')) return;
-      const w=document.createElement('div');
-      w.className='._ai-wait _ai-wait'; w.setAttribute('aria-live','polite');
-      w.innerHTML=`<div class="dots" aria-hidden="true"><span></span><span></span><span></span></div><div>AI mąsto, palaukite akimirką…</div>`;
-      chatArea.appendChild(w); autoscrollIfNeeded();
+      if (document.querySelector('._ai-wait')) return;
+      const w = document.createElement('div');
+      w.className='._ai-wait _ai-wait';
+      w.setAttribute('aria-live','polite');
+      w.innerHTML = `<div class="dots" aria-hidden="true"><span></span><span></span><span></span></div><div>AI mąsto, palaukite akimirką…</div>`;
+      chatArea.appendChild(w);
+      autoscrollIfNeeded();
     }
-    function hideGlobalWait(){const w=document.querySelector('._ai-wait'); if(w) w.remove();}
+    function hideGlobalWait(){ document.querySelector('._ai-wait')?.remove(); }
 
     function resetRound(){
-      state.chatId='chat_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
-      state.panels={}; state.startedOrder=[]; state.firstStarted=null; state.pending=0; state.errors=[]; state.hasAnyText=false; state.suggestShown=true; // <- jokio followups
-      followBar.innerHTML=''; followBar.classList.remove('show');
+      state.chatId = 'chat_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
+      state.panels={}; state.startedOrder=[]; state.firstStarted=null;
+      state.pending=0; state.errors=[]; state.hasAnyText=false;
       showGlobalWait();
     }
 
-    async function startOrchestrator(text,fronts){
-      const streamFronts=fronts.filter(f=>!NON_SSE_FRONT.has(f));
-      const jsonFronts=fronts.filter(f=>NON_SSE_FRONT.has(f));
-      state.pending=streamFronts.length+jsonFronts.length;
-      streamFronts.forEach(f=>{const back=FRONT_TO_BACK[f]||f; runSSE({front:f,back,text,chatId:state.chatId}).catch(()=>{}).finally(()=>decPending());});
-      if(jsonFronts.length){ runJSONOnce({fronts:jsonFronts,text,chatId:state.chatId}).catch(()=>{}); }
-      setTimeout(()=>{if(state.pending>0){state.pending=0;finalizeRound();}},22000);
+    async function startOrchestrator(text, fronts){
+      const streamFronts = fronts.filter(f=> !NON_SSE_FRONT.has(f));
+      const jsonFronts   = fronts.filter(f=>  NON_SSE_FRONT.has(f));
+      state.pending = streamFronts.length + jsonFronts.length;
+
+      streamFronts.forEach(f=>{
+        const back = FRONT_TO_BACK[f]||f;
+        runSSE({ front:f, back, text, chatId:state.chatId }).catch(()=>{}).finally(()=>decPending());
+      });
+
+      if (jsonFronts.length){
+        runJSONOnce({ fronts: jsonFronts, text, chatId: state.chatId }).catch(()=>{});
+      }
+      setTimeout(()=>{ if (state.pending>0){ state.pending=0; finalizeRound(); } }, 22000);
     }
 
-    function decPending(){state.pending=Math.max(0,state.pending-1); if(state.pending===0) finalizeRound();}
-    function finalizeRound(){hideGlobalWait(); if(state.errors.length){const wrap=document.createElement('div'); state.errors.forEach(er=>{const n=document.createElement('div'); n.className='message';
-        n.innerHTML=`<div class="avatar"><img class="ui-icon" src="${MODEL_ICON[er.front]||'/assets/icon/ai.svg'}" alt=""></div><div class="bubble"><div class="bubble-card error-card"><div class="msg-content"><strong>${escapeHtml(er.name||er.front||'Modelis')}</strong> – atsakymo nepavyko gauti.<br><span class="dim">${escapeHtml(er.msg||'Klaida')}</span></div><div class="msg-meta"><span>${escapeHtml(er.name||er.front||'Modelis')}</span><span>${timeNow()}</span></div></div></div>`; wrap.appendChild(n);}); chatArea.appendChild(wrap); autoscrollIfNeeded(); } }
+    function decPending(){ state.pending = Math.max(0, state.pending-1); if (state.pending===0) finalizeRound(); }
+    function finalizeRound(){
+      hideGlobalWait();
+      if (state.errors.length){
+        const wrap = document.createElement('div');
+        state.errors.forEach(er=>{
+          const n = document.createElement('div'); n.className='message';
+          n.innerHTML = `<div class="avatar"><img class="ui-icon" src="${MODEL_ICON[er.front]||'/assets/icon/ai.svg'}" alt=""></div>
+            <div class="bubble"><div class="bubble-card error-card">
+              <div class="msg-content"><strong>${escapeHtml(er.name||er.front||'Modelis')}</strong> – atsakymo nepavyko gauti.<br><span class="dim">${escapeHtml(er.msg||'Klaida')}</span></div>
+              <div class="msg-meta"><span>${escapeHtml(er.name||er.front||'Modelis')}</span><span>${timeNow()}</span></div>
+            </div></div>`;
+          wrap.appendChild(n);
+        });
+        chatArea.appendChild(wrap); autoscrollIfNeeded();
+      }
+    }
 
-    function parseErrEvent(e){try{const data=(e&&e.data)?JSON.parse(e.data):{}; return data?.message||'Klaida';}catch(_){return'Klaida';}}
+    function parseErrEvent(e){
+      try{ const data = (e&&e.data)? JSON.parse(e.data):{}; return data?.message || 'Klaida'; }
+      catch(_){ return 'Klaida'; }
+    }
 
-    async function runSSE({front,back,text,chatId}){
+    async function runSSE({ front, back, text, chatId }){
       try{
-        const qs=new URLSearchParams({model:back,models:back,message:text,max_tokens:'4096',chat_id:chatId,_t:Date.now().toString()});
-        const resp=await fetch(`${SSE_URL}?${qs}`,{headers:{'Accept':'text/event-stream'},cache:'no-store',credentials:'same-origin'});
+        const qs=new URLSearchParams({ model: back, models: back, message:text, max_tokens:'4096', chat_id:chatId, _t:Date.now().toString() });
+        const resp=await fetch(`${SSE_URL}?${qs}`, { headers:{ 'Accept':'text/event-stream' }, cache:'no-store', credentials:'same-origin' });
         const ct=(resp.headers.get('content-type')||'').toLowerCase();
 
         if(!ct.includes('text/event-stream')){
-          try{const j=await resp.json(); const txt=j?.answers?.[0]?.text||j?.text||''; if(txt){ if(!state.hasAnyText){state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front;} const p=ensurePanel(front); p.content+=txt; p.el.innerHTML=parseMarkdown(p.content); autoscrollIfNeeded(); } else { state.errors.push({front,name:front,msg:'Tuščias atsakymas (JSON).'});} }
-          catch(_){ state.errors.push({front,name:front,msg:'Neskaidomas atsakymas (JSON).'}); }
+          try{
+            const j=await resp.json();
+            const txt=j?.answers?.[0]?.text||j?.text||'';
+            if (txt){
+              if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
+              const p = ensurePanel(front);
+              p.content += txt; p.el.innerHTML = p.content; autoscrollIfNeeded();
+            } else { state.errors.push({front, name:front, msg:'Tuščias atsakymas (JSON).'}); }
+          }catch(_){ state.errors.push({front, name:front, msg:'Neskaidomas atsakymas (JSON).'}); }
           return;
         }
 
-        const reader=resp.body.getReader(); const dec=new TextDecoder(); let buf='',gotAny=false;
-        for(;;){const {done,value}=await reader.read(); if(done) break;
+        const reader=resp.body.getReader();
+        const dec=new TextDecoder();
+        let buf='', gotAny=false;
+        for(;;){
+          const {done,value}=await reader.read(); if(done) break;
           buf+=dec.decode(value,{stream:true});
           let i; while((i=buf.indexOf('\n\n'))>=0){
-            const frame=buf.slice(0,i).trim(); buf=buf.slice(i+2); if(!frame) continue;
-            const dataLine=frame.split('\n').find(l=>l.startsWith('data:')); const eventLine=frame.split('\n').find(l=>l.startsWith('event:'));
-            const ev=eventLine?eventLine.replace(/^event:\s*/,'').trim():'message'; if(!dataLine) continue;
-            const data=dataLine.replace(/^data:\s*/,'').trim(); if(data==='[DONE]'){buf='';break;}
-            if(ev==='error'){ if(!gotAny) state.errors.push({front,name:front,msg:parseErrEvent({data})}); continue; }
-            let piece=''; try{const j=JSON.parse(data); piece=j?.choices?.[0]?.delta?.content ?? j?.text ?? j?.data ?? '';}catch{piece=data;}
-            if(piece){ if(!state.hasAnyText){state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front;} gotAny=true; const p=ensurePanel(front); p.content+=piece; p.el.innerHTML=parseMarkdown(p.content); autoscrollIfNeeded(); }
+            const frame=buf.slice(0,i).trim(); buf=buf.slice(i+2);
+            if(!frame) continue;
+            const dataLine = frame.split('\n').find(l=> l.startsWith('data:'));
+            const eventLine = frame.split('\n').find(l=> l.startsWith('event:'));
+            const ev = eventLine ? eventLine.replace(/^event:\s*/,'').trim() : 'message';
+            if(!dataLine) continue;
+            const data = dataLine.replace(/^data:\s*/,'').trim();
+            if (data==='[DONE]'){ buf=''; break; }
+            if (ev==='error'){
+              if (!gotAny) state.errors.push({front, name:front, msg: parseErrEvent({data})});
+              continue;
+            }
+            let piece='';
+            try{
+              const j=JSON.parse(data);
+              piece = j?.choices?.[0]?.delta?.content ?? j?.text ?? j?.data ?? '';
+            }catch{ piece = data; }
+            if(piece){
+              if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
+              gotAny=true;
+              const p = ensurePanel(front);
+              p.content += piece; p.el.innerHTML = p.content; autoscrollIfNeeded();
+            }
           }
         }
-        const p=state.panels[front]; if(p) p.done=true;
-      }catch(_){ state.errors.push({front,name:front,msg:'SSE nepavyko inicijuoti.'}); }
+        const p = state.panels[front]; if (p) p.done=true;
+      }catch(_){ state.errors.push({front, name:front, msg:'SSE nepavyko inicijuoti.'}); }
     }
 
-    async function runJSONOnce({fronts,text,chatId}){
-      const backIds=fronts.map(f=>FRONT_TO_BACK[f]||f).join(',');
+    async function runJSONOnce({ fronts, text, chatId }){
+      const backIds = fronts.map(f=> FRONT_TO_BACK[f]||f).join(',');
       try{
-        const res=await fetch(COMPLETE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,models:backIds,chat_id:chatId,max_tokens:4096})});
-        if(!res.ok) throw new Error('HTTP '+res.status);
-        const j=await res.json(); const answers=Array.isArray(j?.answers)?j.answers:[]; const gotFronts=new Set();
-        for(const ans of answers){
-          const back=ans.model||''; const front=fronts.find(f=>(FRONT_TO_BACK[f]||f)===back)||fronts[0]; gotFronts.add(front);
-          const txt=ans.text||''; if(txt){ if(!state.hasAnyText){state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front;} const p=ensurePanel(front); await typeInto(p,txt); p.done=true; } else { state.errors.push({front,name:front,msg:'Tuščias atsakymas (JSON).'}); } decPending();
+        const res = await fetch(COMPLETE_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message:text, models:backIds, chat_id:chatId, max_tokens:4096 })});
+        if (!res.ok) throw new Error('HTTP '+res.status);
+        const j = await res.json();
+        const answers = Array.isArray(j?.answers)? j.answers : [];
+        const gotFronts = new Set();
+        for (const ans of answers){
+          const back = ans.model||'';
+          const front = fronts.find(f=> (FRONT_TO_BACK[f]||f)===back) || fronts[0];
+          gotFronts.add(front);
+          const txt = ans.text||'';
+          if (txt){
+            if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); state.firstStarted=state.firstStarted||front; }
+            const p = ensurePanel(front);
+            p.content += txt; p.el.innerHTML = p.content; p.done=true;
+          } else { state.errors.push({ front, name:front, msg:'Tuščias atsakymas (JSON).' }); }
+          decPending();
         }
-        fronts.forEach(f=>{if(!gotFronts.has(f)){state.errors.push({front:f,name:f,msg:'Nepavyko gauti atsakymo (JSON).'}); decPending();}});
-      }catch(e){fronts.forEach(f=>{state.errors.push({front:f,name:f,msg:'Nepavyko gauti atsakymo (JSON).'}); decPending();});}
+        fronts.forEach(f=>{ if(!gotFronts.has(f)){ state.errors.push({ front:f, name:f, msg:'Nepavyko gauti atsakymo (JSON).' }); decPending(); } });
+      }catch(e){
+        fronts.forEach(f=> { state.errors.push({ front:f, name:f, msg:'Nepavyko gauti atsakymo (JSON).' }); decPending(); });
+      }
     }
 
-    function splitWordsPreserve(text){return String(text||'').split(/(\s+)/);}
-    function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-    function randomBetween(a,b){return Math.floor(a+Math.random()*(b-a+1));}
-    async function typeInto(panel,text){const parts=splitWordsPreserve(text); for(let i=0;i<parts.length;i++){const w=parts[i]; panel.content+=w; panel.el.innerHTML=parseMarkdown(panel.content); autoscrollIfNeeded(); const end=/[.!?…]$/.test(w); await sleep(end?randomBetween(120,220):randomBetween(8,16));}}
-
-    /* Siuntimas */
     function doSend(){
       const text=(msgInput.value||'').trim(); if(!text) return;
-      state.lastUserText=text; msgInput.value=''; addUserBubble(text);
+      state.lastUserText = text;
+      msgInput.value='';
+      addUserBubble(text);
+
       let fronts=[...modelList.querySelectorAll('.model-pill.active')].map(b=>b.dataset.model).filter(Boolean);
       if(!fronts.length) fronts=['paule','chatgpt','deepseek'];
-      resetRound(); startOrchestrator(text,fronts);
-    }
-    msgInput.addEventListener('keydown',(e)=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault(); doSend();}});
-    sendBtn.addEventListener('click',(e)=>{e.preventDefault(); doSend();});
-    sendBtn.addEventListener('touchstart',(e)=>{e.preventDefault(); doSend();},{passive:false});
 
-    modelList.addEventListener('click',(e)=>{const b=e.target.closest('.model-pill'); if(!b) return; b.classList.toggle('active'); b.setAttribute('aria-pressed', b.classList.contains('active')?'true':'false');});
-
-    /* ===== POPUPAI ===== */
-    const wide = document.getElementById('modalWide');
-    const wideTitle = document.getElementById('modalWideTitle');
-    const wideBody = document.getElementById('modalWideBody');
-    const full = document.getElementById('modalFull');
-    const fullFrame = document.getElementById('modalFullFrame');
-
-    function openWide(title, html){
-      wideTitle.textContent = title||'';
-      wideBody.innerHTML = html||'';
-      wide.classList.add('show'); wide.setAttribute('aria-hidden','false');
-      history.pushState({modal:'wide'},'', location.pathname + '#dialog');
-    }
-    function openWideIframe(title, url){
-      const html = `<iframe src="${url}" title="${title||'Turinys'}" style="border:0;width:100%;height:80vh"></iframe>`;
-      openWide(title, html);
-    }
-    function closeWide(){
-      wide.classList.remove('show'); wide.setAttribute('aria-hidden','true'); wideBody.innerHTML='';
-      if(location.hash==='#dialog') history.pushState({},'', location.pathname);
+      resetRound();
+      startOrchestrator(text, fronts);
     }
 
-    function openFull(url){
-      fullFrame.src = url; full.classList.add('show'); full.setAttribute('aria-hidden','false');
-      history.pushState({modal:'full'},'', location.pathname + '#full');
-    }
-    function closeFull(){
-      full.classList.remove('show'); full.setAttribute('aria-hidden','true'); fullFrame.src='about:blank';
-      if(location.hash==='#full') history.pushState({},'', location.pathname);
-    }
+    /* Input UX */
+    msgInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); doSend(); }});
+    sendBtn.addEventListener('click', (e)=>{ e.preventDefault(); doSend(); });
+    sendBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); doSend(); }, {passive:false});
 
-    document.addEventListener('click',(e)=>{
-      const closeBtn=e.target.closest('[data-close]');
-      if(closeBtn){
-        if(closeBtn.getAttribute('data-close')==='wide') closeWide();
-        if(closeBtn.getAttribute('data-close')==='full') closeFull();
-      }
-    });
-    window.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ if(full.classList.contains('show')) closeFull(); else if(wide.classList.contains('show')) closeWide(); } });
-
-    /* – Planai (atidarom WIDE modal) – */
-    const plansLink=document.querySelector('a[data-nav="pricing"]');
-    plansLink?.addEventListener('click',(e)=>{
-      e.preventDefault();
-      const html = `
-        <stripe-pricing-table pricing-table-id="prctbl_1S5mCdGfWPiTH9M4MOXoL4f3"
-          publishable-key="pk_test_51S5jh4GfWPiTH9M4gRYoHhV9LiZBjn7FPavf9nXPFIvbBLjQ89oyMRvKu0FRIhqx8boX4IHvtvRbQUdUWnvJwmaf00NszDYZC7">
-        </stripe-pricing-table>
-        <noscript>Norint matyti kainas, įjunkite JavaScript.</noscript>`;
-      openWide('Planai', html);
+    modelList.addEventListener('click', (e)=>{
+      const b=e.target.closest('.model-pill'); if(!b) return;
+      b.classList.toggle('active');
+      b.setAttribute('aria-pressed', b.classList.contains('active')?'true':'false');
     });
 
-    /* – Footer teisiniai (WIDE iframe) – */
-    document.querySelectorAll('.site-footer .footer-link').forEach(a=>{
-      a.addEventListener('click',(e)=>{ e.preventDefault(); openWideIframe(a.textContent.trim(), a.getAttribute('href')); });
-    });
+    window.PauleMain = { sendMessage: doSend };
+  })();
+  </script>
 
-    /* – Specialistai / Welcome – atidarom FULL modal (juodas per visą) – */
-    function hookFull(selector){
-      document.querySelectorAll(selector).forEach(a=>{
-        a.addEventListener('click',(e)=>{
-          const href=a.getAttribute('href')||'#'; if(!href || href==='#') return;
-          if(href.startsWith('/spec/')){ e.preventDefault(); openFull(href); }
-        });
-      });
-    }
-    hookFull('.specialist-grid a');
-    hookFull('.welcome-grid a');
+  <!-- ===== Clerk UI montavimas ===== -->
+  <script>
+    (function(){
+      const root = document.getElementById('clerk-auth');
 
-    /* ===== Clerk montavimas + Google mygtukas ===== */
-    (function authMount(){
-      const authRoot=document.getElementById('clerk-auth');
-      function svgGoogle(){const s=document.createElementNS('http://www.w3.org/2000/svg','svg'); s.setAttribute('viewBox','0 0 533.5 544.3'); s.setAttribute('width','16'); s.setAttribute('height','16'); s.style.marginRight='6px';
-        const n=s.namespaceURI; const p1=document.createElementNS(n,'path'); p1.setAttribute('fill','#EA4335'); p1.setAttribute('d','M533.5 278.4c0-18.5-1.7-36.4-5-53.6H272v101.5h147.5c-6.4 34.5-25.9 63.7-55.2 83.2v69.1h89.2c52.2-48.1 80-119 80-200.2z');
-        const p2=document.createElementNS(n,'path'); p2.setAttribute('fill','#34A853'); p2.setAttribute('d','M272 544.3c74 0 136-24.5 181.4-66.5l-89.2-69.1c-24.8 16.6-56.5 26.5-92.3 26.5-70.9 0-131-47.8-152.5-112.1H27.3v70.4C72.3 486.1 165.4 544.3 272 544.3z');
-        const p3=document.createElementNS(n,'path'); p3.setAttribute('fill','#4A90E2'); p3.setAttribute('d','M119.5 322.9c-5.6-16.6-8.8-34.3-8.8-52.9s3.2-36.3 8.8-52.9V146.7H27.3C9.7 182.4 0 222.1 0 270s9.7 87.6 27.3 123.3l92.2-70.4z');
-        const p4=document.createElementNS(n,'path'); p4.setAttribute('fill','#FBBC05'); p4.setAttribute('d','M272 107.7c40.3 0 76.5 13.9 105 41.2l78.7-78.7C408 25.2 346 0 272 0 165.4 0 72.3 58.2 27.3 146.7l92.2 70.4C141 155.8 201.1 107.7 272 107.7z');
+      function svgGoogle(){
+        const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        s.setAttribute('viewBox','0 0 533.5 544.3');
+        s.setAttribute('width','16'); s.setAttribute('height','16'); s.style.marginRight='6px';
+        const p1=document.createElementNS(s.namespaceURI,'path'); p1.setAttribute('fill','#EA4335'); p1.setAttribute('d','M533.5 278.4c0-18.5-1.7-36.4-5-53.6H272v101.5h147.5c-6.4 34.5-25.9 63.7-55.2 83.2v69.1h89.2c52.2-48.1 80-119 80-200.2z');
+        const p2=document.createElementNS(s.namespaceURI,'path'); p2.setAttribute('fill','#34A853'); p2.setAttribute('d','M272 544.3c74 0 136-24.5 181.4-66.5l-89.2-69.1c-24.8 16.6-56.5 26.5-92.3 26.5-70.9 0-131-47.8-152.5-112.1H27.3v70.4C72.3 486.1 165.4 544.3 272 544.3z');
+        const p3=document.createElementNS(s.namespaceURI,'path'); p3.setAttribute('fill','#4A90E2'); p3.setAttribute('d','M119.5 322.9c-5.6-16.6-8.8-34.3-8.8-52.9s3.2-36.3 8.8-52.9V146.7H27.3C9.7 182.4 0 222.1 0 270s9.7 87.6 27.3 123.3l92.2-70.4z');
+        const p4=document.createElementNS(s.namespaceURI,'path'); p4.setAttribute('fill','#FBBC05'); p4.setAttribute('d','M272 107.7c40.3 0 76.5 13.9 105 41.2l78.7-78.7C408 25.2 346 0 272 0 165.4 0 72.3 58.2 27.3 146.7l92.2 70.4C141 155.8 201.1 107.7 272 107.7z');
         s.append(p1,p2,p3,p4); return s;
       }
-      function button(classes,text,withGoogle){const b=document.createElement('button'); b.className=classes; b.type='button'; if(withGoogle) b.appendChild(svgGoogle()); b.appendChild(document.createTextNode(text)); return b;}
 
-      function renderFallback(){
-        if(!authRoot) return; authRoot.innerHTML='';
-        const inBtn = button('btn ghost','Prisijungti',true);
-        inBtn.onclick=()=> alert('Kraunama…'); authRoot.append(inBtn);
+      function button(classes, text, withGoogleIcon){
+        const b = document.createElement('button');
+        b.className = classes; b.type = 'button';
+        if (withGoogleIcon) b.appendChild(svgGoogle());
+        b.appendChild(document.createTextNode(text));
+        return b;
       }
 
-      window.addEventListener('load', async ()=>{
-        try{
-          const clerk=window.Clerk; if(!clerk || !clerk.load){renderFallback(); return;}
-          await clerk.load();
+      function renderFallback(){
+        if (!root) return;
+        root.innerHTML = '';
+        const inBtn = button('btn ghost', 'Prisijungti', true);
+        inBtn.onclick = ()=> alert('Kraunama…');
+        root.append(inBtn);
+      }
 
-          // Mount small user button OR "Prisijungti"
-          const rerender=()=>{
-            if(!authRoot) return;
-            authRoot.innerHTML='';
-            if(clerk.user){
-              const holder=document.createElement('div'); authRoot.appendChild(holder);
-              clerk.mountUserButton(holder,{appearance:{elements:{userButtonAvatarBox:'rounded-xl'}}});
-            }else{
-              const loginBtn=button('btn ghost','Prisijungti',true);
-              loginBtn.onclick=()=> clerk.openSignIn({afterSignInUrl:'/', afterSignUpUrl:'/', preferredSignInStrategy:'oauth_google'});
-              authRoot.append(loginBtn);
+      window.addEventListener('load', async () => {
+        try{
+          const clerk = window.Clerk;
+          if (!clerk || !clerk.load) { renderFallback(); return; }
+
+          await clerk.load(); // publishable key iš <script> data atributo
+
+          const rerender = () => {
+            if (!root) return;
+            root.innerHTML = '';
+            if (clerk.user){
+              const holder = document.createElement('div');
+              root.appendChild(holder);
+              clerk.mountUserButton(holder, { appearance: { elements: { userButtonAvatarBox: 'rounded-xl' } } });
+            } else {
+              const loginBtn  = button('btn ghost', 'Prisijungti', true);
+              loginBtn.onclick = () => clerk.openSignIn({ afterSignInUrl: '/', afterSignUpUrl: '/' });
+              root.append(loginBtn);
             }
           };
-          rerender(); clerk.addListener(rerender);
 
-          // „Prisijungti su Google“ explicit
-          const btnGoogle=document.getElementById('btnGoogle');
-          btnGoogle?.addEventListener('click',()=>{
-            if(!window.Clerk){alert('Kraunama…'); return;}
-            clerk.authenticateWithRedirect({
-              strategy:'oauth_google',
-              redirectUrl: window.location.href,
-              redirectUrlComplete: window.location.href
-            });
-          });
+          rerender();
+          clerk.addListener(rerender);
         }catch(_){ renderFallback(); }
       });
     })();
-  })();
   </script>
 
   <!-- ===== Poraštė ===== -->
   <footer class="site-footer left">
-    <a class="footer-link" href="/legal/privacy.html">Privatumo politika</a>
+    <a class="footer-link" href="/legal/privacy.html" data-sheet>Privatumo politika</a>
     <span class="sep">•</span>
-    <a class="footer-link" href="/legal/cookies.html">Slapukų politika</a>
+    <a class="footer-link" href="/legal/refunds.html" data-sheet>Pinigų grąžinimas</a>
     <span class="sep">•</span>
-    <a class="footer-link" href="/legal/refunds.html">Pinigų grąžinimas</a>
+    <a class="footer-link" href="/legal/cookies.html" data-sheet>Slapukų politika</a>
+    <span class="sep">•</span>
+    <a class="footer-link" href="/legal/ai-disclaimer.html" data-sheet>AI atsakomybės ribojimas</a>
+    <span class="sep">•</span>
+    <a class="footer-link" href="/legal/fair-use.html" data-sheet>Sąžiningo naudojimo taisyklės</a>
   </footer>
 
   <!-- ===== Cookie bar (Sutinku / Atsisakyti) ===== -->
   <div id="cookie-bar" role="dialog" aria-live="polite" aria-label="Slapukų pranešimas" style="display:none">
-    <div>Naudojame slapukus paslaugos veikimui ir tobulinimams. Daugiau – <a href="/legal/cookies.html" class="footer-link">Slapukų politikoje</a>.</div>
+    <div>Naudojame slapukus paslaugos veikimui ir tobulinimams. Daugiau –
+      <a href="/legal/cookies.html" class="footer-link" data-sheet>Slapukų politikoje</a>.
+    </div>
     <div class="actions">
       <button id="cookie-accept" type="button">Sutinku</button>
       <button id="cookie-decline" type="button">Atsisakyti</button>
@@ -696,15 +949,16 @@
     (function(){
       const KEY='cookie_choice_v1';
       const bar=document.getElementById('cookie-bar');
-      const ok=document.getElementById('cookie-accept');
-      const no=document.getElementById('cookie-decline');
+      const ok = document.getElementById('cookie-accept');
+      const no = document.getElementById('cookie-decline');
       try{
         const v=localStorage.getItem(KEY);
         if(!v) bar.style.display='block';
-        ok?.addEventListener('click',()=>{localStorage.setItem(KEY,'allow'); bar.style.display='none';});
-        no?.addEventListener('click',()=>{localStorage.setItem(KEY,'deny'); bar.style.display='none';});
+        ok?.addEventListener('click', ()=>{ localStorage.setItem(KEY,'allow'); bar.style.display='none'; });
+        no?.addEventListener('click',  ()=>{ localStorage.setItem(KEY,'deny');  bar.style.display='none'; });
       }catch(_){}
     })();
   </script>
+
 </body>
 </html>
