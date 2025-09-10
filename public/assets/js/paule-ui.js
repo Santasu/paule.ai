@@ -798,4 +798,3 @@
   window.getBackId=window.getBackId||getBackId;
   window.nameOf=window.nameOf||nameOf;
 })();
-
