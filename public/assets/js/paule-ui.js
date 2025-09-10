@@ -1,10 +1,13 @@
 
 /* =======================================================================
-   Paule – Premium Chat Orchestrator • v2.4.0
-   - 3 stream (chatgpt, deepseek, llama) • 3 JSON (claude, gemini, grok)
+   Paule – Premium Chat Orchestrator • v2.3.1 (fixai + JSON drivers)
+   - 3 SSE: chatgpt, deepseek, llama
+   - 3 JSON: gemini, claude, grok (su gražia „typing“ imitacija)
    - Iš anksto kuriamos panelės visiems frontams
-   - JSON „typing“ imitacija
-   - Aiškesnės klaidos, „AI mąsto…“, scroll lock, follow-ups
+   - Pirmas rašyti pradėjęs → pažymimas
+   - Global "AI mąsto..." kol dar nėra jokio teksto
+   - Follow-ups kai VISI baigė • Klaidos – apačioje
+   - Scroll-lock + „Į naujausią“ • spalvotas MD + bold glow
    ======================================================================= */
 (function () {
   'use strict';
@@ -16,10 +19,11 @@
   const COMPLETE_URL = API_BASE + '/complete';
   const SUGGEST_URL = API_BASE + '/suggest';
   const ICONS_BASE = (CFG.iconsBase || '/assets/icon');
+  const DEBUG = !!CFG.debug;
 
   // Tunables
-  const SOFT_TIMEOUT_MS = 900;    // po kiek startuojam JSON fallback (net jei SSE jau rašo)
-  const HARD_DEADLINE_MS = 25000; // globalus „bail-out“
+  const SOFT_TIMEOUT_MS = 900;     // po kiek startuojam JSON fallback
+  const HARD_DEADLINE_MS = 25000;  // globalus „bail-out“
   const TYPE_MIN_DELAY = 8, TYPE_MAX_DELAY = 16;
   const SENTENCE_PAUSE_MIN = 120, SENTENCE_PAUSE_MAX = 220;
 
@@ -42,9 +46,9 @@
     hasAnyText:false,
     suggestShown:false,
 
-    // archyvui
+    // legacy
     decisionBarShown:false,
-    lastRound:{},       // backId -> text
+    lastRound:{},       // backId -> text (naudojama ginčui/teisėjui/kt.)
   };
 
   // --- DOM ---
@@ -82,7 +86,7 @@
         }
       } catch(_){}
 
-      log('🚀 Paule Orchestrator įkeltas.');
+      debug('🚀 Paule Orchestrator įkeltas.');
     }catch(e){ console.error('[PAULE]init]', e); toast('Inicializacijos klaida', e.message); }
   }
 
@@ -122,12 +126,13 @@
     let id = (pill.getAttribute('data-model')||'').toLowerCase().trim();
     if (id==='paule' || id==='augam-auto') id='auto';
 
+    // jei renkasi Paule (auto) – visi kiti neaktyvūs
     if (id==='auto'){
-      // „Paule“ aktyvus – kiti neaktyvūs
       el.modelList.querySelectorAll('.model-pill').forEach(p=>p.classList.remove('active'));
       pill.classList.add('active');
       state.selectedModels=['auto']; return;
     }
+    // jei pasirinko bent vieną kitą – auto nuimamas
     el.modelList.querySelector('.model-pill[data-model="auto"]')?.classList.remove('active');
     pill.classList.toggle('active');
     const act = [...el.modelList.querySelectorAll('.model-pill.active')]
@@ -211,7 +216,7 @@
           <button class="copy-btn" title="Kopijuoti"
            onclick="(function(b){const t=b.closest('.bubble-card')?.querySelector('.msg-content')?.innerText||'';navigator.clipboard.writeText(t).catch(()=>{});b.classList.add('ok');setTimeout(()=>b.classList.remove('ok'),900)})(this)"
            style="position:absolute;right:8px;top:8px;font-size:12px;border:1px solid var(--border);background:var(--bg-primary);padding:4px 6px;border-radius:6px;cursor:pointer;opacity:.8">⧉</button>
-          <div class="msg-content"></div>
+          <div class="msg-content"><span class="typing-dots"><i></i><i></i><i></i></span></div>
           <div class="msg-meta"><span>${escapeHtml(nameOf(frontId))}</span><span>${timeNow()}</span></div>
         </div>
       </div>`;
@@ -223,15 +228,9 @@
     return panel;
   }
 
-  // 👉 Iš anksto sukuria burbulus visiems frontams
+  // 👉 IŠ ANKSTO sukuria burbulus visiems frontams (vizualiai lygiagretis startas)
   function preparePanels(frontList){
-    (frontList||[]).forEach(f=>{
-      if (state.panels && state.panels[f]) return;
-      const p = ensurePanel(f);
-      if (p && p.el){
-        p.el.innerHTML = `<span class="typing-dots"><i></i><i></i><i></i></span>`;
-      }
-    });
+    (frontList||[]).forEach(f=> ensurePanel(f));
   }
 
   // --- Orchestrator ---
@@ -244,28 +243,31 @@
     const streamF = parts.stream || [];
     const jsonF   = parts.json   || [];
 
-    // paruošiam paneles
+    // 👉 PRIDĖTA: paruošiam paneles IŠ ANKSTO
     preparePanels([ ...streamF, ...jsonF ]);
 
-    // laukimų skaičius
+    // kiek lauksim (viena „skola“ per frontą)
     state.pending = (streamF.length) + (jsonF.length);
+    debug('Start round:', {streamF, jsonF, pending: state.pending});
 
-    // SSE frontai
+    // Paleidžiam SSE visiems „stream“ frontams
     streamF.forEach(front=>{
       const back = getBackId(front);
       runSSE({ front, back, message, chatId: state.chatId })
-        .catch(()=>{}).finally(()=>decPending());
+        .catch(err=> debug('runSSE error', front, err))
+        .finally(()=>decPending());
     });
 
-    // JSON grupė po nedidelio timeout
+    // Po soft timeout – paleidžiam JSON once grupei
     if (jsonF.length){
       setTimeout(()=>{
         runJSONOnce({ fronts: jsonF, message, chatId: state.chatId })
-          .catch(()=>{}).finally(()=>{/* decPending atliekamas pačiame runJSONOnce */});
+          .catch(err=> debug('runJSONOnce error', err))
+          .finally(()=>{/* decPending daromas per-atsakymą pačiame runJSONOnce */});
       }, SOFT_TIMEOUT_MS);
     }
 
-    // kietas deadline
+    // Kietas deadline – jeigu kas „pakibo“
     setTimeout(()=>{ finishIfHanging(); }, HARD_DEADLINE_MS);
   }
 
@@ -280,6 +282,7 @@
   function runSSE({ front, back, message, chatId }){
     return new Promise((resolve) => {
       const url = buildStreamUrl({ model: back, models: back, message, max_tokens:4096, chat_id:chatId, _t:Date.now() });
+      debug('SSE open →', front, back, url);
       const es = new EventSource(url);
       let gotAny=false, closed=false;
 
@@ -289,17 +292,25 @@
         resolve();
       };
 
+      // kai kuriuose backend’uose nėra custom „start/done“ – tik onmessage
+      es.addEventListener('open', ()=> debug('SSE open evt', front));
       es.addEventListener('start', e=>{
         try{ const d = JSON.parse(e.data||'{}'); if (d?.chat_id) state.chatId=d.chat_id; }catch(_){}
+        debug('SSE start evt', front);
       });
 
       const handleDelta = (payload)=>{
-        if (payload === '[DONE]'){
+        if (payload == null) return;
+        if (String(payload).trim() === '[DONE]'){
           const panel = state.panels[front]; if (panel) panel.done = true;
           state.lastRound[back] = (panel?.content||'');
+          debug('SSE done marker', front);
           finalize(); return;
         }
-        const piece = safeDelta(payload); if (!piece) return;
+
+        const piece = safeDelta(payload);
+        if (!piece) return;
+
         if (!gotAny){
           gotAny=true; state.hasAnyText=true; hideGlobalWait();
           if (!state.firstStarted) state.firstStarted = front;
@@ -310,13 +321,15 @@
         scrollToBottomIfNeeded();
       };
 
+      // universalūs „message“ ir „delta“ (kai kurie backend’ai naudoja custom evento vardą)
       es.addEventListener('delta', e=> handleDelta(e.data||''));
-      es.addEventListener('message', e=> handleDelta(e.data||'')); // jei tik "message"
+      es.addEventListener('message', e=> handleDelta(e.data||''));
       es.onmessage = (e)=> handleDelta(e.data||'');
 
       es.addEventListener('error', e=>{
         const msg = parseErr(e) || 'Modelio paslauga laikinai nepasiekiama.';
         state.errors.push({ front, name: nameOf(front), msg });
+        debug('SSE error evt', front, msg);
         finalize();
       });
 
@@ -324,13 +337,15 @@
         const panel = state.panels[front];
         if (panel) panel.done = true;
         state.lastRound[back] = (panel?.content||'');
+        debug('SSE done evt', front);
         finalize();
       });
 
-      es.onerror = function(){
+      es.onerror = function(ev){
         if (!gotAny){
           state.errors.push({ front, name: nameOf(front), msg: 'Ryšio klaida (SSE).' });
         }
+        debug('SSE onerror', front, ev);
         finalize();
       };
     });
@@ -340,8 +355,11 @@
   async function runJSONOnce({ fronts, message, chatId }){
     if (!fronts || !fronts.length) return;
     const backIds = fronts.map(f=> (window.PAULE_MODELS?window.PAULE_MODELS.getBackId(f):f)).join(',');
+    debug('JSON call →', fronts, backIds);
     try{
       const res = await postJSON(COMPLETE_URL, { message, models: backIds, chat_id: chatId, max_tokens:4096 });
+
+      // 1) tekstai
       const answers = Array.isArray(res?.answers) ? res.answers : [];
       const mappedFronts = new Set();
 
@@ -352,13 +370,31 @@
 
         const panel = ensurePanel(front);
         if (!state.hasAnyText){ state.hasAnyText=true; hideGlobalWait(); if (!state.firstStarted) state.firstStarted = front; }
-        await typeInto(panel, ans.text||'');
-        panel.done = true;
-        state.lastRound[ back || (window.PAULE_MODELS?window.PAULE_MODELS.getBackId(front):front) ] = panel.content||'';
+
+        const text = (ans.text || '').trim();
+        const err  = (ans.error || '').trim();
+
+        if (text){
+          await typeInto(panel, text);
+          panel.done = true;
+          state.lastRound[ back || (window.PAULE_MODELS?window.PAULE_MODELS.getBackId(front):front) ] = panel.content||'';
+        }else{
+          const msg = err || 'Nepavyko gauti atsakymo (JSON).';
+          state.errors.push({ front, name:nameOf(front), msg });
+        }
         decPending();
       }
 
-      // jei kažkam negrįžo
+      // 2) globalios klaidos (jei yra)
+      const errs = Array.isArray(res?.errors) ? res.errors : [];
+      errs.forEach(er=>{
+        const front = (er && er.front) ? er.front : null;
+        const name  = front ? nameOf(front) : 'Serveris';
+        const msg   = (er && (er.error||er.message)) || 'Nepavyko gauti atsakymo (JSON).';
+        state.errors.push({ front: front||'auto', name, msg });
+      });
+
+      // jeigu kai kuriems frontams negrįžo atsakymas – pažymim klaidą, kad neužstrigtų pending
       fronts.forEach(f=>{
         if (!mappedFronts.has(f)){
           state.errors.push({ front:f, name:nameOf(f), msg:'Nepavyko gauti atsakymo (JSON).' });
@@ -367,10 +403,12 @@
       });
 
     }catch(e){
+      // visiems JSON frontams pažymim klaidą ir mažinam pending
       fronts.forEach(f=>{
-        state.errors.push({ front:f, name:nameOf(f), msg: (e && e.message) ? e.message : 'Nepavyko gauti atsakymo (JSON).' });
+        state.errors.push({ front:f, name:nameOf(f), msg:'Nepavyko gauti atsakymo (JSON).' });
         decPending();
       });
+      debug('runJSONOnce exception', e);
     }
   }
 
@@ -527,11 +565,7 @@
   }
   async function postJSON(url, body){
     const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
-    if (!res.ok) {
-      let msg = 'HTTP '+res.status;
-      try { const t = await res.text(); if (t) msg += ' — '+t; } catch(_){}
-      throw new Error(msg);
-    }
+    if (!res.ok) throw new Error('HTTP '+res.status);
     return res.json();
   }
 
@@ -555,11 +589,11 @@
     requestAnimationFrame(()=>{ node.style.transition='all .25s ease'; node.style.opacity='1'; node.style.transform='translateY(0)'; });
   }
 
-  // --- Markdown ---
+  // --- Markdown (spalvos + bold glow + „####“ fix) ---
   function parseMarkdown(input){
     let src = String(input||'');
 
-    // pašalinam plikas antraštes streamo gale
+    // pašalinam plikas antraštes streamo gale (pvz. "####" be teksto)
     src = src.replace(/(^|\n)#{1,6}\s*$/g, '$1');
 
     const HCOL = { 1:'#111827', 2:'#2563eb', 3:'#7c3aed', 4:'#16a34a', 5:'#f59e0b', 6:'#6b7280' };
@@ -571,7 +605,7 @@
     // inline code
     t = t.replace(/`([^`]+)`/g, (_,m)=> `<code style="background:rgba(0,0,0,.06);padding:2px 4px;border-radius:4px">${m}</code>`);
 
-    // headings
+    // headings (H1—H6 spalvotos)
     t = t.replace(/^\s*######\s+(.+)$/gm, `<h6 style="margin:.25em 0 .15em;color:${HCOL[6]};font-weight:800">$1</h6>`);
     t = t.replace(/^\s*#####\s+(.+)$/gm, `<h5 style="margin:.3em 0 .2em;color:${HCOL[5]};font-weight:800">$1</h5>`);
     t = t.replace(/^\s*####\s+(.+)$/gm,  `<h4 style="margin:.35em 0 .2em;color:${HCOL[4]};font-weight:800">$1</h4>`);
@@ -614,16 +648,31 @@
   function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
   function timeNow(){ return new Date().toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'}); }
   function escapeHtml(x){ const d=document.createElement('div'); d.textContent=(x==null?'':String(x)); return d.innerHTML; }
+
+  // Priima įvairius SSE formatų payload’us
   function safeDelta(s){
     if (!s) return '';
     if (s === '[DONE]') return '';
+    let str = String(s);
+
+    // Dažniausias atvejis – JSON su .choices[].delta.content arba .text/.delta/.content
     try{
-      const o = JSON.parse(s);
-      return o.text || o.delta || o.content || (o?.choices?.[0]?.delta?.content) || '';
-    }catch(_){
-      return s;
-    }
+      const o = JSON.parse(str);
+      if (typeof o === 'string') return o;
+      if (o?.text) return String(o.text);
+      if (o?.delta && typeof o.delta === 'string') return o.delta;
+      if (o?.content && typeof o.content === 'string') return o.content;
+      const ch = o?.choices?.[0];
+      if (ch?.delta?.content) return String(ch.delta.content);
+      if (ch?.message?.content) return String(ch.message.content);
+      if (Array.isArray(o?.content) && o.content[0]?.text) return String(o.content[0].text);
+      // jei neatpažįstamas JSON – krentam į plain text fallback
+    }catch(_){ /* ignore */ }
+
+    // kartuose (Together ir pan.) gali ateiti plain text tokiais mažais gabalais
+    return str;
   }
+
   function uniqueNonEmpty(arr){ const s=new Set(); const out=[]; (arr||[]).forEach(v=>{ const t=String(v||'').trim(); if(t&&!s.has(t)){ s.add(t); out.push(t);} }); return out; }
 
   function toast(title, details){
@@ -634,7 +683,8 @@
     document.body.appendChild(n);
     setTimeout(()=>n.remove(), 6000);
   }
-  function log(){ try{ console.log('[PAULE]', ...arguments); }catch(_){ } }
+
+  function debug(){ if (DEBUG) try{ console.log('[PAULE]', ...arguments); }catch(_){ } }
 
   // --- Sprendimų režimai (ginčas/kompromisas/teisėjas) ---
   function startDebate(){
@@ -677,6 +727,7 @@
     appendFade(n); scrollToBottomIfNeeded();
   }
 
+  // Tipinę „… rašo …“ animaciją įdedam į <head>, kad veiktų be CSS
   function injectTypingDotsStyle(){
     if (document.getElementById('_paule_dots_css')) return;
     const st = document.createElement('style');
@@ -690,8 +741,10 @@
     document.head.appendChild(st);
   }
 
-  // Expose
+  // Expose viešai
   window.PauleMain = { state, sendMessage, startDebate, startCompromise, startJudge };
 
-})();  
+})();  // /assets/js/paule-ui.js (orchestrator)
+
+
 
