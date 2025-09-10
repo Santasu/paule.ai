@@ -1,164 +1,131 @@
+// /api/complete.js
 export const config = { runtime: 'edge' };
 
-const json = (obj, status=200) => new Response(JSON.stringify(obj), {
-  status, headers:{
-    'Content-Type':'application/json; charset=utf-8',
-    'Access-Control-Allow-Origin':'*',
-    'Cache-Control':'no-store'
-  }
-});
-const bad = (code, msg) => new Response(msg||'Bad Request', {
-  status: code, headers:{'Content-Type':'text/plain; charset=utf-8','Access-Control-Allow-Origin':'*'}
-});
+const okJSON = (obj, status=200) =>
+  new Response(JSON.stringify(obj), { status, headers: {
+    'Content-Type':'application/json',
+    'Cache-Control':'no-store',
+    'Access-Control-Allow-Origin':'*'
+  }});
 
-function splitModels(s){
-  if (!s) return [];
-  return String(s).split(',').map(x=>x.trim()).filter(Boolean);
+export default async function handler(req) {
+  try{
+    const { message='', models='', chat_id=null, max_tokens=4096 } = await req.json();
+    const backIds = String(models||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const tasks = backIds.map(m => runModel(m, message, max_tokens));
+    const results = await Promise.all(tasks);
+
+    const answers = results.map(r => ({
+      model: r.model,
+      text:  r.text || '',
+      error: r.error || ''
+    }));
+
+    // minimal compatibility su tavo UI (papildomos klaidos)
+    const errors = results
+      .filter(r => r.error)
+      .map(r => ({ front: r.front || r.model, error: r.error }));
+
+    return okJSON({ ok:true, chat_id: chat_id || null, answers, errors });
+  }catch(e){
+    return okJSON({ ok:false, answers:[], errors:[{ error: (e && e.message) || 'Server error' }] }, 500);
+  }
 }
 
-async function callAnthropic(model, message){
+// --- Driveriai ---
+
+async function runModel(backId, prompt, max_tokens) {
+  const id = (backId||'').trim();
+  try{
+    if (!id) return { model:id, error:'Modelis nepaduotas' };
+
+    if (id.startsWith('claude'))   return await runClaude(id, prompt, max_tokens);
+    if (id.startsWith('gemini'))   return await runGemini(id, prompt, max_tokens);
+    if (id.startsWith('grok'))     return await runGrok(id, prompt, max_tokens);
+
+    // jei netyčia JSON keliu ateis SSE modelis – grąžinam aiškų pranešimą
+    return { model:id, error:'Šis modelis numatytas SSE srautui (naudok /api/stream).' };
+  }catch(e){
+    return { model:id, error:(e && e.message) || String(e) };
+  }
+}
+
+// --- Claude (Anthropic) ---
+async function runClaude(model, prompt, max_tokens){
   const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) throw new Error('ANTHROPIC_API_KEY missing');
-  const r = await fetch('https://api.anthropic.com/v1/messages',{
+  if (!key) return { model, error:'Trūksta ANTHROPIC_API_KEY' };
+
+  const body = {
+    model,
+    max_tokens: Math.min(1024, max_tokens||512),
+    messages: [{ role:'user', content: prompt }]
+  };
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
     headers:{
-      'Content-Type':'application/json',
+      'content-type':'application/json',
       'x-api-key': key,
-      'anthropic-version':'2023-06-01'
+      'anthropic-version': '2023-06-01'
     },
-    body: JSON.stringify({
-      model, max_tokens: 2048,
-      messages:[{role:'user', content: String(message||'')}]
-    })
+    body: JSON.stringify(body)
   });
-  if (!r.ok){ throw new Error(`Anthropic HTTP ${r.status}: ${await r.text()}`); }
-  const data = await r.json();
-  const text = (data?.content||[])
-    .map(b=> b?.text || (b?.content?.map?.(c=>c?.text).join('')||''))
-    .filter(Boolean).join('\n');
-  return text || '';
-}
 
-async function callGoogle(model, message){
-  const key = process.env.GOOGLE_API_KEY;
-  if (!key) throw new Error('GOOGLE_API_KEY missing');
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${key}`;
-  const r = await fetch(url, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      contents:[{role:'user', parts:[{text:String(message||'')}]}]
-    })
-  });
-  if (!r.ok){ throw new Error(`Google HTTP ${r.status}: ${await r.text()}`); }
-  const data = await r.json();
-  const text = data?.candidates?.[0]?.content?.parts?.map?.(p=>p?.text||'')?.join('') || '';
-  return text;
-}
-
-async function callXAI(model, message){
-  const key = process.env.XAI_API_KEY;
-  if (!key) throw new Error('XAI_API_KEY missing');
-  const r = await fetch('https://api.x.ai/v1/chat/completions', {
-    method:'POST',
-    headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},
-    body: JSON.stringify({
-      model, stream:false,
-      messages:[{role:'user', content: String(message||'')}]
-    })
-  });
-  if (!r.ok){ throw new Error(`xAI HTTP ${r.status}: ${await r.text()}`); }
-  const data = await r.json();
-  const text = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || '';
-  return text;
-}
-
-// fallback JSON ir kiti (jei kas nors specialiai kviestų)
-async function callOpenAI(model, message){
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) throw new Error('OPENAI_API_KEY missing');
-  const r = await fetch('https://api.openai.com/v1/chat/completions',{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},
-    body: JSON.stringify({ model, stream:false, messages:[{role:'user', content: String(message||'')}] })
-  });
-  if (!r.ok){ throw new Error(`OpenAI HTTP ${r.status}: ${await r.text()}`); }
-  const d = await r.json();
-  return d?.choices?.[0]?.message?.content || '';
-}
-async function callDeepSeek(model, message){
-  const key = process.env.DEEPSEEK_API_KEY;
-  if (!key) throw new Error('DEEPSEEK_API_KEY missing');
-  const r = await fetch('https://api.deepseek.com/chat/completions',{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},
-    body: JSON.stringify({ model, stream:false, messages:[{role:'user', content: String(message||'')}] })
-  });
-  if (!r.ok){ throw new Error(`DeepSeek HTTP ${r.status}: ${await r.text()}`); }
-  const d = await r.json();
-  return d?.choices?.[0]?.message?.content || '';
-}
-async function callTogether(model, message){
-  const key = process.env.TOGETHER_API_KEY;
-  if (!key) throw new Error('TOGETHER_API_KEY missing');
-  const r = await fetch('https://api.together.xyz/v1/chat/completions',{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},
-    body: JSON.stringify({ model, stream:false, messages:[{role:'user', content: String(message||'')}] })
-  });
-  if (!r.ok){ throw new Error(`Together HTTP ${r.status}: ${await r.text()}`); }
-  const d = await r.json();
-  return d?.choices?.[0]?.message?.content || d?.choices?.[0]?.text || '';
-}
-
-function providerFor(model){
-  if (!model) return 'openai';
-  if (model.startsWith('gpt-')) return 'openai';
-  if (model === 'deepseek-chat') return 'deepseek';
-  if (model.startsWith('meta-llama/')) return 'together';
-  if (model.startsWith('claude-')) return 'anthropic';
-  if (model.startsWith('gemini-')) return 'google';
-  if (model.startsWith('grok-')) return 'xai';
-  return 'openai';
-}
-
-export default async function handler(req){
-  try{
-    if (req.method !== 'POST') return bad(405, 'Use POST');
-    const body = await req.json().catch(()=> ({}));
-    const message = body?.message || '';
-    const models  = splitModels(body?.models || '');
-    const chat_id = body?.chat_id || 'chat_'+Date.now();
-
-    if (!message) return bad(400, 'message required');
-    if (!models.length) return bad(400, 'models required');
-
-    const answers = [];
-    for (const model of models){
-      try{
-        const prov = providerFor(model);
-        let text='';
-        if (prov==='anthropic') text = await callAnthropic(model, message);
-        else if (prov==='google') text = await callGoogle(model, message);
-        else if (prov==='xai') text = await callXAI(model, message);
-        else if (prov==='openai') text = await callOpenAI(model, message);
-        else if (prov==='deepseek') text = await callDeepSeek(model, message);
-        else if (prov==='together') text = await callTogether(model, message);
-        answers.push({ model, text });
-      }catch(err){
-        answers.push({ model, text: '' }); // paliekam tuščią – UI parodys klaidą
-      }
-    }
-
-    // jei nė vienas neatkeliavo – parodykim priežastį
-    const hasAny = answers.some(a=> (a.text||'').trim().length>0);
-    if (!hasAny){
-      return json({ ok:false, chat_id, answers, message:'No provider returned text. Check API keys & quotas.' }, 200);
-    }
-
-    return json({ ok:true, chat_id, answers });
-
-  }catch(e){
-    return bad(500, 'COMPLETE_FAILED: '+(e?.message||String(e)));
+  if (!res.ok){
+    let err='Anthropic HTTP '+res.status;
+    try{ const j=await res.json(); if (j?.error?.message) err=j.error.message; }catch(_){}
+    return { model, error: err };
   }
+  const data = await res.json();
+  // data.content = [{type:'text',text:'...'}]
+  const text = Array.isArray(data?.content) ? data.content.map(p=>p.text||'').join('') : (data?.output_text||'');
+  return { model, text: (text||'').trim() };
+}
+
+// --- Gemini (Google) ---
+async function runGemini(model, prompt, max_tokens){
+  const key = process.env.GOOGLE_API_KEY;
+  if (!key) return { model, error:'Trūksta GOOGLE_API_KEY' };
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${key}`;
+  const body = { contents: [{ role:'user', parts:[{ text: prompt }]}], generationConfig: { maxOutputTokens: Math.min(1024, max_tokens||512) } };
+
+  const res = await fetch(url, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
+  if (!res.ok){
+    let err='Gemini HTTP '+res.status;
+    try{ const j=await res.json(); if (j?.error?.message) err=j.error.message; }catch(_){}
+    return { model, error: err };
+  }
+  const data = await res.json();
+  const cand = (data?.candidates && data.candidates[0]) || {};
+  const parts = cand?.content?.parts || [];
+  const text  = parts.map(p=>p?.text||'').join('');
+  return { model, text: (text||'').trim() };
+}
+
+// --- Grok (xAI) ---
+async function runGrok(model, prompt, max_tokens){
+  const key = process.env.XAI_API_KEY;
+  if (!key) return { model, error:'Trūksta XAI_API_KEY' };
+
+  const res = await fetch('https://api.x.ai/v1/chat/completions', {
+    method:'POST',
+    headers:{ 'content-type':'application/json', 'authorization': `Bearer ${key}` },
+    body: JSON.stringify({
+      model: model, // pvz. "grok-4"
+      messages: [{ role:'user', content: prompt }],
+      max_tokens: Math.min(1024, max_tokens||512),
+      stream: false
+    })
+  });
+
+  if (!res.ok){
+    let err='Grok HTTP '+res.status;
+    try{ const j=await res.json(); if (j?.error?.message) err=j.error.message; }catch(_){}
+    return { model, error: err };
+  }
+  const data = await res.json();
+  const text = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.delta?.content || '';
+  return { model, text: (text||'').trim() };
 }
 
