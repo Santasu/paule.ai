@@ -1,150 +1,201 @@
 // /api/complete.js
-export const config = { runtime: 'edge' };
+// Vercel serverless (Node 18+). Vienas endpointas JSON modeliams: Claude, Grok, Gemini.
+// Grąžina: { ok, chat_id, answers:[{model, text, error}], errors:[{front, error}] }
 
-const okJSON = (obj, status=200) =>
-  new Response(JSON.stringify(obj), { status, headers: {
-    'Content-Type':'application/json',
-    'Cache-Control':'no-store',
-    'Access-Control-Allow-Origin':'*'
-  }});
+const TIMEOUT_MS = 25000;
 
-// „žmoniški“ ID -> tikri tiekėjų model ID
-const ALIAS = Object.freeze({
-  'claude-4-sonnet': 'claude-3.5-sonnet-latest', // veikiantis Claude Sonnet aliasas
-  'grok-4':          'grok-2-latest',            // xAI Grok aliasas
-  // Paliekam gemini tokį pat, bet jei 404 – fallback žemiau
-});
-
-export default async function handler(req) {
-  try{
-    const { message='', models='', chat_id=null, max_tokens=1024 } = await req.json();
-    const backIds = String(models||'').split(',').map(s=>s.trim()).filter(Boolean);
-
-    const tasks = backIds.map(async (raw) => {
-      const model = ALIAS[raw] || raw;
-      try{
-        if (model.startsWith('claude'))   return await runClaude(model, message, max_tokens);
-        if (model.startsWith('gemini'))   return await runGemini(model, message, max_tokens);
-        if (model.startsWith('grok'))     return await runGrok(model, message, max_tokens);
-        return { model: raw, text:'', error:'Šis modelis numatytas SSE srautui (naudok /api/stream).' };
-      }catch(e){
-        return { model: raw, text:'', error:(e && e.message) || String(e) };
-      }
-    });
-
-    const results = await Promise.all(tasks);
-    const answers = results.map(r => ({ model:r.model, text:r.text||'', error:r.error||'' }));
-    const errors  = results.filter(r => r.error).map(r => ({ front:r.model, error:r.error }));
-
-    return okJSON({ ok:true, chat_id: chat_id || null, answers, errors });
-  }catch(e){
-    return okJSON({ ok:false, answers:[], errors:[{ error:(e && e.message) || 'Server error' }] }, 500);
-  }
+function badRequest(res, msg) {
+  res.status(400).json({ ok: false, error: msg || 'Bad request' });
 }
 
-// === Driveriai ===
+function withTimeout(ms) {
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort('timeout'), ms);
+  return { signal: ac.signal, done: () => clearTimeout(t) };
+}
 
-async function runClaude(model, prompt, max_tokens){
+function pickArrayText(blocks) {
+  // Anthropic content: [{type:'text', text:'...'}, ...]
+  if (!Array.isArray(blocks)) return '';
+  return blocks.map(b => (typeof b?.text === 'string' ? b.text : '')).join('');
+}
+
+/** ===== Providers ===== **/
+
+async function callAnthropic(model, prompt, maxTokens) {
   const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return { model, text:'', error:'Trūksta ANTHROPIC_API_KEY' };
+  if (!key) throw new Error('Anthropic API key missing');
 
+  const url = 'https://api.anthropic.com/v1/messages';
   const body = {
     model,
-    max_tokens: Math.min(1024, max_tokens||512),
-    messages: [{ role:'user', content: prompt }]
+    max_tokens: Math.max(1, Math.min(Number(maxTokens) || 1024, 4096)),
+    messages: [{ role: 'user', content: prompt }]
   };
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST',
-    headers:{
-      'content-type':'application/json',
+  const to = withTimeout(TIMEOUT_MS);
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
       'x-api-key': key,
       'anthropic-version': '2023-06-01'
     },
-    body: JSON.stringify(body)
-  });
+    body: JSON.stringify(body),
+    signal: to.signal
+  }).catch(e => { throw new Error('Anthropic fetch error: ' + e.message); });
+  to.done();
 
-  if (!res.ok){
-    let err = 'Anthropic HTTP '+res.status;
-    try{ const j=await res.json(); if (j?.error?.message) err=j.error.message; }catch(_){}
-    return { model, text:'', error: err };
+  if (!resp.ok) {
+    // Dėmesio: dažna klaida – neteisingas modelio ID arba versijos headeris
+    let msg = `Anthropic HTTP ${resp.status}`;
+    try { const j = await resp.json(); msg = j?.error?.message || msg; } catch(_) {}
+    throw new Error(msg);
   }
-
-  const data = await res.json();
-  // data.content = [{type:'text', text:'...'}]
-  const text = Array.isArray(data?.content)
-    ? data.content.map(p=>p?.text||'').join('')
-    : (data?.output_text || '');
-  return { model, text:(text||'').trim(), error:'' };
+  const data = await resp.json();
+  const text = pickArrayText(data?.content) || '';
+  return text;
 }
 
-async function runGemini(model, prompt, max_tokens){
-  const key = process.env.GOOGLE_API_KEY;
-  if (!key) return { model, text:'', error:'Trūksta GOOGLE_API_KEY' };
+async function callXAI(model, prompt) {
+  const key = process.env.XAI_API_KEY;
+  if (!key) throw new Error('xAI API key missing');
 
-  let useModel = model;
-  const url = (m)=>`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent?key=${key}`;
+  const url = 'https://api.x.ai/v1/chat/completions';
   const body = {
-    contents: [{ role:'user', parts:[{ text: prompt }]}],
-    generationConfig: { maxOutputTokens: Math.min(1024, max_tokens||512) }
+    model,                       // pvz. "grok-4"
+    messages: [{ role: 'user', content: prompt }],
+    stream: false,
+    temperature: 0.7
   };
 
-  // Pirma – bandome su pateiktu modeliu
-  let res = await fetch(url(useModel), { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
+  const to = withTimeout(TIMEOUT_MS);
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${key}`
+    },
+    body: JSON.stringify(body),
+    signal: to.signal
+  }).catch(e => { throw new Error('Grok fetch error: ' + e.message); });
+  to.done();
 
-  // Jei 404/400 – bandome su safe fallback
-  if (!res.ok && res.status >= 400 && res.status < 500 && useModel !== 'gemini-1.5-flash') {
-    useModel = 'gemini-1.5-flash';
-    res = await fetch(url(useModel), { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
+  if (resp.status === 403) throw new Error('Grok HTTP 403');
+  if (!resp.ok) {
+    let msg = `Grok HTTP ${resp.status}`;
+    try { const j = await resp.json(); msg = j?.error?.message || msg; } catch(_) {}
+    throw new Error(msg);
   }
-
-  if (!res.ok){
-    let err='Gemini HTTP '+res.status;
-    try{ const j=await res.json(); if (j?.error?.message) err=j.error.message; }catch(_){}
-    return { model, text:'', error: err };
-  }
-
-  const data = await res.json();
-  // Įvairūs „variantai“ per laiką
-  const cand  = data?.candidates?.[0] || {};
-  let text = '';
-
-  if (cand?.content?.parts) {
-    text = cand.content.parts.map(p=>p?.text||'').join('');
-  } else if (Array.isArray(cand?.content)) {
-    text = cand.content.map(p=>p?.text||'').join('');
-  } else if (cand?.text) {
-    text = cand.text;
-  }
-
-  return { model, text:(text||'').trim(), error:'' };
+  const data = await resp.json();
+  const text = data?.choices?.[0]?.message?.content || '';
+  return text;
 }
 
-async function runGrok(model, prompt, max_tokens){
-  const key = process.env.XAI_API_KEY;
-  if (!key) return { model, text:'', error:'Trūksta XAI_API_KEY' };
+async function callGemini(model, prompt) {
+  // Google Generative Language API (v1beta)
+  const key = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_GEMINI_API_KEY;
+  if (!key) throw new Error('Gemini API key missing');
 
-  const res = await fetch('https://api.x.ai/v1/chat/completions', {
-    method:'POST',
-    headers:{ 'content-type':'application/json', 'authorization': `Bearer ${key}` },
-    body: JSON.stringify({
-      model,
-      messages: [{ role:'user', content: prompt }],
-      max_tokens: Math.min(1024, max_tokens||512),
-      stream: false
-    })
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
+  const body = {
+    contents: [{ role: 'user', parts: [{ text: prompt }]}]
+  };
+
+  const to = withTimeout(TIMEOUT_MS);
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: to.signal
+  }).catch(e => { throw new Error('Gemini fetch error: ' + e.message); });
+  to.done();
+
+  if (!resp.ok) {
+    let msg = `Gemini HTTP ${resp.status}`;
+    try { const j = await resp.json(); msg = j?.error?.message || msg; } catch(_) {}
+    throw new Error(msg);
+  }
+  const data = await resp.json();
+
+  // Naujesni modeliai (2.5) dažnai grąžina čia:
+  // candidates[0].content.parts[].text
+  const parts = data?.candidates?.[0]?.content?.parts;
+  const text = Array.isArray(parts) ? parts.map(p => p?.text || '').join('') : '';
+  return text || '';
+}
+
+/** ===== Router pagal modelio ID ===== **/
+async function runOneModel(backId, prompt, maxTokens) {
+  const id = (backId || '').toLowerCase();
+
+  if (id.startsWith('claude')) {
+    return await callAnthropic(backId, prompt, maxTokens);
+  }
+  if (id.startsWith('grok')) {
+    return await callXAI(backId, prompt);
+  }
+  if (id.startsWith('gemini')) {
+    return await callGemini(backId, prompt);
+  }
+
+  // Atsarginis fallback – jei kas per klaidą ateis čia JSON keliu
+  throw new Error('Unsupported model for /complete: ' + backId);
+}
+
+/** ===== Vercel handler ===== **/
+module.exports = async (req, res) => {
+  // CORS – kad JSON kelias būtų ramus
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    return res.status(204).end();
+  }
+
+  if (req.method !== 'POST') return badRequest(res, 'Use POST');
+
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'no-store');
+
+  let body;
+  try { body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {}); }
+  catch { return badRequest(res, 'Invalid JSON'); }
+
+  const message   = (body.message || '').toString();
+  const chat_id   = body.chat_id || null;
+  const maxTokens = body.max_tokens || 1024;
+  const modelsStr = (body.models || '').toString();
+  const models    = modelsStr.split(',').map(s => s.trim()).filter(Boolean);
+
+  if (!message) return badRequest(res, 'Missing "message"');
+  if (!models.length) return badRequest(res, 'Missing "models"');
+
+  // Paleidžiam visus lygiagrečiai, bet nekrentam, jei kuriam nepasiseks
+  const results = await Promise.allSettled(models.map(m => runOneModel(m, message, maxTokens)));
+
+  const answers = results.map((r, i) => {
+    const model = models[i];
+    if (r.status === 'fulfilled') {
+      const txt = (r.value || '').toString();
+      return { model, text: txt, error: '' };
+    } else {
+      const errMsg = (r.reason && r.reason.message) ? String(r.reason.message) : 'Error';
+      return { model, text: '', error: errMsg };
+    }
   });
 
-  if (!res.ok){
-    let err = 'Grok HTTP '+res.status;
-    try{ const j=await res.json(); if (j?.error?.message) err=j.error.message; }catch(_){}
-    return { model, text:'', error: err };
-  }
+  // trumpa errors santrauka frontui (kaip tavo UI tikisi)
+  const errors = answers.filter(a => a.error).map(a => ({ front: modelFrontFromBack(a.model), error: a.error }));
 
-  const data = await res.json();
-  const text = data?.choices?.[0]?.message?.content
-            || data?.choices?.[0]?.delta?.content
-            || '';
-  return { model, text:(text||'').trim(), error:'' };
+  return res.status(200).json({ ok: true, chat_id, answers, errors });
+};
+
+// Pagalba gražiam "front" pavadinimui atgal
+function modelFrontFromBack(back) {
+  const id = (back || '').toLowerCase();
+  if (id.startsWith('claude')) return 'claude';
+  if (id.startsWith('gemini')) return 'gemini';
+  if (id.startsWith('grok'))   return 'grok';
+  return back;
 }
-
