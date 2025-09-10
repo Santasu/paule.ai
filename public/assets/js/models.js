@@ -1,52 +1,51 @@
+
 /* =======================================================================
-   Paule – Modelių žemėlapis • v1.3.0
-   Front (mygtuko id) -> Back (API model id) + transporto gebėjimai
+   Paule – Modelių žemėlapis • v1.5.0
+   3 stream (chatgpt, deepseek, llama) • 3 json (claude, gemini, grok)
    ======================================================================= */
 (function () {
   'use strict';
 
-  // Front (mygtuko id) -> Back (API model id)
   const FRONT_TO_BACK = Object.freeze({
     'auto':'auto','paule':'auto','augam-auto':'auto',
     'chatgpt':'gpt-4o-mini',
+    'deepseek':'deepseek-chat',
+    'llama':'meta-llama/Llama-4-Scout-17B-16E-Instruct',
     'claude':'claude-4-sonnet',
     'gemini':'gemini-2.5-flash',
     'grok':'grok-4',
-    'deepseek':'deepseek-chat',
-    'llama':'meta-llama/Llama-4-Scout-17B-16E-Instruct'
   });
 
   const BACK_TO_FRONT = Object.freeze(
     Object.entries(FRONT_TO_BACK).reduce((m,[f,b]) => (m[b]=f,m), {})
   );
 
+  const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
   const MODEL_NAME = Object.freeze({
     'auto':'Paule','paule':'Paule','augam-auto':'Paule',
     'chatgpt':'ChatGPT','gpt-4o-mini':'ChatGPT',
+    'deepseek':'DeepSeek','deepseek-chat':'DeepSeek',
+    'llama':'Llama','meta-llama/Llama-4-Scout-17B-16E-Instruct':'Llama',
     'claude':'Claude','claude-4-sonnet':'Claude',
     'gemini':'Gemini','gemini-2.5-flash':'Gemini',
     'grok':'Grok','grok-4':'Grok',
-    'deepseek':'DeepSeek','deepseek-chat':'DeepSeek',
-    'llama':'Llama','meta-llama/Llama-4-Scout-17B-16E-Instruct':'Llama',
     'judge':'Teisėjas'
   });
 
-  // FIX: „ir“ -> „&&“
-  const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
   const MODEL_ICON = Object.freeze({
     'auto': `${ICONS_BASE}/ai.svg`,
     'paule': `${ICONS_BASE}/ai.svg`,
     'chatgpt': `${ICONS_BASE}/chatgpt.svg`,
+    'deepseek': `${ICONS_BASE}/deepseek.svg`,
+    'llama': `${ICONS_BASE}/llama.svg`,
     'claude': `${ICONS_BASE}/claude-seeklogo.svg`,
     'gemini': `${ICONS_BASE}/gemini.svg`,
     'grok': `${ICONS_BASE}/xAI.svg`,
-    'deepseek': `${ICONS_BASE}/deepseek.svg`,
-    'llama': `${ICONS_BASE}/llama.svg`,
     'judge': `${ICONS_BASE}/legal-contract.svg`
   });
 
-  // šituos laikom „JSON only“ (SSE pas juos neveikia) → JSON once fallback
-  const NON_SSE_FRONT = new Set(['claude','gemini','grok','claude-4-sonnet','gemini-2.5-flash','grok-4']);
+  // Tik šitie – SSE:
+  const SSE_FRONT = new Set(['chatgpt','deepseek','llama','auto']);
 
   const lc = s => String(s||'').toLowerCase().trim();
   function canonicalFrontId(id){
@@ -59,7 +58,7 @@
   function getBackId(front){ const f=canonicalFrontId(front); return FRONT_TO_BACK[f]||f||'auto'; }
   function nameOf(id){ return MODEL_NAME[id] || MODEL_NAME[canonicalFrontId(id)] || String(id); }
   function iconOf(id){ const f=canonicalFrontId(id); return MODEL_ICON[f] || MODEL_ICON.auto; }
-  function isSSECapable(front){ const f=canonicalFrontId(front); return !NON_SSE_FRONT.has(f); }
+  function isSSECapable(front){ const f=canonicalFrontId(front); return SSE_FRONT.has(f); }
 
   function normalizeModelsInput(list){
     if (!list) return ['auto'];
@@ -74,8 +73,7 @@
   function splitTransports(frontList){
     const out={stream:[],json:[]};
     normalizeModelsInput(frontList).forEach(fid=>{
-      if (fid==='auto'){ out.stream.push('auto'); return; }
-      (isSSECapable(fid)?out.stream:out.json).push(fid);
+      if (isSSECapable(fid)) out.stream.push(fid); else out.json.push(fid);
     });
     return out;
   }
@@ -91,9 +89,9 @@
     return items;
   }
 
-  async function ensureCapabilities(){ /* jei reikės – galit įdėti ping’ą */ return true; }
+  async function ensureCapabilities(){ return true; }
 
-  const API={ FRONT_TO_BACK,BACK_TO_FRONT,MODEL_NAME,MODEL_ICON,NON_SSE_FRONT,
+  const API={ FRONT_TO_BACK,BACK_TO_FRONT,MODEL_NAME,MODEL_ICON,
     canonicalFrontId,getBackId,nameOf,iconOf,isSSECapable,
     normalizeModelsInput,splitTransports,listAll,ensureCapabilities
   };
