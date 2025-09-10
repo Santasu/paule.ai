@@ -1,6 +1,7 @@
 /* =======================================================================
-   Paule – Premium Chat Orchestrator • v2.3.0 (patvarkyta)
+   Paule – Premium Chat Orchestrator • v2.3.0 (patvarkyta ir praplėsta)
    - Lygiagretus startas (SSE + JSON po soft timeout)
+   - IŠ ANKSTO sukuriamos panelės visiems frontams (nebėra „laukiam kol kas nors parašys“)
    - „Pirmas pradėjęs rašyti“ → aukščiau (kortelė tik su 1-ąja delta)
    - Global "AI mąsto..." kol nėra jokio teksto
    - Follow-ups tik kai VISI baigė • Klaidos – APAČIOJE
@@ -71,6 +72,7 @@
 
   async function init(){
     try{
+      injectTypingDotsStyle();
       applyTheme(); bindEvents(); setInitialModelSelection(); updateBottomDock(); attachChatScroll();
       if (el.chatArea) el.chatArea.querySelectorAll('.message,.thinking,._ai-wait')?.forEach(n=>n.remove());
       startFeedsAutoRefresh();
@@ -221,6 +223,17 @@
     return panel;
   }
 
+  // 👉 IŠ ANKSTO sukuria burbulus visiems frontams (vizualiai lygiagretis startas)
+  function preparePanels(frontList){
+    (frontList||[]).forEach(f=>{
+      if (state.panels && state.panels[f]) return;
+      const p = ensurePanel(f);
+      if (p && p.el){
+        p.el.innerHTML = `<span class="typing-dots"><i></i><i></i><i></i></span>`;
+      }
+    });
+  }
+
   // --- Orchestrator ---
   async function startOrchestrator(message, frontList){
     const { splitTransports, getBackId } = window.PAULE_MODELS || {
@@ -230,6 +243,9 @@
     const parts   = splitTransports(frontList||[]);
     const streamF = parts.stream || [];
     const jsonF   = parts.json   || [];
+
+    // 👉 PRIDĖTA: paruošiam paneles IŠ ANKSTO
+    preparePanels([ ...streamF, ...jsonF ]);
 
     // kiek lauksim (viena „skola“ per frontą)
     state.pending = (streamF.length) + (jsonF.length);
@@ -660,6 +676,20 @@
     appendFade(n); scrollToBottomIfNeeded();
   }
 
+  // Tipinę „… rašo …“ animaciją įdedam į <head>, kad veiktų be CSS
+  function injectTypingDotsStyle(){
+    if (document.getElementById('_paule_dots_css')) return;
+    const st = document.createElement('style');
+    st.id = '_paule_dots_css';
+    st.textContent = `
+      .typing-dots { display:inline-flex; gap:4px; align-items:center; opacity:.7; }
+      .typing-dots i { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--fg-muted, #6b7280); animation:_pd 1s infinite; }
+      .typing-dots i:nth-child(2){ animation-delay:.15s } .typing-dots i:nth-child(3){ animation-delay:.3s }
+      @keyframes _pd { 0%{transform:translateY(0)} 50%{transform:translateY(-2px)} 100%{transform:translateY(0)} }
+    `;
+    document.head.appendChild(st);
+  }
+
   // Expose viešai
   window.PauleMain = { state, sendMessage, startDebate, startCompromise, startJudge };
 
@@ -768,3 +798,4 @@
   window.getBackId=window.getBackId||getBackId;
   window.nameOf=window.nameOf||nameOf;
 })();
+
