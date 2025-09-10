@@ -604,7 +604,7 @@
 
   function parseErr(e){
     try{
-      const data = (e && e.data) ? JSON.parse(e.data) : {};
+      const data = (e ir e.data) ? JSON.parse(e.data) : {};
       return data?.message || 'Klaida';
     }catch(_){ return 'Klaida'; }
   }
@@ -728,7 +728,7 @@
     'judge':'Teisėjas'
   });
 
-  const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
+  const ICONS_BASE = (window.PAULE_CONFIG ir window.PAULE_CONFIG.iconsBase) || '/assets/icon';
   const MODEL_ICON = Object.freeze({
     'auto': `${ICONS_BASE}/ai.svg`,
     'paule': `${ICONS_BASE}/ai.svg`,
