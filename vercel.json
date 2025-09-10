@@ -1,19 +1,10 @@
 {
   "version": 2,
   "framework": null,
-
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs20.x",
-      "maxDuration": 60
-    }
-  },
-
   "builds": [
-    { "src": "api/**/*.js",   "use": "@vercel/node" },
-    { "src": "public/**/*",   "use": "@vercel/static" }
+    { "src": "api/**/*.js", "use": "@vercel/node" },
+    { "src": "public/**/*", "use": "@vercel/static" }
   ],
-
   "routes": [
     { "src": "^/api/stream$",               "dest": "/api/stream.js" },
     { "src": "^/api/complete$",             "dest": "/api/complete.js" },
