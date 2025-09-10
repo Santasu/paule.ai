@@ -1,4 +1,8 @@
-// api/complete.js
+// /api/complete.js — JSON "once" endpoint (Claude, Gemini, Grok ir pan.)
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const utils = require('../_utils.js');
+
 const {
   readBody,
   sendJSON,
@@ -9,9 +13,9 @@ const {
   guessProvider,
   inferOnce,
   systemLT,
-} = require('../_utils.js');
+} = utils;
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // CORS
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin','*');
@@ -31,8 +35,8 @@ module.exports = async function handler(req, res) {
     const ids  = String(body?.models || '').split(',').map(s=>s.trim()).filter(Boolean);
     const chatId = body?.chat_id || ('chat_'+Date.now()+'_'+Math.random().toString(36).slice(2));
     const maxTokens = Math.max(1, Math.min(4096, Number(body?.max_tokens || 1024)));
+    const temperature = (typeof body?.temperature === 'number') ? body.temperature : 0.55;
 
-    // jei nieko nepaduota – auto
     const models = ids.length ? ids : ['auto'];
     const answers = [];
 
@@ -46,13 +50,15 @@ module.exports = async function handler(req, res) {
           { role:'user',   content: user }
         ];
 
-        const out = await inferOnce(model, messages, { maxTokens, temperature: 0.55 });
+        const out = await inferOnce(model, messages, { maxTokens, temperature });
         if (out?.ok && out?.output) {
           answers.push({ model: out.selected_model || model, text: out.output });
+        } else {
+          // pridėkim tuščią su klaida – kad UI suprastų
+          answers.push({ model, text: `⚠️ (${model}) klaida: ${out?.error || 'NO_OUTPUT'}` });
         }
       } catch (e) {
-        // vieno modelio klaida neturi numušti visos funkcijos
-        // tiesiog nepridedam į answers
+        answers.push({ model: raw, text: `⚠️ (${raw}) išimtis: ${String(e?.message||e)}` });
       }
     }
 
@@ -61,9 +67,10 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ ok:true, chat_id: chatId, answers });
 
   } catch (e) {
-    // Kad UI nemestų "HTTP 500", vis tiek grąžinam 200 su ok:false
+    // Net jei kažkas labai blogai – grąžinam 200 su ok:false (kad UI negautų 500)
     res.setHeader('Access-Control-Allow-Origin','*');
     res.setHeader('Cache-Control','no-store');
     return res.status(200).json({ ok:false, error: String(e?.message || e) });
   }
-};
+}
+
