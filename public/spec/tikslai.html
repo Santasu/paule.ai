@@ -1,526 +1,2162 @@
 <!DOCTYPE html>
-<html lang="lt">
+<html lang="lt" data-theme="dark">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Paule • Tikslų sistema</title>
-
-  <!-- Favikonas (nebūtina) -->
-  <link rel="icon" href="/assets/icon/paule-logo.webp" />
-
-  <!-- React + Babel (UMD) -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <!-- Tailwind (tik šiam puslapiui) -->
-  <script id="tailwind" src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { darkMode: 'class' };
-  </script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ultimate Goal System - AI Vizijos į Realybę</title>
+  
   <style>
-    /* Minimalus karkasas, kad atrodytų kaip Paule */
-    :root{ --ring: rgba(62,70,255,.25); }
-    html,body{ height:100%; }
-    body{ background:#f6f7fb; }
-    .topbar{
-      position:sticky; top:0; z-index:50;
-      display:flex; align-items:center; justify-content:space-between;
-      padding:10px 16px; background:rgba(255,255,255,.9);
-      border-bottom:1px solid #eee; backdrop-filter:blur(10px);
-    }
-    .brand{ display:flex; align-items:center; gap:10px; font-weight:700; }
-    .brand img{ height:22px; width:auto; display:block; }
-    .top-actions a{
-      display:inline-flex; align-items:center; gap:6px; padding:8px 12px;
-      border:1px solid #eee; border-radius:10px; font-weight:600; font-size:14px;
-    }
-    .top-actions a:hover{ border-color:#cfd4ff; box-shadow:0 0 0 4px var(--ring); }
-    /* izoliacija šio puslapio UI */
-    #ugs *{ box-sizing:border-box }
-    #ugs .btn{ transition:.2s; cursor:pointer }
-    #ugs .btn:hover{ transform:translateY(-1px) }
-    #ugs .input{ transition:.2s }
-    #ugs .input:focus{ transform:scale(1.02) }
-    #ugs .mindmap-node{ transition:.3s; user-select:none }
-    #ugs .mindmap-node:hover{ transform:scale(1.05) }
-    #ugs .goal-card{ transition:.3s }
-    #ugs .goal-card:hover{ transform:translateY(-4px) }
-    #ugs .task-item{ transition:.2s }
-    #ugs .task-item:hover{ transform:translateX(4px) }
-    .notification-toast{ animation:slideInRight .3s ease-out }
-    @keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+/* =========================================================
+   ULTIMATE DARK THEME SYSTEM
+   ========================================================= */
+:root {
+  --bg-primary: #0a0a0b;
+  --bg-secondary: #0f0f10;
+  --bg-elevated: #141416;
+  --bg-card: #1a1a1d;
+  --bg-overlay: #1e1e22;
+  --bg-glass: rgba(26, 26, 29, 0.8);
+  
+  --text-primary: #ffffff;
+  --text-secondary: #b8bcc8;
+  --text-muted: #8a8f9a;
+  --text-hint: #6b7280;
+  
+  --border-soft: #2a2a2f;
+  --border-medium: #374151;
+  
+  --accent-primary: #00ff88;
+  --accent-primary-hover: #00e67a;
+  --accent-secondary: #0099ff;
+  --accent-ghost: rgba(0, 255, 136, 0.1);
+  --accent-danger: #ff4757;
+  --accent-warning: #ffa502;
+  
+  --success: #00ff88;
+  --warning: #ffa502;
+  --error: #ff4757;
+  --info: #0099ff;
+  
+  --neu-raise: 
+    0 8px 16px rgba(0, 0, 0, 0.4), 
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  
+  --neu-press: 
+    inset 0 4px 8px rgba(0, 0, 0, 0.6),
+    inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  
+  --neu-float: 
+    0 20px 40px rgba(0, 0, 0, 0.6), 
+    0 8px 16px rgba(0, 0, 0, 0.4);
+  
+  --glow-green: 0 0 20px rgba(0, 255, 136, 0.3);
+  --glow-blue: 0 0 20px rgba(0, 153, 255, 0.3);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --space-4xl: 48px;
+  --space-5xl: 64px;
+  
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* =========================================================
+   LAYOUT & CONTAINERS
+   ========================================================= */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-soft);
+  padding: var(--space-lg) var(--space-xl);
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.ai-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.2); }
+}
+
+.ai-generate-btn {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: var(--bg-primary);
+  border: none;
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: var(--glow-green);
+}
+
+.ai-generate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glow-green), var(--neu-float);
+}
+
+.main-content {
+  flex: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--space-xl);
+}
+
+/* =========================================================
+   NAVIGATION TABS
+   ========================================================= */
+.nav-tabs {
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-4xl);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.nav-tab {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-soft);
+  padding: var(--space-lg) var(--space-2xl);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  backdrop-filter: blur(10px);
+  font-weight: 600;
+  font-size: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.nav-tab:hover,
+.nav-tab.active {
+  background: var(--bg-elevated);
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--neu-raise);
+}
+
+.nav-tab.active::before {
+  opacity: 1;
+}
+
+/* =========================================================
+   SECTION MANAGEMENT
+   ========================================================= */
+.section {
+  display: none;
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section.active {
+  display: block;
+}
+
+@keyframes fadeInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* =========================================================
+   VISION SECTION
+   ========================================================= */
+.vision-container {
+  background: var(--bg-card);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-4xl);
+  margin-bottom: var(--space-4xl);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--neu-raise);
+  position: relative;
+  overflow: hidden;
+}
+
+.vision-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+}
+
+.vision-title {
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: var(--space-xl);
+  text-align: center;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.vision-input {
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  color: var(--text-primary);
+  font-size: 18px;
+  line-height: 1.8;
+  min-height: 200px;
+  resize: vertical;
+  font-family: inherit;
+  transition: all var(--transition-normal);
+}
+
+.vision-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-ghost), var(--glow-green);
+}
+
+.vision-actions {
+  display: flex;
+  gap: var(--space-lg);
+  margin-top: var(--space-xl);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: var(--space-lg) var(--space-2xl);
+  border-radius: var(--radius-lg);
+  border: none;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: var(--bg-primary);
+  box-shadow: var(--glow-green);
+}
+
+.btn-secondary {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neu-float);
+}
+
+/* =========================================================
+   AI GENERATED PHOTOS GRID
+   ========================================================= */
+.vision-photos {
+  margin-top: var(--space-4xl);
+  display: none;
+}
+
+.vision-photos.active {
+  display: block;
+  animation: fadeInUp 0.8s ease;
+}
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-xl);
+  margin-top: var(--space-xl);
+}
+
+.photo-card {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--neu-raise);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  position: relative;
+}
+
+.photo-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--neu-float);
+  border-color: var(--accent-primary);
+}
+
+.photo-placeholder {
+  aspect-ratio: 16/9;
+  background: linear-gradient(135deg, var(--bg-overlay), var(--bg-card));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+
+.photo-placeholder::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,255,136,0.1), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.photo-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  padding: var(--space-xl);
+  color: white;
+}
+
+.photo-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+}
+
+.photo-desc {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* =========================================================
+   HIERARCHY FLOW
+   ========================================================= */
+.hierarchy-flow {
+  margin: var(--space-5xl) 0;
+}
+
+.flow-level {
+  margin-bottom: var(--space-4xl);
+}
+
+.level-header {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+}
+
+.level-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: var(--space-sm);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.level-subtitle {
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+/* =========================================================
+   GOAL CARDS
+   ========================================================= */
+.goals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: var(--space-xl);
+}
+
+.goal-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--neu-raise);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.goal-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
+}
+
+.goal-card:hover::before {
+  transform: scaleX(1);
+}
+
+.goal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-float);
+  border-color: var(--accent-primary);
+}
+
+.goal-card.mega {
+  border-left: 4px solid var(--accent-primary);
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+}
+
+.goal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.goal-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.goal-content {
+  flex: 1;
+}
+
+.goal-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+  color: var(--text-primary);
+}
+
+.goal-desc {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.goal-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  margin-top: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.goal-progress {
+  flex: 1;
+  min-width: 150px;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.progress-bar {
+  height: 6px;
+  background: var(--bg-overlay);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 3px;
+  transition: width var(--transition-slow);
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: progressShine 2s infinite;
+}
+
+@keyframes progressShine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.goal-priority {
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.priority-high {
+  background: rgba(255, 71, 87, 0.2);
+  color: var(--error);
+  border: 1px solid var(--error);
+}
+
+.priority-medium {
+  background: rgba(255, 165, 2, 0.2);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.priority-low {
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+/* =========================================================
+   TODAY'S FOCUS BANNER
+   ========================================================= */
+.today-focus {
+  background: linear-gradient(135deg, var(--bg-elevated), var(--bg-card));
+  border-radius: var(--radius-2xl);
+  padding: var(--space-4xl);
+  margin-bottom: var(--space-4xl);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--neu-raise);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.today-focus::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+}
+
+.focus-date {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+}
+
+.focus-goal {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: var(--space-lg);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.2;
+}
+
+.focus-tasks {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+/* =========================================================
+   ENHANCED TASK SYSTEM
+   ========================================================= */
+.tasks-container {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--neu-raise);
+}
+
+.tasks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+}
+
+.task-filters {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+}
+
+.tasks-timeline {
+  margin-bottom: var(--space-xl);
+}
+
+.timeline-header {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: var(--space-lg);
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.period-section {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  border: 1px solid var(--border-soft);
+  margin-bottom: var(--space-lg);
+}
+
+.period-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: var(--space-md);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-md);
+  border: 1px solid var(--border-soft);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+}
+
+.task-item:hover {
+  background: var(--bg-overlay);
+  border-color: var(--accent-primary);
+  transform: translateX(4px);
+}
+
+.task-checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.task-checkbox.completed {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
+.task-checkbox:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--glow-green);
+}
+
+.task-content {
+  flex: 1;
+}
+
+.task-title {
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+  font-size: 16px;
+}
+
+.task-title.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* =========================================================
+   DRAGGABLE IDEAS
+   ========================================================= */
+.ideas-board {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-4xl);
+  margin: var(--space-4xl) 0;
+  min-height: 400px;
+  border: 2px dashed var(--border-medium);
+  position: relative;
+  overflow: hidden;
+}
+
+.ideas-board.active {
+  border-color: var(--accent-primary);
+  box-shadow: var(--glow-green);
+}
+
+.idea-item {
+  position: absolute;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--neu-raise);
+  cursor: move;
+  transition: all var(--transition-fast);
+  min-width: 200px;
+  max-width: 250px;
+}
+
+.idea-item:hover {
+  transform: scale(1.05);
+  box-shadow: var(--neu-float);
+  border-color: var(--accent-primary);
+}
+
+.idea-item.dragging {
+  transform: rotate(5deg);
+  z-index: 1000;
+  box-shadow: var(--neu-float);
+}
+
+/* =========================================================
+   AI INTEGRATION MODAL
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(20px);
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.modal-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+.modal {
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--neu-float);
+  border: 1px solid var(--border-soft);
+  width: 95%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modalSlideUp 0.4s ease;
+}
+
+@keyframes modalSlideUp {
+  from { 
+    transform: translateY(50px) scale(0.95); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateY(0) scale(1); 
+    opacity: 1; 
+  }
+}
+
+.modal-header {
+  background: var(--bg-elevated);
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.modal-close {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.modal-close:hover {
+  background: var(--error);
+  color: white;
+  transform: scale(1.1);
+}
+
+.modal-body {
+  padding: var(--space-xl);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* =========================================================
+   LOADING & ANIMATIONS
+   ========================================================= */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-soft);
+  border-radius: 50%;
+  border-top-color: var(--accent-primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ai-thinking {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.thinking-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.thinking-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: thinking 1.4s infinite ease-in-out;
+}
+
+.thinking-dot:nth-child(1) { animation-delay: -0.32s; }
+.thinking-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes thinking {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* =========================================================
+   NOTIFICATIONS
+   ========================================================= */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--neu-float);
+  z-index: 10001;
+  transform: translateX(100%);
+  transition: transform var(--transition-normal);
+  min-width: 300px;
+}
+
+.notification.show {
+  transform: translateX(0);
+}
+
+.notification.success {
+  border-left: 4px solid var(--success);
+}
+
+.notification.error {
+  border-left: 4px solid var(--error);
+}
+
+.notification.warning {
+  border-left: 4px solid var(--warning);
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+@media (max-width: 1024px) {
+  .goals-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  .photos-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  
+  .focus-goal {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: var(--space-lg);
+  }
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .nav-tabs {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .vision-container {
+    padding: var(--space-2xl);
+  }
+  
+  .vision-title {
+    font-size: 24px;
+  }
+  
+  .focus-goal {
+    font-size: 24px;
+  }
+  
+  .goals-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .photos-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tasks-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .modal {
+    width: 98%;
+    margin: var(--space-sm);
+  }
+}
+
+/* =========================================================
+   UTILITY CLASSES
+   ========================================================= */
+.hidden {
+  display: none !important;
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.scale-in {
+  animation: scaleIn 0.4s ease;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* =========================================================
+   DARK THEME ENHANCEMENTS
+   ========================================================= */
+::selection {
+  background: rgba(0, 255, 136, 0.3);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+button:focus,
+input:focus,
+textarea:focus {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-contrast: high) {
+  :root {
+    --border-soft: #555;
+    --border-medium: #777;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
   </style>
 </head>
-
 <body>
-  <!-- Viršutinė juosta -->
-  <div class="topbar">
-    <a class="brand" href="/" title="Grįžti į pradinį">
-      <img src="/assets/icon/paule-logo.webp" alt="paule" />
-      <span>paule</span>
-    </a>
-    <div class="top-actions">
-      <a href="/community.html">Community</a>
-      <a href="/" aria-label="Atgal">Grįžti</a>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div class="logo">
+          🎯 Ultimate Tikslų Sistema
+        </div>
+        <div class="ai-status">
+          <span class="status-dot"></span>
+          AI Generavimo Variklis Aktyvus
+        </div>
+        <button class="ai-generate-btn" id="aiGenerateBtn">
+          ✨ AI Generuoti Nuotraukas
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Navigation -->
+      <div class="nav-tabs">
+        <button class="nav-tab active" data-section="vision">⭐ Vizija</button>
+        <button class="nav-tab" data-section="mega-goals">🚀 Mega Tikslai</button>
+        <button class="nav-tab" data-section="goals">🎯 Tikslai</button>
+        <button class="nav-tab" data-section="daily">📅 Šiandien</button>
+        <button class="nav-tab" data-section="ideas">💡 Idėjų Lenta</button>
+      </div>
+
+      <!-- Today's Focus Banner -->
+      <div class="today-focus">
+        <div class="focus-date" id="todayDate">Šiandien • 2025-01-01</div>
+        <div class="focus-goal" id="todayGoal">Sukurkite savo ateities viziją</div>
+        <div class="focus-tasks" id="todayTasks">Pradėkite nuo vizijos aprašymo</div>
+      </div>
+
+      <!-- Vision Section -->
+      <section class="section active" id="vision">
+        <div class="vision-container">
+          <h2 class="vision-title">⭐ Mano Ateities Vizija</h2>
+          <textarea 
+            class="vision-input" 
+            id="visionInput" 
+            placeholder="Aprašykite savo viziją... Kur norite būti po 5-10 metų? Kokie tikslai jums svarbiausi? Apie ką svajojate?"
+          >Noriu sukurti finansiškai nepriklausomą gyvenimą per savo technologijų verslą. Svajoju turėti laimingą šeimą su 2-3 vaikais, gyventi moderniame ekologiškame name, išlaikyti puikią fizinę sveikatą. Noriu keliauti po pasaulį su šeima, daryti pozityvų poveikį per inovacijas ir padėti kitiems pasiekti savo tikslus technologijų pagalba.</textarea>
+          
+          <div class="vision-actions">
+            <button class="btn btn-primary" id="generatePhotosBtn">
+              ✨ Generuoti Svajonių Nuotraukas
+            </button>
+            <button class="btn btn-secondary" id="extractGoalsBtn">
+              🎯 Išskirti Tikslus iš Vizijos
+            </button>
+          </div>
+
+          <!-- AI Generated Photos -->
+          <div class="vision-photos" id="visionPhotos">
+            <h3 style="text-align: center; margin-bottom: 24px; color: var(--text-secondary);">AI Sugeneruotos Vizijos Nuotraukos</h3>
+            <div class="photos-grid" id="photosGrid">
+              <!-- Photos will be generated here -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mega Goals Section -->
+      <section class="section" id="mega-goals">
+        <div class="hierarchy-flow">
+          <div class="flow-level">
+            <div class="level-header">
+              <h2 class="level-title">🚀 Mega Tikslai (5+ metų)</h2>
+              <p class="level-subtitle">Didžiausi gyvenimo tikslai, kurie formuoja jūsų ateitį</p>
+            </div>
+            
+            <div class="goals-grid" id="megaGoalsGrid">
+              <!-- Mega goals will be populated here -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Goals Section -->
+      <section class="section" id="goals">
+        <div class="hierarchy-flow">
+          <div class="flow-level">
+            <div class="level-header">
+              <h2 class="level-title">🎯 Tikslai (1-2 metai)</h2>
+              <p class="level-subtitle">Konkretūs žingsniai link mega tikslų</p>
+            </div>
+            
+            <div class="goals-grid" id="goalsGrid">
+              <!-- Goals will be populated here -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Daily Tasks Section -->
+      <section class="section" id="daily">
+        <div class="tasks-container">
+          <div class="tasks-header">
+            <h2 class="level-title" id="tasksTitle">📅 Šiandienos užduotys</h2>
+            <div class="task-filters">
+              <button class="filter-btn active" data-filter="today">Šiandien</button>
+              <button class="filter-btn" data-filter="week">Savaitė</button>
+              <button class="filter-btn" data-filter="month">Mėnuo</button>
+              <button class="filter-btn" data-filter="year">Metai</button>
+            </div>
+          </div>
+          
+          <div class="tasks-timeline" id="tasksTimeline" style="display: none;">
+            <!-- Dynamic timeline will be rendered here -->
+          </div>
+          
+          <div id="tasksContainer">
+            <!-- Tasks will be populated here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Ideas Board Section -->
+      <section class="section" id="ideas">
+        <div class="level-header">
+          <h2 class="level-title">💡 Idėjų Lenta</h2>
+          <p class="level-subtitle">Tempkite idėjas, organizuokite mintis, kurkite ryšius</p>
+        </div>
+        
+        <div class="ideas-board" id="ideasBoard">
+          <!-- Draggable ideas will be here -->
+        </div>
+        
+        <div style="text-align: center; margin-top: 24px;">
+          <button class="btn btn-primary" id="addIdeaBtn">
+            ➕ Pridėti Naują Idėją
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- AI Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">AI Apdorojimas</h2>
+        <button class="modal-close" id="modalClose">×</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Modal content -->
+      </div>
     </div>
   </div>
 
-  <!-- Programos konteineris -->
-  <main id="ugs" class="min-h-[calc(100vh-56px)] flex flex-col dark:bg-gray-900">
-    <div id="ugs-root" class="container mx-auto px-4 py-8"></div>
-  </main>
+  <!-- Notification -->
+  <div class="notification" id="notification">
+    <!-- Notifications will appear here -->
+  </div>
 
-  <!-- UGS programa (adaptuota iš tavo kodo) -->
-  <script type="text/babel">
-    const { useState, useEffect, useMemo, useCallback } = React;
+  <script>
+    // =========================================================
+    // GLOBAL STATE - SIMPLE AND CLEAN
+    // =========================================================
+    let currentSection = 'vision';
+    let currentTimeFilter = 'today';
+    let isAIProcessing = false;
+    let hasGeneratedContent = false;
 
-    /* Util */
-    const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 11);
-    const fmt = d => new Date(d).toLocaleDateString('lt-LT');
-    const overdue = t => t.dueDate && (new Date(t.dueDate) < new Date()) && !t.completed;
+    // Sample data with 6 goal cards
+    const megaGoals = [
+      {
+        id: 'mg1',
+        title: 'Finansinė laisvė - 1M€',
+        description: 'Sukurti technologijų verslą ir investicijų portfelį ilgalaikiam saugumui',
+        icon: '💰',
+        progress: 35,
+        priority: 'high',
+        timeframe: '5 metai'
+      },
+      {
+        id: 'mg2', 
+        title: 'Šeimos svajonių namas',
+        description: 'Modernus ekologiškas namas su šeimos zona ir technologijomis',
+        icon: '🏡',
+        progress: 20,
+        priority: 'medium',
+        timeframe: '3 metai'
+      },
+      {
+        id: 'mg3',
+        title: 'Laiminga šeima',
+        description: 'Stiprūs santykiai, 2-3 vaikai, bendri išgyvenimai ir prisiminimai',
+        icon: '👨‍👩‍👧‍👦',
+        progress: 70,
+        priority: 'high',
+        timeframe: 'Visas gyvenimas'
+      }
+    ];
 
-    /* Storage */
-    const K = { V:'ugs-vision-v2', G:'ugs-goals-v2', T:'ugs-tasks-v2', M:'ugs-mindmap-v2', D:'ugs-daily-v2', TH:'ugs-theme-v2' };
-    const store = {
-      get:(k,def=null)=>{ try{const v=localStorage.getItem(k); return v?JSON.parse(v):def }catch{ return def } },
-      set:(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)) }catch{} }
-    };
+    const goals = [
+      {
+        id: 'g1',
+        title: 'SaaS produkto kūrimas',
+        description: 'Sukurti AI-powered tikslų valdymo platformą verslo klientams',
+        icon: '💻',
+        progress: 65,
+        priority: 'high',
+        deadline: '2025-06-30'
+      },
+      {
+        id: 'g2',
+        title: 'Investicijų portfelis',
+        description: 'Diversifikuotas portfelis: akcijos, NT, crypto, obligacijos',
+        icon: '📈',
+        progress: 45,
+        priority: 'medium',
+        deadline: '2025-12-31'
+      },
+      {
+        id: 'g3',
+        title: 'Namo taupymas',
+        description: 'Sukaupta 150k€ įnašui ir statybų finansavimui',
+        icon: '💎',
+        progress: 30,
+        priority: 'high',
+        deadline: '2026-01-01'
+      },
+      {
+        id: 'g4',
+        title: 'Santykių stiprinimas',
+        description: 'Savaitės date nights, bendri projektai, komunikacijos gerinimas',
+        icon: '💕',
+        progress: 80,
+        priority: 'high',
+        deadline: '2025-12-31'
+      },
+      {
+        id: 'g5',
+        title: 'Fizinės formos gerinimas',
+        description: 'Reguliarus sportas 4x/savaitę, sveika mityba, 10kg numesti',
+        icon: '💪',
+        progress: 55,
+        priority: 'medium',
+        deadline: '2025-08-31'
+      },
+      {
+        id: 'g6',
+        title: 'Technologijų mokymasis',
+        description: 'AI/ML specializacija, nauji programavimo įrankiai, sertifikatai',
+        icon: '🤖',
+        progress: 40,
+        priority: 'medium',
+        deadline: '2025-09-30'
+      }
+    ];
 
-    /* Mini komponentai */
-    const Ring = ({progress, size=56})=>{
-      const r=(size-8)/2, c=2*Math.PI*r, off=c-(progress/100)*c;
-      return(
-        <div className="relative inline-flex items-center justify-center">
-          <svg width={size} height={size} className="-rotate-90">
-            <circle cx={size/2} cy={size/2} r={r} stroke="currentColor" strokeWidth="4" fill="none" className="text-gray-200 dark:text-gray-700"/>
-            <circle cx={size/2} cy={size/2} r={r} stroke="currentColor" strokeWidth="4" fill="none"
-              strokeDasharray={c} strokeDashoffset={off} className="text-blue-600" style={{transition:'stroke-dashoffset .5s'}}/>
-          </svg>
-          <span className="absolute text-xs font-semibold">{Math.round(progress)}%</span>
-        </div>
-      );
-    };
-    const Badge = ({p})=>{
-      const map={high:['bg-red-100 text-red-800','Aukštas'],medium:['bg-yellow-100 text-yellow-800','Vidutinis'],low:['bg-green-100 text-green-800','Žemas']};
-      const [cls,txt]=map[p]||map.medium; return <span className={`px-2 py-1 rounded-full text-xs ${cls}`}>{txt}</span>;
-    };
-    const Toast = ({n,onClose})=>{
-      const map={success:['✅','bg-green-500'],error:['❌','bg-red-500'],warning:['⚠️','bg-yellow-500'],info:['ℹ️','bg-blue-500']};
-      const [ico,bg]=map[n.type]||map.info;
-      useEffect(()=>{const t=setTimeout(onClose,5000); return ()=>clearTimeout(t)},[onClose]);
-      return(
-        <div className={`notification-toast ${bg} text-white p-3 rounded-lg shadow-lg mb-2 flex items-center justify-between min-w-72`}>
-          <div className="flex items-center gap-3"><span className="text-lg">{ico}</span><span>{n.message}</span></div>
-          <button onClick={onClose} className="ml-3">✕</button>
-        </div>
-      );
-    };
-    const Tab = ({id,icon,label,active,onPick,dark}) => (
-      <button onClick={()=>onPick(id)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg btn ${active?'bg-blue-600 text-white shadow':
-          (dark?'bg-gray-700 text-gray-200 hover:bg-gray-600':'bg-white text-gray-600 hover:bg-blue-50')}`}>
-        <span>{icon}</span><span className="font-medium">{label}</span>
-      </button>
-    );
+    let dailyTasks = [];
+    let ideas = [
+      { id: 'i1', text: 'AI coaching platforma', x: 20, y: 20 },
+      { id: 'i2', text: 'Tvaraus gyvenimo blogai', x: 250, y: 80 },
+      { id: 'i3', text: 'Šeimos kelionių vlogai', x: 100, y: 150 },
+      { id: 'i4', text: 'Investicijų naujienlaiškis', x: 300, y: 200 }
+    ];
 
-    /* App */
-    const App = () => {
-      const [tab,setTab] = useState('dashboard');
-      const [dark,setDark] = useState(()=>store.get(K.TH,true));
-      const [vision,setVision] = useState(()=>store.get(K.V,''));
-      const [goals,setGoals] = useState(()=>store.get(K.G,[]));
-      const [tasks,setTasks] = useState(()=>store.get(K.T,[]));
-      const [mind,setMind]   = useState(()=>store.get(K.M,[{id:1,text:'Mano Ateities Vizija',x:400,y:200,isCenter:true}]));
-      const [daily,setDaily] = useState(()=>store.get(K.D,['']));
-      const [ai,setAI] = useState(false);
-      const [toasts,setToasts] = useState([]);
+    // =========================================================
+    // INITIALIZATION
+    // =========================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🎯 Sistema kraunasi...');
+      
+      try {
+        initializeApp();
+        bindEvents();
+        renderAll();
+        
+        console.log('✅ Sistema sėkmingai paleista!');
+        showNotification('🚀 Ultimate Tikslų Sistema pasiruošusi darbui!', 'success');
+      } catch (error) {
+        console.error('❌ Klaida paleidžiant sistemą:', error);
+        showNotification('Klaida paleidžiant sistemą. Perkraukite puslapį.', 'error');
+      }
+    });
 
-      /* persist */
-      useEffect(()=>store.set(K.TH,dark),[dark]);
-      useEffect(()=>store.set(K.V,vision),[vision]);
-      useEffect(()=>store.set(K.G,goals),[goals]);
-      useEffect(()=>store.set(K.T,tasks),[tasks]);
-      useEffect(()=>store.set(K.M,mind),[mind]);
-      useEffect(()=>store.set(K.D,daily),[daily]);
+    function initializeApp() {
+      const today = new Date();
+      const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      };
+      document.getElementById('todayDate').textContent = 
+        `Šiandien • ${today.toLocaleDateString('lt-LT', options)}`;
+      
+      generateTimeBasedTasks();
+      updateTodayBanner();
+    }
 
-      /* dark class ant #ugs */
-      useEffect(()=>{ document.getElementById('ugs')?.classList.toggle('dark',dark); },[dark]);
+    function bindEvents() {
+      // Navigation tabs
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          switchSection(this.dataset.section);
+        });
+      });
 
-      const notify = (msg,type='info') => setToasts(t=>[...t,{id:genId(),message:msg,type}]);
-      const rm = id => setToasts(t=>t.filter(x=>x.id!==id));
+      // AI buttons
+      document.getElementById('generatePhotosBtn').addEventListener('click', generateVisionPhotos);
+      document.getElementById('aiGenerateBtn').addEventListener('click', generateVisionPhotos);
+      document.getElementById('extractGoalsBtn').addEventListener('click', extractGoalsFromVision);
 
-      /* mock AI */
-      const aiCall = async (q) => {
-        setAI(true); await new Promise(r=>setTimeout(r,1100));
-        setAI(false);
-        if(q==='vision') return 'Mano vizija: kurti vertę, būti sveikam, stiprūs santykiai ir finansinė laisvė.';
-        if(q==='goals') return [
-          {title:'10 000€ / mėn. pajamos',description:'Skaitmeninis produktas',category:'finance',priority:'high'},
-          {title:'-10 kg',description:'Sportas + mityba',category:'health',priority:'medium'},
-        ];
-        if(q==='tasks') return [
-          {title:'Parašyti verslo planą',estimatedMins:60,priority:'high'},
-          {title:'Treniruotė',estimatedMins:90,priority:'medium'},
-        ];
-        return [];
+      // Modal
+      document.getElementById('modalClose').addEventListener('click', closeModal);
+      document.getElementById('modalOverlay').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+      });
+
+      // Ideas
+      document.getElementById('addIdeaBtn').addEventListener('click', addNewIdea);
+
+      // Task filters
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          currentTimeFilter = this.dataset.filter;
+          updateTasksTitle();
+          generateTimeBasedTasks();
+          renderTasks();
+        });
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeModal();
+        
+        if (e.key >= '1' && e.key <= '5') {
+          const sections = ['vision', 'mega-goals', 'goals', 'daily', 'ideas'];
+          const sectionIndex = parseInt(e.key) - 1;
+          if (sections[sectionIndex]) {
+            switchSection(sections[sectionIndex]);
+          }
+        }
+      });
+    }
+
+    function renderAll() {
+      renderMegaGoals();
+      renderGoals();
+      renderTasks();
+      renderIdeas();
+    }
+
+    // =========================================================
+    // SECTION MANAGEMENT
+    // =========================================================
+    function switchSection(sectionId) {
+      // Update active tab
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+      // Update active section
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(sectionId).classList.add('active');
+
+      currentSection = sectionId;
+      updateTodayBanner();
+    }
+
+    function updateTodayBanner() {
+      const goalTexts = {
+        vision: 'Sukurkite savo ateities viziją',
+        'mega-goals': 'Planuokite mega tikslus',
+        goals: 'Suskaidykite tikslus į žingsnius',
+        daily: 'Įvykdykite šiandienos užduotis',
+        ideas: 'Organizuokite idėjas'
       };
 
-      /* CRUD helpers */
-      const addGoal = () => setGoals(g=>[...g,{id:genId(),title:'',description:'',category:'personal',priority:'medium',deadline:'',progress:0,created:fmt(new Date())}]);
-      const updGoal = (id,f,v) => setGoals(g=>g.map(x=>x.id===id?{...x,[f]:v}:x));
-      const delGoal = id => { setTasks(t=>t.filter(x=>x.goalId!==id)); setGoals(g=>g.filter(x=>x.id!==id)); notify('Tikslas pašalintas','info'); };
+      const taskCounts = {
+        vision: 'Pradėkite nuo vizijos aprašymo',
+        'mega-goals': `${megaGoals.length} mega tikslai aktyvūs`,
+        goals: `${goals.length} tikslai progrese`,
+        daily: `${dailyTasks.filter(t => !t.completed).length} užduotys laukia sprendimo`,
+        ideas: 'Kurkite ir organizuokite idėjas'
+      };
 
-      const addTask = (data={}) => setTasks(t=>[...t,{id:genId(),title:'',completed:false,priority:'medium',goalId:null,dueDate:'',estimatedMins:30,created:new Date().toISOString().slice(0,10),...data}]);
-      const updTask = (id,f,v) => setTasks(t=>t.map(x=>{
-        if(x.id!==id) return x;
-        const u={...x,[f]:v};
-        if(f==='completed'&&v&&x.goalId){ setTimeout(()=>setGoals(gs=>gs.map(g=>g.id===x.goalId?{...g,progress:Math.min(100,(g.progress||0)+10)}:g)),0); }
-        return u;
-      }));
-      const delTask = id => setTasks(t=>t.filter(x=>x.id!==id));
+      document.getElementById('todayGoal').textContent = goalTexts[currentSection];
+      document.getElementById('todayTasks').textContent = taskCounts[currentSection];
+    }
 
-      const stats = useMemo(()=>{
-        const done = tasks.filter(t=>t.completed).length;
-        const rate = tasks.length? Math.round(done/tasks.length*100) : 0;
-        const avg  = goals.length? Math.round(goals.reduce((s,g)=>s+(g.progress||0),0)/goals.length):0;
-        const today = new Date().toISOString().slice(0,10);
-        return {
-          completionRate:rate,
-          averageProgress:avg,
-          todayTasks:tasks.filter(t=>t.dueDate===today).length,
-          overdueTasks:tasks.filter(overdue).length
-        };
-      },[tasks,goals]);
+    function updateTasksTitle() {
+      const titles = {
+        today: '📅 Šiandienos užduotys',
+        week: '📅 Užduotys šią savaitę',
+        month: '📅 Užduotys šį mėnesį',
+        year: '📅 Užduotys šiems metams'
+      };
+      
+      document.getElementById('tasksTitle').textContent = titles[currentTimeFilter];
+    }
 
-      return (
-        <div className="min-h-[70vh]">
-          {/* toasts */}
-          <div className="fixed top-4 right-4 z-50 space-y-2">
-            {toasts.map(n=><Toast key={n.id} n={n} onClose={()=>rm(n.id)}/>)}
-          </div>
+    // =========================================================
+    // AI PHOTO GENERATION - SIMPLIFIED
+    // =========================================================
+    async function generateVisionPhotos() {
+      if (isAIProcessing) return;
+      
+      const visionText = document.getElementById('visionInput').value.trim();
+      if (!visionText) {
+        showNotification('Pirmiausia aprašykite savo viziją!', 'warning');
+        return;
+      }
 
-          {/* header */}
-          <div className="text-center mb-6">
-            <div className="flex flex-col lg:flex-row justify-between items-center gap-4 mb-2">
-              <form onSubmit={(e)=>{e.preventDefault(); const v=e.target.q.value.trim(); if(!v) return; addTask({title:v}); e.target.reset();}}
-                    className="order-2 lg:order-1 flex gap-2 w-full max-w-md">
-                <input name="q" placeholder="Greita užduotis…"
-                       className={`flex-1 p-3 rounded-lg border input ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300 text-gray-900'}`}/>
-                <button className="bg-blue-600 text-white px-5 rounded-lg btn">Pridėti</button>
-              </form>
-
-              <h1 className={`order-1 lg:order-2 text-3xl font-bold ${dark?'text-white':'text-gray-800'}`}>🎯 Ultimate Goal System</h1>
-
-              <div className="order-3 flex items-center gap-3">
-                <button onClick={async()=>{
-                  if(!vision.trim()) return notify('Pirmiau įrašykite viziją!','warning');
-                  const data = await aiCall('goals');
-                  const created = data.map(g=>({id:genId(),title:g.title,description:g.description,category:g.category,priority:g.priority,deadline:'',progress:0,created:fmt(new Date())}));
-                  setGoals(g=>[...g,...created]); notify(`Sukurti ${created.length} tikslai!`,'success');
-                }} disabled={ai} className="bg-gradient-to-r from-purple-500 to-blue-500 text-white p-3 rounded-lg btn">{ai?'🔄':'✨'}</button>
-                <button onClick={()=>setDark(!dark)} className={`p-3 rounded-lg btn ${dark?'bg-gray-700 text-yellow-400':'bg-gray-200 text-gray-700'}`}>{dark?'☀️':'🌙'}</button>
-              </div>
-            </div>
-            <p className={`${dark?'text-gray-300':'text-gray-600'}`}>Jūsų kelias į sėkmę prasideda čia</p>
-          </div>
-
-          {/* tabs */}
-          <div className="flex flex-wrap justify-center gap-2 mb-6">
-            {[
-              ['dashboard','📊','Ataskaitos'],
-              ['vision','⭐','Vizija'],
-              ['goals','🎯','Tikslai'],
-              ['tasks','✅','Užduotys'],
-              ['mindmap','🧠','Žemėlapis'],
-              ['daily','📅','Dienos planas'],
-            ].map(([id,ico,label])=>(
-              <Tab key={id} id={id} icon={ico} label={label} active={tab===id} onPick={setTab} dark={dark}/>
-            ))}
-          </div>
-
-          {/* content */}
-          <div className="animate-[slideUp_.25s_ease-out]">
-            {/* Dashboard */}
-            {tab==='dashboard' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-                <div className={`${dark?'bg-gray-800 text-white':'bg-white'} rounded-xl shadow p-6 goal-card`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div><h3 className="text-lg font-semibold">Tikslai</h3></div>
-                    <Ring progress={stats.averageProgress}/>
-                  </div>
-                  <div className="text-2xl font-bold text-blue-600">{stats.averageProgress}%</div>
-                  <p className="text-sm text-gray-500">Vidutinis progresas</p>
-                </div>
-                <div className={`${dark?'bg-gray-800 text-white':'bg-white'} rounded-xl shadow p-6 goal-card`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div><h3 className="text-lg font-semibold">Užduotys</h3></div>
-                    <Ring progress={stats.completionRate}/>
-                  </div>
-                  <div className="text-2xl font-bold text-green-600">{stats.completionRate}%</div>
-                  <p className="text-sm text-gray-500">Įvykdyta</p>
-                </div>
-                <div className={`${dark?'bg-gray-800 text-white':'bg-white'} rounded-xl shadow p-6 goal-card`}>
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-3 bg-orange-100 rounded-lg"><span className="text-xl text-orange-600">📅</span></div>
-                    <div><h3 className="text-lg font-semibold">Šiandien</h3></div>
-                  </div>
-                  <div className="text-2xl font-bold text-orange-600">{stats.todayTasks}</div>
-                  <p className="text-sm text-gray-500">Šiandienos užduotys</p>
-                </div>
-                <div className={`${dark?'bg-gray-800 text-white':'bg-white'} rounded-xl shadow p-6 goal-card`}>
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={`p-3 rounded-lg ${stats.overdueTasks>0?'bg-red-100':'bg-purple-100'}`}>
-                      <span className={`text-xl ${stats.overdueTasks>0?'text-red-600':'text-purple-600'}`}>{stats.overdueTasks>0?'⚠️':'🎯'}</span>
-                    </div>
-                    <div><h3 className="text-lg font-semibold">Vėluoja</h3></div>
-                  </div>
-                  <div className={`text-2xl font-bold ${stats.overdueTasks>0?'text-red-600':'text-purple-600'}`}>{stats.overdueTasks}</div>
-                  <p className="text-sm text-gray-500">{stats.overdueTasks>0?'Reikia dėmesio':'Viskas gerai!'}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Vision */}
-            {tab==='vision' && (
-              <div className={`${dark?'bg-gray-800':'bg-white'} rounded-xl shadow p-6`}>
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className={`text-2xl font-bold ${dark?'text-white':'text-gray-800'} flex items-center gap-3`}><span>⭐</span>Mano Vizija</h2>
-                  <button onClick={async()=>{
-                    if(!vision.trim()) return notify('Pirmiau įrašykite viziją!','warning');
-                    const v = await aiCall('vision'); setVision(v); notify('Vizija patobulinta!','success');
-                  }} disabled={ai||!vision.trim()} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 btn">
-                    {ai?'🔄':'✨'} AI Pagalba
-                  </button>
-                </div>
-                <textarea value={vision} onChange={e=>setVision(e.target.value)}
-                  placeholder="Aprašykite savo viziją…"
-                  className={`w-full h-56 p-4 rounded-lg border input ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300 text-gray-900'}`}/>
-              </div>
-            )}
-
-            {/* Goals */}
-            {tab==='goals' && (
-              <div className="space-y-5">
-                <div className="flex justify-between items-center">
-                  <h2 className={`text-2xl font-bold ${dark?'text-white':'text-gray-800'} flex items-center gap-3`}><span>🎯</span>Mano Tikslai</h2>
-                  <div className="flex gap-2">
-                    <button onClick={async()=>{
-                      if(!vision.trim()) return notify('Pirmiau įrašykite viziją!','warning');
-                      const data = await aiCall('goals');
-                      const created = data.map(g=>({id:genId(),title:g.title,description:g.description,category:g.category,priority:g.priority,deadline:'',progress:0,created:fmt(new Date())}));
-                      setGoals(g=>[...g,...created]); notify(`Sukurti ${created.length} tikslai!`,'success');
-                    }} disabled={ai} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 btn">✨ AI Tikslai</button>
-                    <button onClick={addGoal} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 btn">➕ Pridėti tikslą</button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {goals.map(g=>(
-                    <div key={g.id} className={`${dark?'bg-gray-800':'bg-white'} rounded-xl shadow p-5 goal-card`}>
-                      <div className="flex justify-between items-start mb-3">
-                        <input value={g.title} onChange={e=>updGoal(g.id,'title',e.target.value)}
-                          placeholder="Tikslo pavadinimas"
-                          className={`text-lg font-semibold bg-transparent border-none outline-none w-full ${dark?'text-white':'text-gray-800'}`}/>
-                        <button onClick={()=>delGoal(g.id)} className="text-red-500 hover:text-red-700 ml-2">✕</button>
-                      </div>
-                      <textarea value={g.description} onChange={e=>updGoal(g.id,'description',e.target.value)}
-                        placeholder="Tikslo aprašymas…"
-                        className={`w-full h-20 p-2 rounded-lg text-sm mb-3 border input ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}/>
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
-                          <select value={g.category} onChange={e=>updGoal(g.id,'category',e.target.value)}
-                            className={`p-2 rounded-lg text-sm border ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}>
-                            <option value="personal">Asmeninis</option><option value="career">Karjera</option>
-                            <option value="health">Sveikata</option><option value="finance">Finansai</option>
-                            <option value="education">Išsilavinimas</option>
-                          </select>
-                          <select value={g.priority} onChange={e=>updGoal(g.id,'priority',e.target.value)}
-                            className={`p-2 rounded-lg text-sm border ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}>
-                            <option value="low">Žemas</option><option value="medium">Vidutinis</option><option value="high">Aukštas</option>
-                          </select>
-                        </div>
-
-                        <input type="date" value={g.deadline} onChange={e=>updGoal(g.id,'deadline',e.target.value)}
-                          className={`w-full p-2 rounded-lg text-sm border ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}/>
-
-                        <div>
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm text-gray-500">Progresas</span>
-                            <span className={`text-sm font-medium ${dark?'text-white':'text-gray-800'}`}>{g.progress||0}%</span>
-                          </div>
-                          <div className={`w-full rounded-full h-2 ${dark?'bg-gray-700':'bg-gray-200'}`}>
-                            <div className="bg-blue-600 h-2 rounded-full transition-all" style={{width:(g.progress||0)+'%'}}></div>
-                          </div>
-                          <input type="range" min="0" max="100" value={g.progress||0}
-                            onChange={e=>updGoal(g.id,'progress',parseInt(e.target.value))} className="w-full mt-2"/>
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                          <Badge p={g.priority}/>
-                          <span className="text-xs text-gray-500">Sukurta: {g.created}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {goals.length===0 && (
-                  <div className="text-center py-10">
-                    <div className="text-6xl mb-3">🎯</div>
-                    <p className={`${dark?'text-gray-300':'text-gray-600'} mb-3`}>Dar nėra tikslų</p>
-                    <button onClick={async()=>{
-                      if(!vision.trim()) return notify('Pirmiau įrašykite viziją!','warning');
-                      const data = await aiCall('goals');
-                      const created = data.map(g=>({id:genId(),title:g.title,description:g.description,category:g.category,priority:g.priority,deadline:'',progress:0,created:fmt(new Date())}));
-                      setGoals(g=>[...g,...created]); notify(`Sukurti ${created.length} tikslai!`,'success');
-                    }} className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 btn">✨ Sukurti tikslus su AI</button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Tasks */}
-            {tab==='tasks' && (
-              <div className="space-y-5">
-                <div className="flex justify-between items-center">
-                  <h2 className={`text-2xl font-bold ${dark?'text-white':'text-gray-800'} flex items-center gap-3`}><span>✅</span>Mano Užduotys</h2>
-                  <div className="flex gap-2">
-                    <button onClick={async()=>{
-                      const data = await aiCall('tasks');
-                      const today = new Date().toISOString().slice(0,10);
-                      const list = data.map(t=>({id:genId(),title:t.title,completed:false,priority:t.priority||'medium',goalId:goals[0]?.id||null,dueDate:today,estimatedMins:t.estimatedMins||45,created:today,aiSuggested:true}));
-                      setTasks(x=>[...x,...list]); notify(`Sukurtos ${list.length} užduotys!`,'success');
-                    }} disabled={ai} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 btn">✨ AI Užduotys</button>
-                    <button onClick={()=>addTask()} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 btn">➕ Pridėti užduotį</button>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  {tasks.map(t=>{
-                    const g = goals.find(x=>x.id===t.goalId);
-                    const late = overdue(t);
-                    return (
-                      <div key={t.id} className={`${dark?'bg-gray-800':'bg-white'} rounded-xl shadow p-4 task-item ${t.completed?'opacity-75':''} ${late?'border-l-4 border-red-500':''}`}>
-                        <div className="flex items-start gap-4">
-                          <button onClick={()=>updTask(t.id,'completed',!t.completed)}
-                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1 ${t.completed?'bg-green-600 border-green-600 text-white':'border-gray-300 hover:border-green-500'}`}>
-                            {t.completed?'✓':''}
-                          </button>
-                          <div className="flex-1 space-y-2">
-                            <input value={t.title} onChange={e=>updTask(t.id,'title',e.target.value)}
-                              placeholder="Užduoties pavadinimas"
-                              className={`w-full bg-transparent border-none outline-none text-lg ${t.completed?'line-through text-gray-500':(dark?'text-white':'text-gray-800')}`}/>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                              <select value={t.goalId||''} onChange={e=>updTask(t.id,'goalId',e.target.value||null)}
-                                className={`p-2 rounded text-sm border ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}>
-                                <option value="">Nėra tikslo</option>
-                                {goals.map(x=><option key={x.id} value={x.id}>{x.title||'Nepavadintas tikslas'}</option>)}
-                              </select>
-                              <select value={t.priority} onChange={e=>updTask(t.id,'priority',e.target.value)}
-                                className={`p-2 rounded text-sm border ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}>
-                                <option value="low">Žemas</option><option value="medium">Vidutinis</option><option value="high">Aukštas</option>
-                              </select>
-                              <input type="date" value={t.dueDate} onChange={e=>updTask(t.id,'dueDate',e.target.value)}
-                                className={`p-2 rounded text-sm border ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}/>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              {g && <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">📋 {g.title}</span>}
-                              {t.aiSuggested && <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">✨ AI</span>}
-                              {late && <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">⚠️ Vėluoja</span>}
-                              <Badge p={t.priority}/>
-                            </div>
-                          </div>
-                          <button onClick={()=>delTask(t.id)} className="text-red-500 hover:text-red-700">✕</button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Mind map */}
-            {tab==='mindmap' && (
-              <div className={`${dark?'bg-gray-800':'bg-white'} rounded-xl shadow p-6`}>
-                <h2 className={`text-2xl font-bold ${dark?'text-white':'text-gray-800'} flex items-center gap-3 mb-5`}><span>🧠</span>Ateities Žemėlapis</h2>
-                <div className={`relative rounded-lg h-96 border-2 border-dashed ${dark?'bg-gray-700 border-gray-500':'bg-purple-50 border-gray-300'}`}>
-                  {mind.map(n=>(
-                    <div key={n.id}
-                      className={`mindmap-node absolute -translate-x-1/2 -translate-y-1/2 rounded-lg shadow px-4 py-2 ${n.isCenter?'bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold':(dark?'bg-gray-600 text-white':'bg-white text-gray-800')}`}
-                      style={{left:n.x+'px',top:n.y+'px'}}>
-                      <input value={n.text} onChange={e=>setMind(m=>m.map(x=>x.id===n.id?{...x,text:e.target.value}:x))}
-                             className="bg-transparent border-none outline-none text-center min-w-20" placeholder="Įveskite idėją"/>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4">
-                  <button onClick={()=>setMind(m=>[...m,{id:genId(),text:'Nauja idėja',x:200+Math.random()*400,y:100+Math.random()*200,isCenter:false}])}
-                          className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 btn">➕ Pridėti mazgą</button>
-                </div>
-              </div>
-            )}
-
-            {/* Daily */}
-            {tab==='daily' && (
-              <div className={`${dark?'bg-gray-800':'bg-white'} rounded-xl shadow p-6`}>
-                <div className="flex justify-between items-center mb-5">
-                  <h2 className={`text-2xl font-bold ${dark?'text-white':'text-gray-800'} flex items-center gap-3`}><span>📅</span>Šios Dienos Planas</h2>
-                  <button onClick={async()=>{
-                    const data = await aiCall('tasks');
-                    const today = new Date().toISOString().slice(0,10);
-                    const list = data.map(t=>({id:genId(),title:t.title,completed:false,priority:t.priority||'medium',goalId:goals[0]?.id||null,dueDate:today,estimatedMins:t.estimatedMins||45,created:today,aiSuggested:true}));
-                    setTasks(x=>[...x,...list]); notify(`Sukurtos ${list.length} užduotys!`,'success');
-                  }} disabled={ai} className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 btn">✨ Generuoti užduotis</button>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className={`text-lg font-semibold mb-3 ${dark?'text-white':'text-gray-800'}`}>🎯 Šiandienos užduotys</h3>
-                    <div className="space-y-3">
-                      {tasks.filter(t=>t.dueDate===new Date().toISOString().slice(0,10)).map(t=>(
-                        <div key={t.id} className={`${dark?'bg-gray-700':'bg-gray-50'} p-4 rounded-lg`}>
-                          <div className="flex items-center gap-3">
-                            <button onClick={()=>updTask(t.id,'completed',!t.completed)}
-                              className={`w-5 h-5 rounded border-2 flex items-center justify-center ${t.completed?'bg-green-600 border-green-600 text-white':'border-gray-300 hover:border-orange-500'}`}>{t.completed?'✓':''}</button>
-                            <div className="flex-1">
-                              <h4 className={`font-medium ${dark?'text-white':'text-gray-800'} ${t.completed?'line-through opacity-60':''}`}>{t.title}</h4>
-                              <div className="flex items-center gap-2 mt-1"><Badge p={t.priority}/>{t.aiSuggested&&<span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs rounded-full">✨ AI</span>}</div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      {tasks.filter(t=>t.dueDate===new Date().toISOString().slice(0,10)).length===0 && (
-                        <div className={`${dark?'text-gray-400':'text-gray-500'} text-center py-8`}><div className="text-4xl mb-2">📝</div><p>Šiandien nėra suplanuotų užduočių</p></div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className={`text-lg font-semibold mb-3 ${dark?'text-white':'text-gray-800'}`}>🎯 Dienos prioritetai</h3>
-                    <div className="space-y-3">
-                      {daily.map((v,i)=>(
-                        <div key={i} className="flex items-center gap-3">
-                          <span className="w-8 h-8 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-sm font-bold">{i+1}</span>
-                          <input value={v} onChange={e=>{const n=[...daily]; n[i]=e.target.value; setDaily(n)}}
-                            placeholder="Įveskite prioritetą"
-                            className={`flex-1 p-3 rounded-lg border input ${dark?'bg-gray-700 border-gray-600 text-white':'bg-white border-gray-300'}`}/>
-                          {daily.length>1 && <button onClick={()=>setDaily(daily.filter((_,idx)=>idx!==i))} className="text-red-500 hover:text-red-700">✕</button>}
-                        </div>
-                      ))}
-                      <button onClick={()=>setDaily([...daily,''])} className="text-orange-600 hover:text-orange-700 text-sm font-medium">➕ Pridėti prioritetą</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+      isAIProcessing = true;
+      
+      showModal('✨ AI Nuotraukų Generavimas', `
+        <div class="ai-thinking">
+          <div class="loading"></div>
+          Analizuoju jūsų viziją ir generuoju nuotraukas...
+          <div class="thinking-dots">
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
           </div>
         </div>
-      );
-    };
+        <div style="margin-top: 24px; padding: 20px; background: var(--bg-elevated); border-radius: 16px;">
+          <h4>Analizuojama vizija:</h4>
+          <p style="color: var(--text-secondary); margin-top: 8px; font-style: italic;">"${visionText.substring(0, 200)}..."</p>
+        </div>
+      `);
 
-    ReactDOM.createRoot(document.getElementById('ugs-root')).render(<App />);
+      // Simulate AI processing
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Generate photos
+      const photos = [
+        {
+          id: 'p1',
+          url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop',
+          title: 'Svajonių namas',
+          description: 'Modernus ekologiškas namas'
+        },
+        {
+          id: 'p2',
+          url: 'https://images.unsplash.com/photo-1609220136736-443140cffec6?w=600&h=400&fit=crop',
+          title: 'Laiminga šeima',
+          description: 'Šeimos laimė ir meilė'
+        },
+        {
+          id: 'p3',
+          url: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=400&fit=crop',
+          title: 'Technologijų verslas',
+          description: 'Sėkmingas tech verslas'
+        },
+        {
+          id: 'p4',
+          url: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&h=400&fit=crop',
+          title: 'Kelionės su šeima',
+          description: 'Išvykos po pasaulį'
+        }
+      ];
+      
+      displayGeneratedPhotos(photos);
+      closeModal();
+      
+      hasGeneratedContent = true;
+      showNotification('AI sėkmingai sugeneravo jūsų vizijos nuotraukas! ✨', 'success');
+      
+      isAIProcessing = false;
+    }
+
+    function displayGeneratedPhotos(photos) {
+      const photosContainer = document.getElementById('visionPhotos');
+      const photosGrid = document.getElementById('photosGrid');
+      
+      photosGrid.innerHTML = '';
+      
+      photos.forEach(photo => {
+        const photoCard = document.createElement('div');
+        photoCard.className = 'photo-card scale-in';
+        photoCard.innerHTML = `
+          <div class="photo-placeholder" style="background-image: url('${photo.url}');">
+            <div class="photo-overlay">
+              <div class="photo-title">${photo.title}</div>
+              <div class="photo-desc">${photo.description}</div>
+              <div style="font-size: 10px; opacity: 0.7; margin-top: 4px;">✨ AI Sugeneruota</div>
+            </div>
+          </div>
+        `;
+        
+        photoCard.addEventListener('click', () => {
+          showModal(`📸 ${photo.title}`, `
+            <div style="text-align: center;">
+              <img src="${photo.url}" alt="${photo.title}" style="width: 100%; max-width: 500px; border-radius: 16px; margin-bottom: 20px;">
+              <h3>${photo.title}</h3>
+              <p style="color: var(--text-secondary); margin: 16px 0;">${photo.description}</p>
+              <div style="margin-top: 24px;">
+                <button class="btn btn-primary" onclick="closeModal(); showNotification('Nuotrauka konvertuota į tikslą! 🎯', 'success');">
+                  🎯 Konvertuoti į tikslą
+                </button>
+              </div>
+            </div>
+          `);
+        });
+        
+        photosGrid.appendChild(photoCard);
+      });
+      
+      photosContainer.classList.add('active');
+    }
+
+    async function extractGoalsFromVision() {
+      if (isAIProcessing) return;
+      
+      const visionText = document.getElementById('visionInput').value.trim();
+      if (!visionText) {
+        showNotification('Pirmiausia aprašykite savo viziją!', 'warning');
+        return;
+      }
+
+      isAIProcessing = true;
+      
+      showModal('🎯 AI Tikslų Išskyrimas', `
+        <div class="ai-thinking">
+          <div class="loading"></div>
+          Analizuoju viziją ir išskiri tikslus...
+          <div class="thinking-dots">
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+          </div>
+        </div>
+      `);
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      closeModal();
+      showNotification('Tikslai sėkmingai išskirti iš jūsų vizijos! 🎯', 'success');
+      
+      setTimeout(() => {
+        switchSection('mega-goals');
+      }, 1000);
+      
+      isAIProcessing = false;
+    }
+
+    // =========================================================
+    // GOAL RENDERING
+    // =========================================================
+    function renderMegaGoals() {
+      const container = document.getElementById('megaGoalsGrid');
+      container.innerHTML = '';
+      
+      megaGoals.forEach(goal => {
+        const goalCard = createGoalCard(goal, true);
+        container.appendChild(goalCard);
+      });
+    }
+
+    function renderGoals() {
+      const container = document.getElementById('goalsGrid');
+      container.innerHTML = '';
+      
+      goals.forEach(goal => {
+        const goalCard = createGoalCard(goal, false);
+        container.appendChild(goalCard);
+      });
+    }
+
+    function createGoalCard(goal, isMega = false) {
+      const card = document.createElement('div');
+      card.className = `goal-card ${isMega ? 'mega' : ''} fade-in`;
+      
+      card.innerHTML = `
+        <div class="goal-header">
+          <div class="goal-icon">${goal.icon}</div>
+          <div class="goal-content">
+            <h3 class="goal-title">${goal.title}</h3>
+            <p class="goal-desc">${goal.description}</p>
+          </div>
+        </div>
+        <div class="goal-meta">
+          <div class="goal-progress">
+            <div class="progress-label">
+              <span>Progresas</span>
+              <span>${goal.progress}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${goal.progress}%"></div>
+            </div>
+          </div>
+          <div class="goal-priority priority-${goal.priority}">
+            ${goal.priority === 'high' ? 'Aukštas' : goal.priority === 'medium' ? 'Vidutinis' : 'Žemas'}
+          </div>
+        </div>
+      `;
+      
+      card.addEventListener('click', () => {
+        showModal(`${isMega ? '🚀' : '🎯'} ${goal.title}`, `
+          <div style="text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px;">${goal.icon}</div>
+            <h3>${goal.title}</h3>
+            <p style="color: var(--text-secondary); margin: 16px 0;">${goal.description}</p>
+            <div style="background: var(--bg-elevated); padding: 16px; border-radius: 12px; margin: 20px 0;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>Progresas</span>
+                <span>${goal.progress}%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${goal.progress}%"></div>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="closeModal(); switchSection('daily'); showNotification('Rodomos ${goal.title} užduotys 🎯', 'info');">
+              📅 Rodyti užduotis
+            </button>
+          </div>
+        `);
+      });
+      
+      return card;
+    }
+
+    // =========================================================
+    // TASK SYSTEM - SIMPLIFIED
+    // =========================================================
+    function generateTimeBasedTasks() {
+      if (currentTimeFilter === 'today') {
+        dailyTasks = [
+          {
+            id: 't1',
+            title: 'Parašyti verslo plano skyrių',
+            description: 'Finansinių projekcijų dalis',
+            completed: false,
+            priority: 'high'
+          },
+          {
+            id: 't2',
+            title: 'Investicijų rinkos tyrimai',
+            description: 'S&P 500 analizė',
+            completed: true,
+            priority: 'medium'
+          },
+          {
+            id: 't3',
+            title: 'Šeimos laikas - vakarienė',
+            description: 'Bendras laikas su šeima',
+            completed: false,
+            priority: 'high'
+          }
+        ];
+      } else if (currentTimeFilter === 'week') {
+        dailyTasks = [
+          { id: 'tw1', title: 'Pirmadienis: Produkto vystymas', description: 'AI platformos kūrimas', completed: false, priority: 'high', day: 'Pirmadienis' },
+          { id: 'tw2', title: 'Antradienis: Investicijų stebėjimas', description: 'Portfelio analizė', completed: false, priority: 'medium', day: 'Antradienis' },
+          { id: 'tw3', title: 'Trečiadienis: Šeimos veiklos', description: 'Bendras laikas', completed: true, priority: 'high', day: 'Trečiadienis' },
+          { id: 'tw4', title: 'Ketvirtadienis: Sporto treniruotė', description: 'Fiziniai pratimai', completed: false, priority: 'medium', day: 'Ketvirtadienis' },
+          { id: 'tw5', title: 'Penktadienis: Projektų baigimas', description: 'Savaitės tikslų finalizavimas', completed: false, priority: 'high', day: 'Penktadienis' },
+          { id: 'tw6', title: 'Šeštadienis: Poilsis ir hobiai', description: 'Laisvalaikio veiklos', completed: false, priority: 'low', day: 'Šeštadienis' },
+          { id: 'tw7', title: 'Sekmadienis: Savaitės planavimas', description: 'Kitos savaitės strategija', completed: false, priority: 'medium', day: 'Sekmadienis' }
+        ];
+      } else if (currentTimeFilter === 'month') {
+        dailyTasks = [
+          { id: 'tm1', title: '1 savaitė: SaaS MVP kūrimas', description: 'Pagrindinės funkcijos', completed: false, priority: 'high', week: '1 savaitė' },
+          { id: 'tm2', title: '2 savaitė: Investicijų diversifikavimas', description: 'Naujų galimybių paieška', completed: false, priority: 'medium', week: '2 savaitė' },
+          { id: 'tm3', title: '3 savaitė: Šeimos projektai', description: 'Bendri hobiai', completed: false, priority: 'high', week: '3 savaitė' },
+          { id: 'tm4', title: '4 savaitė: Sveikatingumo rutina', description: 'Mėnesio sporto planas', completed: false, priority: 'medium', week: '4 savaitė' }
+        ];
+      } else if (currentTimeFilter === 'year') {
+        const months = ['Sausis', 'Vasaris', 'Kovas', 'Balandis', 'Gegužė', 'Birželis', 'Liepa', 'Rugpjūtis', 'Rugsėjis', 'Spalis', 'Lapkritis', 'Gruodis'];
+        dailyTasks = months.map((month, index) => ({
+          id: `ty${index}`,
+          title: `${month}: Verslo plėtra`,
+          description: 'Mėnesio produkto vystymo tikslai',
+          completed: index < new Date().getMonth() ? Math.random() > 0.3 : false,
+          priority: 'high',
+          month: month
+        }));
+      }
+    }
+
+    function renderTasks() {
+      const container = document.getElementById('tasksContainer');
+      const timeline = document.getElementById('tasksTimeline');
+      
+      container.innerHTML = '';
+      timeline.innerHTML = '';
+      timeline.style.display = 'none';
+      
+      if (currentTimeFilter === 'today') {
+        dailyTasks.forEach(task => {
+          const taskItem = createTaskElement(task);
+          container.appendChild(taskItem);
+        });
+      } else {
+        timeline.style.display = 'block';
+        
+        if (currentTimeFilter === 'week') {
+          const days = ['Pirmadienis', 'Antradienis', 'Trečiadienis', 'Ketvirtadienis', 'Penktadienis', 'Šeštadienis', 'Sekmadienis'];
+          days.forEach(day => {
+            const dayTasks = dailyTasks.filter(task => task.day === day);
+            if (dayTasks.length > 0) {
+              renderPeriodSection(timeline, day, dayTasks);
+            }
+          });
+        } else if (currentTimeFilter === 'month') {
+          const weeks = ['1 savaitė', '2 savaitė', '3 savaitė', '4 savaitė'];
+          weeks.forEach(week => {
+            const weekTasks = dailyTasks.filter(task => task.week === week);
+            if (weekTasks.length > 0) {
+              renderPeriodSection(timeline, week, weekTasks);
+            }
+          });
+        } else if (currentTimeFilter === 'year') {
+          const months = ['Sausis', 'Vasaris', 'Kovas', 'Balandis', 'Gegužė', 'Birželis', 'Liepa', 'Rugpjūtis', 'Rugsėjis', 'Spalis', 'Lapkritis', 'Gruodis'];
+          months.forEach(month => {
+            const monthTasks = dailyTasks.filter(task => task.month === month);
+            if (monthTasks.length > 0) {
+              renderPeriodSection(timeline, month, monthTasks);
+            }
+          });
+        }
+      }
+    }
+
+    function renderPeriodSection(container, periodName, tasks) {
+      const section = document.createElement('div');
+      section.className = 'period-section';
+      section.innerHTML = `
+        <div class="period-title">📅 ${periodName}</div>
+        ${tasks.map(task => `
+          <div class="task-item" onclick="toggleTask('${task.id}')">
+            <div class="task-checkbox ${task.completed ? 'completed' : ''}">
+              ${task.completed ? '✓' : ''}
+            </div>
+            <div class="task-content">
+              <div class="task-title ${task.completed ? 'completed' : ''}">${task.title}</div>
+              <div class="task-meta">
+                <span>${task.description}</span>
+                <span class="goal-priority priority-${task.priority}">
+                  ${task.priority === 'high' ? 'Aukštas' : task.priority === 'medium' ? 'Vidutinis' : 'Žemas'}
+                </span>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      `;
+      container.appendChild(section);
+    }
+
+    function createTaskElement(task) {
+      const taskItem = document.createElement('div');
+      taskItem.className = 'task-item fade-in';
+      taskItem.onclick = () => toggleTask(task.id);
+      
+      taskItem.innerHTML = `
+        <div class="task-checkbox ${task.completed ? 'completed' : ''}">
+          ${task.completed ? '✓' : ''}
+        </div>
+        <div class="task-content">
+          <div class="task-title ${task.completed ? 'completed' : ''}">${task.title}</div>
+          <div class="task-meta">
+            <span>${task.description}</span>
+            <span class="goal-priority priority-${task.priority}">
+              ${task.priority === 'high' ? 'Aukštas' : task.priority === 'medium' ? 'Vidutinis' : 'Žemas'}
+            </span>
+          </div>
+        </div>
+      `;
+      
+      return taskItem;
+    }
+
+    function toggleTask(taskId) {
+      const task = dailyTasks.find(t => t.id === taskId);
+      if (task) {
+        task.completed = !task.completed;
+        renderTasks();
+        updateTodayBanner();
+        
+        if (task.completed) {
+          showNotification(`Užduotis įvykdyta: ${task.title} ✅`, 'success');
+        }
+      }
+    }
+
+    // =========================================================
+    // IDEAS BOARD - SIMPLIFIED
+    // =========================================================
+    function renderIdeas() {
+      const board = document.getElementById('ideasBoard');
+      board.innerHTML = '';
+      
+      ideas.forEach(idea => {
+        const ideaElement = document.createElement('div');
+        ideaElement.className = 'idea-item';
+        ideaElement.style.left = `${idea.x}px`;
+        ideaElement.style.top = `${idea.y}px`;
+        ideaElement.textContent = idea.text;
+        ideaElement.draggable = true;
+        
+        ideaElement.addEventListener('dragstart', function(e) {
+          e.dataTransfer.setData('text/plain', idea.id);
+          this.classList.add('dragging');
+        });
+        
+        ideaElement.addEventListener('dragend', function() {
+          this.classList.remove('dragging');
+        });
+        
+        board.appendChild(ideaElement);
+      });
+      
+      board.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('active');
+      });
+      
+      board.addEventListener('dragleave', function() {
+        this.classList.remove('active');
+      });
+      
+      board.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('active');
+        
+        const ideaId = e.dataTransfer.getData('text/plain');
+        const idea = ideas.find(i => i.id === ideaId);
+        if (idea) {
+          const rect = this.getBoundingClientRect();
+          idea.x = e.clientX - rect.left - 100;
+          idea.y = e.clientY - rect.top - 25;
+          renderIdeas();
+        }
+      });
+    }
+
+    function addNewIdea() {
+      const ideaText = prompt('Įveskite savo naują idėją:');
+      if (ideaText && ideaText.trim()) {
+        const newIdea = {
+          id: `i_${Date.now()}`,
+          text: ideaText.trim(),
+          x: Math.random() * 300,
+          y: Math.random() * 200
+        };
+        
+        ideas.push(newIdea);
+        renderIdeas();
+        showNotification('Nauja idėja pridėta į lentą! 💡', 'success');
+      }
+    }
+
+    // =========================================================
+    // MODAL & NOTIFICATION SYSTEMS
+    // =========================================================
+    function showModal(title, content) {
+      document.getElementById('modalTitle').innerHTML = title;
+      document.getElementById('modalBody').innerHTML = content;
+      document.getElementById('modalOverlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = `notification ${type} show`;
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 4000);
+    }
+
+    // =========================================================
+    // GLOBAL FUNCTIONS FOR ONCLICK HANDLERS
+    // =========================================================
+    window.toggleTask = toggleTask;
+    window.closeModal = closeModal;
+    window.showNotification = showNotification;
+    window.switchSection = switchSection;
+    
+    // New functions for photo-to-goal conversion
+    window.convertPhotoToGoal = function(photoId, category) {
+      closeModal();
+      showNotification(`Konvertuojama "${category}" į tikslą! 🎯`, 'success');
+      
+      setTimeout(() => {
+        const newGoal = {
+          id: `g_photo_${Date.now()}`,
+          title: `${category} - Tikslas`,
+          description: `Automatiškai sugeneruotas tikslas iš vizijos nuotraukos`,
+          icon: getCategoryIcon(category),
+          progress: 0,
+          priority: 'medium',
+          deadline: '2025-12-31'
+        };
+        
+        goals.push(newGoal);
+        renderGoals();
+        showNotification(`Naujas tikslas "${category}" pridėtas! 🎯`, 'success');
+        
+        setTimeout(() => {
+          switchSection('goals');
+        }, 1000);
+      }, 1000);
+    };
+    
+    window.generateTasksFromPhoto = function(photoId, category) {
+      closeModal();
+      showNotification(`Generuojamos užduotys kategorijai "${category}"! 📋`, 'info');
+      
+      setTimeout(() => {
+        const categoryTasks = generateTasksForCategory(category);
+        dailyTasks.push(...categoryTasks);
+        renderTasks();
+        updateTodayBanner();
+        showNotification(`Sugeneruotos ${categoryTasks.length} užduotys kategorijai "${category}"! ✅`, 'success');
+        
+        setTimeout(() => {
+          switchSection('daily');
+        }, 1000);
+      }, 1500);
+    };
+    
+    // Helper functions
+    function getCategoryIcon(category) {
+      const categoryIcons = {
+        'Finansai ir Verslas': '💰',
+        'Šeima ir Santykiai': '👨‍👩‍👧‍👦',
+        'Namai ir Gyvenimo Erdvė': '🏡',
+        'Sveikata ir Sportas': '💪',
+        'Kelionės ir Išgyvenimai': '✈️',
+        'Technologijos ir Mokymasis': '🤖',
+        'Hobiai ir Kūryba': '🎨',
+        'Socialinis Poveikis': '🌍',
+        'Karjera ir Profesija': '💼',
+        'Automobilis ir Transportas': '🚗',
+        'Menas ir Kultūra': '🎭',
+        'Gamta ir Aplinka': '🌿',
+        'Maistas ir Kulinarija': '🍳',
+        'Draugai ir Bendravimas': '👥',
+        'Asmeninė Laimė': '😊'
+      };
+      return categoryIcons[category] || '🎯';
+    }
+    
+    function generateTasksForCategory(category) {
+      const categoryTaskTemplates = {
+        'Finansai ir Verslas': [
+          { title: 'Suplanuoti mėnesio biudžetą', desc: 'Detalus pajamų ir išlaidų planas' },
+          { title: 'Investicijų portfelio peržiūra', desc: 'Analizuoti dabartines investicijas' },
+          { title: 'Verslo galimybių tyrimai', desc: 'Naujos rinkos analizė' }
+        ],
+        'Šeima ir Santykiai': [
+          { title: 'Šeimos vakaras be telefonų', desc: 'Kokybiškas laikas su artimaisiais' },
+          { title: 'Planuoti šeimos išvyką', desc: 'Savaitgalio veiklos organizavimas' },
+          { title: 'Pokalbis su partneru', desc: 'Atvirų santykių stiprinimas' }
+        ],
+        'Sveikata ir Sportas': [
+          { title: 'Rytinė sporto treniruotė', desc: '30 min fizinio aktyvumo' },
+          { title: 'Sveikos mitybos planas', desc: 'Savaitės meniu sudarymas' },
+          { title: 'Sveikatos patikrinimas', desc: 'Gydytojo vizitas profilaktikai' }
+        ],
+        'Namai ir Gyvenimo Erdvė': [
+          { title: 'Namų tvarkymas ir organizavimas', desc: 'Erdvės optimizavimas' },
+          { title: 'Namų ūkio pagerinimų planas', desc: 'Renovacijos idejų sąrašas' },
+          { title: 'Interjero atnaujinimas', desc: 'Dekoracijos ir stilius' }
+        ]
+      };
+      
+      const templates = categoryTaskTemplates[category] || [
+        { title: `${category} - veikla 1`, desc: 'Automatiškai sugeneruota užduotis' },
+        { title: `${category} - veikla 2`, desc: 'Plėtojimo užduotis' }
+      ];
+      
+      return templates.map((template, index) => ({
+        id: `t_${category.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}_${index}`,
+        title: template.title,
+        description: template.desc,
+        completed: false,
+        priority: Math.random() > 0.5 ? 'high' : 'medium'
+      }));
+    }
+
+    console.log('🎯 ULTIMATE GOAL SYSTEM PAJUNGTA SU STABILIU JS!');
   </script>
 </body>
 </html>
