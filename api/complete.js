@@ -1,61 +1,69 @@
-// /api/complete.js — JSON "once" endpoint tik ne-SSE modeliams (Claude, Gemini, Grok ir kt.)
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const { readBody, inferOnce, systemLT, aliasOf, guessProvider, sendJSON } = require('./_utils.js');
+// api/complete.js
+const {
+  readBody,
+  sendJSON,
+  nocache,
+  pickAutoModel,
+  normalizeModelId,
+  aliasOf,
+  guessProvider,
+  inferOnce,
+  systemLT,
+} = require('../_utils.js');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // CORS
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.statusCode = 204;
-    return res.end();
+    res.setHeader('Access-Control-Allow-Origin','*');
+    res.setHeader('Access-Control-Allow-Methods','POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers','Content-Type');
+    return res.status(204).end();
   }
   if (req.method !== 'POST') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    return sendJSON(res, 405, { ok:false, error:'Method Not Allowed' });
+    return sendJSON(res, 405, { ok:false, error: 'Method Not Allowed' });
   }
 
   try {
-    const body = await readBody(req);
-    const message = String(body?.message ?? '');
-    const modelsStr = String(body?.models ?? '');
-    const chatId = body?.chat_id || ('chat_'+Date.now()+'_'+Math.random().toString(36).slice(2));
-    const maxTokens = Math.min(4096, Number(body?.max_tokens) || 4096);
-    const temperature = (typeof body?.temperature === 'number') ? body.temperature : 0.55;
+    nocache(res);
 
-    const backIds = modelsStr.split(',').map(s=>s.trim()).filter(Boolean);
-    if (!message || backIds.length === 0) {
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      return sendJSON(res, 400, { ok:false, error:'message_or_models_missing' });
+    const body = await readBody(req);
+    const user = String(body?.message || '');
+    const ids  = String(body?.models || '').split(',').map(s=>s.trim()).filter(Boolean);
+    const chatId = body?.chat_id || ('chat_'+Date.now()+'_'+Math.random().toString(36).slice(2));
+    const maxTokens = Math.max(1, Math.min(4096, Number(body?.max_tokens || 1024)));
+
+    // jei nieko nepaduota – auto
+    const models = ids.length ? ids : ['auto'];
+    const answers = [];
+
+    for (const raw of models) {
+      try {
+        const model = (raw === 'auto') ? pickAutoModel() : normalizeModelId(raw);
+        const provider = guessProvider(model);
+        const sys = systemLT(aliasOf(model), model, provider);
+        const messages = [
+          { role:'system', content: sys },
+          { role:'user',   content: user }
+        ];
+
+        const out = await inferOnce(model, messages, { maxTokens, temperature: 0.55 });
+        if (out?.ok && out?.output) {
+          answers.push({ model: out.selected_model || model, text: out.output });
+        }
+      } catch (e) {
+        // vieno modelio klaida neturi numušti visos funkcijos
+        // tiesiog nepridedam į answers
+      }
     }
 
-    // Lygiagretūs kvietimai visiems nurodytiems modeliams
-    const answers = await Promise.all(backIds.map(async (model) => {
-      const sys = systemLT(aliasOf(model), model, guessProvider(model));
-      const msgs = [
-        { role:'system', content: sys },
-        { role:'user',   content: message }
-      ];
-      try{
-        const out = await inferOnce(model, msgs, { maxTokens, temperature });
-        if (out?.ok && out?.output) return { model, text: out.output };
-        const err = out?.error || 'NO_OUTPUT';
-        return { model, text: `⚠️ (${model}) klaida: ${err}` };
-      }catch(e){
-        return { model, text: `⚠️ (${model}) išimtis: ${String(e?.message||e)}` };
-      }
-    }));
+    res.setHeader('Access-Control-Allow-Origin','*');
+    res.setHeader('Cache-Control','no-store');
+    return res.status(200).json({ ok:true, chat_id: chatId, answers });
 
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cache-Control', 'no-store');
-    res.statusCode = 200;
-    return res.end(JSON.stringify({ ok:true, chat_id: chatId, answers }));
   } catch (e) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cache-Control', 'no-store');
-    res.statusCode = 200;
-    return res.end(JSON.stringify({ ok:false, error:String(e?.message||e) }));
+    // Kad UI nemestų "HTTP 500", vis tiek grąžinam 200 su ok:false
+    res.setHeader('Access-Control-Allow-Origin','*');
+    res.setHeader('Cache-Control','no-store');
+    return res.status(200).json({ ok:false, error: String(e?.message || e) });
   }
-}
+};
