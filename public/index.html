@@ -21,8 +21,22 @@
   <link rel="preconnect" href="/" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
-  <!-- Pagrindinis CSS (iškelti stiliai) -->
-  <link rel="stylesheet" href="/assets/css/paule.css?v=1.1.2"/>
+  <!-- Pagrindinis CSS -->
+  <link rel="stylesheet" href="/assets/css/paule.css?v=1.1.3"/>
+
+  <!-- Maži inline guard'ai (mobile chat + „Į naujausią“) -->
+  <style>
+    /* chat matomumas mobiliam */
+    #chatArea{min-height:calc(100vh - 240px);overflow:auto}
+    @supports(height:100dvh){#chatArea{min-height:calc(100dvh - 240px)}}
+    /* „Į naujausią“ tik ikona ir 2 cm nuo apačios */
+    .jump-latest{bottom:2cm!important}
+    .jump-latest span{display:none}
+    .jump-latest img{width:16px;height:16px}
+    /* vienodas mažas ikonų dydis */
+    .models-in-topbar .ui-icon{width:13px;height:13px}
+    .avatar img{width:14px;height:14px}
+  </style>
 
   <!-- App konfigūracija -->
   <script>
@@ -36,7 +50,7 @@
         runwayImage:restBase+'/runway/image', runwayStatus:restBase+'/runway/status'
       };
       var CFG={mode:MODE,restBase:routes.base,restStream:routes.stream,restStreamSSE:routes.stream,sseDefault:1,
-        pluginBase:'/assets',iconsBase:'/assets/icon',featuresBase:'/assets/features',routes:routes,version:'paule-1.1.2'};
+        pluginBase:'/assets',iconsBase:'/assets/icon',featuresBase:'/assets/features',routes:routes,version:'paule-1.1.3'};
       window.PAULE_CONFIG=CFG; window.AUGAM_CONFIG=CFG;
       try{Object.defineProperty(window,'API_BASE',{configurable:true,get:function(){return CFG.restBase;},set:function(_){}});}catch(e){}
       window.__SET_API_BASE__=function(v){};
@@ -170,7 +184,10 @@
     </a>
 
     <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
-      <button class="model-pill active" data-model="paule" aria-pressed="true" type="button"><img class="ui-icon" src="/assets/icon/llama.svg" alt=""> Paule</button>
+      <!-- Paule ikona: jūsų logo -->
+      <button class="model-pill active" data-model="paule" aria-pressed="true" type="button">
+        <img class="ui-icon" src="https://paule-bly37j8z9-paules.vercel.app/assets/icon/paule-logo.webp" alt=""> Paule
+      </button>
       <button class="model-pill" data-model="chatgpt" type="button"><img class="ui-icon" src="/assets/icon/chatgpt.svg" alt=""> ChatGPT</button>
       <button class="model-pill" data-model="claude" type="button"><img class="ui-icon" src="/assets/icon/claude-seeklogo.svg" alt=""> Claude</button>
       <button class="model-pill" data-model="gemini" type="button"><img class="ui-icon" src="/assets/icon/gemini.svg" alt=""> Gemini</button>
@@ -191,7 +208,13 @@
       </button>
 
       <!-- Čia montuojame Clerk -->
-      <div id="clerk-auth" class="login-anchor"></div>
+      <div id="clerk-auth" class="login-anchor">
+        <!-- Statinis fallback – matosi iškart -->
+        <button class="btn ghost" id="loginFallback" type="button"
+          onclick="(window.Clerk&&window.Clerk.openSignIn?window.Clerk.openSignIn({afterSignInUrl:'/',afterSignUpUrl:'/' }):alert('Kraunama…'));">
+          <img class="ui-icon google" src="/assets/icon/google.svg" alt=""> Prisijungti
+        </button>
+      </div>
 
       <button class="btn ghost mobile-toggle" id="btnMobile" aria-label="Meniu (mobilus)" type="button">
         <img class="ui-icon" src="/assets/icon/nav-menu.svg" alt=""> Meniu
@@ -322,7 +345,8 @@
     <div class="input-bar" id="inputBar">
       <div class="input-container" id="inputContainer">
         <label for="messageInput" class="sr-only">Parašyk čia…</label>
-        <textarea class="message-input" id="messageInput" rows="1" placeholder="Parašyk čia savo tekstą – modeliai atsakys…" autocomplete="on" autocapitalize="sentences" autocorrect="on" spellcheck="true"></textarea>
+        <!-- vienas placeholder – be dubliavimo -->
+        <textarea class="message-input" id="messageInput" rows="1" placeholder="Parašyk čia…" autocomplete="on" autocapitalize="sentences" autocorrect="on" spellcheck="true"></textarea>
         <button class="send-btn" id="sendBtn" aria-label="Siųsti" type="button">
           <img class="ui-icon" src="/assets/icon/arrow-top.svg" alt="">
         </button>
@@ -375,7 +399,7 @@
     };
     const NON_SSE_FRONT = new Set(['claude','gemini','grok']);
     const MODEL_ICON = {
-      paule:`${ICONS_BASE}/llama.svg`,
+      paule: 'https://paule-bly37j8z9-paules.vercel.app/assets/icon/paule-logo.webp',
       chatgpt:`${ICONS_BASE}/chatgpt.svg`,
       claude:`${ICONS_BASE}/claude-seeklogo.svg`,
       gemini:`${ICONS_BASE}/gemini.svg`,
@@ -423,7 +447,12 @@
       if (!jumpBtn){
         jumpBtn = document.createElement('button');
         jumpBtn.className='jump-latest';
-        jumpBtn.innerHTML = `<img class="ui-icon" src="/assets/icon/arrow-down.svg" alt=""> Į naujausią`;
+        /* tik ikona + 2cm iš apačios */
+        jumpBtn.style.position='fixed';
+        jumpBtn.style.right='16px';
+        jumpBtn.style.bottom='2cm';
+        jumpBtn.innerHTML = `<img class="ui-icon" src="/assets/icon/arrow-down.svg" alt="Į naujausią">`;
+        jumpBtn.title = 'Į naujausią';
         jumpBtn.addEventListener('click', ()=>{ chatArea.scrollTo({top:chatArea.scrollHeight, behavior:'smooth'}); jumpBtn.classList.remove('show'); state.stickToBottom=true; });
         document.body.appendChild(jumpBtn);
       }
@@ -522,7 +551,7 @@
     function showGlobalWait(){
       if (document.querySelector('._ai-wait')) return;
       const w = document.createElement('div');
-      w.className='_ai-wait';
+      w.className='._ai-wait _ai-wait';
       w.setAttribute('aria-live','polite');
       w.innerHTML = `<div class="dots" aria-hidden="true"><span></span><span></span><span></span></div><div>AI mąsto, palaukite akimirką…</div>`;
       chatArea.appendChild(w);
@@ -753,11 +782,11 @@
         s.append(p1,p2,p3,p4); return s;
       }
 
-      function button(classes, text, iconSvg){
+      function button(classes, text, withGoogleIcon){
         const b = document.createElement('button');
         b.className = classes;
         b.type = 'button';
-        if (iconSvg) b.appendChild(iconSvg);
+        if (withGoogleIcon) b.appendChild(svgGoogle());
         b.appendChild(document.createTextNode(text));
         return b;
       }
@@ -765,10 +794,9 @@
       function renderFallback(){
         if (!root) return;
         root.innerHTML = '';
-        const inBtn = button('btn ghost', 'Prisijungti');
+        const inBtn = button('btn ghost', 'Prisijungti', true);
         inBtn.onclick = ()=> alert('Kraunama…');
-        const gBtn = button('btn ghost', 'Prisijungti su Google', svgGoogle());
-        root.append(inBtn, gBtn);
+        root.append(inBtn);
       }
 
       window.addEventListener('load', async () => {
@@ -786,18 +814,10 @@
               root.appendChild(holder);
               clerk.mountUserButton(holder, { appearance: { elements: { userButtonAvatarBox: 'rounded-xl' } } });
             } else {
-              // Tik du veiksmai: Prisijungti (modalas) ir Prisijungti su Google
-              const loginBtn  = button('btn ghost', 'Prisijungti');
+              // VIENAS mygtukas: „Prisijungti“ (Clerk modalas su Google)
+              const loginBtn  = button('btn ghost', 'Prisijungti', true);
               loginBtn.onclick = () => clerk.openSignIn({ afterSignInUrl: '/', afterSignUpUrl: '/' });
-
-              const googleBtn = button('btn ghost', 'Prisijungti su Google', svgGoogle());
-              googleBtn.onclick = () => clerk.authenticateWithRedirect({
-                strategy: 'oauth_google',
-                redirectUrl: '/',
-                redirectUrlComplete: '/'
-              });
-
-              root.append(loginBtn, googleBtn);
+              root.append(loginBtn);
             }
           };
 
