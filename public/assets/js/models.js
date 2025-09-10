@@ -1,8 +1,10 @@
-// /public/assets/js/models.js
+/* =======================================================================
+   Paule – Modelių žemėlapis • v1.4.0
+   Visi modeliai laikomi SSE-capable (naudojam /api/stream)
+   ======================================================================= */
 (function () {
   'use strict';
 
-  // Front (mygtuko id) -> Back (API model id)
   const FRONT_TO_BACK = Object.freeze({
     'auto':'auto','paule':'auto','augam-auto':'auto',
     'chatgpt':'gpt-4o-mini',
@@ -17,6 +19,7 @@
     Object.entries(FRONT_TO_BACK).reduce((m,[f,b]) => (m[b]=f,m), {})
   );
 
+  const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
   const MODEL_NAME = Object.freeze({
     'auto':'Paule','paule':'Paule','augam-auto':'Paule',
     'chatgpt':'ChatGPT','gpt-4o-mini':'ChatGPT',
@@ -27,8 +30,6 @@
     'llama':'Llama','meta-llama/Llama-4-Scout-17B-16E-Instruct':'Llama',
     'judge':'Teisėjas'
   });
-
-  const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
   const MODEL_ICON = Object.freeze({
     'auto': `${ICONS_BASE}/ai.svg`,
     'paule': `${ICONS_BASE}/ai.svg`,
@@ -41,39 +42,29 @@
     'judge': `${ICONS_BASE}/legal-contract.svg`
   });
 
-  // šiuos laikom kaip "JSON only" (pas jus jų SSE neveikia) → JSON once fallback
-  const NON_SSE_FRONT = new Set(['claude','gemini','grok','claude-4-sonnet','gemini-2.5-flash','grok-4']);
-
-  const lc = s => String(s||'').toLowerCase().trim();
+  // ❗ Nebėra NON_SSE_FRONT – visi laikomi SSE-capable
   function canonicalFrontId(id){
-    if (!id) return 'auto';
-    let s=lc(id);
-    if (!FRONT_TO_BACK[s] && BACK_TO_FRONT[id]) s=BACK_TO_FRONT[id];
-    if (s==='paule' || s==='augam-auto') s='auto';
-    return s;
+    const s = String(id||'').toLowerCase().trim();
+    if (s==='paule' || s==='augam-auto') return 'auto';
+    if (FRONT_TO_BACK[s]) return s;
+    if (BACK_TO_FRONT[id]) return BACK_TO_FRONT[id];
+    return 'auto';
   }
   function getBackId(front){ const f=canonicalFrontId(front); return FRONT_TO_BACK[f]||f||'auto'; }
   function nameOf(id){ return MODEL_NAME[id] || MODEL_NAME[canonicalFrontId(id)] || String(id); }
-  function iconOf(id){ const f=canonicalFrontId(id); return MODEL_ICON[f] || MODEL_ICON.auto; }
-  function isSSECapable(front){ const f=canonicalFrontId(front); return !NON_SSE_FRONT.has(f); }
+  function iconOf(id){ return MODEL_ICON[canonicalFrontId(id)] || MODEL_ICON.auto; }
 
   function normalizeModelsInput(list){
     if (!list) return ['auto'];
-    if (typeof list==='string'){
-      list = list.split(',').map(s=>s.trim()).filter(Boolean);
-    }
-    const set=new Set(list.map(canonicalFrontId).filter(Boolean));
+    if (typeof list==='string') list = list.split(',').map(s=>s.trim()).filter(Boolean);
+    const set = new Set(list.map(canonicalFrontId).filter(Boolean));
     if (!set.size) set.add('auto');
     return Array.from(set);
   }
 
+  // Dabar splitTransports visus meta į stream, JSON grupei – nieko
   function splitTransports(frontList){
-    const out={stream:[],json:[]};
-    normalizeModelsInput(frontList).forEach(fid=>{
-      if (fid==='auto'){ out.stream.push('auto'); return; }
-      (isSSECapable(fid)?out.stream:out.json).push(fid);
-    });
-    return out;
+    return { stream: normalizeModelsInput(frontList), json: [] };
   }
 
   function listAll(){
@@ -81,17 +72,16 @@
     fronts.forEach(f=>{
       if (seen.has(f)) return; seen.add(f);
       const back=FRONT_TO_BACK[f]||f;
-      items.push({ id:f, back, name:nameOf(f), icon:iconOf(f), sse:isSSECapable(f) });
+      items.push({ id:f, back, name:nameOf(f), icon:iconOf(f), sse:true });
     });
     items.push({ id:'judge', back:'meta-llama/Llama-4-Scout-17B-16E-Instruct', name:nameOf('judge'), icon:iconOf('judge'), sse:true });
     return items;
   }
 
-  async function ensureCapabilities(){ /* jei reikės – galit įdėti ping’ą */ return true; }
+  async function ensureCapabilities(){ return true; }
 
-  const API={ FRONT_TO_BACK,BACK_TO_FRONT,MODEL_NAME,MODEL_ICON,NON_SSE_FRONT,
-    canonicalFrontId,getBackId,nameOf,iconOf,isSSECapable,
-    normalizeModelsInput,splitTransports,listAll,ensureCapabilities
+  const API={ FRONT_TO_BACK,BACK_TO_FRONT,MODEL_NAME,MODEL_ICON,
+    canonicalFrontId,getBackId,nameOf,iconOf,normalizeModelsInput,splitTransports,listAll,ensureCapabilities
   };
   try{ Object.freeze(API);}catch(_){}
   window.PAULE_MODELS=API;
