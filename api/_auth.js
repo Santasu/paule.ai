@@ -1,17 +1,13 @@
-// Reikia: npm i @clerk/backend
-import { verifyToken } from '@clerk/backend';
-
-export async function requireAuth(req, res) {
-  try {
-    const h = req.headers.authorization || '';
-    const token = h.startsWith('Bearer ') ? h.slice(7) : null;
-    if (!token) throw new Error('NO_TOKEN');
-    const payload = await verifyToken(token, {
-      secretKey: process.env.CLERK_SECRET_KEY,
-    });
-    return payload; // payload.sub == userId
-  } catch (e) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return null;
-  }
+// _auth.js
+function getEnv() {
+  return {
+    OPENAI: process.env.OPENAI_API_KEY || '',
+    TOGETHER: process.env.TOGETHER_API_KEY || '',
+    ANTHROPIC: process.env.ANTHROPIC_API_KEY || '',
+    GOOGLE: process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENAI_API_KEY || '',
+    XAI: process.env.XAI_API_KEY || '',
+    DEEPSEEK: process.env.DEEPSEEK_API_KEY || '',
+    SYSTEM_PROMPT: process.env.SYSTEM_PROMPT || ''
+  };
 }
+module.exports = { getEnv };
