@@ -17,11 +17,9 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <!-- Host + Clerk CDN -->
+  <!-- Host + Clerk CDN + Stripe -->
   <link rel="preconnect" href="/" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-
-  <!-- 👉 Stripe Pricing Table (web component registracija) -->
   <link rel="preconnect" href="https://js.stripe.com" crossorigin>
   <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
 
@@ -30,14 +28,11 @@
 
   <!-- Maži inline guard'ai (mobile chat + „Į naujausią“) -->
   <style>
-    /* chat matomumas mobiliam */
     #chatArea{min-height:calc(100vh - 240px);overflow:auto}
     @supports(height:100dvh){#chatArea{min-height:calc(100dvh - 240px)}}
-    /* „Į naujausią“ tik ikona ir 2 cm nuo apačios */
     .jump-latest{bottom:2cm!important}
     .jump-latest span{display:none}
     .jump-latest img{width:16px;height:16px}
-    /* vienodas mažas ikonų dydis */
     .models-in-topbar .ui-icon{width:13px;height:13px}
     .avatar img{width:14px;height:14px}
   </style>
@@ -168,7 +163,7 @@
     };
   </script>
 
-  <!-- Clerk JS (publishable key) -->
+  <!-- Clerk JS -->
   <script async crossorigin="anonymous"
     data-clerk-publishable-key="pk_live_Y2xlcmsucGF1bGUuYWkk"
     src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
@@ -188,9 +183,8 @@
     </a>
 
     <nav class="models-in-topbar" aria-label="Modeliai" id="modelList">
-      <!-- Paule ikona: jūsų logo -->
       <button class="model-pill active" data-model="paule" aria-pressed="true" type="button">
-        <img class="ui-icon" src="https://paule-bly37j8z9-paules.vercel.app/assets/icon/paule-logo.webp" alt=""> Paule
+        <img class="ui-icon" src="/assets/icon/paule-logo.webp" alt=""> Paule
       </button>
       <button class="model-pill" data-model="chatgpt" type="button"><img class="ui-icon" src="/assets/icon/chatgpt.svg" alt=""> ChatGPT</button>
       <button class="model-pill" data-model="claude" type="button"><img class="ui-icon" src="/assets/icon/claude-seeklogo.svg" alt=""> Claude</button>
@@ -201,12 +195,9 @@
     </nav>
 
     <div class="top-actions" id="topActions" role="navigation" aria-label="Pagrindiniai veiksmai">
-
-      <!-- 👉 naujas mygtukas „Planai“ -->
       <a class="btn ghost" data-nav="pricing" href="#pricing" role="button">
         <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Planai
       </a>
-
       <a class="btn ghost" data-nav="community" href="/community" role="button">
         <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė
       </a>
@@ -217,9 +208,8 @@
         <img class="ui-icon" src="/assets/icon/nav-theme.svg" alt=""> Tema
       </button>
 
-      <!-- Čia montuojame Clerk -->
+      <!-- Clerk mount -->
       <div id="clerk-auth" class="login-anchor">
-        <!-- Statinis fallback – matosi iškart -->
         <button class="btn ghost" id="loginFallback" type="button"
           onclick="(window.Clerk&&window.Clerk.openSignIn?window.Clerk.openSignIn({afterSignInUrl:'/',afterSignUpUrl:'/' }):alert('Kraunama…'));">
           <img class="ui-icon google" src="/assets/icon/google.svg" alt=""> Prisijungti
@@ -247,16 +237,18 @@
       <section class="side-section">
         <div class="side-title">AI specialistai</div>
         <div class="specialist-grid" id="specialistGrid">
-          <a class="chip" href="#spec-sefas" data-route="/spec/sefas" data-spec="sefas"><img class="ui-icon" src="/assets/icon/chef-knife.svg" alt=""> Šefas</a>
-          <a class="chip" href="#spec-marketing" data-route="/spec/marketing" data-spec="marketing"><img class="ui-icon" src="/assets/icon/marketing-megaphone.svg" alt=""> Marketing</a>
-          <a class="chip" href="#spec-pardavimai" data-route="/spec/pardavimai" data-spec="pardavimai"><img class="ui-icon" src="/assets/icon/sales-handshake.svg" alt=""> Pardavimai</a>
-          <a class="chip" href="#spec-verslas" data-route="/spec/verslas" data-spec="verslas"><img class="ui-icon" src="/assets/icon/business-strategy.svg" alt=""> Verslas</a>
-          <a class="chip" href="#spec-finansai" data-route="/spec/finansai" data-spec="finansai"><img class="ui-icon" src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
-          <a class="chip" href="#spec-keliones" data-route="/spec/keliones" data-spec="keliones"><img class="ui-icon" src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
-          <a class="chip" href="#spec-renginiai" data-route="/spec/renginiai" data-spec="renginiai"><img class="ui-icon" src="/assets/icon/event-planning.svg" alt=""> Renginiai</a>
-          <a class="chip" href="/spec/goal.html" data-route="/spec/goal.html" data-spec="goal"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
-          <a class="chip" href="#spec-teise" data-route="/spec/teisininkas" data-spec="teisininkas"><img class="ui-icon" src="/assets/icon/legal-contract.svg" alt=""> Teisininkas</a>
-          <a class="chip" href="#spec-psichologas" data-route="/spec/psichologas" data-spec="psichologas"><img class="ui-icon" src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
+          <a class="chip" href="/spec/sefas.html"><img class="ui-icon" src="/assets/icon/chef-knife.svg" alt=""> Šefas</a>
+          <a class="chip" href="/spec/marketing.html"><img class="ui-icon" src="/assets/icon/marketing-megaphone.svg" alt=""> Marketing</a>
+          <a class="chip" href="/spec/pardavimai.html"><img class="ui-icon" src="/assets/icon/sales-handshake.svg" alt=""> Pardavimai</a>
+          <a class="chip" href="/spec/verslas.html"><img class="ui-icon" src="/assets/icon/business-strategy.svg" alt=""> Verslas</a>
+          <a class="chip" href="/spec/finansai.html"><img class="ui-icon" src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
+          <a class="chip" href="/spec/keliones.html"><img class="ui-icon" src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
+          <a class="chip" href="/spec/renginiai.html"><img class="ui-icon" src="/assets/icon/event-planning.svg" alt=""> Renginiai</a>
+          <a class="chip" href="/spec/tikslai.html"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
+          <a class="chip" href="/spec/teisininkas.html"><img class="ui-icon" src="/assets/icon/legal-contract.svg" alt=""> Teisininkas</a>
+          <a class="chip" href="/spec/psichologas.html"><img class="ui-icon" src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
+          <a class="chip" href="/spec/sportas.html"><img class="ui-icon" src="/assets/icon/run.svg" alt=""> Sportas</a>
+          <a class="chip" href="/spec/programuotojas.html"><img class="ui-icon" src="/assets/icon/code.svg" alt=""> Programuotojas</a>
         </div>
       </section>
 
@@ -313,6 +305,19 @@
 
     <main class="main" role="main">
       <div class="chat-area" id="chatArea">
+
+        <!-- Planai – viršuje -->
+        <section id="pricing" class="pricing-section" aria-label="Planai">
+          <h2 class="section-title">Planai</h2>
+          <p class="section-sub">Pasirink sau tinkamiausią planą. Galima atšaukti bet kada.</p>
+          <stripe-pricing-table
+            pricing-table-id="prctbl_1S5mCdGfWPiTH9M4MOXoL4f3"
+            publishable-key="pk_test_51S5jh4GfWPiTH9M4gRYoHhV9LiZBjn7FPavf9nXPFIvbBLjQ89oyMRvKu0FRIhqx8boX4IHvtvRbQUdUWnvJwmaf00NszDYZC7">
+          </stripe-pricing-table>
+          <noscript>Norint matyti kainas, įjunkite JavaScript.</noscript>
+        </section>
+
+        <!-- HERO -->
         <section class="welcome" id="welcome" aria-label="Pradinis ekranas">
           <h1 class="hero-title">KAIP GALIU PADĖTI ŠIANDIEN?</h1>
           <p>Pasirink viršuje modelius ir parašyk užklausą. Visi modeliai atsakys paraleliai. 👇</p>
@@ -334,7 +339,7 @@
               <img src="/assets/hero/mindmap.webp" alt="">
               <b>Minčių žemėlapis</b><span>Susitelk į esmę ir didink produktyvumą.</span>
             </a>
-            <a class="welcome-card" href="/spec/goal.html">
+            <a class="welcome-card" href="/spec/tikslai.html">
               <img src="/assets/hero/goals.webp" alt="">
               <b>Tikslų sistema (AI)</b><span>Vizija → užduotys → realūs rezultatai.</span>
             </a>
@@ -345,20 +350,6 @@
           </div>
         </section>
       </div>
-
-      <!-- 👉 STRIPE KAINŲ LENTELĖ -->
-      <section id="pricing" class="pricing-section" aria-label="Planai">
-        <h2 class="section-title">Planai</h2>
-        <p class="section-sub">Pasirink sau tinkamiausią planą. Galima atšaukti bet kada.</p>
-
-        <stripe-pricing-table
-          pricing-table-id="prctbl_1S5mCdGfWPiTH9M4MOXoL4f3"
-          publishable-key="pk_test_51S5jh4GfWPiTH9M4gRYoHhV9LiZBjn7FPavf9nXPFIvbBLjQ89oyMRvKu0FRIhqx8boX4IHvtvRbQUdUWnvJwmaf00NszDYZC7">
-        </stripe-pricing-table>
-
-        <noscript>Norint matyti kainas, įjunkite JavaScript.</noscript>
-      </section>
-      <!-- /STRIPE -->
     </main>
   </div>
 
@@ -369,7 +360,6 @@
     <div class="input-bar" id="inputBar">
       <div class="input-container" id="inputContainer">
         <label for="messageInput" class="sr-only">Parašyk čia…</label>
-        <!-- vienas placeholder – be dubliavimo -->
         <textarea class="message-input" id="messageInput" rows="1" placeholder="Parašyk čia…" autocomplete="on" autocapitalize="sentences" autocorrect="on" spellcheck="true"></textarea>
         <button class="send-btn" id="sendBtn" aria-label="Siųsti" type="button">
           <img class="ui-icon" src="/assets/icon/arrow-top.svg" alt="">
@@ -423,7 +413,7 @@
     };
     const NON_SSE_FRONT = new Set(['claude','gemini','grok']);
     const MODEL_ICON = {
-      paule: 'https://paule-bly37j8z9-paules.vercel.app/assets/icon/paule-logo.webp',
+      paule: '/assets/icon/paule-logo.webp',
       chatgpt:`${ICONS_BASE}/chatgpt.svg`,
       claude:`${ICONS_BASE}/claude-seeklogo.svg`,
       gemini:`${ICONS_BASE}/gemini.svg`,
@@ -437,7 +427,7 @@
       pending:0, errors:[], hasAnyText:false, suggestShown:false, stickToBottom:true, lastUserText:''
     };
 
-    /* Tema */
+    /* Tema + logo */
     initTheme();
     function initTheme(){
       try{
@@ -471,7 +461,6 @@
       if (!jumpBtn){
         jumpBtn = document.createElement('button');
         jumpBtn.className='jump-latest';
-        /* tik ikona + 2cm iš apačios */
         jumpBtn.style.position='fixed';
         jumpBtn.style.right='16px';
         jumpBtn.style.bottom='2cm';
@@ -762,7 +751,7 @@
       startOrchestrator(text, fronts);
     }
 
-    /* Input UX (desktop + mobile) */
+    /* Input UX */
     msgInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); doSend(); }});
     msgInput.addEventListener('focus', ()=>{ if(!msgInput.value.trim()) renderInline(['Paaiškink detaliau','Duok pavyzdį','Sutrumpink iki 3 sakinių','Sukurk veiksmų planą','Kokie KPI?']); });
     msgInput.addEventListener('input', ()=>{ if(msgInput.value.length===0) renderInline(['Paaiškink detaliau','Duok pavyzdį','Sutrumpink iki 3 sakinių','Sukurk veiksmų planą','Kokie KPI?']); else inputDeck.classList.remove('show'); });
@@ -819,8 +808,7 @@
 
       function button(classes, text, withGoogleIcon){
         const b = document.createElement('button');
-        b.className = classes;
-        b.type = 'button';
+        b.className = classes; b.type = 'button';
         if (withGoogleIcon) b.appendChild(svgGoogle());
         b.appendChild(document.createTextNode(text));
         return b;
@@ -839,7 +827,7 @@
           const clerk = window.Clerk;
           if (!clerk || !clerk.load) { renderFallback(); return; }
 
-          await clerk.load(); // publishable key paimamas iš <script> data atributo
+          await clerk.load();
 
           const rerender = () => {
             if (!root) return;
@@ -849,7 +837,6 @@
               root.appendChild(holder);
               clerk.mountUserButton(holder, { appearance: { elements: { userButtonAvatarBox: 'rounded-xl' } } });
             } else {
-              // VIENAS mygtukas: „Prisijungti“ (Clerk modalas su Google)
               const loginBtn  = button('btn ghost', 'Prisijungti', true);
               loginBtn.onclick = () => clerk.openSignIn({ afterSignInUrl: '/', afterSignUpUrl: '/' });
               root.append(loginBtn);
@@ -863,7 +850,7 @@
     })();
   </script>
 
-  <!-- ===== Poraštė (kairėje apačioje, mažomis raidėmis) ===== -->
+  <!-- ===== Poraštė ===== -->
   <footer class="site-footer left">
     <a class="footer-link" href="/legal/privacy.html">Privatumo politika</a>
     <span class="sep">•</span>
@@ -872,22 +859,27 @@
     <a class="footer-link" href="/legal/refunds.html">Pinigų grąžinimas</a>
   </footer>
 
-  <!-- ===== Cookie bar ===== -->
-  <div id="cookie-bar" class="cookie-bar" hidden>
-    <div class="cookie-text">
-      Naudojame slapukus paslaugos veikimui ir tobulinimams. Daugiau –
+  <!-- ===== Cookie bar (Sutinku / Atsisakyti) ===== -->
+  <div id="cookie-bar" role="dialog" aria-live="polite" aria-label="Slapukų pranešimas" style="display:none">
+    <div>Naudojame slapukus paslaugos veikimui ir tobulinimams. Daugiau –
       <a href="/legal/cookies.html" class="footer-link">Slapukų politikoje</a>.
     </div>
-    <button id="cookie-accept" class="btn">Sutinku</button>
+    <div class="actions">
+      <button id="cookie-accept" type="button">Sutinku</button>
+      <button id="cookie-decline" type="button">Atsisakyti</button>
+    </div>
   </div>
   <script>
     (function(){
+      const KEY='cookie_choice_v1';
+      const bar=document.getElementById('cookie-bar');
+      const ok = document.getElementById('cookie-accept');
+      const no = document.getElementById('cookie-decline');
       try{
-        const KEY='cookie_ok_v1';
-        const bar=document.getElementById('cookie-bar');
-        const btn=document.getElementById('cookie-accept');
-        if(!localStorage.getItem(KEY)) bar.hidden=false;
-        btn?.addEventListener('click', ()=>{ localStorage.setItem(KEY,'1'); bar.hidden=true; });
+        const v=localStorage.getItem(KEY);
+        if(!v) bar.style.display='block';
+        ok?.addEventListener('click', ()=>{ localStorage.setItem(KEY,'allow'); bar.style.display='none'; });
+        no?.addEventListener('click',  ()=>{ localStorage.setItem(KEY,'deny');  bar.style.display='none'; });
       }catch(_){}
     })();
   </script>
