@@ -12,7 +12,8 @@
     { "src": "^/api/models$",               "dest": "/api/models.js" },
     { "src": "^/api/diagnostics$",          "dest": "/api/diagnostics.js" },
     { "src": "^/api/library/recent$",       "dest": "/api/library/recent.js" },
-
+    { "src": "/api/complete",               "dest": "/api/complete.js" },
+    
     { "src": "^/api/flux/create$",          "dest": "/api/flux/create.js" },
     { "src": "^/api/comic/create$",         "dest": "/api/comic/create.js" },
     { "src": "^/api/runway/image$",         "dest": "/api/runway/image.js" },
