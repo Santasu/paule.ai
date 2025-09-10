@@ -7,53 +7,58 @@
   },
 
   "builds": [
-    { "src": "api/**/*.js", "use": "@vercel/node" },
-    { "src": "public/**/*", "use": "@vercel/static" }
+    { "src": "api/**/*.js",   "use": "@vercel/node"   },
+    { "src": "public/**/*",   "use": "@vercel/static" }
   ],
 
   "routes": [
-    { "src": "^/api/stream$",                "dest": "/api/stream.js" },
-    { "src": "^/api/complete$",              "dest": "/api/complete.js" },
-    { "src": "^/api/suggest$",               "dest": "/api/suggest.js" },
-    { "src": "^/api/models$",                "dest": "/api/models.js" },
-    { "src": "^/api/diagnostics$",           "dest": "/api/diagnostics.js" },
-    { "src": "^/api/library/recent$",        "dest": "/api/library/recent.js" },
+    { "src": "^/api/stream$",               "dest": "/api/stream.js" },
+    { "src": "^/api/complete$",             "dest": "/api/complete.js" },
+    { "src": "^/api/suggest$",              "dest": "/api/suggest.js" },
+    { "src": "^/api/models$",               "dest": "/api/models.js" },
+    { "src": "^/api/diagnostics$",          "dest": "/api/diagnostics.js" },
+    { "src": "^/api/library/recent$",       "dest": "/api/library/recent.js" },
 
-    { "src": "^/api/flux/create$",           "dest": "/api/flux/create.js" },
-    { "src": "^/api/comic/create$",          "dest": "/api/comic/create.js" },
-    { "src": "^/api/runway/image$",          "dest": "/api/runway/image.js" },
-    { "src": "^/api/runway/status$",         "dest": "/api/runway/status.js" },
-    { "src": "^/api/music/create$",          "dest": "/api/music/create.js" },
-    { "src": "^/api/music/status$",          "dest": "/api/music/status.js" },
-    { "src": "^/api/clerk/pk$",              "dest": "/api/clerk/pk.js" },
+    { "src": "^/api/flux/create$",          "dest": "/api/flux/create.js" },
+    { "src": "^/api/comic/create$",         "dest": "/api/comic/create.js" },
+    { "src": "^/api/runway/image$",         "dest": "/api/runway/image.js" },
+    { "src": "^/api/runway/status$",        "dest": "/api/runway/status.js" },
+    { "src": "^/api/music/create$",         "dest": "/api/music/create.js" },
+    { "src": "^/api/music/status$",         "dest": "/api/music/status.js" },
+    { "src": "^/api/clerk/pk$",             "dest": "/api/clerk/pk.js" },
 
-    { "src": "^/api/paule/v1/stream$",       "dest": "/api/stream.js" },
-    { "src": "^/api/paule/v1/complete$",     "dest": "/api/complete.js" },
-    { "src": "^/api/paule/v1/suggest$",      "dest": "/api/suggest.js" },
-    { "src": "^/api/paule/v1/models$",       "dest": "/api/models.js" },
-    { "src": "^/api/paule/v1/diagnostics$",  "dest": "/api/diagnostics.js" },
-    { "src": "^/api/paule/v1/flux/create$",  "dest": "/api/flux/create.js" },
-    { "src": "^/api/paule/v1/comic/create$", "dest": "/api/comic/create.js" },
+    { "src": "^/api/paule/v1/stream$",      "dest": "/api/stream.js" },
+    { "src": "^/api/paule/v1/complete$",    "dest": "/api/complete.js" },
+    { "src": "^/api/paule/v1/suggest$",     "dest": "/api/suggest.js" },
+    { "src": "^/api/paule/v1/models$",      "dest": "/api/models.js" },
+    { "src": "^/api/paule/v1/diagnostics$", "dest": "/api/diagnostics.js" },
+    { "src": "^/api/paule/v1/flux/create$", "dest": "/api/flux/create.js" },
+    { "src": "^/api/paule/v1/comic/create$","dest": "/api/comic/create.js" },
     { "src": "^/api/paule/v1/runway/image$","dest": "/api/runway/image.js" },
     { "src": "^/api/paule/v1/runway/status$","dest": "/api/runway/status.js" },
-    { "src": "^/api/paule/v1/music/create$", "dest": "/api/music/create.js" },
-    { "src": "^/api/paule/v1/music/status$", "dest": "/api/music/status.js" },
+    { "src": "^/api/paule/v1/music/create$","dest": "/api/music/create.js" },
+    { "src": "^/api/paule/v1/music/status$","dest": "/api/music/status.js" },
 
-    { "src": "^/wp-json/paule/v1/stream$",       "dest": "/api/stream.js" },
-    { "src": "^/wp-json/paule/v1/complete$",     "dest": "/api/complete.js" },
-    { "src": "^/wp-json/paule/v1/suggest$",      "dest": "/api/suggest.js" },
-    { "src": "^/wp-json/paule/v1/models$",       "dest": "/api/models.js" },
-    { "src": "^/wp-json/paule/v1/diagnostics$",  "dest": "/api/diagnostics.js" },
-    { "src": "^/wp-json/paule/v1/flux/create$",  "dest": "/api/flux/create.js" },
-    { "src": "^/wp-json/paule/v1/comic/create$", "dest": "/api/comic/create.js" },
-    { "src": "^/wp-json/paule/v1/runway/image$", "dest": "/api/runway/image.js" },
+    { "src": "^/wp-json/paule/v1/stream$",    "dest": "/api/stream.js" },
+    { "src": "^/wp-json/paule/v1/complete$",  "dest": "/api/complete.js" },
+    { "src": "^/wp-json/paule/v1/suggest$",   "dest": "/api/suggest.js" },
+    { "src": "^/wp-json/paule/v1/models$",    "dest": "/api/models.js" },
+    { "src": "^/wp-json/paule/v1/diagnostics$","dest": "/api/diagnostics.js" },
+    { "src": "^/wp-json/paule/v1/flux/create$","dest": "/api/flux/create.js" },
+    { "src": "^/wp-json/paule/v1/comic/create$","dest": "/api/comic/create.js" },
+    { "src": "^/wp-json/paule/v1/runway/image$","dest": "/api/runway/image.js" },
     { "src": "^/wp-json/paule/v1/runway/status$","dest": "/api/runway/status.js" },
-    { "src": "^/wp-json/paule/v1/music/create$", "dest": "/api/music/create.js" },
-    { "src": "^/wp-json/paule/v1/music/status$", "dest": "/api/music/status.js" },
+    { "src": "^/wp-json/paule/v1/music/create$","dest": "/api/music/create.js" },
+    { "src": "^/wp-json/paule/v1/music/status$","dest": "/api/music/status.js" },
 
-    { "src": "^/$",        "dest": "/public/index.html" },
-    { "src": "^(?!/api)(.*)$", "dest": "/public$1" }
+    { "src": "^/$",                "dest": "/public/index.html" },
+    { "src": "^(?!/api)(.*)$",     "dest": "/public$1" }
+  ],
+
+  "headers": [
+    { "source": "/",            "headers": [ { "key": "Cache-Control", "value": "no-store" } ] },
+    { "source": "/index.html",  "headers": [ { "key": "Cache-Control", "value": "no-store" } ] },
+    { "source": "/(.*).html",   "headers": [ { "key": "Cache-Control", "value": "no-store" } ] },
+    { "source": "/assets/(.*)", "headers": [ { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" } ] }
   ]
-} 
-
-
+}
