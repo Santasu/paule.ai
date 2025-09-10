@@ -12,7 +12,7 @@
   <link rel="apple-touch-icon" href="/assets/icon/apple-touch-icon.png">
   <meta name="theme-color" content="#111827"/>
 
-  <!-- Anti-cache (visada trauk naują) -->
+  <!-- Anti-cache -->
   <meta http-equiv="Cache-Control" content="no-store, max-age=0, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -21,10 +21,10 @@
   <link rel="preconnect" href="/" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
-  <!-- Pagrindinis CSS -->
-  <link rel="stylesheet" href="/assets/css/paule.css?v=1.1.2">
+  <!-- Pagrindinis CSS (iškelti stiliai) -->
+  <link rel="stylesheet" href="/assets/css/paule.css?v=1.1.2"/>
 
-  <!-- Konfigūracija -->
+  <!-- App konfigūracija -->
   <script>
     (function () {
       var MODE=(document.documentElement.getAttribute('data-backend')||'').trim().toLowerCase()==='vercel'?'vercel':'wp';
@@ -43,7 +43,7 @@
     })();
   </script>
 
-  <!-- Bridge WP->/api -->
+  <!-- Bridge WP -> /api -->
   <script>
     (function(){
       'use strict';
@@ -155,6 +155,11 @@
     data-clerk-publishable-key="pk_live_Y2xlcmsucGF1bGUuYWkk"
     src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
   </script>
+
+  <noscript>
+    <style>.nojs{position:fixed;inset:auto 0 0 0;background:#111827;color:#fff;padding:12px 16px;text-align:center;font:14px/1.4 system-ui}</style>
+    <div class="nojs">Norint naudotis prisijungimu reikia įjungti JavaScript.</div>
+  </noscript>
 </head>
 <body>
 
@@ -704,7 +709,7 @@
       startOrchestrator(text, fronts);
     }
 
-    /* Input UX */
+    /* Input UX (desktop + mobile) */
     msgInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); doSend(); }});
     msgInput.addEventListener('focus', ()=>{ if(!msgInput.value.trim()) renderInline(['Paaiškink detaliau','Duok pavyzdį','Sutrumpink iki 3 sakinių','Sukurk veiksmų planą','Kokie KPI?']); });
     msgInput.addEventListener('input', ()=>{ if(msgInput.value.length===0) renderInline(['Paaiškink detaliau','Duok pavyzdį','Sutrumpink iki 3 sakinių','Sukurk veiksmų planą','Kokie KPI?']); else inputDeck.classList.remove('show'); });
@@ -737,20 +742,22 @@
     (function(){
       const root = document.getElementById('clerk-auth');
 
-      function button(classes, text, icon){
+      function svgGoogle(){
+        const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        s.setAttribute('viewBox','0 0 533.5 544.3');
+        s.setAttribute('width','16'); s.setAttribute('height','16'); s.style.marginRight='6px';
+        const p1=document.createElementNS(s.namespaceURI,'path'); p1.setAttribute('fill','#EA4335'); p1.setAttribute('d','M533.5 278.4c0-18.5-1.7-36.4-5-53.6H272v101.5h147.5c-6.4 34.5-25.9 63.7-55.2 83.2v69.1h89.2c52.2-48.1 80-119 80-200.2z');
+        const p2=document.createElementNS(s.namespaceURI,'path'); p2.setAttribute('fill','#34A853'); p2.setAttribute('d','M272 544.3c74 0 136-24.5 181.4-66.5l-89.2-69.1c-24.8 16.6-56.5 26.5-92.3 26.5-70.9 0-131-47.8-152.5-112.1H27.3v70.4C72.3 486.1 165.4 544.3 272 544.3z');
+        const p3=document.createElementNS(s.namespaceURI,'path'); p3.setAttribute('fill','#4A90E2'); p3.setAttribute('d','M119.5 322.9c-5.6-16.6-8.8-34.3-8.8-52.9s3.2-36.3 8.8-52.9V146.7H27.3C9.7 182.4 0 222.1 0 270s9.7 87.6 27.3 123.3l92.2-70.4z');
+        const p4=document.createElementNS(s.namespaceURI,'path'); p4.setAttribute('fill','#FBBC05'); p4.setAttribute('d','M272 107.7c40.3 0 76.5 13.9 105 41.2l78.7-78.7C408 25.2 346 0 272 0 165.4 0 72.3 58.2 27.3 146.7l92.2 70.4C141 155.8 201.1 107.7 272 107.7z');
+        s.append(p1,p2,p3,p4); return s;
+      }
+
+      function button(classes, text, iconSvg){
         const b = document.createElement('button');
         b.className = classes;
         b.type = 'button';
-        if (icon){
-          const img = document.createElement('img');
-          img.src = icon;
-          img.alt = '';
-          img.className = 'ui-icon google';
-          img.style.width = '16px';
-          img.style.height = '16px';
-          img.style.marginRight = '6px';
-          b.appendChild(img);
-        }
+        if (iconSvg) b.appendChild(iconSvg);
         b.appendChild(document.createTextNode(text));
         return b;
       }
@@ -758,3 +765,48 @@
       function renderFallback(){
         if (!root) return;
         root.innerHTML = '';
+        const inBtn = button('btn ghost', 'Prisijungti');
+        inBtn.onclick = ()=> alert('Kraunama…');
+        const gBtn = button('btn ghost', 'Prisijungti su Google', svgGoogle());
+        root.append(inBtn, gBtn);
+      }
+
+      window.addEventListener('load', async () => {
+        try{
+          const clerk = window.Clerk;
+          if (!clerk || !clerk.load) { renderFallback(); return; }
+
+          await clerk.load(); // publishable key paimamas iš <script> data atributo
+
+          const rerender = () => {
+            if (!root) return;
+            root.innerHTML = '';
+            if (clerk.user){
+              const holder = document.createElement('div');
+              root.appendChild(holder);
+              clerk.mountUserButton(holder, { appearance: { elements: { userButtonAvatarBox: 'rounded-xl' } } });
+            } else {
+              // Tik du veiksmai: Prisijungti (modalas) ir Prisijungti su Google
+              const loginBtn  = button('btn ghost', 'Prisijungti');
+              loginBtn.onclick = () => clerk.openSignIn({ afterSignInUrl: '/', afterSignUpUrl: '/' });
+
+              const googleBtn = button('btn ghost', 'Prisijungti su Google', svgGoogle());
+              googleBtn.onclick = () => clerk.authenticateWithRedirect({
+                strategy: 'oauth_google',
+                redirectUrl: '/',
+                redirectUrlComplete: '/'
+              });
+
+              root.append(loginBtn, googleBtn);
+            }
+          };
+
+          rerender();
+          clerk.addListener(rerender);
+        }catch(_){ renderFallback(); }
+      });
+    })();
+  </script>
+
+</body>
+</html>
