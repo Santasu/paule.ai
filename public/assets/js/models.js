@@ -1,26 +1,16 @@
-/* =======================================================================
-   Paule – Modelių žemėlapis • v1.5.0 (SSE vs JSON aiškiai)
-   - SSE: ChatGPT (OpenAI), DeepSeek, Llama (Together)
-   - JSON: Claude (Anthropic), Gemini (Google), Grok (xAI)
-   ======================================================================= */
+// /assets/js/models.js
 (function () {
   'use strict';
 
+  // Front (mygtuko id) -> Back (API model id)
   const FRONT_TO_BACK = Object.freeze({
     'auto':'auto','paule':'auto','augam-auto':'auto',
-
-    // SSE-capable (mūsų /api/stream implementation)
-    'chatgpt':'gpt-4o-mini',                // OpenAI (SSE)
-    'deepseek':'deepseek-chat',             // DeepSeek (SSE)
-    'llama':'meta-llama/Llama-4-Scout-17B-16E-Instruct', // Together (SSE)
-
-    // JSON-only (pas mus – per /api/complete)
-    'claude':'claude-4-sonnet',
-    'gemini':'gemini-2.5-flash',
-    'grok':'grok-4',
-
-    // special
-    'judge':'meta-llama/Llama-4-Scout-17B-16E-Instruct'
+    'chatgpt':'gpt-4o-mini',
+    'claude':'claude-4-sonnet',       // JSON only
+    'gemini':'gemini-2.5-flash',      // JSON only
+    'grok':'grok-4',                  // JSON only
+    'deepseek':'deepseek-chat',
+    'llama':'meta-llama/Llama-4-Scout-17B-16E-Instruct'
   });
 
   const BACK_TO_FRONT = Object.freeze(
@@ -38,6 +28,7 @@
     'llama':'Llama','meta-llama/Llama-4-Scout-17B-16E-Instruct':'Llama',
     'judge':'Teisėjas'
   });
+
   const MODEL_ICON = Object.freeze({
     'auto': `${ICONS_BASE}/ai.svg`,
     'paule': `${ICONS_BASE}/ai.svg`,
@@ -50,11 +41,8 @@
     'judge': `${ICONS_BASE}/legal-contract.svg`
   });
 
-  // ✅ Aiškiai pažymim: kurie – JSON only
-  const NON_SSE_FRONT = new Set([
-    'claude','gemini','grok',
-    'claude-4-sonnet','gemini-2.5-flash','grok-4'
-  ]);
+  // JSON ONLY: Claude, Gemini, Grok
+  const NON_SSE_FRONT = new Set(['claude','gemini','grok','claude-4-sonnet','gemini-2.5-flash','grok-4']);
 
   const lc = s => String(s||'').toLowerCase().trim();
   function canonicalFrontId(id){
@@ -95,7 +83,7 @@
       const back=FRONT_TO_BACK[f]||f;
       items.push({ id:f, back, name:nameOf(f), icon:iconOf(f), sse:isSSECapable(f) });
     });
-    items.push({ id:'judge', back:FRONT_TO_BACK['judge'], name:nameOf('judge'), icon:iconOf('judge'), sse:true });
+    items.push({ id:'judge', back:'meta-llama/Llama-4-Scout-17B-16E-Instruct', name:nameOf('judge'), icon:iconOf('judge'), sse:true });
     return items;
   }
 
