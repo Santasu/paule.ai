@@ -1,0 +1,3398 @@
+<!DOCTYPE html>
+<html lang="lt" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Produktyvumo Centras - Universalūs Darbo Įrankiai</title>
+  
+  <style>
+/* =========================================================
+   AI PRODUKTYVUMO CENTRO TEMA
+   ========================================================= */
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #0f0f16;
+  --bg-elevated: #141420;
+  --bg-card: #1a1a2e;
+  --bg-overlay: #1e1e34;
+  --bg-glass: rgba(26, 26, 46, 0.8);
+  
+  --text-primary: #ffffff;
+  --text-secondary: #b8bcd8;
+  --text-muted: #8a8fa8;
+  --text-hint: #6b7288;
+  
+  --border-soft: #2a2a3f;
+  --border-medium: #374164;
+  
+  --accent-primary: #00b4ff;
+  --accent-secondary: #ff6b9d;
+  --accent-tertiary: #7c3aed;
+  --accent-success: #00ff88;
+  --accent-warning: #ffa502;
+  --accent-danger: #ff4757;
+  --accent-ghost: rgba(0, 180, 255, 0.1);
+  
+  --gradient-primary: linear-gradient(135deg, #00b4ff, #7c3aed);
+  --gradient-secondary: linear-gradient(135deg, #ff6b9d, #00b4ff);
+  --gradient-success: linear-gradient(135deg, #00ff88, #00b4ff);
+  --gradient-card: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+  
+  --shadow-neu-raise: 
+    0 8px 16px rgba(0, 0, 0, 0.4), 
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  
+  --shadow-float: 
+    0 20px 40px rgba(0, 0, 0, 0.6), 
+    0 8px 16px rgba(0, 0, 0, 0.4);
+  
+  --glow-blue: 0 0 20px rgba(0, 180, 255, 0.3);
+  --glow-purple: 0 0 20px rgba(124, 58, 237, 0.3);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --space-4xl: 48px;
+  --space-5xl: 64px;
+  
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* =========================================================
+   PAGRINDINĖ IŠDĖSTYMO SISTEMA
+   ========================================================= */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-soft);
+  padding: var(--space-lg) var(--space-xl);
+}
+
+.header-content {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 800;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.ai-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.2); }
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+.btn {
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-lg);
+  border: none;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: var(--bg-primary);
+  box-shadow: var(--glow-blue);
+}
+
+.btn-secondary {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-soft);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-float);
+}
+
+.main-content {
+  flex: 1;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--space-xl);
+}
+
+/* =========================================================
+   HEROJAUS SEKCIJA
+   ========================================================= */
+.hero-section {
+  text-align: center;
+  padding: var(--space-5xl) 0;
+  background: var(--gradient-card);
+  border-radius: var(--radius-2xl);
+  margin-bottom: var(--space-4xl);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-neu-raise);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+}
+
+.hero-title {
+  font-size: 48px;
+  font-weight: 900;
+  margin-bottom: var(--space-xl);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 22px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4xl);
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-xl);
+  margin-top: var(--space-4xl);
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 36px;
+  font-weight: 800;
+  background: var(--gradient-secondary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: block;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: var(--space-sm);
+}
+
+/* =========================================================
+   NAVIGACIJOS KATEGORIJOS
+   ========================================================= */
+.nav-categories {
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-4xl);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.nav-category {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-soft);
+  padding: var(--space-lg) var(--space-2xl);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  backdrop-filter: blur(10px);
+  font-weight: 600;
+  font-size: 16px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.nav-category::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.nav-category:hover,
+.nav-category.active {
+  background: var(--bg-elevated);
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-neu-raise);
+}
+
+.nav-category.active::before {
+  opacity: 1;
+}
+
+.category-icon {
+  font-size: 20px;
+}
+
+/* =========================================================
+   ĮRANKIŲ TINKLELIS
+   ========================================================= */
+.tools-section {
+  margin-bottom: var(--space-5xl);
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: var(--space-4xl);
+}
+
+.section-title {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: var(--space-lg);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.section-subtitle {
+  color: var(--text-secondary);
+  font-size: 18px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: var(--space-xl);
+  margin-bottom: var(--space-4xl);
+}
+
+.tool-card {
+  background: var(--gradient-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-3xl);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-neu-raise);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.tool-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
+}
+
+.tool-card:hover::before {
+  transform: scaleX(1);
+}
+
+.tool-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-float);
+  border-color: var(--accent-primary);
+}
+
+.tool-card.featured {
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+  border-left: 4px solid var(--accent-primary);
+}
+
+.tool-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.tool-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-lg);
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--bg-primary);
+  flex-shrink: 0;
+  box-shadow: var(--glow-blue);
+}
+
+.tool-content {
+  flex: 1;
+}
+
+.tool-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+  color: var(--text-primary);
+}
+
+.tool-desc {
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: var(--space-lg);
+}
+
+.tool-features {
+  list-style: none;
+  margin-bottom: var(--space-lg);
+}
+
+.tool-features li {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: var(--space-xs);
+  position: relative;
+  padding-left: var(--space-lg);
+}
+
+.tool-features li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--accent-success);
+  font-weight: bold;
+}
+
+.tool-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.tool-category {
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(0, 180, 255, 0.1);
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+}
+
+.tool-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.btn-tool {
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   AI POKALBIŲ SISTEMA
+   ========================================================= */
+.ai-chat-container {
+  position: fixed;
+  bottom: var(--space-xl);
+  right: var(--space-xl);
+  width: 400px;
+  height: 500px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-float);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform var(--transition-normal);
+}
+
+.ai-chat-container.active {
+  transform: translateY(0);
+}
+
+.ai-chat-header {
+  background: var(--gradient-primary);
+  color: var(--bg-primary);
+  padding: var(--space-lg);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-chat-title {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.chat-close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.chat-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.ai-chat-messages {
+  flex: 1;
+  padding: var(--space-lg);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.chat-message {
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  max-width: 80%;
+  word-wrap: break-word;
+}
+
+.chat-message.user {
+  background: var(--accent-primary);
+  color: white;
+  margin-left: auto;
+  border-bottom-right-radius: var(--space-xs);
+}
+
+.chat-message.ai {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+  border-bottom-left-radius: var(--space-xs);
+}
+
+.ai-chat-input {
+  padding: var(--space-lg);
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.chat-input {
+  flex: 1;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  color: var(--text-primary);
+  font-size: 14px;
+  resize: none;
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-ghost);
+}
+
+.chat-send-btn {
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.chat-send-btn:hover {
+  transform: scale(1.05);
+  box-shadow: var(--glow-blue);
+}
+
+/* =========================================================
+   PLŪDURIUOJANTIS VEIKSMŲ MYGTUKAS
+   ========================================================= */
+.fab {
+  position: fixed;
+  bottom: var(--space-xl);
+  right: var(--space-xl);
+  width: 64px;
+  height: 64px;
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: var(--shadow-float);
+  transition: all var(--transition-normal);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fab:hover {
+  transform: scale(1.1);
+  box-shadow: var(--glow-blue), var(--shadow-float);
+}
+
+.fab.hidden {
+  transform: scale(0);
+  opacity: 0;
+}
+
+/* =========================================================
+   MODALINĖS SISTEMOS
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(20px);
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.modal-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+.modal {
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-float);
+  border: 1px solid var(--border-soft);
+  width: 95%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modalSlideUp 0.4s ease;
+}
+
+@keyframes modalSlideUp {
+  from { 
+    transform: translateY(50px) scale(0.95); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateY(0) scale(1); 
+    opacity: 1; 
+  }
+}
+
+.modal-header {
+  background: var(--gradient-primary);
+  color: white;
+  padding: var(--space-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.modal-body {
+  padding: var(--space-3xl);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* =========================================================
+   ĮRANKIŲ DARBO SRITYS
+   ========================================================= */
+.tool-workspace {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  margin-top: var(--space-lg);
+  border: 1px solid var(--border-soft);
+}
+
+.input-group {
+  margin-bottom: var(--space-lg);
+}
+
+.input-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+  color: var(--text-primary);
+}
+
+.input-field {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.6;
+  font-family: inherit;
+  transition: all var(--transition-normal);
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-ghost);
+}
+
+.input-field.large {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.input-field.xl {
+  min-height: 200px;
+}
+
+.output-area {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-top: var(--space-lg);
+  border: 1px solid var(--border-soft);
+  min-height: 100px;
+  white-space: pre-wrap;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+.tool-controls {
+  display: flex;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+/* =========================================================
+   ANIMACIJOS IR UŽKROVIMAS
+   ========================================================= */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-soft);
+  border-radius: 50%;
+  border-top-color: var(--accent-primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ai-thinking {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  color: var(--text-secondary);
+  font-style: italic;
+  margin: var(--space-lg) 0;
+}
+
+.thinking-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.thinking-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: thinking 1.4s infinite ease-in-out;
+}
+
+.thinking-dot:nth-child(1) { animation-delay: -0.32s; }
+.thinking-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes thinking {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* =========================================================
+   PRANEŠIMŲ SISTEMA
+   ========================================================= */
+.notification {
+  position: fixed;
+  top: var(--space-xl);
+  right: var(--space-xl);
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-float);
+  z-index: 10001;
+  transform: translateX(100%);
+  transition: transform var(--transition-normal);
+  min-width: 350px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.notification.show {
+  transform: translateX(0);
+}
+
+.notification.success {
+  border-left: 4px solid var(--accent-success);
+}
+
+.notification.error {
+  border-left: 4px solid var(--accent-danger);
+}
+
+.notification.warning {
+  border-left: 4px solid var(--accent-warning);
+}
+
+.notification.info {
+  border-left: 4px solid var(--accent-primary);
+}
+
+.notification-icon {
+  font-size: 20px;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+}
+
+.notification-message {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* =========================================================
+   SPECIALŪS ĮRANKIŲ INTERFEISAI
+   ========================================================= */
+.split-interface {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+  margin-top: var(--space-lg);
+}
+
+.input-panel,
+.output-panel {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  border: 1px solid var(--border-soft);
+}
+
+.output-panel {
+  background: var(--bg-card);
+}
+
+.preview-header {
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-lg);
+  font-weight: 600;
+}
+
+.quick-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.quick-action-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  color: var(--text-secondary);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.quick-action-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.template-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-align: center;
+}
+
+.template-card:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-neu-raise);
+}
+
+.template-icon {
+  font-size: 32px;
+  margin-bottom: var(--space-md);
+}
+
+.template-title {
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+}
+
+.template-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* =========================================================
+   FAILO VALDYMAS
+   ========================================================= */
+.file-upload-zone {
+  border: 2px dashed var(--border-medium);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4xl);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  background: var(--bg-elevated);
+}
+
+.file-upload-zone:hover,
+.file-upload-zone.dragover {
+  border-color: var(--accent-primary);
+  background: var(--accent-ghost);
+}
+
+.file-upload-icon {
+  font-size: 48px;
+  margin-bottom: var(--space-lg);
+  color: var(--text-muted);
+}
+
+.file-upload-text {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-sm);
+}
+
+.file-upload-hint {
+  font-size: 12px;
+  color: var(--text-hint);
+}
+
+/* =========================================================
+   RESPONSYVUS DIZAINAS
+   ========================================================= */
+@media (max-width: 1024px) {
+  .tools-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+  
+  .hero-title {
+    font-size: 36px;
+  }
+  
+  .split-interface {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: var(--space-lg);
+  }
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .nav-categories {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .hero-section {
+    padding: var(--space-3xl) var(--space-lg);
+  }
+  
+  .hero-title {
+    font-size: 28px;
+  }
+  
+  .section-title {
+    font-size: 28px;
+  }
+  
+  .tools-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tool-card {
+    padding: var(--space-xl);
+  }
+  
+  .modal {
+    width: 98%;
+    margin: var(--space-sm);
+  }
+  
+  .ai-chat-container {
+    width: calc(100% - 2rem);
+    height: 80vh;
+    bottom: var(--space-lg);
+    right: var(--space-lg);
+    left: var(--space-lg);
+  }
+  
+  .fab {
+    bottom: var(--space-lg);
+    right: var(--space-lg);
+  }
+  
+  .split-interface {
+    grid-template-columns: 1fr;
+  }
+  
+  .templates-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   PRIEIGOS GERINIMAS
+   ========================================================= */
+::selection {
+  background: rgba(0, 180, 255, 0.3);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+button:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =========================================================
+   PAGALBINĖS KLASĖS
+   ========================================================= */
+.hidden {
+  display: none !important;
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.scale-in {
+  animation: scaleIn 0.4s ease;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.slide-up {
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Antraštė -->
+    <header class="header">
+      <div class="header-content">
+        <div class="logo">
+          🛠️ AI Produktyvumo Centras
+        </div>
+        <div class="ai-status">
+          <div class="status-indicator">
+            <span class="status-dot"></span>
+            AI modeliai aktyvūs
+          </div>
+          <div class="status-indicator">
+            <span class="status-dot"></span>
+            24/7 prieinami
+          </div>
+          <div class="status-indicator">
+            <span class="status-dot"></span>
+            Lietuvių kalba
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-ghost" id="helpBtn">📚 Pagalba</button>
+          <button class="btn btn-secondary" id="settingsBtn">⚙️ Nustatymai</button>
+          <button class="btn btn-primary" id="specialistBtn">👨‍💼 Specialistų įrankiai</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Pagrindinis turinys -->
+    <main class="main-content">
+      <!-- Herojaus sekcija -->
+      <section class="hero-section">
+        <h1 class="hero-title">Universalūs Produktyvumo Įrankiai</h1>
+        <p class="hero-subtitle">
+          Išnaudokite AI galią kasdienės veiklos optimizavimui. Automatizuokite procesus, 
+          kurkite turinį ir analizuokite duomenis vienoje vietoje.
+        </p>
+        
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-number">25+</span>
+            <span class="stat-label">Produktyvumo įrankiai</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">24/7</span>
+            <span class="stat-label">AI pagalba</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">100%</span>
+            <span class="stat-label">Lietuvių kalba</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">Greitas</span>
+            <span class="stat-label">Rezultatas</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Navigacijos kategorijos -->
+      <div class="nav-categories">
+        <button class="nav-category active" data-category="all">
+          <span class="category-icon">🏠</span>
+          Visi įrankiai
+        </button>
+        <button class="nav-category" data-category="documents">
+          <span class="category-icon">📄</span>
+          Dokumentai
+        </button>
+        <button class="nav-category" data-category="communication">
+          <span class="category-icon">💬</span>
+          Komunikacija
+        </button>
+        <button class="nav-category" data-category="analysis">
+          <span class="category-icon">📊</span>
+          Analizė
+        </button>
+        <button class="nav-category" data-category="automation">
+          <span class="category-icon">⚡</span>
+          Automatizacija
+        </button>
+        <button class="nav-category" data-category="learning">
+          <span class="category-icon">🎓</span>
+          Mokymasis
+        </button>
+      </div>
+
+      <!-- Dokumentų kūrimo įrankiai -->
+      <section class="tools-section" data-category="documents">
+        <div class="section-header">
+          <h2 class="section-title">📄 Dokumentų kūrimas ir redagavimas</h2>
+          <p class="section-subtitle">Profesionalūs dokumentai per kelias minutes su AI pagalba</p>
+        </div>
+        
+        <div class="tools-grid">
+          <div class="tool-card featured" onclick="openTool('emailWriter')">
+            <div class="tool-header">
+              <div class="tool-icon">📧</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Profesionalių laiškų rašytojas</h3>
+                <p class="tool-desc">Kurkite profesionalius elektroninius laiškus bet kokiai progai. Automatiškai pritaikomas tonas ir stilius.</p>
+                <ul class="tool-features">
+                  <li>Kelių tipų tonas (oficialus, draugiškas)</li>
+                  <li>Įvairūs laiškų šablonai</li>
+                  <li>Automatinis formatavimas</li>
+                  <li>Klaidų tikrinimas</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Komunikacija</span>
+              <span style="font-size: 12px; color: var(--accent-success);">Populiariausias</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Naudoti įrankį</button>
+            </div>
+          </div>
+
+          <div class="tool-card" onclick="openTool('documentGenerator')">
+            <div class="tool-header">
+              <div class="tool-icon">📋</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Dokumentų generatorius</h3>
+                <p class="tool-desc">Automatiškai generuokite sutartis, ataskaitas, pasiūlymus ir kitus verslo dokumentus.</p>
+                <ul class="tool-features">
+                  <li>Verslo dokumentų šablonai</li>
+                  <li>Teisinis turinio tikrinimas</li>
+                  <li>PDF ir Word eksportas</li>
+                  <li>Elektroninis parašas</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Dokumentai</span>
+              <span style="font-size: 12px; color: var(--text-muted);">Verslo</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Kurti dokumentą</button>
+            </div>
+          </div>
+
+          <div class="tool-card" onclick="openTool('resumeBuilder')">
+            <div class="tool-header">
+              <div class="tool-icon">👤</div>
+              <div class="tool-content">
+                <h3 class="tool-title">CV ir motyvacinio rašto kūrėjas</h3>
+                <p class="tool-desc">Profesionalūs CV ir motyvacijos laiškai, pritaikyti konkrečiai pozicijai ir sričiai.</p>
+                <ul class="tool-features">
+                  <li>ATS optimizuoti šablonai</li>
+                  <li>Raktažodžių optimizacija</li>
+                  <li>Sričiai pritaikytas turinys</li>
+                  <li>Kelių formatų eksportas</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Karjera</span>
+              <span style="font-size: 12px; color: var(--text-muted);">Asmeninis</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Kurti CV</button>
+            </div>
+          </div>
+
+          <div class="tool-card" onclick="openTool('presentationMaker')">
+            <div class="tool-header">
+              <div class="tool-icon">🎯</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Prezentacijų kūrėjas</h3>
+                <p class="tool-desc">Kurkite įtikinamias prezentacijas su profesionaliu dizainu ir logiška struktūra.</p>
+                <ul class="tool-features">
+                  <li>Automatinis skaidrių maketas</li>
+                  <li>Duomenų vizualizacija</li>
+                  <li>Modernūs dizaino šablonai</li>
+                  <li>PowerPoint eksportas</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Prezentacijos</span>
+              <span style="font-size: 12px; color: var(--text-muted);">Verslas</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Kurti prezentaciją</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Komunikacijos įrankiai -->
+      <section class="tools-section" data-category="communication">
+        <div class="section-header">
+          <h2 class="section-title">💬 Komunikacijos optimizavimas</h2>
+          <p class="section-subtitle">Efektyvesnė komunikacija su komanda ir klientais</p>
+        </div>
+        
+        <div class="tools-grid">
+          <div class="tool-card" onclick="openTool('meetingAssistant')">
+            <div class="tool-header">
+              <div class="tool-icon">🎤</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Susitikimų asistente</h3>
+                <p class="tool-desc">Automatiškai transkribuokite susitikimus, išskirkite veiksmų planus ir sukurkite santraukas.</p>
+                <ul class="tool-features">
+                  <li>Realaus laiko transkribavimas</li>
+                  <li>Veiksmų planų išskyrimas</li>
+                  <li>Dalyvių identifikavimas</li>
+                  <li>Susitikimo santrauka</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Susitikimai</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Pradėti įrašymą</button>
+            </div>
+          </div>
+
+          <div class="tool-card featured" onclick="openTool('translationTool')">
+            <div class="tool-header">
+              <div class="tool-icon">🌍</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Profesionalus vertėjas</h3>
+                <p class="tool-desc">Tikslūs vertimai tarp 100+ kalbų su konteksto išlaikymu ir stiliaus pritaikymu.</p>
+                <ul class="tool-features">
+                  <li>100+ palaikomų kalbų</li>
+                  <li>Konteksto išlaikymas</li>
+                  <li>Stiliaus pritaikymas</li>
+                  <li>Masinis dokumentų vertimas</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Kalbos</span>
+              <span style="font-size: 12px; color: var(--accent-success);">Populiarus</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Versti tekstą</button>
+            </div>
+          </div>
+
+          <div class="tool-card" onclick="openTool('chatbotBuilder')">
+            <div class="tool-header">
+              <div class="tool-icon">🤖</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Chatbot kūrėjas</h3>
+                <p class="tool-desc">Sukurkite išmanų chatbot klientų aptarnavimui be programavimo žinių.</p>
+                <ul class="tool-features">
+                  <li>Vilkimo ir numetimo sąsaja</li>
+                  <li>Natūralios kalbos supratimas</li>
+                  <li>Kelių kanalų integracija</li>
+                  <li>Analitikos ataskaitos</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Automatizacija</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Kurti chatbot</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Duomenų analizės įrankiai -->
+      <section class="tools-section" data-category="analysis">
+        <div class="section-header">
+          <h2 class="section-title">📊 Duomenų analizė ir ataskaitos</h2>
+          <p class="section-subtitle">Paverčia duomenis į vertingus sprendimus</p>
+        </div>
+        
+        <div class="tools-grid">
+          <div class="tool-card featured" onclick="openTool('dataAnalyzer')">
+            <div class="tool-header">
+              <div class="tool-icon">📈</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Išmanusis duomenų analizatorius</h3>
+                <p class="tool-desc">Įkelkite CSV, Excel failus ir gaukite išsamias analizes su prognozėmis ir rekomendacijomis.</p>
+                <ul class="tool-features">
+                  <li>Automatinis duomenų valymas</li>
+                  <li>Statistinė analizė</li>
+                  <li>Prognozių modeliai</li>
+                  <li>Interaktyvūs grafikai</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Duomenys</span>
+              <span style="font-size: 12px; color: var(--accent-success);">Populiariausias</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Analizuoti duomenis</button>
+            </div>
+          </div>
+
+          <div class="tool-card" onclick="openTool('surveyAnalyzer')">
+            <div class="tool-header">
+              <div class="tool-icon">📋</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Apklausų analizatorius</h3>
+                <p class="tool-desc">Analizuokite apklausų rezultatus, klientų atsiliepimus ir išskirkite pagrindinius įžvalgas.</p>
+                <ul class="tool-features">
+                  <li>Nuotaikų analizė</li>
+                  <li>Temų išskyrimas</li>
+                  <li>Statistinės ataskaitos</li>
+                  <li>Veiksmų rekomendacijos</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Tyrimai</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Analizuoti atsiliepimus</button>
+            </div>
+          </div>
+
+          <div class="tool-card" onclick="openTool('reportGenerator')">
+            <div class="tool-header">
+              <div class="tool-icon">📑</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Ataskaitų generatorius</h3>
+                <p class="tool-desc">Automatiškai kurkite profesionalias ataskaitas su grafikais ir išvadomis.</p>
+                <ul class="tool-features">
+                  <li>Automatinis ataskaitos maketas</li>
+                  <li>Duomenų vizualizacija</li>
+                  <li>Išvadų generavimas</li>
+                  <li>Kelių formatų eksportas</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Ataskaitos</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Kurti ataskaitą</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Automatizacijos įrankiai -->
+      <section class="tools-section" data-category="automation">
+        <div class="section-header">
+          <h2 class="section-title">⚡ Procesų automatizacija</h2>
+          <p class="section-subtitle">Automatizuokite kasdienius darbus ir sutaupykite laiko</p>
+        </div>
+        
+        <div class="tools-grid">
+          <div class="tool-card featured" onclick="openTool('workflowBuilder')">
+            <div class="tool-header">
+              <div class="tool-icon">🔄</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Darbo eigų kūrėjas</h3>
+                <p class="tool-desc">Kurkite sudėtingas automatizacijas be programavimo. Sujunkite programas ir automatizuokite procesus.</p>
+                <ul class="tool-features">
+                  <li>Vilkimo sąsaja</li>
+                  <li>500+ programų integracijos</li>
+                  <li>Sąlygų logika</li>
+                  <li>Klaidų valdymas</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Automatizacija</span>
+              <span style="font-size: 12px; color: var(--accent-success);">Be kodo</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Kurti eigą</button>
+            </div>
+          </div>
+
+          <div class="tool-card" onclick="openTool('scheduleOptimizer')">
+            <div class="tool-header">
+              <div class="tool-icon">📅</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Tvarkaraščių optimizatorius</h3>
+                <p class="tool-desc">Automatiškai optimizuokite susitikimų tvarkaraštį ir valdykite prioritetus su AI pagalba.</p>
+                <ul class="tool-features">
+                  <li>Automatinis laiko blokavimas</li>
+                  <li>Prioritetų valdymas</li>
+                  <li>Kalendorių sinchronizacija</li>
+                  <li>Priminimų sistema</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Planavimas</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Optimizuoti tvarkaraštį</button>
+            </div>
+          </div>
+
+          <div class="tool-card" onclick="openTool('taskAutomator')">
+            <div class="tool-header">
+              <div class="tool-icon">⚙️</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Užduočių automatizatorius</h3>
+                <p class="tool-desc">Automatizuokite pasikartojančias užduotis: failų valdymą, el. pašto atsakymus, duomenų apdorojimą.</p>
+                <ul class="tool-features">
+                  <li>Failų automatizacija</li>
+                  <li>El. pašto robotai</li>
+                  <li>Duomenų apdorojimas</li>
+                  <li>Planinis vykdymas</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Produktyvumas</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Automatizuoti užduotis</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mokymosi įrankiai -->
+      <section class="tools-section" data-category="learning">
+        <div class="section-header">
+          <h2 class="section-title">🎓 Mokymasis ir žinių valdymas</h2>
+          <p class="section-subtitle">Efektyviai įsisavinkite naują informaciją ir valdykite žinias</p>
+        </div>
+        
+        <div class="tools-grid">
+          <div class="tool-card" onclick="openTool('studyPlanGenerator')">
+            <div class="tool-header">
+              <div class="tool-icon">📚</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Mokymosi planų generatorius</h3>
+                <p class="tool-desc">Sukurkite personalizuotus mokymosi planus bet kokiai sričiai su pažangos stebėjimu.</p>
+                <ul class="tool-features">
+                  <li>Personalizuoti planai</li>
+                  <li>Pažangos stebėjimas</li>
+                  <li>Prisitaikymo algoritmai</li>
+                  <li>Mokymosi analitika</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Mokymasis</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Kurti planą</button>
+            </div>
+          </div>
+
+          <div class="tool-card featured" onclick="openTool('knowledgeExtractor')">
+            <div class="tool-header">
+              <div class="tool-icon">🧠</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Žinių ekstraktoras</h3>
+                <p class="tool-desc">Ištraukite pagrindinius faktus ir sukurkite santraukas iš ilgų dokumentų, straipsnių ar knygų.</p>
+                <ul class="tool-features">
+                  <li>Automatinės santraukos</li>
+                  <li>Raktinių faktų išskyrimas</li>
+                  <li>Tema-pagrindu grupavimas</li>
+                  <li>Citavimo sistemos</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Analizė</span>
+              <span style="font-size: 12px; color: var(--accent-success);">Naujas</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Analizuoti tekstą</button>
+            </div>
+          </div>
+
+          <div class="tool-card" onclick="openTool('quizGenerator')">
+            <div class="tool-header">
+              <div class="tool-icon">❓</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Testų generatorius</h3>
+                <p class="tool-desc">Automatiškai kurkite testus ir klausimus bet kokiam mokymo turiniui su skirtingo tipo klausimais.</p>
+                <ul class="tool-features">
+                  <li>Kelių tipų klausimai</li>
+                  <li>Sunkumo lygių pritaikymas</li>
+                  <li>Automatinis vertinimas</li>
+                  <li>Pažangos ataskaitos</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Vertinimas</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Kurti testą</button>
+            </div>
+          </div>
+
+          <div class="tool-card" onclick="openTool('researchAssistant')">
+            <div class="tool-header">
+              <div class="tool-icon">🔬</div>
+              <div class="tool-content">
+                <h3 class="tool-title">Tyrimų asistentas</h3>
+                <p class="tool-desc">Automatiškai rinkite informaciją iš patikimų šaltinių ir kurkite tyrimų ataskaitas.</p>
+                <ul class="tool-features">
+                  <li>Automatinis šaltinių paieška</li>
+                  <li>Faktų tikrinimas</li>
+                  <li>Citavimo standartai</li>
+                  <li>Plagiato tikrinimas</li>
+                </ul>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <span class="tool-category">Tyrimai</span>
+            </div>
+            <div class="tool-actions">
+              <button class="btn btn-primary btn-tool">Pradėti tyrimą</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- AI pokalbių sąsaja -->
+  <div class="ai-chat-container" id="aiChat">
+    <div class="ai-chat-header">
+      <div class="ai-chat-title">
+        🤖 AI Asistentas
+      </div>
+      <button class="chat-close-btn" id="chatCloseBtn">×</button>
+    </div>
+    <div class="ai-chat-messages" id="chatMessages">
+      <div class="chat-message ai">
+        Sveiki! Esu jūsų AI produktyvumo asistentas. Galiu padėti su bet kuriuo įrankiu, atsakyti į klausimus arba pasiūlyti geriausius sprendimus jūsų poreikiams. Ką šiandien norėtumėte nuveikti?
+      </div>
+    </div>
+    <div class="ai-chat-input">
+      <textarea 
+        class="chat-input" 
+        id="chatInput" 
+        placeholder="Paklauskite apie produktyvumo įrankius..."
+        rows="2"
+      ></textarea>
+      <button class="chat-send-btn" id="chatSendBtn">
+        📤
+      </button>
+    </div>
+  </div>
+
+  <!-- Plūduriuojantis veiksmų mygtukas -->
+  <button class="fab" id="fabBtn">
+    🤖
+  </button>
+
+  <!-- Modalinė sistema -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Įrankio sąsaja</h2>
+        <button class="modal-close" id="modalClose">×</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Įrankių sąsajos bus įkeliamos čia -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Pranešimų sistema -->
+  <div class="notification" id="notification">
+    <div class="notification-icon">ℹ️</div>
+    <div class="notification-content">
+      <div class="notification-title">Pranešimas</div>
+      <div class="notification-message">Tai pranešimo pavyzdys.</div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================
+    // GLOBALŪS KINTAMIEJI IR KONFIGŪRACIJA
+    // =========================================================
+    let currentCategory = 'all';
+    let isAIProcessing = false;
+    let chatVisible = false;
+    let activeTools = new Set();
+
+    // Įrankių konfigūracijos
+    const toolConfigs = {
+      emailWriter: {
+        name: 'Profesionalių laiškų rašytojas',
+        icon: '📧',
+        category: 'communication'
+      },
+      documentGenerator: {
+        name: 'Dokumentų generatorius',
+        icon: '📋',
+        category: 'documents'
+      },
+      resumeBuilder: {
+        name: 'CV ir motyvacinio rašto kūrėjas',
+        icon: '👤',
+        category: 'documents'
+      },
+      presentationMaker: {
+        name: 'Prezentacijų kūrėjas',
+        icon: '🎯',
+        category: 'documents'
+      },
+      meetingAssistant: {
+        name: 'Susitikimų asistente',
+        icon: '🎤',
+        category: 'communication'
+      },
+      translationTool: {
+        name: 'Profesionalus vertėjas',
+        icon: '🌍',
+        category: 'communication'
+      },
+      chatbotBuilder: {
+        name: 'Chatbot kūrėjas',
+        icon: '🤖',
+        category: 'automation'
+      },
+      dataAnalyzer: {
+        name: 'Išmanusis duomenų analizatorius',
+        icon: '📈',
+        category: 'analysis'
+      },
+      surveyAnalyzer: {
+        name: 'Apklausų analizatorius',
+        icon: '📋',
+        category: 'analysis'
+      },
+      reportGenerator: {
+        name: 'Ataskaitų generatorius',
+        icon: '📑',
+        category: 'analysis'
+      },
+      workflowBuilder: {
+        name: 'Darbo eigų kūrėjas',
+        icon: '🔄',
+        category: 'automation'
+      },
+      scheduleOptimizer: {
+        name: 'Tvarkaraščių optimizatorius',
+        icon: '📅',
+        category: 'automation'
+      },
+      taskAutomator: {
+        name: 'Užduočių automatizatorius',
+        icon: '⚙️',
+        category: 'automation'
+      },
+      studyPlanGenerator: {
+        name: 'Mokymosi planų generatorius',
+        icon: '📚',
+        category: 'learning'
+      },
+      knowledgeExtractor: {
+        name: 'Žinių ekstraktoras',
+        icon: '🧠',
+        category: 'learning'
+      },
+      quizGenerator: {
+        name: 'Testų generatorius',
+        icon: '❓',
+        category: 'learning'
+      },
+      researchAssistant: {
+        name: 'Tyrimų asistentas',
+        icon: '🔬',
+        category: 'learning'
+      }
+    };
+
+    // =========================================================
+    // PROGRAMOS INICIJAVIMAS
+    // =========================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🛠️ AI Produktyvumo Centras kraunasi...');
+      
+      try {
+        initializeApp();
+        bindEvents();
+        showWelcomeMessage();
+        
+        console.log('✅ AI Produktyvumo Centras sėkmingai įkeltas!');
+      } catch (error) {
+        console.error('❌ Klaida kraunant programą:', error);
+        showNotification('Klaida kraunant programą. Prašome perkrauti puslapį.', 'error');
+      }
+    });
+
+    function initializeApp() {
+      // Inicijuoti kategorijų filtrus
+      filterToolsByCategory('all');
+      
+      // Nustatyti animacijų stebėtoją
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('fade-in');
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+
+      document.querySelectorAll('.tool-card').forEach(card => {
+        observer.observe(card);
+      });
+    }
+
+    function bindEvents() {
+      // Kategorijų navigacija
+      document.querySelectorAll('.nav-category').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const category = this.dataset.category;
+          switchCategory(category);
+        });
+      });
+
+      // AI pokalbių sistema
+      document.getElementById('fabBtn').addEventListener('click', toggleAIChat);
+      document.getElementById('chatCloseBtn').addEventListener('click', closeAIChat);
+      document.getElementById('chatSendBtn').addEventListener('click', sendChatMessage);
+      document.getElementById('chatInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendChatMessage();
+        }
+      });
+
+      // Modalinė sistema
+      document.getElementById('modalClose').addEventListener('click', closeModal);
+      document.getElementById('modalOverlay').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+      });
+
+      // Antraštės veiksmai
+      document.getElementById('helpBtn').addEventListener('click', showHelpModal);
+      document.getElementById('settingsBtn').addEventListener('click', showSettingsModal);
+      document.getElementById('specialistBtn').addEventListener('click', showSpecialistModal);
+
+      // Klaviatūros spartieji klavišai
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeModal();
+          closeAIChat();
+        }
+        
+        if (e.ctrlKey || e.metaKey) {
+          switch(e.key) {
+            case 'k':
+              e.preventDefault();
+              toggleAIChat();
+              break;
+          }
+        }
+      });
+    }
+
+    // =========================================================
+    // KATEGORIJŲ VALDYMAS
+    // =========================================================
+    function switchCategory(category) {
+      document.querySelectorAll('.nav-category').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.querySelector(`[data-category="${category}"]`).classList.add('active');
+
+      currentCategory = category;
+      filterToolsByCategory(category);
+    }
+
+    function filterToolsByCategory(category) {
+      const sections = document.querySelectorAll('.tools-section');
+      
+      sections.forEach(section => {
+        if (category === 'all') {
+          section.style.display = 'block';
+        } else {
+          const sectionCategory = section.dataset.category;
+          section.style.display = sectionCategory === category ? 'block' : 'none';
+        }
+      });
+    }
+
+    // =========================================================
+    // ĮRANKIŲ PALEIDIMO SISTEMA
+    // =========================================================
+    function openTool(toolId) {
+      const config = toolConfigs[toolId];
+      if (!config) {
+        showNotification('Įrankis nerastas!', 'error');
+        return;
+      }
+
+      activeTools.add(toolId);
+      
+      const toolInterface = generateToolInterface(toolId);
+      showModal(`${config.icon} ${config.name}`, toolInterface);
+      
+      showNotification(`${config.name} sėkmingai atidarytas!`, 'success');
+    }
+
+    function generateToolInterface(toolId) {
+      switch(toolId) {
+        case 'emailWriter':
+          return generateEmailWriterInterface();
+        case 'documentGenerator':
+          return generateDocumentGeneratorInterface();
+        case 'dataAnalyzer':
+          return generateDataAnalyzerInterface();
+        case 'translationTool':
+          return generateTranslationInterface();
+        case 'workflowBuilder':
+          return generateWorkflowInterface();
+        case 'presentationMaker':
+          return generatePresentationInterface();
+        case 'knowledgeExtractor':
+          return generateKnowledgeExtractorInterface();
+        default:
+          return generateGenericToolInterface(toolId);
+      }
+    }
+
+    function generateEmailWriterInterface() {
+      return `
+        <div class="split-interface">
+          <div class="input-panel">
+            <div class="input-group">
+              <label class="input-label">Laiško tipas</label>
+              <select class="input-field" id="emailType">
+                <option value="business">Verslo užklausa</option>
+                <option value="follow-up">Primineimo laiškas</option>
+                <option value="proposal">Pasiūlymas</option>
+                <option value="apology">Atsiprašymo laiškas</option>
+                <option value="introduction">Pristatymo laiškas</option>
+                <option value="thank-you">Padėkos laiškas</option>
+                <option value="complaint">Skundo laiškas</option>
+                <option value="request">Prašymo laiškas</option>
+              </select>
+            </div>
+            
+            <div class="input-group">
+              <label class="input-label">Tonas</label>
+              <select class="input-field" id="emailTone">
+                <option value="professional">Profesionalus</option>
+                <option value="friendly">Draugiškas</option>
+                <option value="formal">Oficialus</option>
+                <option value="casual">Neformalus</option>
+                <option value="urgent">Skubus</option>
+                <option value="persuasive">Įtikinamasis</option>
+              </select>
+            </div>
+            
+            <div class="input-group">
+              <label class="input-label">Pagrindiniai punktai</label>
+              <textarea class="input-field large" id="emailPoints" 
+                        placeholder="Įveskite pagrindinius punktus, kuriuos norite paminėti laiške..."></textarea>
+            </div>
+            
+            <div class="input-group">
+              <label class="input-label">Gavėjo kontekstas</label>
+              <input class="input-field" id="recipientContext" 
+                     placeholder="pvz., potencialus klientas, kolegė, vadovas..."/>
+            </div>
+            
+            <div class="tool-controls">
+              <button class="btn btn-primary" onclick="generateEmail()">
+                ✨ Generuoti laišką
+              </button>
+              <button class="btn btn-secondary" onclick="useEmailTemplate()">
+                📋 Naudoti šabloną
+              </button>
+            </div>
+            
+            <div class="quick-actions">
+              <button class="quick-action-btn" onclick="setEmailTemplate('meeting')">Susitikimo prašymas</button>
+              <button class="quick-action-btn" onclick="setEmailTemplate('quote')">Pasiūlymo prašymas</button>
+              <button class="quick-action-btn" onclick="setEmailTemplate('invoice')">Sąskaitos priminimas</button>
+              <button class="quick-action-btn" onclick="setEmailTemplate('introduction')">Pristatymas</button>
+            </div>
+          </div>
+          
+          <div class="output-panel">
+            <div class="preview-header">
+              <strong>Laiško peržiūra</strong>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                Atnaujinama automatiškai
+              </div>
+            </div>
+            <div class="output-area" id="emailOutput">
+              <div class="ai-thinking">
+                <div class="thinking-dots">
+                  <div class="thinking-dot"></div>
+                  <div class="thinking-dot"></div>
+                  <div class="thinking-dot"></div>
+                </div>
+                Pasiruošęs generuoti jūsų laišką...
+              </div>
+            </div>
+            
+            <div class="tool-controls" style="margin-top: 16px;">
+              <button class="btn btn-secondary" onclick="copyToClipboard('emailOutput')">
+                📋 Kopijuoti
+              </button>
+              <button class="btn btn-ghost" onclick="refineEmail()">
+                🔧 Tobulinti
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function generateDocumentGeneratorInterface() {
+      return `
+        <div class="tool-workspace">
+          <div class="input-group">
+            <label class="input-label">Dokumento tipas</label>
+            <select class="input-field" id="documentType">
+              <option value="contract">Sutartis</option>
+              <option value="proposal">Verslo pasiūlymas</option>
+              <option value="report">Ataskaita</option>
+              <option value="memo">Tarnybinis raštas</option>
+              <option value="policy">Politikos dokumentas</option>
+              <option value="manual">Instrukcija</option>
+              <option value="agreement">Susitarimas</option>
+              <option value="letter">Oficialus laiškas</option>
+            </select>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">Dokumento pavadinimas</label>
+            <input class="input-field" id="documentTitle" 
+                   placeholder="Įveskite dokumento pavadinimą"/>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">Pagrindinė informacija</label>
+            <textarea class="input-field xl" id="documentContent" 
+                      placeholder="Aprašykite dokumento turinį, pagrindinius punktus, sąlygas..."></textarea>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">Specialūs reikalavimai</label>
+            <textarea class="input-field" id="documentRequirements" 
+                      placeholder="Teisinio pobūdžio, formatavimo ar kiti specialūs reikalavimai..."></textarea>
+          </div>
+          
+          <div class="tool-controls">
+            <button class="btn btn-primary" onclick="generateDocument()">
+              📄 Generuoti dokumentą
+            </button>
+            <button class="btn btn-secondary" onclick="useDocumentTemplate()">
+              📋 Šablonai
+            </button>
+          </div>
+          
+          <div class="output-area" id="documentOutput" style="display: none;">
+            <!-- Sugeneruotas turinys atsiras čia -->
+          </div>
+          
+          <div class="templates-grid">
+            <div class="template-card" onclick="setDocumentTemplate('contract')">
+              <div class="template-icon">📋</div>
+              <div class="template-title">Sutartis</div>
+              <div class="template-desc">Standartinė sutartis</div>
+            </div>
+            <div class="template-card" onclick="setDocumentTemplate('proposal')">
+              <div class="template-icon">💼</div>
+              <div class="template-title">Pasiūlymas</div>
+              <div class="template-desc">Verslo pasiūlymas</div>
+            </div>
+            <div class="template-card" onclick="setDocumentTemplate('report')">
+              <div class="template-icon">📊</div>
+              <div class="template-title">Ataskaita</div>
+              <div class="template-desc">Veiklos ataskaita</div>
+            </div>
+            <div class="template-card" onclick="setDocumentTemplate('policy')">
+              <div class="template-icon">📜</div>
+              <div class="template-title">Politika</div>
+              <div class="template-desc">Įmonės politika</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function generateDataAnalyzerInterface() {
+      return `
+        <div class="tool-workspace">
+          <div class="file-upload-zone" id="fileUploadZone" onclick="document.getElementById('dataFile').click()">
+            <div class="file-upload-icon">📊</div>
+            <div class="file-upload-text">Paspauskite arba nuvilkite failą čia</div>
+            <div class="file-upload-hint">Palaikomi: CSV, Excel, JSON failai iki 50MB</div>
+            <input type="file" id="dataFile" style="display: none" 
+                   accept=".csv,.xlsx,.xls,.json" onchange="handleFileUpload(event)"/>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">Analizės tipas</label>
+            <select class="input-field" id="analysisType">
+              <option value="overview">Duomenų apžvalga</option>
+              <option value="trends">Tendencijų analizė</option>
+              <option value="correlation">Koreliacijos analizė</option>
+              <option value="prediction">Prognozių modeliai</option>
+              <option value="segmentation">Segmentavimas</option>
+              <option value="anomaly">Anomalijų aptikimas</option>
+              <option value="comparison">Palyginimo analizė</option>
+            </select>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">Tyrimo klausimai (nebūtina)</label>
+            <textarea class="input-field large" id="researchQuestions" 
+                      placeholder="Kokie konkretūs klausimai jus domina šiuose duomenyse?"></textarea>
+          </div>
+          
+          <div class="tool-controls">
+            <button class="btn btn-primary" onclick="analyzeData()" disabled id="analyzeBtn">
+              📈 Analizuoti duomenis
+            </button>
+            <button class="btn btn-secondary" onclick="previewData()" disabled id="previewBtn">
+              👁️ Peržiūrėti duomenis
+            </button>
+            <button class="btn btn-ghost" onclick="loadDemoData()">
+              🎲 Demo duomenys
+            </button>
+          </div>
+          
+          <div class="output-area" id="analysisOutput" style="display: none;">
+            <!-- Analizės rezultatai atsiras čia -->
+          </div>
+        </div>
+      `;
+    }
+
+    function generateTranslationInterface() {
+      return `
+        <div class="split-interface">
+          <div class="input-panel">
+            <div class="input-group">
+              <label class="input-label">Iš kalbos</label>
+              <select class="input-field" id="sourceLanguage">
+                <option value="auto">Automatinis aptikimas</option>
+                <option value="lt">Lietuvių</option>
+                <option value="en">Anglų</option>
+                <option value="de">Vokiečių</option>
+                <option value="fr">Prancūzų</option>
+                <option value="es">Ispanų</option>
+                <option value="ru">Rusų</option>
+                <option value="pl">Lenkų</option>
+                <option value="it">Italų</option>
+              </select>
+            </div>
+            
+            <div class="input-group">
+              <label class="input-label">Į kalbą</label>
+              <select class="input-field" id="targetLanguage">
+                <option value="en">Anglų</option>
+                <option value="lt">Lietuvių</option>
+                <option value="de">Vokiečių</option>
+                <option value="fr">Prancūzų</option>
+                <option value="es">Ispanų</option>
+                <option value="ru">Rusų</option>
+                <option value="pl">Lenkų</option>
+                <option value="it">Italų</option>
+              </select>
+            </div>
+            
+            <div class="input-group">
+              <label class="input-label">Teksto stilius</label>
+              <select class="input-field" id="translationStyle">
+                <option value="standard">Standartinis</option>
+                <option value="formal">Oficialus</option>
+                <option value="casual">Neformalus</option>
+                <option value="technical">Techninis</option>
+                <option value="business">Verslo</option>
+                <option value="academic">Akademinis</option>
+              </select>
+            </div>
+            
+            <div class="input-group">
+              <label class="input-label">Verčiamas tekstas</label>
+              <textarea class="input-field xl" id="sourceText" 
+                        placeholder="Įveskite tekstą vertimui..." 
+                        oninput="autoTranslate()"></textarea>
+            </div>
+            
+            <div class="tool-controls">
+              <button class="btn btn-primary" onclick="translateText()">
+                🌍 Versti
+              </button>
+              <button class="btn btn-secondary" onclick="swapLanguages()">
+                🔄 Keisti kalbas
+              </button>
+            </div>
+          </div>
+          
+          <div class="output-panel">
+            <div class="preview-header">
+              <strong>Vertimo rezultatas</strong>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                Vertimas realiu laiku
+              </div>
+            </div>
+            <div class="output-area" id="translationOutput">
+              <div class="ai-thinking">
+                <div class="thinking-dots">
+                  <div class="thinking-dot"></div>
+                  <div class="thinking-dot"></div>
+                  <div class="thinking-dot"></div>
+                </div>
+                Pasiruošęs vertimui...
+              </div>
+            </div>
+            
+            <div class="tool-controls" style="margin-top: 16px;">
+              <button class="btn btn-secondary" onclick="copyToClipboard('translationOutput')">
+                📋 Kopijuoti vertimą
+              </button>
+              <button class="btn btn-ghost" onclick="improveTranslation()">
+                ✨ Tobulinti
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function generateWorkflowInterface() {
+      return `
+        <div class="tool-workspace">
+          <div class="input-group">
+            <label class="input-label">Darbo eigos pavadinimas</label>
+            <input class="input-field" id="workflowName" 
+                   placeholder="pvz., 'Naujų klientų aptarnavimas'"/>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">Eigos tipas</label>
+            <select class="input-field" id="workflowType">
+              <option value="email-automation">El. pašto automatizacija</option>
+              <option value="data-processing">Duomenų apdorojimas</option>
+              <option value="approval-process">Patvirtinimo procesas</option>
+              <option value="customer-service">Klientų aptarnavimas</option>
+              <option value="task-management">Užduočių valdymas</option>
+              <option value="notification-system">Pranešimų sistema</option>
+              <option value="backup-automation">Atsarginių kopijų kūrimas</option>
+              <option value="report-generation">Ataskaitų generavimas</option>
+            </select>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">Paleidimo sąlyga</label>
+            <select class="input-field" id="workflowTrigger">
+              <option value="form-submission">Formos pateikimas</option>
+              <option value="email-received">El. pašto gavimas</option>
+              <option value="file-upload">Failo įkėlimas</option>
+              <option value="schedule">Nustatyta tvarkaraštį</option>
+              <option value="webhook">Webhook signalas</option>
+              <option value="manual">Rankinis paleidimas</option>
+              <option value="database-change">Duomenų bazės pakeitimas</option>
+            </select>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">Eigos aprašas</label>
+            <textarea class="input-field xl" id="workflowDescription" 
+                      placeholder="Aprašykite ką turi atlikti ši darbo eiga..."></textarea>
+          </div>
+          
+          <div class="tool-controls">
+            <button class="btn btn-primary" onclick="buildWorkflow()">
+              🔄 Sukurti eigą
+            </button>
+            <button class="btn btn-secondary" onclick="useWorkflowTemplate()">
+              📋 Šablonai
+            </button>
+            <button class="btn btn-ghost" onclick="testWorkflow()">
+              🧪 Testuoti
+            </button>
+          </div>
+          
+          <div class="output-area" id="workflowOutput" style="display: none;">
+            <!-- Darbo eigos vizualizacija atsiras čia -->
+          </div>
+          
+          <div class="templates-grid">
+            <div class="template-card" onclick="loadWorkflowTemplate('customer-onboarding')">
+              <div class="template-icon">👋</div>
+              <div class="template-title">Klientų priėmimas</div>
+              <div class="template-desc">Naujų klientų aptarnavimas</div>
+            </div>
+            <div class="template-card" onclick="loadWorkflowTemplate('lead-nurturing')">
+              <div class="template-icon">🎯</div>
+              <div class="template-title">Potencialių klientų puoselėjimas</div>
+              <div class="template-desc">Automatinis sekimas</div>
+            </div>
+            <div class="template-card" onclick="loadWorkflowTemplate('invoice-processing')">
+              <div class="template-icon">💰</div>
+              <div class="template-title">Sąskaitų apdorojimas</div>
+              <div class="template-desc">Mokėjimų automatizacija</div>
+            </div>
+            <div class="template-card" onclick="loadWorkflowTemplate('support-tickets')">
+              <div class="template-icon">🎧</div>
+              <div class="template-title">Pagalbos užklausos</div>
+              <div class="template-desc">Automatinis paskirstymas</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function generatePresentationInterface() {
+      return `
+        <div class="tool-workspace">
+          <div class="input-group">
+            <label class="input-label">Prezentacijos tema</label>
+            <input class="input-field" id="presentationTopic" 
+                   placeholder="pvz., 'Įmonės Q4 rezultatai ir 2025 planai'"/>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">Auditorija</label>
+            <select class="input-field" id="presentationAudience">
+              <option value="executives">Vadovybė</option>
+              <option value="team">Komanda</option>
+              <option value="clients">Klientai</option>
+              <option value="investors">Investuotojai</option>
+              <option value="public">Plačioji visuomenė</option>
+              <option value="students">Studentai</option>
+              <option value="colleagues">Kolegos</option>
+            </select>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">Prezentacijos tipas</label>
+            <select class="input-field" id="presentationType">
+              <option value="business-report">Verslo ataskaita</option>
+              <option value="project-proposal">Projekto pasiūlymas</option>
+              <option value="training">Mokymai</option>
+              <option value="product-demo">Produkto demonstracija</option>
+              <option value="strategy-presentation">Strategijos pristatymas</option>
+              <option value="educational">Edukacinė prezentacija</option>
+              <option value="pitch">Investicijų pritraukimas</option>
+            </select>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">Skaidžių skaičius</label>
+            <select class="input-field" id="slideCount">
+              <option value="5-8">Trumpa (5-8 skaidrės)</option>
+              <option value="10-15">Vidutinė (10-15 skaidžių)</option>
+              <option value="20-25">Išsami (20-25 skaidrės)</option>
+              <option value="30+">Detalus pristatymas (30+ skaidžių)</option>
+            </select>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">Pagrindiniai punktai</label>
+            <textarea class="input-field xl" id="presentationPoints" 
+                      placeholder="Išvardykite pagrindinius punktus, duomenis, statistikas, kuriuos norite įtraukti..."></textarea>
+          </div>
+          
+          <div class="tool-controls">
+            <button class="btn btn-primary" onclick="generatePresentation()">
+              🎯 Kurti prezentaciją
+            </button>
+            <button class="btn btn-secondary" onclick="generateOutline()">
+              📝 Kurti struktūrą
+            </button>
+          </div>
+          
+          <div class="output-area" id="presentationOutput" style="display: none;">
+            <!-- Prezentacijos turinys atsiras čia -->
+          </div>
+        </div>
+      `;
+    }
+
+    function generateKnowledgeExtractorInterface() {
+      return `
+        <div class="split-interface">
+          <div class="input-panel">
+            <div class="input-group">
+              <label class="input-label">Teksto šaltinis</label>
+              <select class="input-field" id="textSource" onchange="toggleInputMethod()">
+                <option value="paste">Įklijuoti tekstą</option>
+                <option value="file">Įkelti failą</option>
+                <option value="url">Analizuoti URL</option>
+              </select>
+            </div>
+            
+            <div class="input-group" id="textInputGroup">
+              <label class="input-label">Analizuojamas tekstas</label>
+              <textarea class="input-field xl" id="analysisText" 
+                        placeholder="Įklijuokite tekstą, kurį norite analizuoti ir iš kurio ištraukti pagrindinius faktus..."></textarea>
+            </div>
+            
+            <div class="input-group" id="fileInputGroup" style="display: none;">
+              <label class="input-label">Dokumento failas</label>
+              <div class="file-upload-zone" onclick="document.getElementById('textFile').click()">
+                <div class="file-upload-icon">📄</div>
+                <div class="file-upload-text">Paspauskite arba nuvilkite failą</div>
+                <div class="file-upload-hint">PDF, DOC, TXT failai</div>
+                <input type="file" id="textFile" style="display: none" 
+                       accept=".pdf,.doc,.docx,.txt" onchange="handleTextFile(event)"/>
+              </div>
+            </div>
+            
+            <div class="input-group" id="urlInputGroup" style="display: none;">
+              <label class="input-label">Interneto puslapis</label>
+              <input class="input-field" id="websiteUrl" 
+                     placeholder="https://example.com/straipsnis"/>
+              <button class="btn btn-ghost" onclick="loadWebContent()" style="margin-top: 8px;">
+                🌐 Įkelti turinį
+              </button>
+            </div>
+            
+            <div class="input-group">
+              <label class="input-label">Analizės tipas</label>
+              <select class="input-field" id="extractionType">
+                <option value="summary">Pagrindinė santrauka</option>
+                <option value="key-facts">Svarbiausi faktai</option>
+                <option value="key-points">Pagrindiniai punktai</option>
+                <option value="statistics">Statistikos ir skaičiai</option>
+                <option value="quotes">Svarbiausi citatai</option>
+                <option value="concepts">Pagrindinės sąvokos</option>
+                <option value="timeline">Chronologija</option>
+                <option value="questions">Klausimai ir atsakymai</option>
+              </select>
+            </div>
+            
+            <div class="input-group">
+              <label class="input-label">Detalumo lygis</label>
+              <select class="input-field" id="detailLevel">
+                <option value="brief">Trumpai</option>
+                <option value="moderate">Vidutiniškai</option>
+                <option value="detailed">Detaliai</option>
+                <option value="comprehensive">Išsamiai</option>
+              </select>
+            </div>
+            
+            <div class="tool-controls">
+              <button class="btn btn-primary" onclick="extractKnowledge()">
+                🧠 Ištraukti žinias
+              </button>
+              <button class="btn btn-secondary" onclick="generateQuestions()">
+                ❓ Kurti klausimus
+              </button>
+            </div>
+          </div>
+          
+          <div class="output-panel">
+            <div class="preview-header">
+              <strong>Ištrauktos žinios</strong>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                Struktūrizuoti rezultatai
+              </div>
+            </div>
+            <div class="output-area" id="knowledgeOutput">
+              <div class="ai-thinking">
+                <div class="thinking-dots">
+                  <div class="thinking-dot"></div>
+                  <div class="thinking-dot"></div>
+                  <div class="thinking-dot"></div>
+                </div>
+                Pasiruošęs analizuoti tekstą...
+              </div>
+            </div>
+            
+            <div class="tool-controls" style="margin-top: 16px;">
+              <button class="btn btn-secondary" onclick="copyToClipboard('knowledgeOutput')">
+                📋 Kopijuoti rezultatus
+              </button>
+              <button class="btn btn-ghost" onclick="exportKnowledge()">
+                📤 Eksportuoti
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function generateGenericToolInterface(toolId) {
+      const config = toolConfigs[toolId];
+      return `
+        <div class="tool-workspace">
+          <div style="text-align: center; padding: 40px;">
+            <div style="font-size: 64px; margin-bottom: 24px;">${config.icon}</div>
+            <h3 style="margin-bottom: 16px;">${config.name}</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 32px;">
+              Šis įrankis šiuo metu yra plėtojamas. Greitai pridėsime visas funkcijas!
+            </p>
+            
+            <div class="ai-thinking">
+              <div class="loading"></div>
+              Ruošiame įrankio sąsają...
+            </div>
+            
+            <div style="margin-top: 32px;">
+              <button class="btn btn-primary" onclick="requestNotification('${toolId}')">
+                🔔 Pranešti kai bus paruošta
+              </button>
+              <button class="btn btn-secondary" onclick="closeModal()">
+                ← Grįžti į įrankius
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================
+    // AI POKALBIŲ SISTEMA
+    // =========================================================
+    function toggleAIChat() {
+      chatVisible = !chatVisible;
+      const chatContainer = document.getElementById('aiChat');
+      const fab = document.getElementById('fabBtn');
+      
+      if (chatVisible) {
+        chatContainer.classList.add('active');
+        fab.classList.add('hidden');
+        document.getElementById('chatInput').focus();
+      } else {
+        chatContainer.classList.remove('active');
+        fab.classList.remove('hidden');
+      }
+    }
+
+    function closeAIChat() {
+      chatVisible = false;
+      document.getElementById('aiChat').classList.remove('active');
+      document.getElementById('fabBtn').classList.remove('hidden');
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      addChatMessage(message, 'user');
+      input.value = '';
+      
+      const thinkingId = addChatMessage('AI galvoja...', 'ai', true);
+      
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      document.getElementById(thinkingId).remove();
+      
+      const aiResponse = generateAIResponse(message);
+      addChatMessage(aiResponse, 'ai');
+      
+      const messagesContainer = document.getElementById('chatMessages');
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function addChatMessage(message, sender, isThinking = false) {
+      const messagesContainer = document.getElementById('chatMessages');
+      const messageDiv = document.createElement('div');
+      const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      messageDiv.id = messageId;
+      messageDiv.className = `chat-message ${sender}`;
+      
+      if (isThinking) {
+        messageDiv.innerHTML = `
+          <div class="ai-thinking">
+            <div class="thinking-dots">
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+            </div>
+            ${message}
+          </div>
+        `;
+      } else {
+        messageDiv.textContent = message;
+      }
+      
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      
+      return messageId;
+    }
+
+    function generateAIResponse(userMessage) {
+      const message = userMessage.toLowerCase();
+      
+      if (message.includes('laišk') || message.includes('email') || message.includes('rašy')) {
+        return "Galiu padėti rašyti profesianalius laiškus! Naudokite 'Profesionalių laiškų rašytojas' įrankį - jis palaiko įvairius tonus ir tipus. Ar norite, kad atidariau jį?";
+      }
+      
+      if (message.includes('dokument') || message.includes('sutart') || message.includes('ataskai')) {
+        return "Dokumentų generatorius puikiai tiks jūsų poreikiams! Galite kurti sutartis, ataskaitas, pasiūlymus ir kitus verslo dokumentus. Koks dokumentas jums reikalingas?";
+      }
+      
+      if (message.includes('duomen') || message.includes('analiz') || message.includes('excel') || message.includes('csv')) {
+        return "Duomenų analizatoriui galite įkelti CSV, Excel ar JSON failus ir gauti išsamias analizes su prognozėmis. Kokius duomenis norėtumėte analizuoti?";
+      }
+      
+      if (message.includes('vert') || message.includes('kalb') || message.includes('transla')) {
+        return "Profesionalus vertėjas palaiko 100+ kalbų ir išlaiko kontekstą. Galite versti dokumentus, tekstus ar net svetaines. Kokią kalbų porą naudosite?";
+      }
+      
+      if (message.includes('automatiz') || message.includes('darbo eig') || message.includes('proces')) {
+        return "Darbo eigų kūrėjas leis sukurti automatizacijas be programavimo žinių. Galite sujungti programas ir automatizuoti kasdienius procesus. Ką norėtumėte automatizuoti?";
+      }
+      
+      if (message.includes('prezentacij') || message.includes('skaidr') || message.includes('pristatym')) {
+        return "Prezentacijų kūrėjas automatiškai sukurs profesionalias skaidres su grafikais ir struktūra. Kokiai auditorijai ruošiate prezentaciją?";
+      }
+      
+      if (message.includes('žini') || message.includes('tekst') || message.includes('santrauk')) {
+        return "Žinių ekstraktoras ištrauks pagrindinius faktus iš bet kokio teksto ar dokumento. Galite analizuoti straipsnius, knygas ar tyrimų ataskaitas. Kokį tekstą norėtumėte analizuoti?";
+      }
+      
+      if (message.includes('pagalb') || message.includes('kaip') || message.includes('kas')) {
+        return "Galiu padėti! Štai ką galiu daryti:\n• Rasti tinkamą įrankį jūsų užduočiai\n• Paaiškinti kaip veikia įrankiai\n• Pasiūlyti produktyvumo sprendimus\n• Išspręsti technines problemas\n\nKokią užduotį sprendžiate?";
+      }
+      
+      if (message.includes('mokym') || message.includes('moksl') || message.includes('mokt')) {
+        return "Mokymosi įrankiai padės sukurti mokymosi planus, analizuoti tekstus ar generuoti testus. Ar norite mokytis naujos srities ar analizuoti esamą medžiagą?";
+      }
+      
+      const responses = [
+        "Tai įdomu! Kuo galiu padėti su jūsų produktyvumu šiandien?",
+        "Galiu padėti rasti tinkamą įrankį šiai užduočiai. Ką bandote nuveikti?",
+        "Puikus klausimas! Pasiūlysiu keletą įrankių, kurie gali padėti.",
+        "Esu čia tam, kad padėčiau optimizuoti jūsų produktyvumą. Koks dabartinis iššūkis?",
+        "Papasakokite daugiau apie projektą - galiu rekomenduoti geriausius įrankius ir metodą."
+      ];
+      
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    // =========================================================
+    // MODALINĖ SISTEMA
+    // =========================================================
+    function showModal(title, content) {
+      document.getElementById('modalTitle').innerHTML = title;
+      document.getElementById('modalBody').innerHTML = content;
+      document.getElementById('modalOverlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function showHelpModal() {
+      showModal('📚 Pagalbos centras', `
+        <div style="max-width: 600px;">
+          <h3 style="margin-bottom: 16px;">Kaip naudoti AI Produktyvumo Centrą</h3>
+          
+          <div style="margin-bottom: 24px;">
+            <h4 style="color: var(--accent-primary); margin-bottom: 8px;">🚀 Pradžiai</h4>
+            <p style="margin-bottom: 12px;">1. Naršykite įrankius pagal kategorijas arba žiūrėkite visus</p>
+            <p style="margin-bottom: 12px;">2. Spustelėkite bet kurį įrankio kortelę ir atidarykite sąsają</p>
+            <p style="margin-bottom: 12px;">3. Užpildykite reikalingus laukus ir spauskite generuoti</p>
+            <p style="margin-bottom: 12px;">4. Naudokite AI asistentą (🤖 mygtukas) pagalbai bet kada</p>
+          </div>
+          
+          <div style="margin-bottom: 24px;">
+            <h4 style="color: var(--accent-primary); margin-bottom: 8px;">⌨️ Spartieji klavišai</h4>
+            <p style="margin-bottom: 8px;"><code>Ctrl/Cmd + K</code> - Atidaryti AI pokalbius</p>
+            <p style="margin-bottom: 8px;"><code>Esc</code> - Uždaryti modalus/pokalbius</p>
+          </div>
+          
+          <div style="margin-bottom: 24px;">
+            <h4 style="color: var(--accent-primary); margin-bottom: 8px;">🎯 Populiariausi įrankiai</h4>
+            <p style="margin-bottom: 8px;">• Profesionalių laiškų rašytojas - automatinis el. pašto kūrimas</p>
+            <p style="margin-bottom: 8px;">• Duomenų analizatorius - Excel/CSV failų analizė</p>
+            <p style="margin-bottom: 8px;">• Profesionalus vertėjas - 100+ kalbų</p>
+            <p style="margin-bottom: 8px;">• Darbo eigų kūrėjas - procesų automatizacija</p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 32px;">
+            <button class="btn btn-primary" onclick="closeModal()">Supratau!</button>
+            <button class="btn btn-secondary" onclick="toggleAIChat(); closeModal();">Kalbėti su AI asistentu</button>
+          </div>
+        </div>
+      `);
+    }
+
+    function showSettingsModal() {
+      showModal('⚙️ Nustatymai', `
+        <div style="max-width: 500px;">
+          <h3 style="margin-bottom: 24px;">Personalizacija</h3>
+          
+          <div class="input-group">
+            <label class="input-label">Kalba</label>
+            <select class="input-field" id="languageSetting">
+              <option value="lt" selected>Lietuvių</option>
+              <option value="en">English</option>
+              <option value="de">Deutsch</option>
+              <option value="fr">Français</option>
+              <option value="es">Español</option>
+            </select>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">AI atsakymo greitis</label>
+            <select class="input-field" id="aiSpeedSetting">
+              <option value="fast">Greitas (žemesnė kokybė)</option>
+              <option value="balanced" selected>Subalansuotas</option>
+              <option value="quality">Aukšta kokybė (lėtesnis)</option>
+            </select>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">
+              <input type="checkbox" id="autoSaveSetting" checked style="margin-right: 8px;">
+              Automatiškai išsaugoti darbo eigą
+            </label>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">
+              <input type="checkbox" id="notificationsSetting" checked style="margin-right: 8px;">
+              Rodyti pranešimus
+            </label>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">
+              <input type="checkbox" id="analyticsOptOut" style="margin-right: 8px;">
+              Išjungti naudojimo statistiką
+            </label>
+          </div>
+          
+          <div style="text-align: center; margin-top: 32px;">
+            <button class="btn btn-primary" onclick="saveSettings()">Išsaugoti nustatymus</button>
+            <button class="btn btn-ghost" onclick="closeModal()">Atšaukti</button>
+          </div>
+        </div>
+      `);
+    }
+
+    function showSpecialistModal() {
+      showModal('👨‍💼 Specialistų įrankiai', `
+        <div style="max-width: 700px;">
+          <h3 style="margin-bottom: 24px;">Specializuoti AI asistentai</h3>
+          <p style="color: var(--text-secondary); margin-bottom: 32px;">
+            Pasirinkite specializuotą AI asistentą, pritaikytą konkrečiai sričiai:
+          </p>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div class="template-card" onclick="openSpecialistTool('daktaras')">
+              <div class="template-icon">👨‍⚕️</div>
+              <div class="template-title">Daktaras</div>
+              <div class="template-desc">Medicinos AI asistentas</div>
+            </div>
+            <div class="template-card" onclick="openSpecialistTool('programuotojas')">
+              <div class="template-icon">👨‍💻</div>
+              <div class="template-title">Programuotojas</div>
+              <div class="template-desc">Kodo rašymo asistentas</div>
+            </div>
+            <div class="template-card" onclick="openSpecialistTool('verslas')">
+              <div class="template-icon">💼</div>
+              <div class="template-title">Verslas</div>
+              <div class="template-desc">Verslo strategijos ir plėtros</div>
+            </div>
+            <div class="template-card" onclick="openSpecialistTool('finansai')">
+              <div class="template-icon">💰</div>
+              <div class="template-title">Finansai</div>
+              <div class="template-desc">Finansų valdymo asistentas</div>
+            </div>
+            <div class="template-card" onclick="openSpecialistTool('psihologas')">
+              <div class="template-icon">🧠</div>
+              <div class="template-title">Psichologas</div>
+              <div class="template-desc">Psichologijos asistentas</div>
+            </div>
+            <div class="template-card" onclick="openSpecialistTool('sefas')">
+              <div class="template-icon">👨‍🍳</div>
+              <div class="template-title">Šefas</div>
+              <div class="template-desc">Kulinarijos asistentas</div>
+            </div>
+            <div class="template-card" onclick="openSpecialistTool('sportas')">
+              <div class="template-icon">🏃‍♂️</div>
+              <div class="template-title">Sportas</div>
+              <div class="template-desc">Sporto ir sveikatos</div>
+            </div>
+            <div class="template-card" onclick="openSpecialistTool('keliones')">
+              <div class="template-icon">✈️</div>
+              <div class="template-title">Kelionės</div>
+              <div class="template-desc">Kelionių planavimo asistentas</div>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 32px;">
+            <button class="btn btn-ghost" onclick="closeModal()">Grįžti</button>
+          </div>
+        </div>
+      `);
+    }
+
+    // =========================================================
+    // ĮRANKIŲ FUNKCIJOS
+    // =========================================================
+    
+    // El. laiškų rašytojas
+    async function generateEmail() {
+      const type = document.getElementById('emailType').value;
+      const tone = document.getElementById('emailTone').value;
+      const points = document.getElementById('emailPoints').value;
+      const context = document.getElementById('recipientContext').value;
+      const outputArea = document.getElementById('emailOutput');
+      
+      if (!points.trim()) {
+        showNotification('Prašome įvesti pagrindinius punktus laiškui', 'warning');
+        return;
+      }
+      
+      outputArea.innerHTML = `
+        <div class="ai-thinking">
+          <div class="loading"></div>
+          Generuoju jūsų ${tone} ${type} laišką...
+          <div class="thinking-dots">
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+          </div>
+        </div>
+      `;
+      
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const emailContent = generateEmailContent(type, tone, points, context);
+      
+      outputArea.innerHTML = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+          <div style="border-bottom: 1px solid var(--border-soft); padding-bottom: 12px; margin-bottom: 16px;">
+            <strong>Tema:</strong> ${emailContent.subject}
+          </div>
+          <div style="white-space: pre-wrap; line-height: 1.6;">${emailContent.body}</div>
+          <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-soft); font-size: 12px; color: var(--text-muted);">
+            Sugeneruota su AI • ${tone} tonas • ${type} tipas
+          </div>
+        </div>
+      `;
+      
+      showNotification('Laiškas sėkmingai sugeneruotas!', 'success');
+    }
+
+    function generateEmailContent(type, tone, points, context) {
+      const subjects = {
+        'business': 'Verslo užklausa - bendradarbiavimo galimybė',
+        'follow-up': 'Primineimas dėl mūsų pokalbio',
+        'proposal': 'Pasiūlymas jūsų apsvarstyti',
+        'apology': 'Nuoširdūs atsiprašymai ir tolimesni žingsniai',
+        'introduction': 'Pristatymas ir bendradarbiavimo galimybė',
+        'thank-you': 'Padėka už jūsų laiką ir palaikymą',
+        'complaint': 'Rūpestis dėl neseniai patirtos situacijos',
+        'request': 'Prašymas dėl pagalbos'
+      };
+      
+      const greetings = {
+        'professional': 'Gerb. [Gavėjo vardas],',
+        'friendly': 'Sveiki, [Gavėjo vardas],',
+        'formal': 'Gerbiamieji,',
+        'casual': 'Labas, [Gavėjo vardas],',
+        'urgent': 'Gerb. [Gavėjo vardas],',
+        'persuasive': 'Gerb. [Gavėjo vardas],'
+      };
+      
+      const closings = {
+        'professional': 'Geriausiais linkėjimais,\n[Jūsų vardas]',
+        'friendly': 'Su geriausiais linkėjimais,\n[Jūsų vardas]',
+        'formal': 'Pagarbiai,\n[Jūsų vardas]',
+        'casual': 'Iki,\n[Jūsų vardas]',
+        'urgent': 'Skubiai laukdamas atsakymo,\n[Jūsų vardas]',
+        'persuasive': 'Laukiu jūsų atsakymo,\n[Jūsų vardas]'
+      };
+      
+      const body = `${greetings[tone]}
+
+Tikiuosi, kad šis laiškas jus randa sveikus ir gerai. Kreipiuosi dėl ${points.toLowerCase()}.
+
+${context ? `Atsižvelgiant į jūsų poziciją kaip ${context}, ` : ''}manau, kad tai galėtų būti vertinga jums ir jūsų organizacijai.
+
+Pagrindiniai punktai, kuriuos norėčiau aptarti:
+• ${points.split('\n').join('\n• ')}
+
+Džiaugčiausi galimybe aptarti tai išsamiau jums patogiausiu metu. Prašau pranešti, ar norėtumėte susitarti trumpam pokalbiui ar susitikimui.
+
+Dėkoju už jūsų laiką ir dėmesį.
+
+${closings[tone]}`;
+
+      return {
+        subject: subjects[type] || 'Profesionalus laiškas',
+        body: body
+      };
+    }
+
+    // Dokumento generatorius
+    async function generateDocument() {
+      const type = document.getElementById('documentType').value;
+      const title = document.getElementById('documentTitle').value;
+      const content = document.getElementById('documentContent').value;
+      const requirements = document.getElementById('documentRequirements').value;
+      const outputArea = document.getElementById('documentOutput');
+      
+      if (!title.trim() || !content.trim()) {
+        showNotification('Prašome užpildyti pavadinimą ir pagrindinę informaciją', 'warning');
+        return;
+      }
+      
+      outputArea.style.display = 'block';
+      outputArea.innerHTML = `
+        <div class="ai-thinking">
+          <div class="loading"></div>
+          Kuriu jūsų ${type} dokumentą...
+          <div class="thinking-dots">
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+          </div>
+        </div>
+      `;
+      
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      const documentContent = generateDocumentContent(type, title, content, requirements);
+      outputArea.innerHTML = documentContent;
+      
+      showNotification('Dokumentas sėkmingai sugeneruotas!', 'success');
+    }
+
+    function generateDocumentContent(type, title, content, requirements) {
+      const docTypes = {
+        'contract': {
+          header: 'SUTARTIS',
+          structure: `
+            <h3>${title}</h3>
+            <p><strong>Data:</strong> ${new Date().toLocaleDateString('lt-LT')}</p>
+            
+            <h4>1. ŠALYS</h4>
+            <p>Šia sutartimi susitaria šalys:</p>
+            
+            <h4>2. SUTARTIES OBJEKTAS</h4>
+            <p>${content}</p>
+            
+            <h4>3. ŠALIŲ TEISĖS IR PAREIGOS</h4>
+            <p>Šalys įsipareigoja vykdyti šioje sutartyje numatytas sąlygas.</p>
+            
+            <h4>4. MOKĖJIMO SĄLYGOS</h4>
+            <p>Mokėjimo tvarka ir sąlygos bus aptartos atskirai.</p>
+            
+            <h4>5. BAIGIAMOSIOS NUOSTATOS</h4>
+            <p>Sutartis įsigalioja nuo pasirašymo momento.</p>
+            
+            ${requirements ? '<h4>6. SPECIALŪS REIKALAVIMAI</h4><p>' + requirements + '</p>' : ''}
+          `
+        },
+        'proposal': {
+          header: 'VERSLO PASIŪLYMAS',
+          structure: `
+            <h3>${title}</h3>
+            <p><strong>Data:</strong> ${new Date().toLocaleDateString('lt-LT')}</p>
+            
+            <h4>VYKDOMASIS SANTRAUKA</h4>
+            <p>${content}</p>
+            
+            <h4>PASIŪLYMO APRAŠYMAS</h4>
+            <p>Šis pasiūlymas atskleidžia mūsų sprendimą jūsų poreikiams.</p>
+            
+            <h4>NAUDOS IR PRIVALUMAI</h4>
+            <p>• Aukšta kokybė ir profesionalumas
+            • Konkurencinga kaina
+            • Patikimas įgyvendinimas</p>
+            
+            <h4>ĮGYVENDINIMO PLANAS</h4>
+            <p>Projektas bus įgyvendintas etapais su aiškiais terminais.</p>
+            
+            ${requirements ? '<h4>SPECIALŪS REIKALAVIMAI</h4><p>' + requirements + '</p>' : ''}
+          `
+        },
+        'report': {
+          header: 'ATASKAITA',
+          structure: `
+            <h3>${title}</h3>
+            <p><strong>Data:</strong> ${new Date().toLocaleDateString('lt-LT')}</p>
+            
+            <h4>SANTRAUKA</h4>
+            <p>${content}</p>
+            
+            <h4>PAGRINDINIAI REZULTATAI</h4>
+            <p>Ataskaitos laikotarpiu pasiekti šie rezultatai.</p>
+            
+            <h4>ANALIZĖ</h4>
+            <p>Detalesnė situacijos analizė ir tendencijos.</p>
+            
+            <h4>REKOMENDACIJOS</h4>
+            <p>Pasiūlymai tolimesnei veiklai ir gerinimui.</p>
+            
+            ${requirements ? '<h4>PAPILDOMA INFORMACIJA</h4><p>' + requirements + '</p>' : ''}
+          `
+        }
+      };
+      
+      const docStructure = docTypes[type] || docTypes['contract'];
+      
+      return `
+        <div style="background: white; color: black; padding: 32px; border-radius: 8px; font-family: 'Times New Roman', serif;">
+          <div style="text-align: center; margin-bottom: 32px;">
+            <h2 style="margin-bottom: 16px;">${docStructure.header}</h2>
+          </div>
+          ${docStructure.structure}
+          <div style="margin-top: 32px; text-align: center;">
+            <p>_________________________</p>
+            <p>Parašas ir data</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Duomenų analizatorius
+    async function analyzeData() {
+      const analysisType = document.getElementById('analysisType').value;
+      const questions = document.getElementById('researchQuestions').value;
+      const outputArea = document.getElementById('analysisOutput');
+      
+      outputArea.style.display = 'block';
+      outputArea.innerHTML = `
+        <div class="ai-thinking">
+          <div class="loading"></div>
+          Atliekam ${analysisType} analizę...
+          <div class="thinking-dots">
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+          </div>
+        </div>
+      `;
+      
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      const analysisResults = generateAnalysisResults(analysisType, questions);
+      outputArea.innerHTML = analysisResults;
+      
+      showNotification('Duomenų analizė baigta!', 'success');
+    }
+
+    function generateAnalysisResults(type, questions) {
+      const analyses = {
+        'overview': `
+          <h4>Duomenų apžvalga</h4>
+          <div style="background: var(--bg-elevated); padding: 16px; border-radius: 8px; margin: 16px 0;">
+            <strong>Duomenų rinkinio santrauka:</strong><br>
+            • Bendras įrašų skaičius: 1,247<br>
+            • Stulpelių skaičius: 8<br>
+            • Duomenų kokybė: 94.3% užpildyta<br>
+            • Laiko periodas: 2023 sau. - 2024 gru.
+          </div>
+          <strong>Pagrindinės įžvalgos:</strong><br>
+          • Pajamų augimo tendencija 23%<br>
+          • Klientų pasitenkinimas pagerėjo 15%<br>
+          • Geografinis pasiskirstymas rodo augimą ES rinkose<br>
+          • Sezoniniai šablonai rodo Q4 piko rezultatus
+        `,
+        'trends': `
+          <h4>Tendencijų analizės rezultatai</h4>
+          <div style="background: var(--bg-elevated); padding: 16px; border-radius: 8px; margin: 16px 0;">
+            <strong>Nustatytos pagrindinės tendencijos:</strong><br>
+            📈 Augimo tendencija: 18% metinis augimas<br>
+            📊 Sezoniniai šablonai: Q4 pikai, Q1 žemumas<br>
+            🎯 Klientų segmentai: Premium lygis auga greičiausiai
+          </div>
+          <strong>Prognozės:</strong><br>
+          • Kito ketvirčio prognozė: +12% augimas<br>
+          • Rekomenduojami veiksmai: Investuoti į Q1 rinkodarą<br>
+          • Rizikos faktoriai: Rinkos sodrumas pagrindiniame segmente
+        `,
+        'correlation': `
+          <h4>Koreliacijos analizė</h4>
+          <div style="background: var(--bg-elevated); padding: 16px; border-radius: 8px; margin: 16px 0;">
+            <strong>Stiprios koreliacijos:</strong><br>
+            • Rinkodaros išlaidos ↔ Pajamos (r=0.78)<br>
+            • Klientų pasitenkinimas ↔ Išlaikymas (r=0.84)<br>
+            • Produkto kokybė ↔ Rekomendacijos (r=0.71)
+          </div>
+          <strong>Veiksmų rekomendacijos:</strong><br>
+          • Didinti rinkodaros biudžetą proporcingam pajamų augimui<br>
+          • Orientuotis į klientų patirtį išlaikymo gerinimui<br>
+          • Kokybės gerinimas skatina organinį augimą
+        `
+      };
+      
+      return analyses[type] || analyses['overview'];
+    }
+
+    // Vertimo įrankis
+    async function translateText() {
+      const sourceText = document.getElementById('sourceText').value;
+      const sourceLang = document.getElementById('sourceLanguage').value;
+      const targetLang = document.getElementById('targetLanguage').value;
+      const style = document.getElementById('translationStyle').value;
+      const outputArea = document.getElementById('translationOutput');
+      
+      if (!sourceText.trim()) {
+        showNotification('Prašome įvesti tekstą vertimui', 'warning');
+        return;
+      }
+      
+      outputArea.innerHTML = `
+        <div class="ai-thinking">
+          <div class="loading"></div>
+          Verčiama iš ${sourceLang} į ${targetLang}...
+          <div class="thinking-dots">
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+          </div>
+        </div>
+      `;
+      
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const translatedText = generateTranslation(sourceText, sourceLang, targetLang, style);
+      outputArea.innerHTML = `
+        <div style="background: var(--bg-elevated); padding: 16px; border-radius: 8px;">
+          <div style="margin-bottom: 12px; font-size: 12px; color: var(--text-muted);">
+            Versta iš ${getLanguageName(sourceLang)} į ${getLanguageName(targetLang)} • ${style} stilius
+          </div>
+          <div style="line-height: 1.6;">${translatedText}</div>
+          <div style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">
+            Simbolių skaičius: ${translatedText.length} | Kokybės įvertinimas: 9.2/10
+          </div>
+        </div>
+      `;
+      
+      showNotification('Tekstas sėkmingai išverstas!', 'success');
+    }
+
+    function generateTranslation(text, sourceLang, targetLang, style) {
+      // Paprastas vertimo simuliacijos
+      const translations = {
+        'lt-en': {
+          'labas': 'hello',
+          'ačiū': 'thank you',
+          'prašome': 'please',
+          'atsiprašau': 'excuse me'
+        },
+        'en-lt': {
+          'hello': 'labas',
+          'thank you': 'ačiū',
+          'please': 'prašome',
+          'excuse me': 'atsiprašau'
+        }
+      };
+      
+      // Realistiškas vertimo simuliacija
+      if (text.includes('produktyvumas')) {
+        return 'Productivity enhancement through artificial intelligence provides significant advantages for modern businesses and individual professionals.';
+      } else if (text.includes('technologijos')) {
+        return 'Advanced technologies enable automation of routine processes and optimization of business workflows.';
+      } else {
+        return `[Profesionalus vertimas] ${text} [Pritaikytas ${style} stiliui ir ${targetLang} kalbos normoms]`;
+      }
+    }
+
+    function getLanguageName(code) {
+      const names = {
+        'lt': 'lietuvių',
+        'en': 'anglų',
+        'de': 'vokiečių',
+        'fr': 'prancūzų',
+        'es': 'ispanų',
+        'ru': 'rusų',
+        'pl': 'lenkų',
+        'it': 'italų',
+        'auto': 'automatinis'
+      };
+      return names[code] || code;
+    }
+
+    // =========================================================
+    // PAGALBINĖS FUNKCIJOS
+    // =========================================================
+    function showNotification(message, type = 'info') {
+      const notification = document.getElementById('notification');
+      const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+      
+      notification.innerHTML = `
+        <div class="notification-icon">${icon}</div>
+        <div class="notification-content">
+          <div class="notification-title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+          <div class="notification-message">${message}</div>
+        </div>
+      `;
+      
+      notification.className = `notification ${type} show`;
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 4000);
+    }
+
+    function showWelcomeMessage() {
+      setTimeout(() => {
+        showNotification('Sveiki atvykę į AI Produktyvumo Centrą! Pradėkite tyrinėti įrankius arba kalbėkitės su AI asistentu.', 'info');
+      }, 1000);
+    }
+
+    function copyToClipboard(elementId) {
+      const element = document.getElementById(elementId);
+      const text = element.textContent || element.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('Nukopijuota į iškarpinę!', 'success');
+      });
+    }
+
+    function saveSettings() {
+      const settings = {
+        language: document.getElementById('languageSetting').value,
+        aiSpeed: document.getElementById('aiSpeedSetting').value,
+        autoSave: document.getElementById('autoSaveSetting').checked,
+        notifications: document.getElementById('notificationsSetting').checked,
+        analytics: !document.getElementById('analyticsOptOut').checked
+      };
+      
+      localStorage.setItem('productivitySettings', JSON.stringify(settings));
+      showNotification('Nustatymai išsaugoti sėkmingai!', 'success');
+      closeModal();
+    }
+
+    function openSpecialistTool(specialist) {
+      closeModal();
+      showNotification(`Atidaromas ${specialist}.html specializuotas asistentas...`, 'info');
+      // Čia galėtumėte nukreipti į konkretų specialisto failą
+      setTimeout(() => {
+        window.open(`${specialist}.html`, '_blank');
+      }, 1000);
+    }
+
+    function requestNotification(toolId) {
+      showNotification(`Pranešimas užregistruotas ${toolConfigs[toolId].name} įrankiui!`, 'info');
+      closeModal();
+    }
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        document.getElementById('analyzeBtn').disabled = false;
+        document.getElementById('previewBtn').disabled = false;
+        showNotification(`Failas "${file.name}" sėkmingai įkeltas!`, 'success');
+      }
+    }
+
+    function loadDemoData() {
+      document.getElementById('analyzeBtn').disabled = false;
+      document.getElementById('previewBtn').disabled = false;
+      showNotification('Demo duomenys įkelti! Galite pradėti analizę.', 'info');
+    }
+
+    // Globaliai prieinamos funkcijos
+    window.openTool = openTool;
+    window.generateEmail = generateEmail;
+    window.generateDocument = generateDocument;
+    window.analyzeData = analyzeData;
+    window.translateText = translateText;
+    window.copyToClipboard = copyToClipboard;
+    window.saveSettings = saveSettings;
+    window.openSpecialistTool = openSpecialistTool;
+    window.requestNotification = requestNotification;
+    window.handleFileUpload = handleFileUpload;
+    window.loadDemoData = loadDemoData;
+    window.closeModal = closeModal;
+    window.showNotification = showNotification;
+    window.toggleAIChat = toggleAIChat;
+
+    console.log('🛠️ AI Produktyvumo Centras pilnai įkeltas su visomis funkcijomis!');
+  </script>
+</body>
+</html>
