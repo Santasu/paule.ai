@@ -1,175 +1,86 @@
+// /api/stream.js
 export const config = { runtime: 'edge' };
 
-// —————————————————— Helpers ——————————————————
-const enc = new TextEncoder();
-const ok = (body) => new Response(body, {
-  status: 200,
-  headers: {
-    'Content-Type': 'text/event-stream; charset=utf-8',
-    'Cache-Control': 'no-cache, no-transform',
-    'X-Accel-Buffering': 'no',
-    'Access-Control-Allow-Origin': '*',
-  }
+const H = {
+  'Content-Type': 'text/event-stream; charset=utf-8',
+  'Cache-Control': 'no-cache, no-transform',
+  'x-accel-buffering': 'no',
+  'Access-Control-Allow-Origin': '*'
+};
+
+const MAP = Object.freeze({
+  // SSE modeliai (liks kaip yra; čia tik nurodom tiekėją)
+  'gpt-4o-mini': { provider: 'openai' },
+  'deepseek-chat': { provider: 'deepseek' },
+  'meta-llama/Llama-4-Scout-17B-16E-Instruct': { provider: 'together' }
 });
-const bad = (code, msg) => new Response(msg || 'Bad Request', {
-  status: code, headers: { 'Content-Type': 'text/plain; charset=utf-8','Access-Control-Allow-Origin':'*' }
-});
-const sendLine = (controller, line) => controller.enqueue(enc.encode(line.endsWith('\n')?line:line+'\n'));
-const ev = (t, d) => `event: ${t}\ndata: ${typeof d==='string'?d:JSON.stringify(d)}\n\n`;
 
-function modelProvider(model){
-  if (!model) return {kind:'auto'};
-  if (model.startsWith('gpt-')) return {kind:'openai'};
-  if (model === 'deepseek-chat') return {kind:'deepseek'};
-  if (model.startsWith('meta-llama/')) return {kind:'together'};
-  // jei auto – naudok openai kaip default stream
-  return {kind:'openai'};
-}
+export default async function handler(req) {
+  const url = new URL(req.url);
+  const model = url.searchParams.get('model') || url.searchParams.get('models') || '';
+  const message = url.searchParams.get('message') || '';
+  const max_tokens = Math.min(4096, Number(url.searchParams.get('max_tokens') || '1024'));
 
-async function pipeOpenAISSE({controller, model, message, max_tokens}){
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OPENAI_API_KEY missing');
-  const r = await fetch('https://api.openai.com/v1/chat/completions',{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},
-    body: JSON.stringify({
-      model, stream:true, max_tokens: max_tokens||4096,
-      messages:[{role:'user', content: String(message||'')}]
-    })
-  });
-  if (!r.ok) {
-    const t = await r.text();
-    throw new Error(`OpenAI HTTP ${r.status}: ${t}`);
+  const m = MAP[model];
+  if (!m) {
+    const err = sseError(`SSE nepalaikomas modeliui: ${model}. Naudok /api/complete.`);
+    return new Response(err, { status: 200, headers: H });
   }
-  const reader = r.body.getReader();
-  const dec = new TextDecoder();
-  while (true){
-    const {done, value} = await reader.read();
-    if (done) break;
-    const chunk = dec.decode(value, {stream:true});
-    const lines = chunk.split(/\r?\n/);
-    for (const line of lines){
-      if (!line.trim()) continue;
-      if (!line.startsWith('data:')) continue;
-      const data = line.slice(5).trim();
-      if (data === '[DONE]'){ sendLine(controller, ev('done',{})); return; }
-      try {
-        const obj = JSON.parse(data);
-        const delta = obj?.choices?.[0]?.delta?.content || '';
-        if (delta) sendLine(controller, ev('delta', JSON.stringify({delta})));
-      }catch(_){}
+
+  try {
+    const { endpoint, headers, body } = buildUpstream(m.provider, model, message, max_tokens);
+    const up = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body) });
+    if (!up.ok || !up.body) {
+      const reason = await tryJson(up).catch(()=>'');
+      const errText = `Upstream ${m.provider} HTTP ${up.status}${reason ? ` – ${reason}` : ''}`;
+      return new Response(sseError(errText), { status: 200, headers: H });
     }
+    // tiesioginis body forward’as (paliekam tiekėjo SSE formatą)
+    return new Response(up.body, { status: 200, headers: H });
+  } catch (e) {
+    return new Response(sseError((e && e.message) || 'Server stream error'), { status: 200, headers: H });
   }
 }
 
-async function pipeDeepseekSSE({controller, model, message, max_tokens}){
-  const apiKey = process.env.DEEPSEEK_API_KEY;
-  if (!apiKey) throw new Error('DEEPSEEK_API_KEY missing');
-  const r = await fetch('https://api.deepseek.com/chat/completions',{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},
-    body: JSON.stringify({
-      model, stream:true, max_tokens: max_tokens||4096,
-      messages:[{role:'user', content: String(message||'')}]
-    })
-  });
-  if (!r.ok) {
-    const t = await r.text();
-    throw new Error(`DeepSeek HTTP ${r.status}: ${t}`);
-  }
-  const reader = r.body.getReader();
-  const dec = new TextDecoder();
-  while (true){
-    const {done, value} = await reader.read();
-    if (done) break;
-    const chunk = dec.decode(value, {stream:true});
-    const lines = chunk.split(/\r?\n/);
-    for (const line of lines){
-      if (!line.trim() || !line.startsWith('data:')) continue;
-      const data = line.slice(5).trim();
-      if (data === '[DONE]'){ sendLine(controller, ev('done',{})); return; }
-      try {
-        const obj = JSON.parse(data);
-        const delta = obj?.choices?.[0]?.delta?.content || '';
-        if (delta) sendLine(controller, ev('delta', JSON.stringify({delta})));
-      }catch(_){}
-    }
-  }
+function sseError(msg) {
+  // standartizuotas „error“ event’as
+  return `event: error\ndata: ${JSON.stringify({ message: msg })}\n\n`;
 }
 
-async function pipeTogetherSSE({controller, model, message, max_tokens}){
-  const apiKey = process.env.TOGETHER_API_KEY;
-  if (!apiKey) throw new Error('TOGETHER_API_KEY missing');
-  const r = await fetch('https://api.together.xyz/v1/chat/completions',{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},
-    body: JSON.stringify({
-      model, stream:true, max_tokens: max_tokens||4096,
-      messages:[{role:'user', content: String(message||'')}]
-    })
-  });
-  if (!r.ok) {
-    const t = await r.text();
-    throw new Error(`Together HTTP ${r.status}: ${t}`);
+function buildUpstream(provider, model, message, max_tokens) {
+  if (provider === 'openai') {
+    const key = process.env.OPENAI_API_KEY;
+    if (!key) throw new Error('Trūksta OPENAI_API_KEY');
+    return {
+      endpoint: 'https://api.openai.com/v1/chat/completions',
+      headers: { 'content-type':'application/json', 'authorization':`Bearer ${key}` },
+      body: { model, stream:true, max_tokens, messages:[{ role:'user', content: message }] }
+    };
   }
-  const reader = r.body.getReader();
-  const dec = new TextDecoder();
-  while (true){
-    const {done, value} = await reader.read();
-    if (done) break;
-    const chunk = dec.decode(value, {stream:true});
-    const lines = chunk.split(/\r?\n/);
-    for (const line of lines){
-      if (!line.trim() || !line.startsWith('data:')) continue;
-      const data = line.slice(5).trim();
-      if (data === '[DONE]'){ sendLine(controller, ev('done',{})); return; }
-      try {
-        const obj = JSON.parse(data);
-        const delta = obj?.choices?.[0]?.delta?.content || obj?.choices?.[0]?.text || '';
-        if (delta) sendLine(controller, ev('delta', JSON.stringify({delta})));
-      }catch(_){}
-    }
+  if (provider === 'deepseek') {
+    const key = process.env.DEEPSEEK_API_KEY;
+    if (!key) throw new Error('Trūksta D E E P S E E K _ A P I _ K E Y');
+    return {
+      endpoint: 'https://api.deepseek.com/chat/completions',
+      headers: { 'content-type':'application/json', 'authorization':`Bearer ${key}` },
+      body: { model, stream:true, max_tokens, messages:[{ role:'user', content: message }] }
+    };
   }
+  if (provider === 'together') {
+    const key = process.env.TOGETHER_API_KEY;
+    if (!key) throw new Error('Trūksta TOGETHER_API_KEY');
+    return {
+      endpoint: 'https://api.together.xyz/v1/chat/completions',
+      headers: { 'content-type':'application/json', 'authorization':`Bearer ${key}` },
+      body: { model, stream:true, max_tokens, messages:[{ role:'user', content: message }] }
+    };
+  }
+  throw new Error('Nežinomas provideris');
 }
 
-// —————————————————— Handler ——————————————————
-export default async function handler(req){
-  try{
-    if (req.method !== 'GET') return bad(405,'Use GET');
-    const { searchParams } = new URL(req.url);
-    const model   = searchParams.get('model') || searchParams.get('models') || 'gpt-4o-mini';
-    const message = searchParams.get('message') || '';
-    const chat_id = searchParams.get('chat_id') || 'chat_'+Date.now();
-    const max_tokens = Number(searchParams.get('max_tokens') || 4096);
-
-    const {kind} = modelProvider(model);
-
-    const stream = new ReadableStream({
-      async start(controller){
-        // start
-        sendLine(controller, ev('start', JSON.stringify({model, chat_id})));
-
-        try{
-          if (kind==='openai'){
-            await pipeOpenAISSE({controller, model, message, max_tokens});
-          }else if (kind==='deepseek'){
-            await pipeDeepseekSSE({controller, model, message, max_tokens});
-          }else if (kind==='together'){
-            await pipeTogetherSSE({controller, model, message, max_tokens});
-          }else{
-            throw new Error('Unsupported SSE model: '+model);
-          }
-        }catch(err){
-          sendLine(controller, ev('error', {message: String(err?.message||err||'SSE error')}));
-        }finally{
-          try{ controller.close(); }catch(_){}
-        }
-      }
-    });
-
-    return ok(stream);
-
-  }catch(e){
-    return bad(500, 'STREAM_FAILED: '+(e?.message||String(e)));
-  }
+async function tryJson(res) {
+  try {
+    const j = await res.json();
+    return j?.error?.message || j?.message || JSON.stringify(j);
+  } catch { return ''; }
 }
