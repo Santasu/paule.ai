@@ -4,11 +4,12 @@
 // RUNWAY_API_KEY, RUNWAY_API_BASE (opt, default https://api.runwayml.com/v1)
 // SUNO_API_KEY, SUNO_API_BASE (opt, default https://api.sunoapi.org)
 
+// _utils.js (viršuje)
 const env = {
   OPENAI: process.env.OPENAI_API_KEY || "",
   TOGETHER: process.env.TOGETHER_API_KEY || "",
   ANTHROPIC: process.env.ANTHROPIC_API_KEY || "",
-  GOOGLE: process.env.GOOGLE_API_KEY || "",
+  GOOGLE: process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENAI_API_KEY || "",
   XAI: process.env.XAI_API_KEY || "",
   DEEPSEEK: process.env.DEEPSEEK_API_KEY || "",
   RUNWAY_KEY: process.env.RUNWAY_API_KEY || "",
@@ -16,6 +17,7 @@ const env = {
   SUNO_KEY: process.env.SUNO_API_KEY || "",
   SUNO_BASE: (process.env.SUNO_API_BASE || "https://api.sunoapi.org").replace(/\/+$/,""),
 };
+
 
 function nocache(res){
   res.setHeader("Cache-Control","private, no-store, no-cache, must-revalidate, max-age=0");
