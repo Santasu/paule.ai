@@ -2,7 +2,6 @@
   "version": 2,
   "framework": null,
 
-  // Naudojam tik Node.js funkcijas (20.x) ir statiką
   "functions": {
     "api/**/*.js": {
       "runtime": "nodejs20.x",
@@ -31,7 +30,6 @@
     { "src": "^/api/music/status$",         "dest": "/api/music/status.js" },
     { "src": "^/api/clerk/pk$",             "dest": "/api/clerk/pk.js" },
 
-    // V1 alias'ai
     { "src": "^/api/paule/v1/stream$",        "dest": "/api/stream.js" },
     { "src": "^/api/paule/v1/complete$",      "dest": "/api/complete.js" },
     { "src": "^/api/paule/v1/suggest$",       "dest": "/api/suggest.js" },
@@ -44,7 +42,6 @@
     { "src": "^/api/paule/v1/music/create$",  "dest": "/api/music/create.js" },
     { "src": "^/api/paule/v1/music/status$",  "dest": "/api/music/status.js" },
 
-    // WP JSON alias'ai
     { "src": "^/wp-json/paule/v1/stream$",        "dest": "/api/stream.js" },
     { "src": "^/wp-json/paule/v1/complete$",      "dest": "/api/complete.js" },
     { "src": "^/wp-json/paule/v1/suggest$",       "dest": "/api/suggest.js" },
@@ -57,7 +54,6 @@
     { "src": "^/wp-json/paule/v1/music/create$",  "dest": "/api/music/create.js" },
     { "src": "^/wp-json/paule/v1/music/status$",  "dest": "/api/music/status.js" },
 
-    // Static SPA fallback
     { "src": "^/$",                 "dest": "/public/index.html" },
     { "src": "^(?!/api)(.*)$",      "dest": "/public$1" }
   ]
