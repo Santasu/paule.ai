@@ -1,5 +1,5 @@
  /* =========================================================
-   Paule – Premium Chat UI css (v2)
+   Paule – Premium Chat UI css (v2.1, fixed)
    Šviesi / tamsi tema · stabilus header/sidebar · 3cm chat offset
    ========================================================= */
 
@@ -8,7 +8,7 @@
 html, body { height:100%; min-height:100vh }
 img, svg { max-width:100%; height:auto; display:block }
 button { background:none; border:0; color:inherit; cursor:pointer }
-a { color:inherit }
+a { color:inherit; text-decoration:none }
 :focus-visible { outline:none }
 
 /* ---------------------------- Paletės --------------------------- */
@@ -29,7 +29,6 @@ a { color:inherit }
 
   --radius:12px;
 
-  /* Neumorph (šviesi) */
   --neu-raise: 8px 8px 22px rgba(0,0,0,.10), -8px -8px 22px rgba(255,255,255,.70);
   --neu-press: inset 8px 8px 18px rgba(0,0,0,.10), inset -8px -8px 18px rgba(255,255,255,.65);
 
@@ -45,6 +44,9 @@ a { color:inherit }
 
   /* Focus */
   --ring:0 0 0 4px color-mix(in srgb, var(--accent) 24%, transparent);
+
+  /* Logo plotis (vienodas abiem temoms) */
+  --logo-w: 3cm;
 }
 
 [data-theme="dark"]{
@@ -86,36 +88,36 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 
 /* ---------------------------- TOPBAR --------------------------- */
 .topbar{
-  position:sticky; top:0; left:0; right:0; z-index:500;
+  position: sticky; top:0; left:0; right:0; z-index:9999;
   height:var(--topbar-h);
-  display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:10px;
+  display:grid; grid-template-columns:minmax(var(--logo-w),auto) 1fr auto; align-items:center; gap:10px;
   padding:8px 14px;
   background:var(--bg-primary);
-  backdrop-filter:blur(8px);
+  backdrop-filter:saturate(1.2) blur(6px);
+  overflow:visible;
 }
-
-/* Logo IMG (šviesi/tamsi versijos parenkamos HTML/JS) */
-.brand{ display:flex; align-items:center }
-.brand .logo-img{ width:2.7cm; height:auto; display:block }
+.brand{ display:flex; align-items:center; min-width:var(--logo-w) }
+.brand .brand-icon{ width:var(--logo-w) !important; height:auto !important; display:block !important; object-fit:contain }
+.topbar img, .topbar svg{ max-height: calc(var(--topbar-h) - 16px) }
 
 /* Modelių juosta centre */
 .models-in-topbar{
   display:flex; align-items:center; justify-content:center;
-  gap:6px; overflow-x:auto; scrollbar-width:thin; padding-block:2px;
+  gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:thin; padding-block:2px;
+  max-width:min(1100px, calc(100vw - var(--logo-w) - 360px));
+  margin-inline:auto;
 }
 .models-in-topbar::-webkit-scrollbar{ height:6px }
 .models-in-topbar::-webkit-scrollbar-thumb{ background:var(--border); border-radius:3px }
 .model-pill{
-  padding:6px 9px; font-size:11.5px; border-radius:999px; white-space:nowrap;
+  padding:6px 10px; font-size:11.5px; border-radius:999px; white-space:nowrap;
   color:var(--text-primary); background:var(--bg-secondary);
   box-shadow:var(--neu-raise);
-  display:inline-flex; align-items:center; gap:6px;
+  display:inline-flex; align-items:center; gap:6px; font-weight:700;
 }
 .model-pill img{ width:13px; height:13px; filter:var(--ui-icon-filter) }
 .model-pill:hover{ transform:translateY(-1px) }
 .model-pill.active{ background:var(--accent-ghost); color:var(--accent); box-shadow:var(--neu-press) }
-.models-in-topbar:has(.model-pill.active:not([data-model="auto"]))
-  .model-pill[data-model="auto"]{ opacity:.45 }
 
 /* Dešinės pusės mygtukai */
 .top-actions{ display:flex; gap:6px; align-items:center }
@@ -123,35 +125,10 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
   display:inline-flex; align-items:center; gap:6px;
   padding:8px 12px; border-radius:10px; font-weight:600;
   background:var(--bg-secondary); color:var(--text-primary); box-shadow:var(--neu-raise);
-  text-decoration:none;
 }
 .btn img{ width:var(--icon-12); height:var(--icon-12); filter:var(--ui-icon-filter) }
 .btn:hover{ box-shadow:var(--neu-press) }
 .top-actions .mobile-toggle{ display:none }
-
-/* Prisijungti dropdown */
-.login-anchor{ position:relative }
-.login-dropdown{
-  position:absolute; right:0; top:calc(100% + 8px); width:240px; padding:10px;
-  background:var(--bg-primary); border:1px solid var(--border); border-radius:12px;
-  box-shadow:var(--shadow-lg); display:none; z-index:600;
-}
-.login-dropdown.open{ display:block }
-.login-dropdown .btn{ width:100%; justify-content:center; gap:8px; margin-bottom:6px }
-.login-dropdown .btn:last-child{ margin-bottom:0 }
-
-/* Tema dropdown (jei rodai šalia „Prisijungti“) */
-.theme-anchor{ position:relative }
-.theme-dropdown{
-  position:absolute; right:0; top:calc(100% + 8px); width:200px; padding:10px;
-  background:var(--bg-primary); border:1px solid var(--border); border-radius:12px;
-  box-shadow:var(--shadow-lg); display:none; z-index:600;
-}
-.theme-dropdown.open{ display:block }
-.theme-dropdown .select{
-  width:100%; border:1px solid var(--border); background:var(--bg-secondary);
-  color:var(--text-primary); border-radius:10px; padding:7px 9px; font-size:12.5px;
-}
 
 /* ---------------------------- LAYOUT --------------------------- */
 .layout{
@@ -159,10 +136,10 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
   height:calc(100vh - var(--topbar-h)); overflow:hidden;
 }
 
-/* Sidebar – stabiliai kairėje */
+/* Sidebar */
 .sidebar{
   overflow:auto; background:var(--bg-primary);
-  border-right:0; padding-top:0;
+  border-right:0; padding-top:0; z-index:2;
 }
 .side-section{ padding:12px 14px }
 .side-title{
@@ -170,11 +147,10 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
   color:var(--text-muted); margin-bottom:8px; font-weight:800;
 }
 .specialist-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px }
-
 .chip{
   background:var(--bg-secondary); padding:7px 9px; border-radius:10px; font-size:12px;
   color:var(--text-secondary); box-shadow:var(--neu-raise);
-  text-decoration:none; display:flex; align-items:center; gap:6px; font-weight:700;
+  display:flex; align-items:center; gap:6px; font-weight:700;
 }
 .chip img{ width:var(--icon-12); height:var(--icon-12); filter:var(--ui-icon-filter) }
 .chip:hover{ color:var(--accent); box-shadow:var(--neu-press) }
@@ -186,16 +162,14 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 }
 .ping img{ width:var(--icon-12); height:var(--icon-12); filter:var(--ui-icon-filter) }
 
-.lib-link{ color:var(--text-secondary); text-decoration:none; font-weight:800 }
-.lib-link:hover{ color:var(--accent) }
+.lib-link{ color:var(--text-secondary); font-weight:800 }
 .library-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px }
 .lib-card{
   display:flex; flex-direction:column; align-items:center; gap:6px; padding:8px 6px;
-  border-radius:12px; background:var(--bg-secondary); text-decoration:none;
-  color:var(--text-secondary); font-size:11px; font-weight:700; box-shadow:var(--neu-raise)
+  border-radius:12px; background:var(--bg-secondary); color:var(--text-secondary);
+  font-size:11px; font-weight:700; box-shadow:var(--neu-raise)
 }
-.lib-card img{ width:30px; height:30px; object-fit:contain; filter:var(--ui-icon-filter) }
-.lib-card:hover{ transform:translateY(-1px); color:var(--accent); box-shadow:var(--neu-press) }
+.lib-card img{ width:30px; height:30px; object-fit:contain; filter:none !important } /* nuotraukų nebalinam */
 
 .project-item{
   display:flex; align-items:center; gap:8px; padding:9px; border-radius:10px;
@@ -209,7 +183,11 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 .main{ display:flex; flex-direction:column; overflow:hidden; background:var(--bg-primary) }
 .chat-area{
   flex:1; overflow:auto; display:flex; flex-direction:column; gap:14px;
-  padding: calc(3cm + 6px) 18px 260px; /* 3 cm nuo viršaus + apačiai vietos */
+  padding: calc(3cm + 6px) 18px 260px; /* 3 cm viršuje + vietos apačiai */
+  z-index:1;
+}
+@supports (height: 100dvh){
+  .chat-area{ min-height: calc(100dvh - 240px); }
 }
 
 /* Hero / Welcome */
@@ -233,9 +211,9 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 }
 .welcome-card{
   position:relative; display:block; border-radius:16px; overflow:hidden;
-  background:var(--bg-secondary); box-shadow:var(--neu-raise); text-decoration:none; transform:translateZ(0);
+  background:var(--bg-secondary); box-shadow:var(--neu-raise); transform:translateZ(0);
 }
-.welcome-card img{ width:100%; height:160px; object-fit:cover; object-position:center 60% }
+.welcome-card img{ width:100%; height:160px; object-fit:cover; object-position:center 60%; filter:none !important }
 .welcome-card::after{
   content:""; position:absolute; inset:0;
   background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0) 55%); pointer-events:none;
@@ -262,7 +240,7 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
   background:var(--bg-secondary); border-radius:14px; padding:12px;
   box-shadow:0 12px 34px rgba(0,0,0,.10), 0 2px 10px rgba(0,0,0,.05);
 }
-.msg-content{ max-height:210px; overflow:auto; font-size:14px }
+.msg-content{ max-height:210px; overflow:auto; font-size:14px; color:var(--text-primary) }
 .msg-content::-webkit-scrollbar{ width:6px }
 .msg-content::-webkit-scrollbar-thumb{ background:var(--border); border-radius:3px }
 .msg-meta{ display:flex; gap:6px; color:var(--text-muted); font-size:11.5px; margin-top:5px }
@@ -271,6 +249,7 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 /* Vartotojo žinutės – į dešinę */
 .message.user{ justify-content:flex-end; flex-direction:row-reverse }
 .message.user .avatar{ margin-left:8px; margin-right:0 }
+.message.user .bubble{ margin-left:auto }
 .message.user .bubble-card{
   border-top-right-radius:18px; border-bottom-right-radius:8px;
   box-shadow:0 18px 44px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.06);
@@ -295,7 +274,7 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 /* Apsauga nuo gigantiškų SVG chate */
 .chat-area img[src$=".svg"]{ max-width:40px; max-height:40px; width:auto; height:auto; object-fit:contain }
 
-/* ----------------------- Sprendimų juosta ---------------------- */
+/* ----------------------- Sprendimų / Sugg juostos ---------------------- */
 .decision-bar{
   position:sticky; top: calc(var(--topbar-h) + 6px); z-index:450;
   display:flex; gap:10px; justify-content:center; margin:8px 0 14px;
@@ -308,27 +287,64 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 .decision-chip:hover{ transform:translateY(-1px); box-shadow:var(--shadow-lg) }
 .decision-chip img{ width:18px; height:18px; filter:var(--ui-icon-filter) }
 
+/* Sekantys pasiūlymai (po atsakymų) */
+.follow-suggest-bar{
+  display:none; gap:8px; flex-wrap:wrap; justify-content:center;
+  margin:8px 0 6px 0; padding:8px 0 2px;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+}
+.follow-suggest-bar.show{ display:flex; }
+.suggest-chip{
+  display:inline-flex; align-items:center; white-space:nowrap;
+  padding:6px 10px; border:1px solid var(--border); border-radius:12px;
+  font-size:13px; line-height:1;
+  background:var(--bg-secondary);
+  cursor:pointer; user-select:none; transition:background .15s, border-color .15s, transform .05s;
+}
+.suggest-chip:hover{ background:rgba(0,0,0,.05); }
+.suggest-chip:active{ transform:scale(.98); }
+
+/* NE leisti jokiems „inline“ suggestams būti burbuluose */
+.bubble .suggest-chip,
+.bubble .msg-suggest,
+.bubble .follow-ups,
+.bubble [data-follow],
+.bubble [data-suggest]{ display:none !important; }
+
 /* ------------------------- Bottom input ------------------------ */
 .bottom-section{
-  position:fixed; bottom:12px; z-index:600;
+  position:fixed; bottom:12px; z-index:1100;
   left: calc(var(--sidebar) + var(--gutter)); right: var(--gutter);
   background:var(--bg-primary); backdrop-filter:blur(8px);
   border-radius:16px; box-shadow:var(--shadow-lg); border:0;
+  padding-bottom:max(10px, env(safe-area-inset-bottom));
 }
 .input-bar{ padding:12px 14px }
-.input-container{
-  display:flex; align-items:center; gap:8px; border-radius:14px; padding:8px 10px;
-  background:var(--bg-secondary); box-shadow:var(--neu-raise)
-}
+.input-container{ position:relative; display:flex; align-items:center; gap:8px; border-radius:14px; padding:8px 10px; background:var(--bg-secondary); box-shadow:var(--neu-raise) }
 .message-input{
   flex:1; border:none; background:transparent; outline:none;
   max-height:110px; color:var(--text-primary); font-size:15px; line-height:1.5; resize:none;
+  padding-bottom:44px; /* vieta inline deckui */
 }
+.message-input::placeholder{ color:var(--text-secondary); opacity:.85 }
+[data-theme="dark"] .message-input::placeholder{ color:#cfd5e3; opacity:.75 }
+
 .send-btn{
   width:38px; height:38px; border-radius:50%; background:var(--accent); color:#fff;
   display:flex; align-items:center; justify-content:center; box-shadow:var(--neu-raise)
 }
 .send-btn img{ width:18px; height:18px; filter:invert(1) }
+
+.input-suggest-deck{
+  position:absolute; left:8px; right:56px; bottom:8px;
+  display:none; align-items:center; gap:6px; padding:6px;
+  border:1px solid var(--border); border-radius:10px;
+  background:var(--bg-primary); box-shadow:0 6px 18px rgba(0,0,0,.06);
+  overflow-x:auto; -webkit-overflow-scrolling:touch; z-index:5;
+}
+.input-suggest-deck.show{ display:flex }
+
+/* Įrankių juosta */
 .tools-bar{
   padding:7px 10px; display:flex; gap:6px; align-items:center; justify-content:center;
   overflow-x:auto; flex-wrap:wrap
@@ -343,7 +359,9 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 
 /* --------------------------- Ikonų tonavimas ------------------- */
 :root{ --ui-icon-filter:none }
-[data-theme="dark"]{ --ui-icon-filter: invert(1) brightness(1.1) contrast(1.05) saturate(0) }
+[data-theme="dark"] .ui-icon{ filter: invert(1) brightness(1.08) contrast(1.05) }
+[data-theme="dark"] img:not(.ui-icon){ filter:none !important } /* nuotraukų nedažom */
+.ui-icon.google{ filter:none !important } /* Google spalvos neliečiamos */
 
 /* --------------------------- Popup (URL/Auth) ------------------ */
 .popup{ position:fixed; inset:0; display:none; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); z-index:3000 }
@@ -389,12 +407,23 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
   .layout{ grid-template-columns:0 1fr }
   .sidebar{
     position:fixed; left:-320px; top:var(--topbar-h); width:300px; height:calc(100vh - var(--topbar-h));
-    z-index:480; transition:left .25s ease; background:var(--bg-primary)
+    z-index:1350; transition:left .25s ease; background:var(--bg-primary)
   }
   .sidebar.open{ left:0 }
   .bottom-section{ left:var(--gutter); right:var(--gutter) }
   .top-actions .mobile-toggle{ display:inline-flex }
+  /* header į dvi eilutes mažiems ekranams */
+  .topbar{
+    grid-template-areas:"brand actions" "models models";
+    grid-template-columns:auto 1fr;
+    height:auto; row-gap:8px; padding-bottom:10px;
+  }
+  .brand{ grid-area:brand }
+  .models-in-topbar{ grid-area:models; max-width:100% }
+  .top-actions{ grid-area:actions; justify-content:flex-end }
 }
+
+/* Grid kortelės */
 @media (max-width:900px){
   .welcome-grid{ grid-template-columns:repeat(2, minmax(160px,1fr)) }
   .welcome-card img{ height:150px }
@@ -406,513 +435,97 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, .chip:focus-visible,
 }
 
 /* --------------------------- Smulkūs priedai ------------------- */
-.top-actions a{ text-decoration:none }
 .btn, .chip, .tool{ box-shadow:var(--neu-raise) }
 .btn:hover, .chip:hover, .tool:hover{ box-shadow:var(--neu-press) }
 
-/* ======= PAULE LAYOUT HOTFIX (įklijuok į patį CSS failo galą) ======= */
+/* ======================= Naudingos smulkmenos ======================= */
 
-/* 1) Topbar – visada viršuje ir stabilus */
-:root{ --topbar-h:66px } /* jeigu nėra */
-.topbar{
-  position: sticky !important;
-  top: 0; left: 0; right: 0;
-  z-index: 9999 !important;
-  grid-template-columns: minmax(2.7cm,auto) 1fr auto !important;
-  overflow: visible; /* dėl dropdownų */
-}
-
-/* 2) Logo – tik 2.7 cm, niekada ne „milžinas“ */
-.topbar .brand { min-width: 2.7cm }
-.topbar .brand-icon{
-  width: 2.7cm !important;
-  height: auto !important;
-  display: block !important;
-  object-fit: contain;
-}
-
-/* 3) Modelių juostos plotis (kad neliptų ant hero kortelių) */
-.models-in-topbar{
-  max-width: min(1100px, calc(100vw - 2.7cm - 360px));
-  margin-inline: auto;
-}
-
-/* 4) Pagrindinis „grid“ – vietos paskaičiavimas nuo topbar */
-.layout{
-  height: calc(100vh - var(--topbar-h)) !important;
-  grid-template-columns: var(--sidebar, 300px) 1fr !important;
-}
-
-/* 5) Sidebar – rodomas virš turinio, kai reikia */
-.sidebar{
-  z-index: 2;
-  background: var(--bg-primary);
-}
-
-/* 6) Chat sritis – priverstinai po topbar’u + 3 cm oras kaip prašei */
-#chatArea{
-  padding-top: calc(3cm + 6px) !important;
-}
-
-/* 7) Apačios įvesties juosta – teisingas „atsitraukimas“ nuo sidebar */
-.bottom-section{
-  left: calc(var(--sidebar, 300px) + var(--gutter, 14px)) !important;
-  right: var(--gutter, 14px) !important;
-}
-
-/* 8) Tamsi šviesi logotipo versijos (jei keiti tik su CSS) – nebūtina,
-      pas tave tai daro JS, bet palieku kaip guard, kad nebūtų inversijų */
-:root[data-theme="light"] #brandLogo{ content: normal !important }
-:root[data-theme="dark"]  #brandLogo{ content: normal !important }
-
-/* 9) Smulkūs guard’ai prieš bet kokį „didesnį nei header“ turinį */
-.topbar img, .topbar svg{
-  max-height: calc(var(--topbar-h) - 16px);
-}
-
-/* 10) Mobilui – sidebar slankiojimas, bottom bar centravimas */
-@media (max-width:1024px){
-  .layout{ grid-template-columns: 0 1fr !important }
-  .sidebar{
-    position: fixed; top: var(--topbar-h); left: -320px;
-    width: 300px; height: calc(100vh - var(--topbar-h));
-    transition: left .25s ease;
-  }
-  .sidebar.open{ left: 0 }
-  .bottom-section{ left: var(--gutter, 14px) !important; right: var(--gutter, 14px) !important }
-}
-
-
-/* ===================== PAULE: PATCH (UI stabilizacija) ===================== */
-
-/* Topbar: visada viršuje, aiškus sluoksniavimas */
-.topbar{ position:sticky; top:0; z-index:1000; }
-
-/* Logotipas – fiksuotas dydis (2.7 cm) abiem temoms */
-.brand .brand-icon{ width:2.7cm; height:auto; display:block; object-fit:contain; }
-
-/* Modelių juosta – mobilui privalomas horizont. scroll */
-.models-in-topbar{ gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-.models-in-topbar .model-pill{ padding:6px 10px; font-weight:700; }
-.models-in-topbar .ui-icon{ width:13px; height:13px; }
-
-/* Kairės bibliotekos miniatiūros – truputį didesnės ir centruotos */
-.lib-card.thumb{ align-items:center; }
-.lib-card.thumb img{ width:100%; height:92px; object-fit:cover; object-position:center; border-radius:12px; }
-.lib-card.thumb span{ text-align:center; }
-
-/* Chat vieta: jokio 3cm atitraukimo; tvarkingos paraštės */
-#chatArea{ padding-top:12px; }
-
-/* Burbulai – aiškesnis tekstas abiem temoms */
-.msg-content{ color:var(--text-primary); }
-[data-theme="dark"] .msg-content{ color:var(--text-primary); }
-
-/* Vartotojo žinutės – prie dešinio krašto (tik burbulas) */
-.message{ display:flex; gap:10px; align-items:flex-start; }
-.message .bubble{ flex:1; max-width:78%; }
-.message.user{ flex-direction:row-reverse; }
-.message.user .bubble{ margin-left:auto; }
-.message.user .avatar{ margin-left:8px; }
-
-/* Avataro ikonėlės mažesnės (švariau) */
-.avatar img{ width:14px; height:14px; }
-
-/* Įvedimo laukelio tekstas/placeholder abiem temoms gerai matomas */
-.message-input{ color:var(--text-primary); }
-.message-input::placeholder{ color:var(--text-secondary); opacity:.85; }
-[data-theme="dark"] .message-input::placeholder{ color:#cfd5e3; opacity:.75; }
-
-/* Tamsioje temoje – automatinis ikonų „balinimas“ */
-:root{ --ui-icon-filter:none; }
-[data-theme="dark"]{ --ui-icon-filter: invert(1) brightness(1.1) contrast(1.05) saturate(0); }
-.ui-icon{ filter:var(--ui-icon-filter); }
-
-/* „Neumorph“ – šiek tiek daugiau gylio */
-:root{
-  --shadow-lg: 0 16px 60px rgba(0,0,0,.14);
-  --neu-raise: 8px 8px 22px rgba(0,0,0,.10), -8px -8px 22px rgba(255,255,255,.70);
-  --neu-press: inset 8px 8px 18px rgba(0,0,0,.12), inset -8px -8px 18px rgba(255,255,255,.70);
-}
-[data-theme="dark"]{
-  --shadow-lg: 0 22px 70px rgba(0,0,0,.55);
-  --neu-raise: 10px 10px 26px rgba(0,0,0,.60), -10px -10px 26px rgba(255,255,255,.06);
-  --neu-press: inset 10px 10px 22px rgba(0,0,0,.60), inset -10px -10px 22px rgba(255,255,255,.06);
-  --text-primary:#f5f7fb; --text-secondary:#cfd5e3; --text-muted:#aeb6c7;
-}
-
-/* Viršutinės juostos mygtukai – vienodas aukštis ir be pabraukimų */
-.top-actions .btn,
-.top-actions a.btn,
-.top-actions a.btn:link,
-.top-actions a.btn:visited{
-  text-decoration:none; font-size:12.5px; line-height:1; padding:8px 12px;
-}
-
-/* Prisijungti/Tema – dropdown’ai */
-.login-anchor{ position:relative; }
-.login-dropdown{
-  position:absolute; right:0; top:calc(100% + 8px);
-  width:240px; padding:10px; background:var(--bg-primary);
-  border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-lg);
-  display:none; z-index:1200;
-}
-.login-dropdown.open{ display:block; }
-.login-dropdown .btn{ width:100%; justify-content:center; gap:8px; margin-bottom:6px; }
-.login-dropdown .btn:last-child{ margin-bottom:0; }
-
-/* Apačios juosta – saugi zona iOS */
-.bottom-section{ padding-bottom: max(10px, env(safe-area-inset-bottom)); }
-
-/* HERO kortelės – kontrastas naktį */
-[data-theme="dark"] .welcome-card::after{
-  background:linear-gradient(to top, rgba(0,0,0,.70), rgba(0,0,0,0) 62%);
-}
-
-/* ===================== Mobilus ===================== */
-@media (max-width:1024px){
-  /* Kairė dingsta; vietoj jos – stalčius */
-  .layout{ grid-template-columns: 0 1fr; }
-  .sidebar{ display:none; }
-  .bottom-section{ left: var(--gutter); right: var(--gutter); }
-}
-
-/* Mobilus stalčius */
-.drawer-overlay{
-  position:fixed; inset:0; background:rgba(0,0,0,.35);
-  opacity:0; visibility:hidden; transition:.2s; z-index:1300;
-}
-.drawer-overlay.show{ opacity:1; visibility:visible; }
-.drawer{
-  position:fixed; top:0; left:-320px; width:300px; height:100vh;
-  background:var(--bg-primary); border-right:1px solid var(--border);
-  box-shadow:var(--shadow-lg); z-index:1350; transition:left .25s ease; overflow:auto;
-}
-.drawer.open{ left:0; }
-.drawer-head{ display:flex; align-items:center; justify-content:space-between; padding:12px; border-bottom:1px solid var(--border); }
-.drawer-close{ width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--bg-secondary); }
-.drawer-nav{ display:flex; flex-direction:column; gap:6px; padding:12px; }
-.drawer-link{ display:flex; align-items:center; gap:8px; padding:8px 10px; background:var(--bg-secondary); border-radius:10px; font-weight:700; text-decoration:none; color:var(--text-primary); }
-
-/* Maži pataisymai */
-.btn, .chip, .tool{ box-shadow:var(--neu-raise); }
-.btn:hover, .chip:hover, .tool:hover{ box-shadow:var(--neu-press); }
-.bubble-card{ box-shadow:0 12px 34px rgba(0,0,0,.10), 0 2px 10px rgba(0,0,0,.05); }
-[data-theme="dark"] .bubble-card{ box-shadow:0 22px 60px rgba(0,0,0,.55), 0 4px 16px rgba(0,0,0,.35); }
-
-
-
-/* =================== PAULE: APPEND PATCH (įklijuok į patį galą) =================== */
-
-/* 1) Logo – fiksuotas dydis abiem temoms (vienodas) */
-.topbar .brand { min-width: 2.7cm }
-.topbar .brand-icon{ width:2.7cm !important; height:auto !important; display:block !important; object-fit:contain }
-.topbar img, .topbar svg{ max-height: calc(var(--topbar-h) - 16px) }
-
-/* 2) NEBALINTI NUOTRAUKŲ tamsioje temoje (baliname tik .ui-icon) */
-:root{ --ui-icon-filter:none }
-[data-theme="dark"] .ui-icon{ filter: invert(1) brightness(1.1) contrast(1.05) }
-[data-theme="dark"] img:not(.ui-icon){ filter:none !important }              /* guard globaliai */
-.lib-card img, .welcome-card img, .library-grid img, .thumb img{ filter:none !important }
-
-/* 3) Kairės miniatiūros – didesnės ir aiškiai centruotos (jei dar kur mažos) */
-.library-grid.thumbs .lib-card img{ width:100% !important; height:96px !important; object-fit:cover; object-position:center; border-radius:12px }
-
-/* 4) Chat vieta – 3 cm nuo viršaus (jei buvo užrašyta kitaip) */
-#chatArea{ padding-top: calc(3cm + 6px) !important }
-
-/* 5) Žinučių tekstas ryškesnis; vartotojo burbulas – maksimaliai į dešinę */
-.msg-content{ color: var(--text-primary) !important }
-.message.user{ flex-direction:row-reverse }
-.message.user .bubble{ margin-left:auto }          /* prispaudimas prie krašto */
-
-/* 6) Tema mygtukas – mobile paslepiam (tema – mobile meniu viduje) */
-@media (max-width:1024px){
-  #btnTheme, .theme-anchor{ display:none !important }
-}
-
-/* 7) Modelių juosta – saugus plotis centre, kad neliptų ant hero */
-.models-in-topbar{ max-width: min(1100px, calc(100vw - 2.7cm - 360px)); margin-inline:auto }
-
-/* =================== PAULE MOBILE + THEME PATCH =================== */
-
-/* Logo – vienodas dydis abiem temoms */
-.topbar .brand { min-width: 2.7cm }
-.topbar .brand-icon{ width:2.7cm !important; height:auto !important; display:block !important; object-fit:contain }
-.topbar img, .topbar svg{ max-height: calc(var(--topbar-h) - 16px) }
-
-/* Tamsi tema: NEDAŽYTI nuotraukų – balinam tik .ui-icon */
-:root{ --ui-icon-filter:none }
-[data-theme="dark"] .ui-icon{ filter: invert(1) brightness(1.1) contrast(1.05) }
-[data-theme="dark"] img:not(.ui-icon){ filter:none !important }
-.welcome-card img, .lib-card img, .library-grid img{ filter:none !important }
-
-/* Kairės thumbs – didesni */
-.library-grid.thumbs .lib-card img{ width:100% !important; height:96px !important; object-fit:cover; object-position:center; border-radius:12px }
-
-/* Chat top offset */
-#chatArea{ padding-top: calc(3cm + 6px) !important }
-
-/* Vartotojo burbulas prie dešinio krašto */
-.message.user{ flex-direction:row-reverse }
-.message.user .bubble{ margin-left:auto }
-
-/* Modelių juosta – visuomet matoma, su scroll, be perlipimų */
-.models-in-topbar{ gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100% }
-.models-in-topbar .model-pill{ padding:6px 10px; font-weight:700 }
-.models-in-topbar .ui-icon{ width:13px; height:13px }
-
-/* MOBILE: viršuje neberodyti „Bendruomenė“ ir „Tema“ (jie stalčiuje) */
-@media (max-width:1024px){
-  .top-actions [data-nav="community"],
-  .theme-anchor{ display:none !important }
-}
-
-/* MOBILE: sidebar kaip off-canvas stalčius */
-@media (max-width:1024px){
-  .layout{ grid-template-columns:0 1fr !important }
-  .sidebar{
-    position:fixed; top:var(--topbar-h); left:-320px;
-    width:300px; height:calc(100vh - var(--topbar-h));
-    background:var(--bg-primary); border-right:1px solid var(--border);
-    box-shadow:var(--shadow-lg); z-index:1350; transition:left .25s ease; overflow:auto;
-  }
-  .sidebar.open{ left:0 }
-  .drawer-overlay{
-    position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:1200;
-    opacity:0; visibility:hidden; transition:.2s;
-  }
-  .drawer-overlay.show{ opacity:1; visibility:visible }
-  .mobile-only{ display:block !important }
-  .bottom-section{ left:var(--gutter) !important; right:var(--gutter) !important; padding-bottom:max(10px, env(safe-area-inset-bottom)) }
-}
-/* PC: mobile-only nenaudojam */
-.mobile-only{ display:none }
-
-/* Sidebar ikonėlės – kuklesnės telefone */
-@media (max-width:1024px){
-  .sidebar .ui-icon{ width:14px; height:14px }
-}
-/* =================== PAULE MOBILE / HEADER / CHAT PATCH =================== */
-
-/* Vienodas, kiek didesnis logotipas (PC light buvo mažesnis) */
-:root { --logo-w: 3cm; }
-.topbar .brand { min-width: var(--logo-w); }
-.topbar .brand-icon{ width:var(--logo-w)!important; height:auto!important; object-fit:contain; display:block!important; }
-.topbar img, .topbar svg{ max-height: calc(var(--topbar-h) - 16px); }
-
-/* Tamsioje temoje NEDAŽOME nuotraukų, baliname tik UI ikonėles */
-:root{ --ui-icon-filter:none }
-[data-theme="dark"] .ui-icon{ filter: invert(1) brightness(1.08) contrast(1.05); }
-[data-theme="dark"] img:not(.ui-icon){ filter:none !important; }
-
-/* Kairio miniatiūrų grid’o paveikslėliai – didesni ir centruoti */
-.library-grid.thumbs .lib-card img{
-  width:100% !important; height:96px !important; object-fit:cover; object-position:center; border-radius:12px;
-}
-
-/* Modelių juosta – visuomet aktyvi, scroll’inama */
-.models-in-topbar{ gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-
-/* MOBILE header: 2 eilučių išdėstymas
-   1 eil. – logo + mygtukai, 2 eil. – modeliai (per visą plotį) */
-@media (max-width: 768px){
-  .topbar{
-    grid-template-areas:
-      "brand actions"
-      "models models";
-    grid-template-columns:auto 1fr;
-    height:auto; padding-bottom:10px; row-gap:8px;
-  }
-  .brand{ grid-area:brand }
-  .models-in-topbar{ grid-area:models; display:flex!important; max-width:100%; }
-  .top-actions{ grid-area:actions; justify-content:flex-end }
-  /* viršuje telefone nesisp. „Bendruomenė“ ir „Tema“ (jie stalčiuje) */
-  .top-actions [data-nav="community"], .theme-anchor{ display:none!important; }
-}
-
-/* Off-canvas stalčius telefone (nebe „po chatu“) */
-@media (max-width:1024px){
-  .layout{ grid-template-columns:0 1fr !important; }
-  .sidebar{
-    display:block!important;
-    position:fixed; top:var(--topbar-h); left:-320px;
-    width:300px; height:calc(100vh - var(--topbar-h));
-    background:var(--bg-primary); border-right:1px solid var(--border);
-    box-shadow:var(--shadow-lg); z-index:1350; transition:left .25s ease; overflow:auto;
-  }
-  .sidebar.open{ left:0; }
-  .drawer-overlay{
-    position:fixed; inset:0; background:rgba(0,0,0,.35);
-    opacity:0; visibility:hidden; pointer-events:none; transition:.2s; z-index:1200;
-  }
-  .drawer-overlay.show{ opacity:1; visibility:visible; pointer-events:auto; }
-  .mobile-only{ display:block!important; }
-  .bottom-section{ left:var(--gutter)!important; right:var(--gutter)!important; padding-bottom:max(10px, env(safe-area-inset-bottom)); }
-}
-
-/* Chat zona – saugesnis viršutinis tarpas mažiems ekranams */
-#chatArea{ padding-top: calc(3cm + 6px) !important; z-index:1; }
-@media (max-height: 750px){ #chatArea{ padding-top: 24px !important; } }
-
-/* Vartotojo burbulas – tik burbulas prie dešinio krašto (ne visas chatas) */
-.message.user{ flex-direction:row-reverse; }
-.message.user .bubble{ margin-left:auto; }
-
-/* Kad meniu niekada „neuždengtų“ siuntimo, kai jis uždarytas */
-.bottom-section{ z-index:1100; }  /* žemiau už stalčių (1350), aukščiau už turinį */
-
-/* ——— SUGGEST FIX ——— */
-/* neberodyti jokių sugestų burbuluose, jei kas nors juos ten įterptų */
-.bubble .suggest-chip,
-.bubble .msg-suggest,
-.bubble .follow-ups,
-.bubble [data-follow],
-.bubble [data-suggest]{
-  display:none !important;
-}
-
-/* įvesties kortelės visada po tekstu, neuždengia */
-.input-suggest-deck{
-  bottom:8px; z-index:5; pointer-events:auto;
-}
-.message-input{ padding-bottom:52px !important; } /* daugiau vietos tekstui */
-
-/* mobiliajame – dar truputį daugiau „oro“ */
-@media (max-width:480px){
-  .message-input{ padding-bottom:56px !important; }
-}
-/* Mygtukas "Į naujausią" */
+/* Į naujausią – pakelta +2 cm, kad neliestų siuntimo */
 .jump-latest{
-  position:fixed; right:16px; bottom:92px; z-index:1200;
+  position:fixed; right:16px; bottom: calc(92px + 2cm); z-index:1200;
   display:none; align-items:center; gap:6px;
   padding:8px 10px; border:1px solid var(--border);
   background:var(--bg-primary); border-radius:12px;
   box-shadow:0 10px 30px rgba(0,0,0,.12); cursor:pointer;
-  font-size:13px;
+  font-size:13px; max-width:fit-content;
 }
+.jump-latest img{ width:16px; height:16px; display:inline-block; }
 .jump-latest.show{ display:flex; }
+@media (max-width: 768px){
+  .jump-latest{ right:12px; bottom: calc(86px + 2cm); padding:6px 8px; font-size:12px; }
+  .jump-latest img{ width:14px; height:14px; }
+}
+
+/* Mažesnės avataro ikonėlės (švariau) */
+.avatar img{ width:14px; height:14px }
+
+/* Mažiau konfliktų su turinio aukščiais */
+.bubble-card{ min-height:64px; max-height:70vh; resize:both; overflow:auto; contain:layout paint }
+
+/* Markdown spalvos – aiškesnės */
+.msg-content h1{color:#111827}
+.msg-content h2{color:#1f2937}
+.msg-content h3{color:#374151}
+.msg-content h4{color:#4b5563}
+.msg-content h5{color:#6b7280}
+.msg-content h6{color:#9ca3af}
+.msg-content strong{ color:#111827; font-weight:700; text-shadow:none }
 
 
-  :root{ --logo-w: 3cm; --topbar-h: 66px; --ui-icon-filter: none; }
-  .topbar .brand { min-width: var(--logo-w); }
-  .topbar .brand-icon{ width:var(--logo-w)!important; height:auto!important; object-fit:contain; display:block!important; }
-  .topbar img, .topbar svg{ max-height: calc(var(--topbar-h) - 16px); }
-  [data-theme="dark"] .ui-icon{ filter: invert(1) brightness(1.08) contrast(1.05); }
-  [data-theme="dark"] img:not(.ui-icon){ filter:none !important; }
-  .ui-icon.google{ filter:none !important; } /* Google spalvos neliečiamos */
+/* ====== PRICING / FOOTER / COOKIE BAR PATCH ====== */
 
-  .models-in-topbar{ gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  .topbar{ position:sticky; top:0; left:0; right:0; z-index:1000; backdrop-filter:saturate(1.2) blur(6px); }
-  
-  /* Chat aukštis su realiu viewport (iOS) */
-  #chatArea{ padding-top: 18px; z-index:1; min-height: calc(100vh - 240px); }
-  @supports (height: 100dvh){
-    #chatArea{ min-height: calc(100dvh - 240px); }
-  }
+/* Planai (Stripe) */
+.pricing-section{
+  width:min(1100px,96%);
+  margin:28px auto 16px;
+  padding:16px;
+  background:var(--bg-primary);
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:var(--shadow);
+}
+.section-title{
+  font-size:22px; font-weight:900; margin:0 0 6px;
+  background:linear-gradient(90deg, var(--text-primary), var(--accent));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.section-sub{ color:var(--text-secondary); margin:0 0 16px }
+stripe-pricing-table{ display:block; width:100% }
 
-  .message.user{ flex-direction:row-reverse; }
-  .message.user .bubble{ margin-left:auto; }
-  .bottom-section{ z-index:1100; padding-bottom:max(10px, env(safe-area-inset-bottom)); position:sticky; bottom:0; }
+/* Poraštė – kairėje apačioje mažomis raidėmis */
+.site-footer{
+  width:min(1100px,96%);
+  margin:6px auto 18px;
+  font-size:12px; color:var(--text-secondary);
+}
+.site-footer.left{ text-align:left; padding-left:4px }
+.site-footer .footer-link{
+  display:inline-block; margin:0 10px 0 0; color:inherit; text-decoration:none;
+}
+.site-footer .footer-link:hover{ color:var(--accent) }
+.site-footer .sep{ margin:0 8px; opacity:.4 }
 
-  .bottom-section ~ .bottom-section{ display:none !important; }
+/* Cookie bar */
+.cookie-bar{
+  position:fixed; left:12px; right:12px; bottom:120px; /* pakelta kad neuždengtų siuntimo */
+  z-index:1200; display:flex; gap:10px; align-items:center;
+  padding:12px; border-radius:12px;
+  background:var(--bg-primary); border:1px solid var(--border);
+  box-shadow:0 10px 30px rgba(0,0,0,.12);
+  font-size:14px;
+}
+.cookie-bar .cookie-text{ flex:1 1 auto; line-height:1.35 }
+@media (max-width:560px){
+  .cookie-bar{ left:8px; right:8px; bottom:110px; padding:10px; font-size:13px }
+}
 
-  @media (max-width: 768px){
-    .topbar{
-      display:grid; grid-template-areas: "brand actions" "models models";
-      grid-template-columns:auto 1fr; height:auto; padding-bottom:10px; row-gap:8px;
-    }
-    .brand{ grid-area:brand }
-    .models-in-topbar{ grid-area:models; display:flex!important; max-width:100%; }
-    .top-actions{ grid-area:actions; justify-content:flex-end }
-    .top-actions [data-nav="community"]{ display:none!important; }
-  }
-  @media (max-width:1024px){
-    .layout{ display:grid; grid-template-columns:0 1fr !important; }
-    .sidebar{
-      display:block!important; position:fixed; top:var(--topbar-h); left:-320px;
-      width:300px; height:calc(100vh - var(--topbar-h));
-      background:var(--bg-primary); border-right:1px solid var(--border);
-      box-shadow:0 18px 60px rgba(0,0,0,.14); z-index:1350;
-      transition:left .25s ease; overflow:auto;
-    }
-    .sidebar.open{ left:0; }
-    .drawer-overlay{
-      position:fixed; inset:0; background:rgba(0,0,0,.35);
-      opacity:0; visibility:hidden; pointer-events:none; transition:.2s; z-index:1200;
-    }
-    .drawer-overlay.show{ opacity:1; visibility:visible; pointer-events:auto; }
-    .mobile-only{ display:block!important; }
-    .bottom-section{ left:var(--gutter)!important; right:var(--gutter)!important; }
-  }
+/* „Į naujausią“ – dar šiek tiek aukščiau, kad nieko neuždengtų */
+.jump-latest{ bottom:120px; }
+@media (max-width:768px){ .jump-latest{ bottom:110px; } }
 
-  /* Chips */
-  .follow-suggest-bar{
-    display:none; gap:8px; flex-wrap:wrap; justify-content:center;
-    margin:8px 0 6px 0; padding:8px 0 2px;
-    overflow-x:auto; -webkit-overflow-scrolling:touch;
-  }
-  .follow-suggest-bar.show{ display:flex; }
-  .suggest-chip, .decision-chip{
-    display:inline-flex; align-items:center; white-space:nowrap;
-    padding:6px 10px; border:1px solid var(--border); border-radius:12px;
-    font-size:13px; line-height:1;
-    background:var(--bg-secondary,rgba(0,0,0,0.03));
-    cursor:pointer; user-select:none; transition:background .15s, border-color .15s, transform .05s;
-  }
-  .suggest-chip:hover, .decision-chip:hover{ background:rgba(0,0,0,.05); }
-  .suggest-chip:active, .decision-chip:active{ transform:scale(.98); }
+/* Tamsi tema – logotipas */
+:root[data-theme="dark"] #brandLogo{ content: url('/assets/icon/paule-logo-dark.webp'); }
 
-  /* Inline deck */
-  .input-container{ position:relative; }
-  .input-suggest-deck{
-    position:absolute; left:8px; right:56px; bottom:8px;
-    display:none; align-items:center; gap:6px; padding:6px;
-    border:1px solid var(--border); border-radius:10px;
-    background:var(--bg-primary); box-shadow:0 6px 18px rgba(0,0,0,.06);
-    overflow-x:auto; -webkit-overflow-scrolling:touch; z-index:5;
-  }
-  .input-suggest-deck.show{ display:flex; }
-  .input-suggest-deck .suggest-chip{ font-size:12px; padding:6px 9px; }
+/* Kad placeholder „Parašyk čia…“ nedubliuotų vizualiai chate */
+#chatArea .message .msg-content [data-placeholder]{ display:none !important; }
 
-  .message-input{ padding-bottom:44px !important; }
-  ._ai-wait{ display:flex; gap:10px; align-items:center; opacity:.85; font-size:14px; margin:10px auto; width:fit-content; }
-  ._ai-wait .dots{ display:inline-flex; gap:4px }
-  ._ai-wait .dots span{ width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.4; display:inline-block; animation:bl .9s infinite alternate }
-  ._ai-wait .dots span:nth-child(2){ animation-delay:.15s } ._ai-wait .dots span:nth-child(3){ animation-delay:.3s }
-  @keyframes bl{ to{ opacity:1; transform:translateY(-2px) } }
-
-  .error-card{ background:var(--bg-danger,rgba(220,20,60,.08)); border:1px solid var(--border-danger,rgba(220,20,60,.35)); }
-
-  /* „Į naujausią“ */
-  .jump-latest{
-    position:fixed; right:16px; bottom:92px; z-index:1200;
-    display:none; align-items:center; gap:6px;
-    padding:8px 10px; border:1px solid var(--border);
-    background:var(--bg-primary); border-radius:12px;
-    box-shadow:0 10px 30px rgba(0,0,0,.12); cursor:pointer;
-    font-size:13px; max-width:fit-content;
-  }
-  .jump-latest img{ width:16px; height:16px; display:inline-block; }
-  .jump-latest.show{ display:flex; }
-  @media (max-width: 768px){
-    .jump-latest{ right:12px; bottom:86px; padding:6px 8px; font-size:12px; }
-    .jump-latest img{ width:14px; height:14px; }
-  }
-
-  .bubble.fullscreen{
-    position:fixed; left:0; right:0; top:var(--topbar-h); bottom:0;
-    z-index:2000; margin:0!important; padding:12px var(--gutter,16px);
-    background:var(--bg-primary);
-  }
-  .bubble.fullscreen .bubble-card{ height:100%; overflow:auto; }
-  .bubble-card{ resize:both; overflow:auto; min-height:64px; max-height:70vh; contain:layout paint; }
-
-  .msg-content h1{color:#111827}
-  .msg-content h2{color:#1f2937}
-  .msg-content h3{color:#374151}
-  .msg-content h4{color:#4b5563}
-  .msg-content h5{color:#6b7280}
-  .msg-content h6{color:#9ca3af}
-  .msg-content strong{ color:#111827; font-weight:700; text-shadow:none }
-  
