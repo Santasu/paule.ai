@@ -42,13 +42,10 @@ function streamResponse(executor){
     async start(controller){
       const write = (chunk) => controller.enqueue(enc.encode(chunk));
       const close = () => controller.close();
-      const fail  = (e) => { try { write(sse.event('error', { message: String(e?.message || e) })); write(sse.done()); } finally { close(); } };
+      const fail  = (e) => { try { write(sse.event('error', { message: String(e?.message || e) })); write(sse.event('done', { finish_reason:'error' })); write(sse.done()); } finally { close(); } };
 
-      try {
-        await executor({ write, close, fail });
-      } catch (e) {
-        fail(e);
-      }
+      try { await executor({ write, close, fail }); }
+      catch (e) { fail(e); }
     }
   });
   return new Response(stream, { headers: okHdrs });
@@ -68,7 +65,7 @@ async function pumpOpenAI({ model, message, maxTokens, write }){
     body: JSON.stringify(body)
   });
 
-  // Jei stream draudžiamas – darom non-stream ir patys „suSSE’inam“
+  // Jei stream draudžiamas – non-stream ir suSSE’inam
   if (!resp.ok) {
     const r2 = await fetch('https://api.openai.com/v1/chat/completions', {
       method:'POST',
@@ -297,7 +294,7 @@ async function pumpGemini({ model, message, maxTokens, write }){
           }catch(_){}
         }
       }
-      if (emitted) return; // stream'as davė tekstą – baigiame
+      if (emitted) return; // stream’as davė tekstą
     } catch (e) {
       lastErr = e;
       // pereisim į JSON fallback
@@ -412,46 +409,41 @@ async function pumpTogether({ model, message, maxTokens, write }){
 
 export default async function handler(req) {
   const url = new URL(req.url);
-  the: // nope
   const modelRaw = url.searchParams.get('model') || '';
   const model = cleanModelId(modelRaw);
   const message = url.searchParams.get('message') || '';
+  const chatId = url.searchParams.get('chat_id') || `chat_${Date.now()}`;
   const maxTokens = Math.max(1, parseInt(url.searchParams.get('max_tokens') || '1024', 10));
+
   if (!model || !message) {
     return new Response(sse.data({ ok:false, message:'model and message required' }) + sse.done(), { headers: okHdrs });
   }
 
-  return streamResponse(async ({ write, fail, close })=>{
+  return streamResponse(async ({ write, close, fail })=>{
+    // „start“ pranešimas visiems
+    write(sse.event('start', { model, chat_id: chatId }));
+
     try {
-      if (isOpenAI(model) && HAS.OPENAI) {
-        await pumpOpenAI({ model, message, maxTokens, write }); write(sse.done()); return close();
+      if (isOpenAI(model) && HAS.OPENAI)        { await pumpOpenAI({ model, message, maxTokens, write }); }
+      else if (isAnthropic(model) && HAS.ANTHROPIC){ await pumpAnthropic({ model, message, maxTokens, write }); }
+      else if (isDeepSeek(model) && HAS.DEEPSEEK){ await pumpDeepSeek({ model, message, maxTokens, write }); }
+      else if (isXAI(model) && HAS.XAI)         { await pumpGrok({ model, message, write }); }
+      else if (isGemini(model) && HAS.GOOGLE)   { await pumpGemini({ model, message, maxTokens, write }); }
+      else if (isLlamaFamily(model)) {
+        if (HAS.TOGETHER) { await pumpTogether({ model, message, maxTokens, write }); }
+        else if (HAS.OPENROUTER){ await pumpOpenRouter({ model, message, maxTokens, write }); }
+        else throw new Error('Llama tiekėjui trūksta API rakto (TOGETHER_API_KEY arba OPENROUTER_API_KEY).');
       }
-      if (isAnthropic(model) && HAS.ANTHROPIC) {
-        await pumpAnthropic({ model, message, maxTokens, write }); write(sse.done()); return close();
-      }
-      if (isDeepSeek(model) && HAS.DEEPSEEK) {
-        await pumpDeepSeek({ model, message, maxTokens, write }); write(sse.done()); return close();
-      }
-      if (isXAI(model) && HAS.XAI) {
-        await pumpGrok({ model, message, write }); write(sse.done()); return close();
-      }
-      if (isGemini(model) && HAS.GOOGLE) {
-        await pumpGemini({ model, message, maxTokens, write }); write(sse.done()); return close();
-      }
-      if (isLlamaFamily(model)) {
-        if (HAS.TOGETHER) { await pumpTogether({ model, message, maxTokens, write }); write(sse.done()); return close(); }
-        if (HAS.OPENROUTER){ await pumpOpenRouter({ model, message, maxTokens, write }); write(sse.done()); return close(); }
-        throw new Error('Llama tiekėjui trūksta API rakto (TOGETHER_API_KEY arba OPENROUTER_API_KEY).');
-      }
+      else if (HAS.OPENROUTER)                  { await pumpOpenRouter({ model, message, maxTokens, write }); }
+      else throw new Error(`Unsupported model or missing API key: ${model}`);
 
-      // universalus fallback — OpenRouter
-      if (HAS.OPENROUTER) {
-        await pumpOpenRouter({ model, message, maxTokens, write }); write(sse.done()); return close();
-      }
-
-      throw new Error(`Unsupported model or missing API key: ${model}`);
+      write(sse.event('done', { finish_reason:'stop' }));
+      write(sse.done());
+      return close();
     } catch (e) {
+      // aiški klaida + pabaiga
       write(sse.event('error', { message: String(e?.message || e) }));
+      write(sse.event('done', { finish_reason:'error' }));
       write(sse.done());
       return close();
     }
