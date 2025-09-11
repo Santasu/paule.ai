@@ -23,14 +23,17 @@ const isXAI       = m => /grok/i.test(m);
 const isOpenAI    = m => /^gpt-/i.test(m); // gpt-5-mini
 const isDeepSeek  = m => /deepseek/i.test(m);
 const isOpenRouter= m => /meta-llama|llama|openrouter\//i.test(m);
+const isGemini    = m => /^(gemini[-\w]*|google\/)/i.test(m);
 
 export default async function handler(req) {
   const url = new URL(req.url);
   const model   = url.searchParams.get('model')   || '';
   const message = url.searchParams.get('message') || '';
   const maxTok  = Math.max(1, parseInt(url.searchParams.get('max_tokens')||'1024',10));
-  const thinking= url.searchParams.get('thinking'); // '1' -> Claude thinking
-  const search  = url.searchParams.get('search');   // 'auto' -> Grok Live Search
+  const thinking= url.searchParams.get('thinking');    // '1' -> Claude thinking
+  const search  = url.searchParams.get('search');      // 'auto' | 'on' -> Grok/Gemini Search
+  const temperature = url.searchParams.get('temperature');
+  const system  = url.searchParams.get('system');
 
   if (!model || !message) {
     return new Response(sse.json({ok:false,message:'model and message required'}) + sse.done(), { headers: okHdrs });
@@ -225,6 +228,78 @@ export default async function handler(req) {
           write(sse.done()); return close();
         }
 
+        // === Google Gemini (SSE „wrapper“ ant streamGenerateContent) ===
+        if (isGemini(model)) {
+          const key = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || '';
+          if (!key){
+            write(sse.event('error', {message:'Missing GOOGLE_API_KEY'}));
+            write(sse.done()); return close();
+          }
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?key=${key}`;
+
+          const genCfg = { maxOutputTokens: maxTok };
+          if (temperature!=null && temperature!=='') {
+            const t = Number(temperature);
+            if (!Number.isNaN(t)) genCfg.temperature = t;
+          }
+
+          const body = {
+            contents: [{ role:'user', parts:[{ text: String(message) }]}],
+            generationConfig: genCfg
+          };
+
+          // systemInstruction (nebūtina)
+          if (system && String(system).trim()){
+            body.systemInstruction = { parts: [{ text: String(system) }] };
+          }
+
+          // Google Search įrankis (jei pažymėta)
+          if (search && (search==='on' || search==='auto')){
+            body.tools = [{ googleSearch: {} }];
+          }
+
+          const resp = await fetch(endpoint, {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json' },
+            body: JSON.stringify(body)
+          });
+
+          if (!resp.ok) {
+            const txt = await resp.text().catch(()=>String(resp.status));
+            write(sse.event('error', {message:`Gemini HTTP ${resp.status}: ${txt.slice(0,300)}`}));
+            write(sse.done()); return close();
+          }
+
+          // Google grąžina chunk'intą JSON (ne SSE). Konvertuojam į SSE delta.
+          const reader = resp.body.getReader();
+          let buf = '';
+          for(;;){
+            const {done, value} = await reader.read(); if (done) break;
+            buf += dec.decode(value, {stream:true});
+
+            // Skaidom pagal naujas eilutes (kiekvienas chunk'as – atskiras JSON objektas)
+            let idx;
+            while ((idx = buf.indexOf('\n')) >= 0){
+              const line = buf.slice(0, idx).trim();
+              buf = buf.slice(idx + 1);
+              if (!line) continue;
+              try{
+                const j = JSON.parse(line);
+                const cands = j?.candidates || [];
+                for (const c of cands){
+                  // daliniai atnaujinimai gali būti arba content.parts[].text, arba delta.parts[].text
+                  const parts = (c?.content?.parts) || (c?.delta?.parts) || [];
+                  for (const p of parts){
+                    const piece = p?.text || '';
+                    if (piece) write(sse.delta(piece));
+                  }
+                }
+              }catch(_){ /* ignoruojam nelaužant srauto */ }
+            }
+          }
+          write(sse.done()); return close();
+        }
+
         // ——— jei nepataikėm į jokį — pranešam, bet nelaužom UI
         write(sse.event('error', {message:`Unsupported stream model: ${model}`})); write(sse.done()); close();
 
@@ -234,3 +309,4 @@ export default async function handler(req) {
 
   return new Response(stream, { headers: okHdrs });
 }
+
