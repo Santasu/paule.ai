@@ -1,36 +1,50 @@
-const { env, readBody, sendJSON } = require("../_utils"); 
+const BFL_API = process.env.BFL_API || 'https://api.bfl.ai/v1';
+const BFL_KEY = process.env.BFL_API_KEY;
 
-module.exports = async (req, res) => {
-  if (req.method !== "POST") return sendJSON(res, 405, { ok:false, error:"METHOD_NOT_ALLOWED" });
-  if (!env.TOGETHER) return sendJSON(res, 400, { ok:false, error:"TOGETHER_KEY_MISSING" });
+async function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
 
-  const p = await readBody(req);
-  const prompt = String(p.prompt || "").trim();
-  const panels = Number(p.panels || 1);
-  const style  = String(p.style || "3d_1950s_realistic");
+export default async function handler(req, res) {
+  try {
+    if (req.method !== 'POST') return res.status(405).json({ ok:false, error:'Method Not Allowed' });
+    if (!BFL_KEY) return res.status(200).json({ ok:false, error:'Set BFL_API_KEY in Vercel' });
 
-  if (!prompt) return sendJSON(res, 400, { ok:false, error:"PROMPT_MISSING" });
+    const { prompt = 'cinematic portrait, soft light', width, height, aspect_ratio, model } = req.body || {};
 
-  const prompt_full = panels > 1
-    ? `Sukurk ${style} komiksą su ${panels} kadrais. Tema: ${prompt}`
-    : prompt;
+    // Paprastas pasirinkimas – FLUX 1.1 pro
+    const endpoint = `${BFL_API}/${model || 'flux-pro-1.1'}`;
+    const body = {
+      prompt,
+      ...(aspect_ratio ? { aspect_ratio } : { aspect_ratio: '1:1' }),
+      ...(width && height ? { width, height } : {})
+    };
 
-  const size = String(process.env.COMIC_IMAGE_SIZE || "1024x1024");
-  const [w,h] = size.split("x").map(x=>parseInt(x,10)).filter(Boolean);
-  const model = "black-forest-labs/FLUX.1-schnell";
+    const r = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'x-key': BFL_KEY, 'accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
 
-  const r = await fetch("https://api.together.xyz/v1/images/generations",{
-    method:"POST",
-    headers:{
-      "Authorization":`Bearer ${env.TOGETHER}`,
-      "Content-Type":"application/json"
-    },
-    body: JSON.stringify({ model, prompt:prompt_full, width:w||1024, height:h||1024, n:1, response_format:"url" })
-  });
-  const j = await r.json().catch(()=> ({}));
-  const url = j?.data?.[0]?.url || "";
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) return res.status(r.status).json({ ok:false, error: j.message || 'BFL create failed' });
 
-  if (!url) return sendJSON(res, 502, { ok:false, error: j?.error?.message || "Image generation failed", raw:j });
+    const pollingUrl = j.polling_url;
+    if (!pollingUrl) return res.status(200).json({ ok:false, error:'No polling_url' });
 
-  sendJSON(res, 200, { ok:true, model, prompt_used: prompt_full, image_url:url, image_size:`${w||1024}x${h||1024}` });
-};
+    // Poll iki ~9s (Vercel default timeout saugiai)
+    let out = null, status = 'Pending';
+    for (let i = 0; i < 16; i++) {
+      await wait(600);
+      const pr = await fetch(pollingUrl, { headers: { 'x-key': BFL_KEY, 'accept': 'application/json' } });
+      const pj = await pr.json().catch(() => ({}));
+      status = pj.status || status;
+      if (status === 'Ready' && pj?.result?.sample) { out = pj.result.sample; break; }
+      if (status === 'Error' || status === 'Failed') break;
+    }
+
+    if (!out) return res.status(200).json({ ok:false, status, error:'Timeout or not ready' });
+
+    return res.status(200).json({ ok:true, image_url: out });
+  } catch (e) {
+    return res.status(500).json({ ok:false, error: e?.message || 'flux/create error' });
+  }
+}
