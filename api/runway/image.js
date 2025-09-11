@@ -1,37 +1,37 @@
-const { env, readBody, sendJSON } = require("../_utils"); 
+const RUNWAY_URL = 'https://api.dev.runwayml.com/v1';
+const RUNWAY_KEY = process.env.RUNWAYML_API_SECRET; // pagal jų docs
+const RUNWAY_VER = '2024-11-06';
 
-module.exports = async (req, res) => {
-  if (req.method !== "POST") return sendJSON(res, 405, { ok:false, error:"METHOD_NOT_ALLOWED" });
-  if (!env.RUNWAY_KEY) return sendJSON(res, 400, { ok:false, error:"RUNWAY_KEY_MISSING" });
+export default async function handler(req, res) {
+  try {
+    if (req.method !== 'POST') return res.status(405).json({ ok:false, error:'Method Not Allowed' });
+    if (!RUNWAY_KEY) return res.status(200).json({ ok:false, error:'Set RUNWAYML_API_SECRET in Vercel' });
 
-  const p = await readBody(req);
-  const promptText = String(p.promptText || p.prompt || "").trim();
-  const ratio      = String(p.ratio || "1280:720");
-  const model      = String(p.model || "gen4_image");
-  const seed       = Number.isInteger(p.seed) ? p.seed : undefined;
-  const referenceImages = Array.isArray(p.referenceImages) ? p.referenceImages : undefined;
-  const contentModeration = (p.contentModeration && typeof p.contentModeration === "object") ? p.contentModeration : undefined;
+    const { image_url, image_data, prompt, duration = 5, ratio = '1280:720', model = 'gen4_turbo' } = req.body || {};
+    const promptImage = image_data || image_url;
+    if (!promptImage) return res.status(400).json({ ok:false, error:'Provide image_url or image_data (data URI)' });
 
-  if (!promptText) return sendJSON(res, 400, { ok:false, error:"PROMPT_MISSING" });
+    const r = await fetch(`${RUNWAY_URL}/image_to_video`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RUNWAY_KEY}`,
+        'X-Runway-Version': RUNWAY_VER,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        promptImage,
+        promptText: prompt || 'cinematic motion',
+        model,
+        ratio,
+        duration: Number(duration) || 5
+      })
+    });
 
-  const body = { model, promptText, ratio };
-  if (seed !== undefined) body.seed = seed;
-  if (referenceImages) body.referenceImages = referenceImages;
-  if (contentModeration) body.contentModeration = contentModeration;
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) return res.status(r.status).json({ ok:false, error: j.message || 'Runway create failed' });
 
-  const r = await fetch(`${env.RUNWAY_BASE}/text_to_image`, {
-    method:"POST",
-    headers:{
-      "Authorization":`Bearer ${env.RUNWAY_KEY}`,
-      "Content-Type":"application/json",
-      "Accept":"application/json",
-      "X-Runway-Version":"2024-11-06"
-    },
-    body: JSON.stringify(body)
-  });
-
-  const j = await r.json().catch(()=> ({}));
-  if (!r.ok || !j?.id) return sendJSON(res, 502, { ok:false, error:"RUNWAY_BAD_RESPONSE", status:r.status, raw:j });
-
-  sendJSON(res, 200, { ok:true, task_id:j.id });
-};
+    return res.status(200).json({ ok:true, task_id: j.id || j.taskId || j.task_id || null });
+  } catch (e) {
+    return res.status(500).json({ ok:false, error: e?.message || 'runway/image error' });
+  }
+}
