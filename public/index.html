@@ -25,7 +25,6 @@
   <link rel="preconnect" href="https://clerk.com" crossorigin>
   <link rel="preconnect" href="https://api.clerk.com" crossorigin>
   <link rel="preconnect" href="https://img.clerk.com" crossorigin>
-  <!-- Pašalinta: f.clerk.com (kėlė DNS klaidą) -->
 
   <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
 
@@ -158,7 +157,7 @@
     };
   </script>
 
-  <!-- Clerk (naudojamas tavo PK ir custom Frontend API) -->
+  <!-- Clerk -->
   <script>
     window.__CLERK_PUBLISHABLE_KEY__ = "pk_live_Y2xlcmsucGF1bGUuYWkk";
     window.__CLERK_FRONTEND_API__    = "clerk.paule.ai";
@@ -169,7 +168,6 @@
     src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
   </script>
   <script>
-    // Patikimas Clerk paleidimas ir fallback
     window.addEventListener('load', async () => {
       try{
         const c = window.Clerk;
@@ -225,7 +223,7 @@
       <a class="btn ghost" data-nav="pricing" href="#pricing" role="button">
         <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Planai
       </a>
-      <a class="btn ghost" data-nav="community" href="/community" role="button">
+      <a class="btn ghost" data-nav="community" href="/#spec=bendruomene" role="button">
         <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė
       </a>
       <button class="btn ghost" id="btnNewChat" type="button">
@@ -255,18 +253,19 @@
       <section class="side-section collapsible" id="specSection">
         <div class="side-title"><span>AI specialistai</span><span class="car">▾</span></div>
         <div class="specialist-grid" id="specialistGrid">
-          <a class="chip" href="/spec/sefas.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/chef-knife.svg" alt=""> Šefas</a>
-          <a class="chip" href="/spec/marketing.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/marketing-megaphone.svg" alt=""> Marketing</a>
-          <a class="chip" href="/spec/pardavimai.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/sales-handshake.svg" alt=""> Pardavimai</a>
-          <a class="chip" href="/spec/verslas.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/business-strategy.svg" alt=""> Verslas</a>
-          <a class="chip" href="/spec/finansai.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
-          <a class="chip" href="/spec/keliones.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
-          <a class="chip" href="/spec/renginiai.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/event-planning.svg" alt=""> Renginiai</a>
-          <a class="chip" href="/spec/tikslai.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
-          <a class="chip" href="/spec/teisininkas.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/legal-contract.svg" alt=""> Teisininkas</a>
-          <a class="chip" href="/spec/psichologas.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
-          <a class="chip" href="/spec/sportas.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/run.svg" alt=""> Sportas</a>
+          <a class="chip" href="/spec/bendruomene.html"   data-modal="tool"><img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė</a>
+          <a class="chip" href="/spec/sefas.html"         data-modal="tool"><img class="ui-icon" src="/assets/icon/chef-knife.svg" alt=""> Šefas</a>
+          <a class="chip" href="/spec/marketing.html"     data-modal="tool"><img class="ui-icon" src="/assets/icon/marketing-megaphone.svg" alt=""> Marketing</a>
+          <a class="chip" href="/spec/pardavimai.html"    data-modal="tool"><img class="ui-icon" src="/assets/icon/sales-handshake.svg" alt=""> Pardavimai</a>
+          <a class="chip" href="/spec/verslas.html"       data-modal="tool"><img class="ui-icon" src="/assets/icon/business-strategy.svg" alt=""> Verslas</a>
+          <a class="chip" href="/spec/finansai.html"      data-modal="tool"><img class="ui-icon" src="/assets/icon/finance-investment.svg" alt=""> Finansai</a>
+          <a class="chip" href="/spec/keliones.html"      data-modal="tool"><img class="ui-icon" src="/assets/icon/travel-map.svg" alt=""> Kelionės</a>
+          <a class="chip" href="/spec/tikslai.html"       data-modal="tool"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų žemėlapis</a>
+          <a class="chip" href="/spec/psihologas.html"    data-modal="tool"><img class="ui-icon" src="/assets/icon/psychology-brain.svg" alt=""> Psichologas</a>
+          <a class="chip" href="/spec/sportas.html"       data-modal="tool"><img class="ui-icon" src="/assets/icon/run.svg" alt=""> Sportas</a>
           <a class="chip" href="/spec/programuotojas.html" data-modal="tool"><img class="ui-icon" src="/assets/icon/code.svg" alt=""> Programuotojas</a>
+          <a class="chip" href="/spec/produktyvumas.html"  data-modal="tool"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Produktyvumas</a>
+          <a class="chip" href="/spec/daktaras.html"       data-modal="tool"><img class="ui-icon" src="/assets/icon/medical.svg" alt=""> Daktaras</a>
         </div>
       </section>
 
@@ -328,32 +327,32 @@
           <h1 class="hero-title">KAIP GALIU PADĖTI ŠIANDIEN?</h1>
           <p>Pasirink viršuje modelius ir parašyk užklausą. Visi modeliai atsakys paraleliai. 👇</p>
 
-          <div class="welcome-grid">
-            <a class="welcome-card" href="#" data-action="song">
-              <img src="/assets/hero/music.webp" alt="">
-              <b>Sukurti dainą</b><span>Pasveikink draugą unikalia gimtadienio daina.</span>
-            </a>
-            <a class="welcome-card" href="#" data-action="song-photo">
-              <img src="/assets/hero/song-photo.webp" alt="">
-              <b>Daina iš nuotraukos</b><span>Įkelk kadrą ir gauk originalią melodiją su žodžiais.</span>
-            </a>
-            <a class="welcome-card" href="#" data-action="photo">
-              <img src="/assets/hero/photo.webp" alt="">
-              <b>Sukurti nuotrauką</b><span>Produktai, scenos, peizažai, selfiai ir animacija.</span>
-            </a>
-            <a class="welcome-card" href="#" data-action="mindmap">
-              <img src="/assets/hero/mindmap.webp" alt="">
-              <b>Minčių žemėlapis</b><span>Susitelk į esmę ir didink produktyvumą.</span>
-            </a>
-            <a class="welcome-card" href="/spec/tikslai.html" data-modal="tool">
-              <img src="/assets/hero/goals.webp" alt="">
-              <b>Tikslų sistema (AI)</b><span>Vizija → užduotys → realūs rezultatai.</span>
-            </a>
-            <a class="welcome-card" href="#" data-action="video">
-              <img src="/assets/hero/video.webp" alt="">
-              <b>Sukurti video</b><span>Reels ir Stories iš teksto ar nuotraukų.</span>
-            </a>
-          </div>
+        <div class="welcome-grid">
+          <a class="welcome-card" href="#" data-action="song">
+            <img src="/assets/hero/music.webp" alt="">
+            <b>Sukurti dainą</b><span>Pasveikink draugą unikalia gimtadienio daina.</span>
+          </a>
+          <a class="welcome-card" href="#" data-action="song-photo">
+            <img src="/assets/hero/song-photo.webp" alt="">
+            <b>Daina iš nuotraukos</b><span>Įkelk kadrą ir gauk originalią melodiją su žodžiais.</span>
+          </a>
+          <a class="welcome-card" href="#" data-action="photo">
+            <img src="/assets/hero/photo.webp" alt="">
+            <b>Sukurti nuotrauką</b><span>Produktai, scenos, peizažai, selfiai ir animacija.</span>
+          </a>
+          <a class="welcome-card" href="#" data-action="mindmap">
+            <img src="/assets/hero/mindmap.webp" alt="">
+            <b>Minčių žemėlapis</b><span>Susitelk į esmę ir didink produktyvumą.</span>
+          </a>
+          <a class="welcome-card" href="/spec/tikslai.html" data-modal="tool">
+            <img src="/assets/hero/goals.webp" alt="">
+            <b>Tikslų sistema (AI)</b><span>Vizija → užduotys → realūs rezultatai.</span>
+          </a>
+          <a class="welcome-card" href="#" data-action="video">
+            <img src="/assets/hero/video.webp" alt="">
+            <b>Sukurti video</b><span>Reels ir Stories iš teksto ar nuotraukų.</span>
+          </a>
+        </div>
         </section>
 
         <!-- Planų sekcija (rodoma modale) -->
@@ -426,12 +425,15 @@
 
     /* 🔁 Modelių žemėlapis (front -> back) */
     const FRONT_TO_BACK={
-      paule:'openrouter/meta-llama/llama-3.1-70b-instruct',
+      // Paule → Together OSS modelis
+      paule:'together/openai/gpt-oss-20b',
+      // Kiti
       chatgpt:'gpt-5-mini',
       claude:'claude-3-5-sonnet-20241022',
       gemini:'gemini-2.5-flash',
       grok:'grok-2-latest',
       deepseek:'deepseek-chat',
+      // Llama → OpenRouter (Together šitam ID dažnai 404)
       llama:'openrouter/meta-llama/llama-3.1-70b-instruct'
     };
 
@@ -456,6 +458,33 @@
       chatId:null, panels:{}, startedOrder:[], firstStarted:null,
       pending:0, errors:[], hasAnyText:false, stickToBottom:true, lastUserText:''
     };
+
+    /* ====== Vietinė pokalbių atmintis ====== */
+    const STORAGE_KEY='paule_threads_v1';
+    let threadId = sessionStorage.getItem('paule_thread_id') || ('t_'+Date.now());
+    sessionStorage.setItem('paule_thread_id', threadId);
+
+    function loadThread(){
+      try { const all = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); return Array.isArray(all[threadId])? all[threadId] : []; }
+      catch(_){ return []; }
+    }
+    function saveThread(arr){
+      try { const all = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); all[threadId] = arr.slice(-40); localStorage.setItem(STORAGE_KEY, JSON.stringify(all)); } catch(_){}
+    }
+    function pushMsg(role, text, front){
+      const arr = loadThread(); arr.push({ ts:Date.now(), role, model:front||null, text:String(text||'') }); saveThread(arr);
+    }
+    function getHistoryFor(front, limit=6){
+      const all = loadThread(); const pick=[];
+      for (let i=all.length-1; i>=0 && pick.length<limit*2; i--){
+        const m=all[i];
+        if (m.role==='user' || (m.role==='assistant' && (!front || m.model===front))) pick.unshift(m);
+      }
+      return pick;
+    }
+    document.getElementById('btnNewChat')?.addEventListener('click', ()=>{
+      threadId = 't_'+Date.now(); sessionStorage.setItem('paule_thread_id', threadId);
+    });
 
     /* Tema */
     initTheme();
@@ -495,6 +524,8 @@
       modal.classList.add('show');
       modal.setAttribute('aria-hidden','false');
       document.body.style.overflow='hidden';
+      // priverstinai rodom X
+      modal.querySelector('.modal-close')?.setAttribute('style','display:block');
       modalSheet.hidden=true; modalTool.hidden=true;
       if(type==='sheet'){
         modalSheet.hidden=false;
@@ -531,6 +562,16 @@
         clone.hidden=false;
         openModal('sheet', clone);
         history.replaceState(null,'','/#pricing');
+      });
+    })();
+
+    // Topbar: Bendruomenė kaip įrankis (modalas)
+    (function(){
+      const link=document.querySelector('a[data-nav="community"]');
+      link?.addEventListener('click', (e)=>{
+        e.preventDefault();
+        history.replaceState(null,'','/#spec=bendruomene');
+        openSpecModal('bendruomene');
       });
     })();
 
@@ -572,7 +613,6 @@
       }
     }
     window.addEventListener('hashchange', handleHash);
-    // Auto paleidimas jei ateinama su #spec=...
     handleHash();
 
     // Poraštės nuorodos atsidaro kaip „sheet“
@@ -672,6 +712,8 @@
         </div>`;
       chatArea.appendChild(wrap);
       wrap.querySelector('.msg-content').textContent=text;
+      // į atmintį
+      pushMsg('user', text, null);
     }
 
     /* global wait – no-op */
@@ -729,10 +771,17 @@
 
     async function runSSE({ front, back, text, chatId }){
       try{
+        // paruošiam trumpą istorijos santrauką šiam modeliui
+        const hist = getHistoryFor(front, 6);
+        const histPrefix = hist.length
+          ? 'Ankstesnė pokalbio santrauka:\n' + hist.map(m => (m.role==='user'?'Jūs: ':'AI: ')+m.text).join('\n') + '\n\n---\n\n'
+          : '';
+        const msgToSend = histPrefix + text;
+
         const qs=new URLSearchParams({
           model: back,
           models: back,
-          message:text,
+          message: msgToSend,
           max_tokens:'4096',
           search:'auto',
           chat_id:chatId,
@@ -750,6 +799,7 @@
             if (txt){
               const p = ensurePanel(front);
               p.content += txt; p.el.innerHTML = p.content;
+              pushMsg('assistant', p.content||txt, front);
             } else { state.errors.push({front, name:front, msg:'Tuščias atsakymas (JSON).'}); }
           }catch(_){ state.errors.push({front, name:front, msg:'Neskaidomas atsakymas (JSON).'}); }
           return;
@@ -787,7 +837,7 @@
             }
           }
         }
-        const p = state.panels[front]; if (p) p.done=true;
+        const p = state.panels[front]; if (p) { p.done=true; pushMsg('assistant', p.content||'', front); }
       }catch(_){ state.errors.push({front, name:front, msg:'SSE nepavyko inicijuoti.'}); }
     }
 
@@ -815,6 +865,7 @@
           if (txt){
             const p = ensurePanel(front);
             p.content += txt; p.el.innerHTML = p.content; p.done=true;
+            pushMsg('assistant', p.content||txt, front);
           } else {
             const emsg = ans.error ? String(ans.error) : 'Tuščias atsakymas (JSON).';
             state.errors.push({ front, name:front, msg: emsg });
@@ -950,7 +1001,6 @@
           };
           rerender(); clerk.addListener(rerender);
 
-          // Diagnostika
           clerk.addListener((evt) => { try { console.log('[Clerk]', evt?.type || evt, evt); } catch(_){ } });
 
         }catch(_){ renderFallback(); }
@@ -1012,3 +1062,4 @@
 
 </body>
 </html>
+
