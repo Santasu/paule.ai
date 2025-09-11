@@ -1,177 +1,236 @@
 // /api/stream.js
 export const config = { runtime: 'edge' };
 
-import { jsonSSE, openaiDelta, eventSSE, badJSON, pickInt, isAnthropic, isXAI } from './_utils.js';
-
 const enc = new TextEncoder();
+const dec = new TextDecoder();
+
+const okHdrs = {
+  'Content-Type':'text/event-stream; charset=utf-8',
+  'Cache-Control':'no-store, no-transform',
+  'X-Accel-Buffering':'no'
+};
+
+const sse = {
+  delta: (t) => `data: ${JSON.stringify({choices:[{delta:{content:String(t)}}]})}\n\n`,
+  json:  (o) => `data: ${JSON.stringify(o)}\n\n`,
+  event: (name, payload) => `event: ${name}\n${payload?`data: ${JSON.stringify(payload)}\n`:''}\n`,
+  done:  () => `data: [DONE]\n\n`
+};
+
+// Paprasti „detektoriai“
+const isAnthropic = m => /^claude|sonnet/i.test(m);
+const isXAI       = m => /grok/i.test(m);
+const isOpenAI    = m => /^gpt-/i.test(m); // apima gpt-5-mini
+const isDeepSeek  = m => /deepseek/i.test(m);
+const isOpenRouter= m => /meta-llama|llama|openrouter\//i.test(m);
 
 export default async function handler(req) {
   const url = new URL(req.url);
-  const model = url.searchParams.get('model') || '';
+  const model   = url.searchParams.get('model')   || '';
   const message = url.searchParams.get('message') || '';
-  const maxTokens = pickInt(url.searchParams.get('max_tokens'), 1024);
-  const thinking = url.searchParams.get('thinking'); // "1" to enable for Claude
-  const search = url.searchParams.get('search');     // "on" | "auto"
+  const maxTok  = Math.max(1, parseInt(url.searchParams.get('max_tokens')||'1024',10));
+  const thinking= url.searchParams.get('thinking');
+  const search  = url.searchParams.get('search');
 
-  if (!message || !model) {
-    return badJSON(400, 'model and message are required');
+  if (!model || !message) {
+    return new Response(sse.json({ok:false,message:'model and message required'}) + sse.done(), { headers: okHdrs });
   }
 
-  // Build a stream to the client
   const stream = new ReadableStream({
-    async start(controller) {
-      const write = (str) => controller.enqueue(enc.encode(str));
-      const done  = () => controller.close();
-      const fail  = (e) => { controller.enqueue(enc.encode(eventSSE('error', { message: String(e?.message || e) }))); controller.enqueue(enc.encode('data: [DONE]\n\n')); controller.close(); };
+    async start(controller){
+      const write = (chunk) => controller.enqueue(enc.encode(chunk));
+      const close = () => controller.close();
+      const fail  = (e) => { try{ write(sse.event('error', {message:String(e?.message||e)})); write(sse.done()); } finally { close(); } };
 
       try {
+        // === Anthropic (Claude Sonnet 4) ===
         if (isAnthropic(model)) {
-          // === Anthropic (Claude Sonnet 4) ===
           const body = {
-            model,
-            max_tokens: maxTokens,
-            messages: [{ role:'user', content: message }],
-            stream: true
+            model, max_tokens: maxTok, stream:true,
+            messages: [{ role:'user', content: message }]
           };
-          // Optional extended thinking
-          if (thinking === '1' || thinking === 'true') {
-            body.thinking = { budget_tokens: 2048 };
-          }
+          if (thinking==='1' || thinking==='true') body.thinking = { budget_tokens: 2048 };
 
           const resp = await fetch('https://api.anthropic.com/v1/messages', {
             method:'POST',
             headers:{
               'Content-Type':'application/json',
-              'x-api-key':        process.env.ANTHROPIC_API_KEY || '',
+              'x-api-key':        (process.env.ANTHROPIC_API_KEY||''),
               'anthropic-version':'2023-06-01'
             },
             body: JSON.stringify(body)
           });
-
-          if (!resp.ok) {
-            const errText = await resp.text().catch(()=>String(resp.status));
-            write(eventSSE('error', { message:`Anthropic HTTP ${resp.status}: ${errText.slice(0,300)}` }));
-            write('data: [DONE]\n\n'); return done();
+          if (!resp.ok){
+            const txt=await resp.text().catch(()=>String(resp.status));
+            write(sse.event('error',{message:`Anthropic HTTP ${resp.status}: ${txt.slice(0,300)}`})); write(sse.done()); return close();
           }
-
-          if ((resp.headers.get('content-type')||'').includes('text/event-stream')) {
-            // Parse Anthropic SSE -> normalize to OpenAI-style delta
-            const reader = resp.body.getReader();
-            const dec = new TextDecoder();
-            let buf = '';
-            for (;;) {
-              const {done: d, value} = await reader.read(); if (d) break;
-              buf += dec.decode(value, { stream:true });
-              let idx;
-              while ((idx = buf.indexOf('\n\n')) >= 0) {
-                const frame = buf.slice(0, idx).trim(); buf = buf.slice(idx+2);
-                if (!frame) continue;
-
-                const evLine   = frame.split('\n').find(l=> l.startsWith('event:'));
-                const dataLine = frame.split('\n').find(l=> l.startsWith('data:'));
-                const ev = evLine ? evLine.replace(/^event:\s*/,'').trim() : 'message';
-                const data = dataLine ? dataLine.replace(/^data:\s*/,'').trim() : '';
-
-                if (data === '[DONE]') { write('data: [DONE]\n\n'); return done(); }
-
-                if (ev === 'content_block_delta') {
-                  try {
-                    const j = JSON.parse(data);
-                    const piece = j?.delta?.text || ''; // Anthropic text delta
-                    if (piece) write(openaiDelta(piece));
-                  } catch(_) {}
-                } else if (ev === 'message_delta') {
-                  // stop_reason etc. – just finish when arrives
-                } else if (ev === 'error') {
-                  write(eventSSE('error', { message: data }));
-                }
+          const reader=resp.body.getReader(); let buf='';
+          for(;;){
+            const {done,value}=await reader.read(); if(done) break;
+            buf+=dec.decode(value,{stream:true});
+            let i; while((i=buf.indexOf('\n\n'))>=0){
+              const frame=buf.slice(0,i).trim(); buf=buf.slice(i+2);
+              if(!frame) continue;
+              const ev = frame.split('\n').find(l=>l.startsWith('event:'))?.replace(/^event:\s*/,'').trim() || 'message';
+              const dataLine = frame.split('\n').find(l=>l.startsWith('data:'));
+              const data = dataLine? dataLine.replace(/^data:\s*/,'').trim() : '';
+              if (data==='[DONE]'){ write(sse.done()); return close(); }
+              if (ev==='error'){ write(sse.event('error',{message:data})); continue; }
+              if (ev==='content_block_delta'){
+                try{ const j=JSON.parse(data); const piece=j?.delta?.text||''; if (piece) write(sse.delta(piece)); }catch(_){}
               }
             }
-            write('data: [DONE]\n\n'); return done();
-          } else {
-            // Fallback non-stream: get full text and emit once as SSE
-            const j = await resp.json().catch(()=>null);
-            const text = Array.isArray(j?.content) ? (j.content.find(b=>b.type==='text')?.text || '') : (j?.content?.[0]?.text || '');
-            if (text) write(openaiDelta(text));
-            write('data: [DONE]\n\n'); return done();
           }
+          write(sse.done()); return close();
         }
 
+        // === xAI (Grok) ===
         if (isXAI(model)) {
-          // === xAI Grok ===
-          const body = {
-            model,
-            messages: [{ role:'user', content: message }],
-            stream: true
-          };
-
-          // Live Search (optional)
-          if (search === 'on' || search === 'auto' || search === '') {
-            body.search_parameters = { mode: search || 'auto' };
-          }
+          const body = { model, stream:true, messages:[{role:'user', content:message}] };
+          if (search) body.search_parameters = { mode: search || 'auto' };
 
           const resp = await fetch('https://api.x.ai/v1/chat/completions', {
             method:'POST',
             headers:{
               'Content-Type':'application/json',
-              'Authorization':`Bearer ${process.env.XAI_API_KEY || ''}`
+              'Authorization':`Bearer ${process.env.XAI_API_KEY||''}`
             },
             body: JSON.stringify(body)
           });
-
-          if (!resp.ok) {
-            const errText = await resp.text().catch(()=>String(resp.status));
-            write(eventSSE('error', { message:`Grok HTTP ${resp.status}: ${errText.slice(0,300)}` }));
-            write('data: [DONE]\n\n'); return done();
+          if (!resp.ok){
+            const txt=await resp.text().catch(()=>String(resp.status));
+            write(sse.event('error',{message:`Grok HTTP ${resp.status}: ${txt.slice(0,300)}`})); write(sse.done()); return close();
           }
-
-          // xAI jau grąžina OpenAI-stiliaus SSE – perskaitom ir normalizuojam (saugiai)
-          const reader = resp.body.getReader();
-          const dec = new TextDecoder();
-          let buf = '';
-          for (;;) {
-            const {done: d, value} = await reader.read(); if (d) break;
-            buf += dec.decode(value, { stream:true });
-            let idx;
-            while ((idx = buf.indexOf('\n\n')) >= 0) {
-              const frame = buf.slice(0, idx).trim(); buf = buf.slice(idx+2);
-              if (!frame) continue;
-
-              const dataLine = frame.split('\n').find(l=> l.startsWith('data:'));
-              if (!dataLine) continue;
-              const data = dataLine.replace(/^data:\s*/,'').trim();
-              if (data === '[DONE]') { write('data: [DONE]\n\n'); return done(); }
-              try{
-                const j = JSON.parse(data);
-                const piece = j?.choices?.[0]?.delta?.content ?? '';
-                if (piece) write(openaiDelta(piece));
-              }catch(_){}
+          const reader=resp.body.getReader(); let buf='';
+          for(;;){
+            const {done,value}=await reader.read(); if(done) break;
+            buf+=dec.decode(value,{stream:true});
+            let i; while((i=buf.indexOf('\n\n'))>=0){
+              const frame=buf.slice(0,i).trim(); buf=buf.slice(i+2);
+              if(!frame) continue;
+              const dataLine=frame.split('\n').find(l=>l.startsWith('data:'));
+              if(!dataLine) continue;
+              const data=dataLine.replace(/^data:\s*/,'').trim();
+              if (data==='[DONE]'){ write(sse.done()); return close(); }
+              try{ const j=JSON.parse(data); const piece=j?.choices?.[0]?.delta?.content||''; if(piece) write(sse.delta(piece)); }catch(_){}
             }
           }
-          write('data: [DONE]\n\n'); return done();
+          write(sse.done()); return close();
         }
 
-        // Neatpažintas modelis – pranešame klaidą kaip SSE įvykį, kad UI nesulūžtų
-        write(eventSSE('error', { message:`Unsupported stream model: ${model}` }));
-        write('data: [DONE]\n\n'); return done();
+        // === OpenAI (ChatGPT: gpt-5-mini) ===
+        if (isOpenAI(model)) {
+          const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json',
+              'Authorization':`Bearer ${process.env.OPENAI_API_KEY||''}`
+            },
+            body: JSON.stringify({
+              model, stream:true,
+              messages:[{role:'user', content:message}],
+              max_tokens:maxTok
+            })
+          });
+          if (!resp.ok){
+            const txt=await resp.text().catch(()=>String(resp.status));
+            write(sse.event('error',{message:`OpenAI HTTP ${resp.status}: ${txt.slice(0,300)}`})); write(sse.done()); return close();
+          }
+          const reader=resp.body.getReader(); let buf='';
+          for(;;){
+            const {done,value}=await reader.read(); if(done) break;
+            buf+=dec.decode(value,{stream:true});
+            let i; while((i=buf.indexOf('\n\n'))>=0){
+              const frame=buf.slice(0,i).trim(); buf=buf.slice(i+2);
+              if(!frame) continue;
+              const dataLine=frame.split('\n').find(l=>l.startsWith('data:'));
+              if(!dataLine) continue;
+              const data=dataLine.replace(/^data:\s*/,'').trim();
+              if (data==='[DONE]'){ write(sse.done()); return close(); }
+              try{ const j=JSON.parse(data); const piece=j?.choices?.[0]?.delta?.content||''; if(piece) write(sse.delta(piece)); }catch(_){}
+            }
+          }
+          write(sse.done()); return close();
+        }
 
-      } catch (err) {
-        try{
-          // paskutinė apsauga
-          const msg = err?.message || String(err);
-          controller.enqueue(enc.encode(eventSSE('error', { message: msg })));
-          controller.enqueue(enc.encode('data: [DONE]\n\n'));
-        }catch(_){}
-        controller.close();
-      }
+        // === DeepSeek ===
+        if (isDeepSeek(model)) {
+          const resp = await fetch('https://api.deepseek.com/chat/completions', {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json',
+              'Authorization':`Bearer ${process.env.DEEPSEEK_API_KEY||''}`
+            },
+            body: JSON.stringify({
+              model, stream:true,
+              messages:[{role:'user', content:message}],
+              max_tokens:maxTok
+            })
+          });
+          if (!resp.ok){
+            const txt=await resp.text().catch(()=>String(resp.status));
+            write(sse.event('error',{message:`DeepSeek HTTP ${resp.status}: ${txt.slice(0,300)}`})); write(sse.done()); return close();
+          }
+          const reader=resp.body.getReader(); let buf='';
+          for(;;){
+            const {done,value}=await reader.read(); if(done) break;
+            buf+=dec.decode(value,{stream:true});
+            let i; while((i=buf.indexOf('\n\n'))>=0){
+              const frame=buf.slice(0,i).trim(); buf=buf.slice(i+2);
+              if(!frame) continue;
+              const dataLine=frame.split('\n').find(l=>l.startsWith('data:'));
+              if(!dataLine) continue;
+              const data=dataLine.replace(/^data:\s*/,'').trim();
+              if (data==='[DONE]'){ write(sse.done()); return close(); }
+              try{ const j=JSON.parse(data); const piece=j?.choices?.[0]?.delta?.content||''; if(piece) write(sse.delta(piece)); }catch(_){}
+            }
+          }
+          write(sse.done()); return close();
+        }
+
+        // === OpenRouter (Meta/Llama & pan.) ===
+        if (isOpenRouter(model)) {
+          const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json',
+              'Authorization':`Bearer ${process.env.OPENROUTER_API_KEY||''}`,
+              'HTTP-Referer': (process.env.SITE_URL||'https://paule.app'),
+              'X-Title': 'Paule'
+            },
+            body: JSON.stringify({
+              model, stream:true,
+              messages:[{role:'user', content:message}],
+              max_tokens:maxTok
+            })
+          });
+          if (!resp.ok){
+            const txt=await resp.text().catch(()=>String(resp.status));
+            write(sse.event('error',{message:`OpenRouter HTTP ${resp.status}: ${txt.slice(0,300)}`})); write(sse.done()); return close();
+          }
+          const reader=resp.body.getReader(); let buf='';
+          for(;;){
+            const {done,value}=await reader.read(); if(done) break;
+            buf+=dec.decode(value,{stream:true});
+            let i; while((i=buf.indexOf('\n\n'))>=0){
+              const frame=buf.slice(0,i).trim(); buf=buf.slice(i+2);
+              if(!frame) continue;
+              const dataLine=frame.split('\n').find(l=>l.startsWith('data:'));
+              if(!dataLine) continue;
+              const data=dataLine.replace(/^data:\s*/,'').trim();
+              if (data==='[DONE]'){ write(sse.done()); return close(); }
+              try{ const j=JSON.parse(data); const piece=j?.choices?.[0]?.delta?.content||''; if(piece) write(sse.delta(piece)); }catch(_){}
+            }
+          }
+          write(sse.done()); return close();
+        }
+
+        // ——— jei nepataikėm į jokį — pranešam, bet nelaužom UI
+        write(sse.event('error', {message:`Unsupported stream model: ${model}`})); write(sse.done()); close();
+
+      } catch (e) { fail(e); }
     }
   });
 
-  return new Response(stream, {
-    headers:{
-      'Content-Type':'text/event-stream; charset=utf-8',
-      'Cache-Control':'no-store, no-transform',
-      'X-Accel-Buffering':'no' // nginx/proxy hint
-    }
-  });
+  return new Response(stream, { headers: okHdrs });
 }
