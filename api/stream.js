@@ -4,11 +4,16 @@ export const config = { runtime: 'edge' };
 // --- SSE helperiai ---
 const enc = new TextEncoder();
 const dec = new TextDecoder();
+const corsHdrs = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type,Authorization'
+};
 const okHdrs = {
   'Content-Type': 'text/event-stream; charset=utf-8',
   'Cache-Control': 'no-store, no-transform',
   'X-Accel-Buffering': 'no',
-  'Access-Control-Allow-Origin': '*'
+  ...corsHdrs
 };
 const sse = {
   data: (objOrStr) => `data: ${typeof objOrStr === 'string' ? objOrStr : JSON.stringify(objOrStr)}\n\n`,
@@ -37,7 +42,7 @@ const HAS = {
   TOGETHER: !!getenv('TOGETHER_API_KEY')
 };
 
-// ——— Universalus writer’is į klientą
+// ——— Universalus writer’is į klientą (Edge ReadableStream)
 function streamResponse(executor){
   const stream = new ReadableStream({
     async start(controller){
@@ -410,7 +415,41 @@ async function pumpTogether({ model, message, maxTokens, write }){
   }
 }
 
+// === VIENAS EDGE HANDLER’IS: GET → SSE, POST → JSON, OPTIONS → 204
 export default async function handler(req) {
+  // Preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHdrs });
+  }
+
+  // POST (demo JSON atsakymas tavo UI mygtukams)
+  if (req.method === 'POST') {
+    try{
+      const body = await req.json().catch(()=>({}));
+      const messages = Array.isArray(body.messages) ? body.messages : [];
+      const userMsg = messages.find(m => m && m.role === 'user');
+
+      let payload = {};
+      if (userMsg && typeof userMsg.content === 'string') {
+        try { payload = JSON.parse(userMsg.content); } catch {}
+      } else if (userMsg && typeof userMsg.content === 'object') {
+        payload = userMsg.content || {};
+      }
+
+      const text = (payload.text || payload.title || payload.meta || 'creative concept') + '';
+      const output = text.trim().slice(0, 180);
+
+      return new Response(JSON.stringify({ ok:true, output }), {
+        headers: { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store', ...corsHdrs }
+      });
+    }catch(_){
+      return new Response(JSON.stringify({ ok:true, output:'creative concept' }), {
+        headers: { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store', ...corsHdrs }
+      });
+    }
+  }
+
+  // GET (SSE stream’ui su visais tiekėjais)
   const url = new URL(req.url);
   const modelRaw = url.searchParams.get('model') || '';
   const model = cleanModelId(modelRaw);
@@ -458,22 +497,5 @@ export default async function handler(req) {
       return close();
     }
   });
-}
-// Paprastas "AI" pakaitalas, kad mygtukai veiktų be LLM.
-// Jei reikės – galima per OPENAI_API_KEY pasijungti tikrą vertimą.
-export default async function handler(req, res) {
-  try {
-    const { messages = [] } = req.body || {};
-    const userMsg = messages.find(m => m.role === 'user');
-    let payload = {};
-    try { payload = JSON.parse(userMsg?.content || '{}'); } catch {}
-    const text = (payload.text || payload.title || payload.meta || 'creative concept').toString().trim();
-
-    // jei sistemoje minimas "Translate to", grąžinam patį tekstą (demo)
-    let output = text.slice(0, 180);
-    return res.status(200).json({ ok: true, output });
-  } catch (e) {
-    return res.status(200).json({ ok: true, output: 'creative concept' });
-  }
 }
 
