@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Community</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #333;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 8px 16px;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 44px;
+        }
+
+        /* Top Users Bar */
+        .top-users-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex: 1;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .top-users-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .top-user {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 60px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+
+        .top-user:hover {
+            transform: scale(1.05);
+        }
+
+        .top-user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            background: linear-gradient(45deg, #ff1744, #d81b60) padding-box,
+                        linear-gradient(45deg, #ff1744, #d81b60) border-box;
+            object-fit: cover;
+            margin-bottom: 2px;
+        }
+
+        .top-user-avatar.has-story {
+            border: 2px solid #ff1744;
+        }
+
+        .top-user-name {
+            font-size: 10px;
+            color: #ccc;
+            text-align: center;
+            max-width: 50px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-points {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ff1744;
+            color: white;
+            font-size: 8px;
+            padding: 1px 4px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav-tab {
+            color: #888;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 8px 0;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-tab.active {
+            color: #fff;
+            border-bottom-color: #ff1744;
+        }
+
+        .nav-tab:hover {
+            color: #fff;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .search-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 20px;
+            padding: 6px 12px;
+            width: 200px;
+            color: #fff;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .notification-badge {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .notification-badge::after {
+            content: attr(data-count);
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ff1744;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .notification-icon {
+            width: 24px;
+            height: 24px;
+            fill: #fff;
+        }
+
+        .user-avatar-nav {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid #ff1744;
+            cursor: pointer;
+            object-fit: cover;
+        }
+
+        /* Main Container */
+        .main-container {
+            margin-top: 60px;
+            min-height: calc(100vh - 60px);
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Home Feed */
+        .post {
+            margin-bottom: 32px;
+            background: #111;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #333;
+            transition: transform 0.3s ease;
+        }
+
+        .post:hover {
+            transform: translateY(-2px);
+        }
+
+        .post-header {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .post-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #ff1744;
+            object-fit: cover;
+        }
+
+        .user-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .verified-badge {
+            color: #1da1f2;
+            font-size: 14px;
+        }
+
+        .ai-tag {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .follow-btn {
+            background: linear-gradient(45deg, #ff1744, #d81b60);
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .follow-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .follow-btn.following {
+            background: transparent;
+            border: 1px solid #ff1744;
+        }
+
+        .post-media-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 9/16;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .post-media {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .media-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(transparent 60%, rgba(0,0,0,0.8));
+            pointer-events: none;
+        }
+
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            color: #000;
+            transition: all 0.3s ease;
+        }
+
+        .play-button:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .content-badges {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .content-badge {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .ai-badge {
+            background: linear-gradient(45deg, #ff1744, #d81b60);
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .post-actions {
+            position: absolute;
+            right: 16px;
+            bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .action-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .action-btn.liked {
+            background: rgba(255,23,68,0.8);
+        }
+
+        .action-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .action-count {
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .post-info {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            right: 80px;
+        }
+
+        .post-caption {
+            color: white;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .hashtag {
+            color: #ff1744;
+            font-weight: 600;
+        }
+
+        .post-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* Trends Section */
+        .trends-header {
+            padding: 20px 0;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
+        }
+
+        .trends-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .trend-item {
+            background: #111;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .trend-item:hover {
+            transform: translateY(-4px);
+        }
+
+        .trend-media {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .trend-info {
+            padding: 16px;
+        }
+
+        .trend-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .trend-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .trend-rank {
+            background: #ff1744;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            position: absolute;
+            top: 8px;
+            left: 8px;
+        }
+
+        /* Competitions Section */
+        .competition-card {
+            background: linear-gradient(135deg, #ff1744, #d81b60);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .competition-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .competition-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .time-left {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .competition-prizes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .prize-item {
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .prize-rank {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .prize-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #111;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .leaderboard-item:hover {
+            background: #222;
+        }
+
+        .rank-number {
+            font-weight: 600;
+            font-size: 16px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .rank-number.first { color: #ffd700; }
+        .rank-number.second { color: #c0c0c0; }
+        .rank-number.third { color: #cd7f32; }
+
+        .leaderboard-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .leaderboard-info {
+            flex: 1;
+        }
+
+        .leaderboard-username {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .leaderboard-score {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* User Story Modal */
+        .story-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .story-content {
+            position: relative;
+            width: 300px;
+            height: 600px;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .story-media {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .story-header {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .story-progress {
+            position: absolute;
+            top: 8px;
+            left: 16px;
+            right: 16px;
+            height: 2px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 1px;
+        }
+
+        .story-progress-fill {
+            height: 100%;
+            background: #fff;
+            border-radius: 1px;
+            animation: storyProgress 5s linear;
+        }
+
+        @keyframes storyProgress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+
+        .story-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .story-user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .story-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .story-username {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .story-points {
+            background: #ff1744;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Upload Button */
+        .upload-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(45deg, #ff1744, #d81b60);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(255,23,68,0.4);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .upload-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Mobile Navigation */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #333;
+            padding: 8px 0;
+            z-index: 1000;
+            display: none;
+        }
+
+        .mobile-nav-items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .mobile-nav-item.active {
+            color: #ff1744;
+        }
+
+        .mobile-nav-item:not(.active) {
+            color: #888;
+        }
+
+        .mobile-nav-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+            fill: currentColor;
+        }
+
+        .mobile-nav-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        /* Upload Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 2px dashed #333;
+            border-radius: 12px;
+            padding: 48px 24px;
+            text-align: center;
+            margin-bottom: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #0a0a0a;
+        }
+
+        .upload-area:hover {
+            border-color: #ff1744;
+            background: rgba(255,23,68,0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: #ff1744;
+            background: rgba(255,23,68,0.1);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #666;
+        }
+
+        .content-type-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: #0a0a0a;
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .content-type-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: #888;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .content-type-btn.active {
+            background: linear-gradient(45deg, #ff1744, #d81b60);
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            border-color: #ff1744;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ff1744, #d81b60);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 24px;
+            color: #888;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #333;
+            border-top: 3px solid #ff1744;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            background: rgba(17,17,17,0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid #333;
+            color: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            z-index: 3000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 12px;
+            }
+
+            .search-box {
+                display: none;
+            }
+
+            .nav-tabs {
+                display: none;
+            }
+
+            .content-section {
+                padding: 0 8px;
+                margin-bottom: 80px;
+            }
+
+            .mobile-nav {
+                display: block;
+            }
+
+            .upload-btn {
+                bottom: 88px;
+            }
+
+            .top-users-bar {
+                gap: 8px;
+            }
+
+            .top-user-avatar {
+                width: 35px;
+                height: 35px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <!-- Top Users Bar -->
+            <div class="top-users-bar" id="topUsersBar">
+                <!-- Users will be populated by JavaScript -->
+            </div>
+            
+            <!-- Navigation Tabs -->
+            <div class="nav-tabs">
+                <div class="nav-tab active" onclick="switchTab('home')">Namai</div>
+                <div class="nav-tab" onclick="switchTab('trending')">Trendi</div>
+                <div class="nav-tab" onclick="switchTab('competitions')">Konkursai</div>
+            </div>
+            
+            <!-- Header Actions -->
+            <div class="header-actions">
+                <input type="text" class="search-box" placeholder="Ieškoti..." oninput="searchContent(this.value)">
+                <div class="notification-badge" data-count="5">
+                    <svg class="notification-icon" viewBox="0 0 24 24">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                </div>
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face" alt="Profile" class="user-avatar-nav" onclick="viewMyProfile()">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Home Section -->
+        <div class="content-section active" id="homeSection">
+            <div id="feedContainer">
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    Kraunama...
+                </div>
+            </div>
+        </div>
+
+        <!-- Trending Section -->
+        <div class="content-section" id="trendingSection">
+            <div class="trends-header">
+                <h2>🔥 Šiandien populiariausia</h2>
+                <p style="color: #888; margin-top: 8px;">AI kūriniai, kurie šiandien surenka daugiausiai dėmesio</p>
+            </div>
+            <div class="trends-grid" id="trendsGrid">
+                <!-- Trending content will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Competitions Section -->
+        <div class="content-section" id="competitionsSection">
+            <div class="competition-card">
+                <div class="competition-header">
+                    <h2 class="competition-title">🏆 Lapkričio konkursas</h2>
+                    <div class="time-left" id="competitionTimer">15d 8h 23m</div>
+                </div>
+                <p style="margin-bottom: 20px; opacity: 0.9;">Sukurkite geriausią AI kūrinį ir laimėkite prizus!</p>
+                
+                <div class="competition-prizes">
+                    <div class="prize-item">
+                        <div class="prize-rank">🥇</div>
+                        <div class="prize-value">5000€ + Premium</div>
+                    </div>
+                    <div class="prize-item">
+                        <div class="prize-rank">🥈</div>
+                        <div class="prize-value">2500€ + Pro</div>
+                    </div>
+                    <div class="prize-item">
+                        <div class="prize-rank">🥉</div>
+                        <div class="prize-value">1000€ + Plus</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: #111; border-radius: 16px; padding: 20px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 16px;">📈 Šiuo metu pirmauja</h3>
+                <div id="competitionLeaderboard">
+                    <!-- Leaderboard will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div style="background: #111; border-radius: 16px; padding: 20px;">
+                <h3 style="margin-bottom: 16px;">📋 Konkurso kategorijos</h3>
+                <div style="display: grid; gap: 12px;">
+                    <div style="background: #222; padding: 16px; border-radius: 8px;">
+                        <h4 style="margin-bottom: 8px;">📷 Geriausias AI paveikslas</h4>
+                        <p style="color: #888; font-size: 14px;">Sukurkite įspūdingiausią AI generuotą vaizdą</p>
+                        <div style="margin-top: 8px; color: #ff1744; font-size: 12px;">2,847 dalyviai</div>
+                    </div>
+                    <div style="background: #222; padding: 16px; border-radius: 8px;">
+                        <h4 style="margin-bottom: 8px;">🎥 Geriausias AI video</h4>
+                        <p style="color: #888; font-size: 14px;">Sukurkite labiausiai žavintį AI video klipą</p>
+                        <div style="margin-top: 8px; color: #ff1744; font-size: 12px;">1,234 dalyviai</div>
+                    </div>
+                    <div style="background: #222; padding: 16px; border-radius: 8px;">
+                        <h4 style="margin-bottom: 8px;">🎵 Geriausia AI muzika</h4>
+                        <p style="color: #888; font-size: 14px;">Sukurkite muziką, kuri sujaudins širdis</p>
+                        <div style="margin-top: 8px; color: #ff1744; font-size: 12px;">856 dalyviai</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Story Modal -->
+    <div class="story-modal" id="storyModal">
+        <div class="story-content">
+            <div class="story-progress">
+                <div class="story-progress-fill"></div>
+            </div>
+            <button class="story-close" onclick="closeStory()">×</button>
+            <img src="" alt="Story" class="story-media" id="storyMedia">
+            <div class="story-header">
+                <div class="story-user-info">
+                    <img src="" alt="" class="story-avatar" id="storyAvatar">
+                    <div>
+                        <div class="story-username" id="storyUsername"></div>
+                        <div style="font-size: 12px; color: #ccc;" id="storyTime"></div>
+                    </div>
+                </div>
+                <div class="story-points" id="storyPoints"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Button -->
+    <button class="upload-btn" onclick="openUploadModal()">+</button>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav">
+        <div class="mobile-nav-items">
+            <div class="mobile-nav-item active" onclick="switchTab('home')">
+                <svg class="mobile-nav-icon" viewBox="0 0 24 24">
+                    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                </svg>
+                <span class="mobile-nav-label">Namai</span>
+            </div>
+            <div class="mobile-nav-item" onclick="switchTab('trending')">
+                <svg class="mobile-nav-icon" viewBox="0 0 24 24">
+                    <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                </svg>
+                <span class="mobile-nav-label">Trendi</span>
+            </div>
+            <div class="mobile-nav-item" onclick="openUploadModal()">
+                <svg class="mobile-nav-icon" viewBox="0 0 24 24">
+                    <path d="M12 5v14m-7-7h14"/>
+                </svg>
+                <span class="mobile-nav-label">Sukurti</span>
+            </div>
+            <div class="mobile-nav-item" onclick="switchTab('competitions')">
+                <svg class="mobile-nav-icon" viewBox="0 0 24 24">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                    <path d="M4 22h16"/>
+                    <path d="M10 14.66V17c0 .55.47.98.97 1.21C12.18 18.75 13 19.24 14 19.24c1 0 1.82-.49 3.03-1.03C17.53 17.98 18 17.55 18 17v-2.34"/>
+                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                </svg>
+                <span class="mobile-nav-label">Konkursai</span>
+            </div>
+            <div class="mobile-nav-item" onclick="viewMyProfile()">
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=24&h=24&fit=crop&crop=face" style="border-radius: 50%; width: 24px; height: 24px;">
+                <span class="mobile-nav-label">Profilis</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <div class="modal-header">Sukurti AI turinį</div>
+            
+            <div class="content-type-selector">
+                <button class="content-type-btn active" data-type="photo">📷 Nuotrauka</button>
+                <button class="content-type-btn" data-type="video">🎥 Video</button>
+                <button class="content-type-btn" data-type="music">🎵 Muzika</button>
+            </div>
+
+            <div class="upload-area" onclick="triggerFileUpload()">
+                <div class="upload-icon">📤</div>
+                <div style="color: #888; font-size: 16px; margin-bottom: 8px;">Tempkite failą čia arba spustelėkite</div>
+                <div style="color: #666; font-size: 14px;">Palaikomi formatai: JPG, PNG, MP4, MP3</div>
+                <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*,audio/*" onchange="handleFileSelect(event)">
+            </div>
+
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label class="form-label">Aprašymas</label>
+                    <textarea class="form-textarea" id="postCaption" placeholder="Papasakokite apie savo AI kūrinį..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">AI Modelis</label>
+                    <input type="text" class="form-input" id="aiModel" placeholder="pvz. DALL-E 3, Midjourney, ChatGPT">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Žymos</label>
+                    <input type="text" class="form-input" id="hashtags" placeholder="#ai #menas #technologijos">
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">Atšaukti</button>
+                    <button type="submit" class="btn btn-primary">Publikuoti</button>
+                </div>
+            </form>
+
+            <div class="loading" id="uploadLoading">
+                <div class="spinner"></div>
+                Publikuojama...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global data
+        let currentTab = 'home';
+        let currentUser = {
+            id: 1,
+            username: 'jusu_vardas',
+            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face',
+            points: 1247,
+            stories: []
+        };
+
+        // Top users with realistic data
+        const topUsers = [
+            { id: 2, username: 'ai_guru', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b765?w=40&h=40&fit=crop&crop=face', points: 4890, hasStory: true, stories: ['https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=600&fit=crop'] },
+            { id: 3, username: 'tech_wizard', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face', points: 3456, hasStory: true, stories: ['https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=300&h=600&fit=crop'] },
+            { id: 4, username: 'pixel_artist', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face', points: 2987, hasStory: false, stories: [] },
+            { id: 5, username: 'music_ai', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=40&h=40&fit=crop&crop=face', points: 2654, hasStory: true, stories: ['https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=600&fit=crop'] },
+            { id: 6, username: 'digital_dreams', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop&crop=face', points: 2234, hasStory: false, stories: [] },
+            { id: 7, username: 'neural_net', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=40&h=40&fit=crop&crop=face', points: 1987, hasStory: true, stories: ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=600&fit=crop'] },
+            { id: 8, username: 'cyber_creator', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=40&h=40&fit=crop&crop=face', points: 1654, hasStory: false, stories: [] },
+            { id: 9, username: 'future_art', avatar: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=40&h=40&fit=crop&crop=face', points: 1432, hasStory: true, stories: ['https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=600&fit=crop'] }
+        ];
+
+        // Feed posts
+        let posts = [
+            {
+                id: 1,
+                user: topUsers[0],
+                type: 'photo',
+                mediaUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop',
+                caption: 'Nuostabaus peizažo AI kūrinys sukurtas su DALL-E 3! 🌅 Technologijos galimybės tiesiog stebina. #ai #peizažas #menas #ateitis',
+                aiModel: 'DALL-E 3',
+                likes: 2847,
+                comments: 234,
+                shares: 89,
+                views: 15634,
+                timestamp: '1 val. atgal',
+                liked: false,
+                following: false
+            },
+            {
+                id: 2,
+                user: topUsers[1],
+                type: 'video',
+                mediaUrl: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&h=600&fit=crop',
+                caption: 'Cinematic AI video su tokiu realumu! 🎬✨ 30 sekundžių grynos magijos. Ateitis jau čia! #cinematic #aivideo #realumas #technologijos',
+                aiModel: 'Runway Gen-2',
+                likes: 4156,
+                comments: 389,
+                shares: 167,
+                views: 23547,
+                timestamp: '2 val. atgal',
+                liked: true,
+                following: true
+            },
+            {
+                id: 3,
+                user: topUsers[3],
+                type: 'music',
+                mediaUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop',
+                caption: 'Instrumentalinė daina sukurta su AI! 🎵 Klausykitės ir vertinkite šį 3 minučių kūrinį. #muzika #ai #instrumental #kūryba',
+                aiModel: 'Suno AI v3.5',
+                likes: 1923,
+                comments: 156,
+                shares: 78,
+                views: 8965,
+                timestamp: '3 val. atgal',
+                liked: false,
+                following: false
+            },
+            {
+                id: 4,
+                user: topUsers[2],
+                type: 'photo',
+                mediaUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=600&fit=crop',
+                caption: 'Fantastiško miesto AI interpretacija 🏙️ Ateities architektūra jau dabar! Kas manote? #miestas #ateitis #architektūra #ai #dizainas',
+                aiModel: 'Midjourney v6',
+                likes: 3267,
+                comments: 298,
+                shares: 134,
+                views: 18234,
+                timestamp: '4 val. atgal',
+                liked: true,
+                following: true
+            },
+            {
+                id: 5,
+                user: topUsers[5],
+                type: 'video',
+                mediaUrl: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400&h=600&fit=crop',
+                caption: 'Sferinių pasaulių animacija 🌍 AI kūrybingumo ribų nėra! Žiūrėkite šį hipnotizuojantį klipą. #sfera #animacija #ai #pasauliai #kūrybingumas',
+                aiModel: 'Stable Video Diffusion',
+                likes: 2654,
+                comments: 187,
+                shares: 92,
+                views: 12876,
+                timestamp: '5 val. atgal',
+                liked: false,
+                following: false
+            }
+        ];
+
+        // Trending content
+        const trendingContent = [
+            {
+                id: 101,
+                title: 'AI Generated Cyberpunk City',
+                mediaUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=200&fit=crop',
+                views: 45620,
+                likes: 3840,
+                rank: 1,
+                category: 'Art'
+            },
+            {
+                id: 102,
+                title: 'Neural Network Music Composition',
+                mediaUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop',
+                views: 38750,
+                likes: 2967,
+                rank: 2,
+                category: 'Music'
+            },
+            {
+                id: 103,
+                title: 'AI Motion Graphics Masterpiece',
+                mediaUrl: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=300&h=200&fit=crop',
+                views: 34890,
+                likes: 2756,
+                rank: 3,
+                category: 'Video'
+            },
+            {
+                id: 104,
+                title: 'Surreal AI Landscape',
+                mediaUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop',
+                views: 29340,
+                likes: 2234,
+                rank: 4,
+                category: 'Art'
+            },
+            {
+                id: 105,
+                title: 'AI Orchestra Symphony',
+                mediaUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&h=200&fit=crop',
+                views: 27680,
+                likes: 2012,
+                rank: 5,
+                category: 'Music'
+            },
+            {
+                id: 106,
+                title: 'Futuristic AI Character Design',
+                mediaUrl: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=200&fit=crop',
+                views: 24590,
+                likes: 1876,
+                rank: 6,
+                category: 'Art'
+            }
+        ];
+
+        // Competition leaderboard
+        const competitionLeaderboard = [
+            { rank: 1, user: topUsers[0], score: 4890, change: '+234' },
+            { rank: 2, user: topUsers[1], score: 3456, change: '+187' },
+            { rank: 3, user: topUsers[3], score: 2987, change: '+156' },
+            { rank: 4, user: topUsers[2], score: 2654, change: '+134' },
+            { rank: 5, user: topUsers[4], score: 2234, change: '+98' },
+            { rank: 6, user: topUsers[5], score: 1987, change: '+87' },
+            { rank: 7, user: topUsers[6], score: 1654, change: '+76' },
+            { rank: 8, user: topUsers[7], score: 1432, change: '+65' }
+        ];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTopUsers();
+            renderFeed();
+            renderTrending();
+            renderCompetitionLeaderboard();
+            setupEventListeners();
+            startCompetitionTimer();
+            showNotification('Sveiki atvykę! Naršykite, kurkite ir dalinkitės AI turiniu! 🎨');
+        });
+
+        // Render top users bar
+        function renderTopUsers() {
+            const container = document.getElementById('topUsersBar');
+            
+            const usersHTML = topUsers.map(user => `
+                <div class="top-user" onclick="viewUserStory(${user.id})">
+                    <img src="${user.avatar}" alt="${user.username}" class="top-user-avatar ${user.hasStory ? 'has-story' : ''}">
+                    <div class="top-user-name">${user.username}</div>
+                    <div class="user-points">${formatCount(user.points)}</div>
+                </div>
+            `).join('');
+
+            container.innerHTML = usersHTML;
+        }
+
+        // Render feed
+        function renderFeed() {
+            const container = document.getElementById('feedContainer');
+            const loading = document.getElementById('loadingIndicator');
+            
+            loading.style.display = 'none';
+            
+            const postsHTML = posts.map(post => {
+                const contentTypeMap = {
+                    photo: '📷 AI Nuotrauka',
+                    video: '🎥 AI Video',
+                    music: '🎵 AI Muzika'
+                };
+
+                return `
+                    <div class="post">
+                        <div class="post-header">
+                            <div class="post-user" onclick="viewProfile(${post.user.id})">
+                                <img src="${post.user.avatar}" alt="${post.user.username}" class="user-avatar">
+                                <div class="user-info">
+                                    <h4>
+                                        ${post.user.username}
+                                        ✓
+                                    </h4>
+                                    <div class="ai-tag">🤖 ${post.aiModel}</div>
+                                </div>
+                            </div>
+                            ${!post.following ? 
+                                `<button class="follow-btn" onclick="followUser(${post.user.id}, ${post.id})">Sekti</button>` : 
+                                `<button class="follow-btn following" onclick="unfollowUser(${post.user.id}, ${post.id})">Sekama</button>`
+                            }
+                        </div>
+                        
+                        <div class="post-media-container" onclick="viewPost(${post.id})">
+                            <img src="${post.mediaUrl}" alt="AI turinys" class="post-media">
+                            <div class="media-overlay"></div>
+                            
+                            <div class="content-badges">
+                                <span class="content-badge">${contentTypeMap[post.type]}</span>
+                            </div>
+                            <div class="ai-badge">AI Generated</div>
+                            
+                            ${post.type === 'video' ? `
+                                <button class="play-button" onclick="playMedia(${post.id}, event)">
+                                    ▶
+                                </button>
+                            ` : ''}
+                            
+                            ${post.type === 'music' ? `
+                                <button class="play-button" onclick="playMedia(${post.id}, event)">
+                                    🎵
+                                </button>
+                            ` : ''}
+                            
+                            <div class="post-actions">
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <button class="action-btn ${post.liked ? 'liked' : ''}" onclick="toggleLike(${post.id}, event)">
+                                        <svg viewBox="0 0 24 24" fill="${post.liked ? '#fff' : 'none'}" stroke="currentColor" stroke-width="2">
+                                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                        </svg>
+                                    </button>
+                                    <span class="action-count">${formatCount(post.likes)}</span>
+                                </div>
+                                
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <button class="action-btn" onclick="openComments(${post.id}, event)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                        </svg>
+                                    </button>
+                                    <span class="action-count">${formatCount(post.comments)}</span>
+                                </div>
+                                
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <button class="action-btn" onclick="sharePost(${post.id}, event)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="18" cy="5" r="3"/>
+                                            <circle cx="6" cy="12" r="3"/>
+                                            <circle cx="18" cy="19" r="3"/>
+                                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                                        </svg>
+                                    </button>
+                                    <span class="action-count">${formatCount(post.shares)}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="post-info">
+                                <div class="post-caption">
+                                    <strong>${post.user.username}</strong> ${formatCaption(post.caption)}
+                                </div>
+                                <div class="post-stats">
+                                    <span>${formatCount(post.views)} peržiūrų</span>
+                                    <span>${post.timestamp}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = postsHTML;
+        }
+
+        // Render trending content
+        function renderTrending() {
+            const container = document.getElementById('trendsGrid');
+            
+            const trendsHTML = trendingContent.map(item => `
+                <div class="trend-item" onclick="viewTrendingItem(${item.id})">
+                    <div style="position: relative;">
+                        <img src="${item.mediaUrl}" alt="${item.title}" class="trend-media">
+                        <div class="trend-rank">#${item.rank}</div>
+                    </div>
+                    <div class="trend-info">
+                        <div class="trend-title">${item.title}</div>
+                        <div class="trend-stats">
+                            <span>${formatCount(item.views)} peržiūrų</span>
+                            <span>${formatCount(item.likes)} ❤️</span>
+                            <span>${item.category}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = trendsHTML;
+        }
+
+        // Render competition leaderboard
+        function renderCompetitionLeaderboard() {
+            const container = document.getElementById('competitionLeaderboard');
+            
+            const leaderboardHTML = competitionLeaderboard.map(item => `
+                <div class="leaderboard-item" onclick="viewProfile(${item.user.id})">
+                    <div class="rank-number ${getRankClass(item.rank)}">${item.rank}</div>
+                    <img src="${item.user.avatar}" alt="${item.user.username}" class="leaderboard-avatar">
+                    <div class="leaderboard-info">
+                        <div class="leaderboard-username">${item.user.username}</div>
+                        <div class="leaderboard-score">${formatCount(item.score)} taškai • ${item.change} šiandien</div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = leaderboardHTML;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Content type selector
+            document.querySelectorAll('.content-type-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.content-type-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Upload form
+            document.getElementById('uploadForm').addEventListener('submit', handleUploadSubmit);
+
+            // Close modal on outside click
+            document.getElementById('uploadModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeUploadModal();
+                }
+            });
+
+            // Story modal
+            document.getElementById('storyModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeStory();
+                }
+            });
+        }
+
+        // Navigation functions
+        function switchTab(tabName) {
+            currentTab = tabName;
+            
+            // Update desktop nav
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            const activeTab = Array.from(document.querySelectorAll('.nav-tab'))
+                .find(tab => tab.textContent.toLowerCase().includes(tabName.toLowerCase()));
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+            
+            // Update mobile nav
+            document.querySelectorAll('.mobile-nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const activeItem = Array.from(document.querySelectorAll('.mobile-nav-item'))
+                .find(item => item.querySelector('.mobile-nav-label').textContent.toLowerCase().includes(tabName));
+            if (activeItem) {
+                activeItem.classList.add('active');
+            }
+            
+            // Show/hide sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            const sectionMap = {
+                'home': 'homeSection',
+                'namai': 'homeSection',
+                'trending': 'trendingSection',
+                'trendi': 'trendingSection',
+                'competitions': 'competitionsSection',
+                'konkursai': 'competitionsSection'
+            };
+            
+            const targetSection = document.getElementById(sectionMap[tabName] || 'homeSection');
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            showNotification(`📍 ${tabName.charAt(0).toUpperCase() + tabName.slice(1)} skyrius`);
+        }
+
+        // User story functions
+        function viewUserStory(userId) {
+            const user = topUsers.find(u => u.id === userId);
+            if (user && user.hasStory && user.stories.length > 0) {
+                openStory(user, user.stories[0]);
+            } else {
+                showNotification(`👤 ${user.username} profilis (${formatCount(user.points)} taškai)`);
+            }
+        }
+
+        function openStory(user, storyUrl) {
+            const modal = document.getElementById('storyModal');
+            const media = document.getElementById('storyMedia');
+            const avatar = document.getElementById('storyAvatar');
+            const username = document.getElementById('storyUsername');
+            const points = document.getElementById('storyPoints');
+            const time = document.getElementById('storyTime');
+            
+            media.src = storyUrl;
+            avatar.src = user.avatar;
+            username.textContent = user.username;
+            points.textContent = formatCount(user.points) + ' tšk';
+            time.textContent = '2h atgal';
+            
+            modal.style.display = 'flex';
+            
+            // Auto close after 5 seconds
+            setTimeout(() => {
+                closeStory();
+            }, 5000);
+        }
+
+        function closeStory() {
+            document.getElementById('storyModal').style.display = 'none';
+        }
+
+        // Interaction functions
+        function toggleLike(postId, event) {
+            event.stopPropagation();
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                post.liked = !post.liked;
+                post.likes += post.liked ? 1 : -1;
+                renderFeed();
+                showNotification(post.liked ? '❤️ Patiko!' : '💔 Nebepatinka');
+            }
+        }
+
+        function followUser(userId, postId) {
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                post.following = true;
+                renderFeed();
+                showNotification(`✅ Dabar sekate ${post.user.username}!`);
+            }
+        }
+
+        function unfollowUser(userId, postId) {
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                post.following = false;
+                renderFeed();
+                showNotification(`👋 Nebesekate ${post.user.username}`);
+            }
+        }
+
+        function sharePost(postId, event) {
+            event.stopPropagation();
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                post.shares += 1;
+                renderFeed();
+                showNotification('🔗 Nuoroda nukopijuota!');
+            }
+        }
+
+        function playMedia(postId, event) {
+            event.stopPropagation();
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                post.views += Math.floor(Math.random() * 10) + 1;
+                renderFeed();
+                
+                if (post.type === 'video') {
+                    showNotification('▶️ Video paleidžiama...');
+                } else if (post.type === 'music') {
+                    showNotification('🎵 Muzika groja...');
+                }
+            }
+        }
+
+        function openComments(postId, event) {
+            event.stopPropagation();
+            showNotification('💬 Komentarų skyrius...');
+        }
+
+        function viewPost(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                post.views += 1;
+                renderFeed();
+            }
+        }
+
+        function viewProfile(userId) {
+            const user = topUsers.find(u => u.id === userId) || currentUser;
+            showNotification(`👤 ${user.username} profilis (${formatCount(user.points)} taškai)`);
+        }
+
+        function viewMyProfile() {
+            showNotification(`👤 Jūsų profilis (${formatCount(currentUser.points)} taškai)`);
+        }
+
+        function viewTrendingItem(itemId) {
+            const item = trendingContent.find(i => i.id === itemId);
+            if (item) {
+                showNotification(`🔥 ${item.title} - ${formatCount(item.views)} peržiūrų`);
+            }
+        }
+
+        // Upload functions
+        function openUploadModal() {
+            document.getElementById('uploadModal').style.display = 'flex';
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+            document.getElementById('uploadForm').reset();
+            document.getElementById('uploadLoading').style.display = 'none';
+            document.getElementById('uploadForm').style.display = 'block';
+        }
+
+        function triggerFileUpload() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                showNotification(`✅ Failas "${file.name}" pasirinktas!`);
+            }
+        }
+
+        function handleUploadSubmit(event) {
+            event.preventDefault();
+            
+            const formData = {
+                caption: document.getElementById('postCaption').value || 'Naujas AI kūrinys!',
+                aiModel: document.getElementById('aiModel').value || 'AI Modelis',
+                hashtags: document.getElementById('hashtags').value,
+                type: document.querySelector('.content-type-btn.active').dataset.type
+            };
+
+            document.getElementById('uploadLoading').style.display = 'block';
+            document.getElementById('uploadForm').style.display = 'none';
+
+            setTimeout(() => {
+                const newPost = {
+                    id: posts.length + 1,
+                    user: currentUser,
+                    type: formData.type,
+                    mediaUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop',
+                    caption: formData.caption + (formData.hashtags ? ' ' + formData.hashtags : ''),
+                    aiModel: formData.aiModel,
+                    likes: Math.floor(Math.random() * 50),
+                    comments: Math.floor(Math.random() * 20),
+                    shares: Math.floor(Math.random() * 10),
+                    views: Math.floor(Math.random() * 100) + 50,
+                    timestamp: 'Ką tik',
+                    liked: false,
+                    following: false
+                };
+
+                posts.unshift(newPost);
+                currentUser.points += 25;
+                renderFeed();
+                closeUploadModal();
+                switchTab('home');
+                showNotification('🎉 AI kūrinys sėkmingai publikuotas! +25 taškai');
+            }, 2000);
+        }
+
+        // Competition timer
+        function startCompetitionTimer() {
+            const timerElement = document.getElementById('competitionTimer');
+            let timeLeft = 15 * 24 * 60 * 60 + 8 * 60 * 60 + 23 * 60; // 15 days 8 hours 23 minutes
+
+            setInterval(() => {
+                const days = Math.floor(timeLeft / (24 * 60 * 60));
+                const hours = Math.floor((timeLeft % (24 * 60 * 60)) / (60 * 60));
+                const minutes = Math.floor((timeLeft % (60 * 60)) / 60);
+                
+                timerElement.textContent = `${days}d ${hours}h ${minutes}m`;
+                
+                timeLeft -= 60;
+                if (timeLeft < 0) timeLeft = 30 * 24 * 60 * 60;
+            }, 60000);
+        }
+
+        // Search function
+        function searchContent(query) {
+            if (!query.trim()) {
+                return;
+            }
+            
+            showNotification(`🔍 Ieškoma: "${query}"`);
+        }
+
+        // Utility functions
+        function formatCount(count) {
+            if (count >= 1000000) {
+                return (count / 1000000).toFixed(1) + 'M';
+            } else if (count >= 1000) {
+                return (count / 1000).toFixed(1) + 'K';
+            }
+            return count.toString();
+        }
+
+        function formatCaption(caption) {
+            return caption.replace(/#(\w+)/g, '<span class="hashtag">#$1</span>');
+        }
+
+        function getRankClass(rank) {
+            if (rank === 1) return 'first';
+            if (rank === 2) return 'second';
+            if (rank === 3) return 'third';
+            return '';
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Simulate real-time activity
+        setInterval(() => {
+            const randomPost = posts[Math.floor(Math.random() * posts.length)];
+            if (randomPost && Math.random() > 0.7) {
+                randomPost.views += Math.floor(Math.random() * 5) + 1;
+                if (Math.random() > 0.8) {
+                    randomPost.likes += Math.floor(Math.random() * 3) + 1;
+                }
+                renderFeed();
+            }
+        }, 10000);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeUploadModal();
+                closeStory();
+            }
+            if (e.key === 'n' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                openUploadModal();
+            }
+        });
+    </script>
+</body>
+</html>
