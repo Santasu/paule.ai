@@ -161,9 +161,9 @@
     };
   </script>
 
-  <!-- Clerk JS -->
+  <!-- Clerk JS (ĮKLIJUOK SAVO PUBLISHABLE KEY) -->
   <script async crossorigin="anonymous"
-    data-clerk-publishable-key="pk_live_Y2xlcmsucGF1bGUuYWkk"
+    data-clerk-publishable-key="PK_LIVE_REPLACE_ME"
     src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
   </script>
 
@@ -895,6 +895,12 @@
             }
           };
           rerender(); clerk.addListener(rerender);
+
+          // 🔎 Diagnostika – pamatysi įvykius Console
+          clerk.addListener((evt) => {
+            try { console.log('[Clerk]', evt?.type || evt, evt); } catch(_){}
+          });
+
         }catch(_){ renderFallback(); }
       });
     })();
