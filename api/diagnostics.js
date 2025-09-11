@@ -99,4 +99,23 @@ export default async function handler(req){
   return new Response(JSON.stringify({ ok:true, ...out }, null, 2), {
     headers:{ 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store', 'Access-Control-Allow-Origin':'*' }
   });
+  export default async function handler(_req, res) {
+  res.status(200).json({
+    ok: true,
+    env: {
+      SUNO_API_KEY: !!process.env.SUNO_API_KEY,
+      BFL_API_KEY: !!process.env.BFL_API_KEY,
+      RUNWAYML_API_SECRET: !!process.env.RUNWAYML_API_SECRET
+    },
+    routes: [
+      '/api/music/create','/api/music/status',
+      '/api/flux/create',
+      '/api/runway/image','/api/runway/status',
+      '/api/models'
+    ]
+  });
+}
+
+
+  
 }
