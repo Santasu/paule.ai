@@ -19,14 +19,13 @@ export default async function handler() {
     models.push({ key:'grok', id:'grok-4', label:'Grok', icon:`${ICONS}/xAI.svg` });
   }
   if (present('DEEPSEEK_API_KEY')) {
-    const dsModel = (process.env.DEEPSEEK_MODEL||'deepseek-v3.1').trim();
-    models.push({ key:'deepseek', id: dsModel, label:'DeepSeek', icon:`${ICONS}/deepseek.svg` });
+    const ds = (process.env.DEEPSEEK_MODEL||'deepseek-v3.1').trim();
+    models.push({ key:'deepseek', id: ds, label:'DeepSeek', icon:`${ICONS}/deepseek.svg` });
   }
-  // Llama (atskirai nuo Paule)
   if (present('TOGETHER_API_KEY') || present('OPENROUTER_API_KEY')) {
     models.push({ key:'llama', id:'meta-llama/Llama-4-Scout-17B-16E-Instruct', label:'Llama', icon:`${ICONS}/llama.svg` });
   }
-  // Paule – dabar atskiras modelis per Together
+  // Paule – atskirai, tik jei yra Together (kad eitų per Together, ne per OpenRouter)
   if (present('TOGETHER_API_KEY')) {
     models.push({ key:'paule', id:'openai/gpt-oss-20b', label:'Paule', icon:`${ICONS}/ai.svg` });
   }
