@@ -5,6 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Community</title>
     <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #8b5cf6;
+            --bg-color: #000;
+            --surface-color: #111;
+            --text-color: #fff;
+            --text-muted: #888;
+            --border-color: #333;
+            --accent-color: #06b6d4;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #fff;
+            --surface-color: #f8fafc;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,22 +33,27 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #000;
-            color: #fff;
+            background: var(--bg-color);
+            color: var(--text-color);
             overflow-x: hidden;
+            transition: all 0.3s ease;
         }
 
         /* Header */
         .header {
             background: rgba(0,0,0,0.95);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border-color);
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
             padding: 8px 16px;
+        }
+
+        [data-theme="light"] .header {
+            background: rgba(255,255,255,0.95);
         }
 
         .header-content {
@@ -38,6 +63,36 @@
             align-items: center;
             justify-content: space-between;
             height: 44px;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 4px;
+            display: flex;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-btn {
+            width: 32px;
+            height: 24px;
+            border-radius: 16px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .theme-toggle-btn.active {
+            background: var(--primary-color);
+            color: white;
         }
 
         /* Top Users Bar */
@@ -74,19 +129,19 @@
             height: 40px;
             border-radius: 50%;
             border: 2px solid transparent;
-            background: linear-gradient(45deg, #ff1744, #d81b60) padding-box,
-                        linear-gradient(45deg, #ff1744, #d81b60) border-box;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)) padding-box,
+                        linear-gradient(45deg, var(--primary-color), var(--secondary-color)) border-box;
             object-fit: cover;
             margin-bottom: 2px;
         }
 
         .top-user-avatar.has-story {
-            border: 2px solid #ff1744;
+            border: 2px solid var(--primary-color);
         }
 
         .top-user-name {
             font-size: 10px;
-            color: #ccc;
+            color: var(--text-muted);
             text-align: center;
             max-width: 50px;
             overflow: hidden;
@@ -98,11 +153,23 @@
             position: absolute;
             top: -4px;
             right: -4px;
-            background: #ff1744;
+            background: var(--primary-color);
             color: white;
             font-size: 8px;
             padding: 1px 4px;
             border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .subscription-badge {
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            background: var(--accent-color);
+            color: white;
+            font-size: 8px;
+            padding: 2px 4px;
+            border-radius: 6px;
             font-weight: 600;
         }
 
@@ -113,7 +180,7 @@
         }
 
         .nav-tab {
-            color: #888;
+            color: var(--text-muted);
             text-decoration: none;
             font-weight: 600;
             font-size: 14px;
@@ -124,12 +191,12 @@
         }
 
         .nav-tab.active {
-            color: #fff;
-            border-bottom-color: #ff1744;
+            color: var(--text-color);
+            border-bottom-color: var(--primary-color);
         }
 
         .nav-tab:hover {
-            color: #fff;
+            color: var(--text-color);
         }
 
         .header-actions {
@@ -139,14 +206,18 @@
         }
 
         .search-box {
-            background: #1a1a1a;
-            border: 1px solid #333;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
             border-radius: 20px;
             padding: 6px 12px;
             width: 200px;
-            color: #fff;
+            color: var(--text-color);
             font-size: 12px;
             outline: none;
+        }
+
+        .search-box:focus {
+            border-color: var(--primary-color);
         }
 
         .notification-badge {
@@ -159,7 +230,7 @@
             position: absolute;
             top: -4px;
             right: -4px;
-            background: #ff1744;
+            background: var(--primary-color);
             color: white;
             border-radius: 50%;
             width: 16px;
@@ -174,14 +245,14 @@
         .notification-icon {
             width: 24px;
             height: 24px;
-            fill: #fff;
+            fill: var(--text-color);
         }
 
         .user-avatar-nav {
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            border: 2px solid #ff1744;
+            border: 2px solid var(--primary-color);
             cursor: pointer;
             object-fit: cover;
         }
@@ -207,10 +278,10 @@
         /* Home Feed */
         .post {
             margin-bottom: 32px;
-            background: #111;
+            background: var(--surface-color);
             border-radius: 16px;
             overflow: hidden;
-            border: 1px solid #333;
+            border: 1px solid var(--border-color);
             transition: transform 0.3s ease;
         }
 
@@ -236,7 +307,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            border: 2px solid #ff1744;
+            border: 2px solid var(--primary-color);
             object-fit: cover;
         }
 
@@ -247,20 +318,21 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            color: var(--text-color);
         }
 
         .verified-badge {
-            color: #1da1f2;
+            color: var(--accent-color);
             font-size: 14px;
         }
 
         .ai-tag {
             font-size: 12px;
-            color: #888;
+            color: var(--text-muted);
         }
 
         .follow-btn {
-            background: linear-gradient(45deg, #ff1744, #d81b60);
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             color: white;
             border: none;
             padding: 6px 16px;
@@ -277,14 +349,15 @@
 
         .follow-btn.following {
             background: transparent;
-            border: 1px solid #ff1744;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
         }
 
         .post-media-container {
             position: relative;
             width: 100%;
             aspect-ratio: 9/16;
-            background: #000;
+            background: var(--bg-color);
             overflow: hidden;
         }
 
@@ -347,7 +420,7 @@
         }
 
         .ai-badge {
-            background: linear-gradient(45deg, #ff1744, #d81b60);
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             position: absolute;
             top: 16px;
             right: 16px;
@@ -355,6 +428,7 @@
             border-radius: 12px;
             font-size: 11px;
             font-weight: 600;
+            color: white;
         }
 
         .post-actions {
@@ -385,7 +459,7 @@
         }
 
         .action-btn.liked {
-            background: rgba(255,23,68,0.8);
+            background: var(--primary-color);
         }
 
         .action-btn svg {
@@ -417,7 +491,7 @@
         }
 
         .hashtag {
-            color: #ff1744;
+            color: var(--primary-color);
             font-weight: 600;
         }
 
@@ -425,14 +499,14 @@
             display: flex;
             gap: 16px;
             font-size: 12px;
-            color: #888;
+            color: var(--text-muted);
         }
 
         /* Trends Section */
         .trends-header {
             padding: 20px 0;
             text-align: center;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border-color);
             margin-bottom: 20px;
         }
 
@@ -444,10 +518,10 @@
         }
 
         .trend-item {
-            background: #111;
+            background: var(--surface-color);
             border-radius: 12px;
             overflow: hidden;
-            border: 1px solid #333;
+            border: 1px solid var(--border-color);
             cursor: pointer;
             transition: transform 0.3s ease;
         }
@@ -470,18 +544,18 @@
             font-size: 16px;
             font-weight: 600;
             margin-bottom: 8px;
-            color: #fff;
+            color: var(--text-color);
         }
 
         .trend-stats {
             display: flex;
             justify-content: space-between;
             font-size: 12px;
-            color: #888;
+            color: var(--text-muted);
         }
 
         .trend-rank {
-            background: #ff1744;
+            background: var(--primary-color);
             color: white;
             padding: 4px 8px;
             border-radius: 12px;
@@ -494,7 +568,7 @@
 
         /* Competitions Section */
         .competition-card {
-            background: linear-gradient(135deg, #ff1744, #d81b60);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             border-radius: 16px;
             padding: 24px;
             margin-bottom: 20px;
@@ -545,20 +619,88 @@
             font-weight: 600;
         }
 
+        .subscription-requirement {
+            background: rgba(255,255,255,0.1);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .token-store {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .token-store h3 {
+            color: var(--text-color);
+            margin-bottom: 16px;
+        }
+
+        .position-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: var(--bg-color);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .position-info {
+            flex: 1;
+        }
+
+        .position-rank {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .position-benefit {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .buy-position-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .buy-position-btn:hover {
+            background: #0891b2;
+        }
+
+        .buy-position-btn:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
         .leaderboard-item {
             display: flex;
             align-items: center;
             gap: 12px;
             padding: 12px;
-            background: #111;
+            background: var(--surface-color);
             border-radius: 8px;
             margin-bottom: 8px;
             cursor: pointer;
             transition: background 0.3s ease;
+            border: 1px solid var(--border-color);
         }
 
         .leaderboard-item:hover {
-            background: #222;
+            background: var(--bg-color);
         }
 
         .rank-number {
@@ -566,6 +708,7 @@
             font-size: 16px;
             width: 30px;
             text-align: center;
+            color: var(--text-color);
         }
 
         .rank-number.first { color: #ffd700; }
@@ -587,11 +730,12 @@
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 2px;
+            color: var(--text-color);
         }
 
         .leaderboard-score {
             font-size: 12px;
-            color: #888;
+            color: var(--text-muted);
         }
 
         /* User Story Modal */
@@ -694,7 +838,7 @@
         }
 
         .story-points {
-            background: #ff1744;
+            background: var(--primary-color);
             color: white;
             padding: 4px 8px;
             border-radius: 12px;
@@ -709,13 +853,13 @@
             right: 24px;
             width: 56px;
             height: 56px;
-            background: linear-gradient(45deg, #ff1744, #d81b60);
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             border: none;
             border-radius: 50%;
             color: white;
             font-size: 24px;
             cursor: pointer;
-            box-shadow: 0 4px 16px rgba(255,23,68,0.4);
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
             transition: all 0.3s ease;
             z-index: 999;
         }
@@ -730,9 +874,9 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0,0,0,0.95);
+            background: var(--surface-color);
             backdrop-filter: blur(10px);
-            border-top: 1px solid #333;
+            border-top: 1px solid var(--border-color);
             padding: 8px 0;
             z-index: 1000;
             display: none;
@@ -756,11 +900,11 @@
         }
 
         .mobile-nav-item.active {
-            color: #ff1744;
+            color: var(--primary-color);
         }
 
         .mobile-nav-item:not(.active) {
-            color: #888;
+            color: var(--text-muted);
         }
 
         .mobile-nav-icon {
@@ -791,8 +935,8 @@
         }
 
         .modal-content {
-            background: #111;
-            border: 1px solid #333;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 24px;
             max-width: 500px;
@@ -802,7 +946,7 @@
         }
 
         .modal-header {
-            color: #fff;
+            color: var(--text-color);
             font-size: 20px;
             font-weight: 600;
             margin-bottom: 24px;
@@ -810,37 +954,37 @@
         }
 
         .upload-area {
-            border: 2px dashed #333;
+            border: 2px dashed var(--border-color);
             border-radius: 12px;
             padding: 48px 24px;
             text-align: center;
             margin-bottom: 24px;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: #0a0a0a;
+            background: var(--bg-color);
         }
 
         .upload-area:hover {
-            border-color: #ff1744;
-            background: rgba(255,23,68,0.05);
+            border-color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.05);
         }
 
         .upload-area.dragover {
-            border-color: #ff1744;
-            background: rgba(255,23,68,0.1);
+            border-color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.1);
         }
 
         .upload-icon {
             font-size: 48px;
             margin-bottom: 16px;
-            color: #666;
+            color: var(--text-muted);
         }
 
         .content-type-selector {
             display: flex;
             gap: 8px;
             margin-bottom: 24px;
-            background: #0a0a0a;
+            background: var(--bg-color);
             padding: 4px;
             border-radius: 12px;
         }
@@ -851,7 +995,7 @@
             background: transparent;
             border: none;
             border-radius: 8px;
-            color: #888;
+            color: var(--text-muted);
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
@@ -859,7 +1003,7 @@
         }
 
         .content-type-btn.active {
-            background: linear-gradient(45deg, #ff1744, #d81b60);
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             color: white;
         }
 
@@ -868,7 +1012,7 @@
         }
 
         .form-label {
-            color: #fff;
+            color: var(--text-color);
             font-size: 14px;
             font-weight: 500;
             margin-bottom: 8px;
@@ -878,17 +1022,17 @@
         .form-input, .form-textarea {
             width: 100%;
             padding: 12px 16px;
-            background: #0a0a0a;
-            border: 1px solid #333;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            color: #fff;
+            color: var(--text-color);
             font-size: 14px;
             outline: none;
             transition: border-color 0.3s ease;
         }
 
         .form-input:focus, .form-textarea:focus {
-            border-color: #ff1744;
+            border-color: var(--primary-color);
         }
 
         .form-textarea {
@@ -914,12 +1058,12 @@
         }
 
         .btn-secondary {
-            background: #333;
-            color: #fff;
+            background: var(--border-color);
+            color: var(--text-color);
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, #ff1744, #d81b60);
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             color: white;
         }
 
@@ -931,14 +1075,14 @@
             display: none;
             text-align: center;
             padding: 24px;
-            color: #888;
+            color: var(--text-muted);
         }
 
         .spinner {
             width: 32px;
             height: 32px;
-            border: 3px solid #333;
-            border-top: 3px solid #ff1744;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 16px;
@@ -953,10 +1097,10 @@
             position: fixed;
             top: 80px;
             right: 24px;
-            background: rgba(17,17,17,0.95);
+            background: var(--surface-color);
             backdrop-filter: blur(10px);
-            border: 1px solid #333;
-            color: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
             padding: 16px 20px;
             border-radius: 12px;
             font-size: 14px;
@@ -964,6 +1108,7 @@
             transform: translateX(100%);
             transition: transform 0.3s ease;
             max-width: 300px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
         }
 
         .notification.show {
@@ -1012,11 +1157,11 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: #111;
+            background: var(--bg-color);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #333;
+            background: var(--border-color);
             border-radius: 3px;
         }
     </style>
@@ -1039,6 +1184,10 @@
             
             <!-- Header Actions -->
             <div class="header-actions">
+                <div class="theme-toggle" onclick="toggleTheme()">
+                    <button class="theme-toggle-btn active" id="darkBtn">🌙</button>
+                    <button class="theme-toggle-btn" id="lightBtn">☀️</button>
+                </div>
                 <input type="text" class="search-box" placeholder="Ieškoti..." oninput="searchContent(this.value)">
                 <div class="notification-badge" data-count="5">
                     <svg class="notification-icon" viewBox="0 0 24 24">
@@ -1046,7 +1195,7 @@
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                     </svg>
                 </div>
-                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face" alt="Profile" class="user-avatar-nav" onclick="viewMyProfile()">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%236366f1'/%3E%3Ctext x='20' y='26' text-anchor='middle' fill='white' font-size='16' font-family='Arial'%3EJV%3C/text%3E%3C/svg%3E" alt="Profile" class="user-avatar-nav" onclick="viewMyProfile()">
             </div>
         </div>
     </header>
@@ -1067,7 +1216,7 @@
         <div class="content-section" id="trendingSection">
             <div class="trends-header">
                 <h2>🔥 Šiandien populiariausia</h2>
-                <p style="color: #888; margin-top: 8px;">AI kūriniai, kurie šiandien surenka daugiausiai dėmesio</p>
+                <p style="color: var(--text-muted); margin-top: 8px;">AI kūriniai, kurie šiandien surenka daugiausiai dėmesio</p>
             </div>
             <div class="trends-grid" id="trendsGrid">
                 <!-- Trending content will be populated by JavaScript -->
@@ -1086,43 +1235,84 @@
                 <div class="competition-prizes">
                     <div class="prize-item">
                         <div class="prize-rank">🥇</div>
-                        <div class="prize-value">5000€ + Premium</div>
+                        <div class="prize-value">500€ + Pro</div>
                     </div>
                     <div class="prize-item">
                         <div class="prize-rank">🥈</div>
-                        <div class="prize-value">2500€ + Pro</div>
+                        <div class="prize-value">200€ + Plus</div>
                     </div>
                     <div class="prize-item">
                         <div class="prize-rank">🥉</div>
-                        <div class="prize-value">1000€ + Plus</div>
+                        <div class="prize-value">100€ + Basic</div>
+                    </div>
+                    <div class="prize-item">
+                        <div class="prize-rank">🎁</div>
+                        <div class="prize-value">10x Pro narystė</div>
                     </div>
                 </div>
             </div>
 
-            <div style="background: #111; border-radius: 16px; padding: 20px; margin-bottom: 20px;">
-                <h3 style="margin-bottom: 16px;">📈 Šiuo metu pirmauja</h3>
+            <div class="subscription-requirement">
+                <h3 style="margin-bottom: 8px;">📋 Konkurso reikalavimai</h3>
+                <p>Konkurse gali dalyvauti tik prenumeratos plano turėtojai</p>
+                <button style="margin-top: 12px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                    Įsigyti prenumeratą
+                </button>
+            </div>
+
+            <div class="token-store">
+                <h3>🪙 Pozicijų parduotuvė</h3>
+                <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 14px;">Pirkite pozicijas už tokenus ir pakylėkite reitinge</p>
+                
+                <div class="position-item">
+                    <div class="position-info">
+                        <div class="position-rank">Top 10 pozicija</div>
+                        <div class="position-benefit">+500 matomumo taškų</div>
+                    </div>
+                    <button class="buy-position-btn" onclick="buyPosition(10)">250 tokenų</button>
+                </div>
+                
+                <div class="position-item">
+                    <div class="position-info">
+                        <div class="position-rank">Top 5 pozicija</div>
+                        <div class="position-benefit">+1000 matomumo taškų</div>
+                    </div>
+                    <button class="buy-position-btn" onclick="buyPosition(5)">500 tokenų</button>
+                </div>
+                
+                <div class="position-item">
+                    <div class="position-info">
+                        <div class="position-rank">Top 3 pozicija</div>
+                        <div class="position-benefit">+2000 matomumo taškų</div>
+                    </div>
+                    <button class="buy-position-btn" onclick="buyPosition(3)">1000 tokenų</button>
+                </div>
+            </div>
+
+            <div style="background: var(--surface-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                <h3 style="margin-bottom: 16px; color: var(--text-color);">📈 Šiuo metu pirmauja</h3>
                 <div id="competitionLeaderboard">
                     <!-- Leaderboard will be populated by JavaScript -->
                 </div>
             </div>
 
-            <div style="background: #111; border-radius: 16px; padding: 20px;">
-                <h3 style="margin-bottom: 16px;">📋 Konkurso kategorijos</h3>
+            <div style="background: var(--surface-color); border-radius: 16px; padding: 20px; border: 1px solid var(--border-color);">
+                <h3 style="margin-bottom: 16px; color: var(--text-color);">📋 Konkurso kategorijos</h3>
                 <div style="display: grid; gap: 12px;">
-                    <div style="background: #222; padding: 16px; border-radius: 8px;">
-                        <h4 style="margin-bottom: 8px;">📷 Geriausias AI paveikslas</h4>
-                        <p style="color: #888; font-size: 14px;">Sukurkite įspūdingiausią AI generuotą vaizdą</p>
-                        <div style="margin-top: 8px; color: #ff1744; font-size: 12px;">2,847 dalyviai</div>
+                    <div style="background: var(--bg-color); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <h4 style="margin-bottom: 8px; color: var(--text-color);">📷 Geriausias AI paveikslas</h4>
+                        <p style="color: var(--text-muted); font-size: 14px;">Sukurkite įspūdingiausią AI generuotą vaizdą</p>
+                        <div style="margin-top: 8px; color: var(--primary-color); font-size: 12px;">2,847 dalyviai (tik Pro nariai)</div>
                     </div>
-                    <div style="background: #222; padding: 16px; border-radius: 8px;">
-                        <h4 style="margin-bottom: 8px;">🎥 Geriausias AI video</h4>
-                        <p style="color: #888; font-size: 14px;">Sukurkite labiausiai žavintį AI video klipą</p>
-                        <div style="margin-top: 8px; color: #ff1744; font-size: 12px;">1,234 dalyviai</div>
+                    <div style="background: var(--bg-color); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <h4 style="margin-bottom: 8px; color: var(--text-color);">🎥 Geriausias AI video</h4>
+                        <p style="color: var(--text-muted); font-size: 14px;">Sukurkite labiausiai žavintį AI video klipą</p>
+                        <div style="margin-top: 8px; color: var(--primary-color); font-size: 12px;">1,234 dalyviai (tik Pro nariai)</div>
                     </div>
-                    <div style="background: #222; padding: 16px; border-radius: 8px;">
-                        <h4 style="margin-bottom: 8px;">🎵 Geriausia AI muzika</h4>
-                        <p style="color: #888; font-size: 14px;">Sukurkite muziką, kuri sujaudins širdis</p>
-                        <div style="margin-top: 8px; color: #ff1744; font-size: 12px;">856 dalyviai</div>
+                    <div style="background: var(--bg-color); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <h4 style="margin-bottom: 8px; color: var(--text-color);">🎵 Geriausia AI muzika</h4>
+                        <p style="color: var(--text-muted); font-size: 14px;">Sukurkite muziką, kuri sujaudins širdis</p>
+                        <div style="margin-top: 8px; color: var(--primary-color); font-size: 12px;">856 dalyviai (tik Pro nariai)</div>
                     </div>
                 </div>
             </div>
@@ -1185,7 +1375,7 @@
                 <span class="mobile-nav-label">Konkursai</span>
             </div>
             <div class="mobile-nav-item" onclick="viewMyProfile()">
-                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=24&h=24&fit=crop&crop=face" style="border-radius: 50%; width: 24px; height: 24px;">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='12' fill='%236366f1'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10' font-family='Arial'%3EJV%3C/text%3E%3C/svg%3E" style="border-radius: 50%; width: 24px; height: 24px;">
                 <span class="mobile-nav-label">Profilis</span>
             </div>
         </div>
@@ -1204,8 +1394,8 @@
 
             <div class="upload-area" onclick="triggerFileUpload()">
                 <div class="upload-icon">📤</div>
-                <div style="color: #888; font-size: 16px; margin-bottom: 8px;">Tempkite failą čia arba spustelėkite</div>
-                <div style="color: #666; font-size: 14px;">Palaikomi formatai: JPG, PNG, MP4, MP3</div>
+                <div style="color: var(--text-muted); font-size: 16px; margin-bottom: 8px;">Tempkite failą čia arba spustelėkite</div>
+                <div style="color: var(--text-muted); font-size: 14px;">Palaikomi formatai: JPG, PNG, MP4, MP3</div>
                 <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*,audio/*" onchange="handleFileSelect(event)">
             </div>
 
@@ -1241,24 +1431,101 @@
     <script>
         // Global data
         let currentTab = 'home';
+        let currentTheme = 'dark';
+        let userTokens = 1250; // User's available tokens
         let currentUser = {
             id: 1,
             username: 'jusu_vardas',
-            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face',
+            avatar: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%236366f1'/%3E%3Ctext x='20' y='26' text-anchor='middle' fill='white' font-size='16' font-family='Arial'%3EJV%3C/text%3E%3C/svg%3E",
             points: 1247,
+            hasSubscription: false,
             stories: []
         };
 
-        // Top users with realistic data
+        // Generate placeholder images using CSS/SVG
+        function generateAvatar(username, color = '#6366f1') {
+            const initials = username.substring(0, 2).toUpperCase();
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='${encodeURIComponent(color)}'/%3E%3Ctext x='20' y='26' text-anchor='middle' fill='white' font-size='14' font-family='Arial'%3E${initials}%3C/text%3E%3C/svg%3E`;
+        }
+
+        function generatePlaceholderImage(width, height, text, color = '#6366f1') {
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${width} ${height}'%3E%3Crect width='${width}' height='${height}' fill='${encodeURIComponent(color)}'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='0.35em' fill='white' font-size='16' font-family='Arial'%3E${encodeURIComponent(text)}%3C/text%3E%3C/svg%3E`;
+        }
+
+        // Top users with realistic data and subscription status
         const topUsers = [
-            { id: 2, username: 'ai_guru', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b765?w=40&h=40&fit=crop&crop=face', points: 4890, hasStory: true, stories: ['https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=600&fit=crop'] },
-            { id: 3, username: 'tech_wizard', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face', points: 3456, hasStory: true, stories: ['https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=300&h=600&fit=crop'] },
-            { id: 4, username: 'pixel_artist', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face', points: 2987, hasStory: false, stories: [] },
-            { id: 5, username: 'music_ai', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=40&h=40&fit=crop&crop=face', points: 2654, hasStory: true, stories: ['https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=600&fit=crop'] },
-            { id: 6, username: 'digital_dreams', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop&crop=face', points: 2234, hasStory: false, stories: [] },
-            { id: 7, username: 'neural_net', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=40&h=40&fit=crop&crop=face', points: 1987, hasStory: true, stories: ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=600&fit=crop'] },
-            { id: 8, username: 'cyber_creator', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=40&h=40&fit=crop&crop=face', points: 1654, hasStory: false, stories: [] },
-            { id: 9, username: 'future_art', avatar: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=40&h=40&fit=crop&crop=face', points: 1432, hasStory: true, stories: ['https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=600&fit=crop'] }
+            { 
+                id: 2, 
+                username: 'ai_guru', 
+                avatar: generateAvatar('ai_guru', '#8b5cf6'), 
+                points: 4890, 
+                hasStory: true, 
+                hasSubscription: true,
+                stories: [generatePlaceholderImage(300, 600, 'AI Story', '#8b5cf6')] 
+            },
+            { 
+                id: 3, 
+                username: 'tech_wizard', 
+                avatar: generateAvatar('tech_wizard', '#06b6d4'), 
+                points: 3456, 
+                hasStory: true, 
+                hasSubscription: true,
+                stories: [generatePlaceholderImage(300, 600, 'Tech Story', '#06b6d4')] 
+            },
+            { 
+                id: 4, 
+                username: 'pixel_artist', 
+                avatar: generateAvatar('pixel_artist', '#ec4899'), 
+                points: 2987, 
+                hasStory: false, 
+                hasSubscription: false,
+                stories: [] 
+            },
+            { 
+                id: 5, 
+                username: 'music_ai', 
+                avatar: generateAvatar('music_ai', '#f59e0b'), 
+                points: 2654, 
+                hasStory: true, 
+                hasSubscription: true,
+                stories: [generatePlaceholderImage(300, 600, 'Music Story', '#f59e0b')] 
+            },
+            { 
+                id: 6, 
+                username: 'digital_dreams', 
+                avatar: generateAvatar('digital_dreams', '#10b981'), 
+                points: 2234, 
+                hasStory: false, 
+                hasSubscription: false,
+                stories: [] 
+            },
+            { 
+                id: 7, 
+                username: 'neural_net', 
+                avatar: generateAvatar('neural_net', '#ef4444'), 
+                points: 1987, 
+                hasStory: true, 
+                hasSubscription: true,
+                stories: [generatePlaceholderImage(300, 600, 'Neural Story', '#ef4444')] 
+            },
+            { 
+                id: 8, 
+                username: 'cyber_creator', 
+                avatar: generateAvatar('cyber_creator', '#3b82f6'), 
+                points: 1654, 
+                hasStory: false, 
+                hasSubscription: false,
+                stories: [] 
+            },
+            { 
+                id: 9, 
+                username: 'future_art', 
+                avatar: generateAvatar('future_art', '#8b5cf6'), 
+                points: 1432, 
+                hasStory: true, 
+                hasSubscription: true,
+                stories: [generatePlaceholderImage(300, 600, 'Future Story', '#8b5cf6')] 
+            }
         ];
 
         // Feed posts
@@ -1267,7 +1534,7 @@
                 id: 1,
                 user: topUsers[0],
                 type: 'photo',
-                mediaUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop',
+                mediaUrl: generatePlaceholderImage(400, 600, 'AI Generated Landscape', '#8b5cf6'),
                 caption: 'Nuostabaus peizažo AI kūrinys sukurtas su DALL-E 3! 🌅 Technologijos galimybės tiesiog stebina. #ai #peizažas #menas #ateitis',
                 aiModel: 'DALL-E 3',
                 likes: 2847,
@@ -1282,7 +1549,7 @@
                 id: 2,
                 user: topUsers[1],
                 type: 'video',
-                mediaUrl: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&h=600&fit=crop',
+                mediaUrl: generatePlaceholderImage(400, 600, 'AI Video Preview', '#06b6d4'),
                 caption: 'Cinematic AI video su tokiu realumu! 🎬✨ 30 sekundžių grynos magijos. Ateitis jau čia! #cinematic #aivideo #realumas #technologijos',
                 aiModel: 'Runway Gen-2',
                 likes: 4156,
@@ -1297,7 +1564,7 @@
                 id: 3,
                 user: topUsers[3],
                 type: 'music',
-                mediaUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop',
+                mediaUrl: generatePlaceholderImage(400, 600, 'AI Music Visualization', '#f59e0b'),
                 caption: 'Instrumentalinė daina sukurta su AI! 🎵 Klausykitės ir vertinkite šį 3 minučių kūrinį. #muzika #ai #instrumental #kūryba',
                 aiModel: 'Suno AI v3.5',
                 likes: 1923,
@@ -1312,7 +1579,7 @@
                 id: 4,
                 user: topUsers[2],
                 type: 'photo',
-                mediaUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=600&fit=crop',
+                mediaUrl: generatePlaceholderImage(400, 600, 'Futuristic City', '#ec4899'),
                 caption: 'Fantastiško miesto AI interpretacija 🏙️ Ateities architektūra jau dabar! Kas manote? #miestas #ateitis #architektūra #ai #dizainas',
                 aiModel: 'Midjourney v6',
                 likes: 3267,
@@ -1327,7 +1594,7 @@
                 id: 5,
                 user: topUsers[5],
                 type: 'video',
-                mediaUrl: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400&h=600&fit=crop',
+                mediaUrl: generatePlaceholderImage(400, 600, 'Abstract Animation', '#ef4444'),
                 caption: 'Sferinių pasaulių animacija 🌍 AI kūrybingumo ribų nėra! Žiūrėkite šį hipnotizuojantį klipą. #sfera #animacija #ai #pasauliai #kūrybingumas',
                 aiModel: 'Stable Video Diffusion',
                 likes: 2654,
@@ -1345,7 +1612,7 @@
             {
                 id: 101,
                 title: 'AI Generated Cyberpunk City',
-                mediaUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=200&fit=crop',
+                mediaUrl: generatePlaceholderImage(300, 200, 'Cyberpunk City', '#8b5cf6'),
                 views: 45620,
                 likes: 3840,
                 rank: 1,
@@ -1354,7 +1621,7 @@
             {
                 id: 102,
                 title: 'Neural Network Music Composition',
-                mediaUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop',
+                mediaUrl: generatePlaceholderImage(300, 200, 'Music Composition', '#f59e0b'),
                 views: 38750,
                 likes: 2967,
                 rank: 2,
@@ -1363,7 +1630,7 @@
             {
                 id: 103,
                 title: 'AI Motion Graphics Masterpiece',
-                mediaUrl: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=300&h=200&fit=crop',
+                mediaUrl: generatePlaceholderImage(300, 200, 'Motion Graphics', '#06b6d4'),
                 views: 34890,
                 likes: 2756,
                 rank: 3,
@@ -1372,7 +1639,7 @@
             {
                 id: 104,
                 title: 'Surreal AI Landscape',
-                mediaUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop',
+                mediaUrl: generatePlaceholderImage(300, 200, 'Surreal Landscape', '#10b981'),
                 views: 29340,
                 likes: 2234,
                 rank: 4,
@@ -1381,7 +1648,7 @@
             {
                 id: 105,
                 title: 'AI Orchestra Symphony',
-                mediaUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&h=200&fit=crop',
+                mediaUrl: generatePlaceholderImage(300, 200, 'Orchestra Symphony', '#ec4899'),
                 views: 27680,
                 likes: 2012,
                 rank: 5,
@@ -1390,7 +1657,7 @@
             {
                 id: 106,
                 title: 'Futuristic AI Character Design',
-                mediaUrl: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=200&fit=crop',
+                mediaUrl: generatePlaceholderImage(300, 200, 'Character Design', '#3b82f6'),
                 views: 24590,
                 likes: 1876,
                 rank: 6,
@@ -1412,14 +1679,40 @@
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
-            renderTopUsers();
-            renderFeed();
-            renderTrending();
-            renderCompetitionLeaderboard();
-            setupEventListeners();
-            startCompetitionTimer();
-            showNotification('Sveiki atvykę! Naršykite, kurkite ir dalinkitės AI turiniu! 🎨');
+            try {
+                renderTopUsers();
+                renderFeed();
+                renderTrending();
+                renderCompetitionLeaderboard();
+                setupEventListeners();
+                startCompetitionTimer();
+                showNotification('Sveiki atvykę! Jūsų tokenai: ' + userTokens + ' 🪙');
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showNotification('Klaida kraunant puslapį. Bandykite atnaujinti.');
+            }
         });
+
+        // Theme toggle
+        function toggleTheme() {
+            const body = document.body;
+            const darkBtn = document.getElementById('darkBtn');
+            const lightBtn = document.getElementById('lightBtn');
+            
+            if (currentTheme === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                currentTheme = 'light';
+                darkBtn.classList.remove('active');
+                lightBtn.classList.add('active');
+                showNotification('☀️ Šviesus režimas įjungtas');
+            } else {
+                body.removeAttribute('data-theme');
+                currentTheme = 'dark';
+                lightBtn.classList.remove('active');
+                darkBtn.classList.add('active');
+                showNotification('🌙 Tamsus režimas įjungtas');
+            }
+        }
 
         // Render top users bar
         function renderTopUsers() {
@@ -1430,6 +1723,7 @@
                     <img src="${user.avatar}" alt="${user.username}" class="top-user-avatar ${user.hasStory ? 'has-story' : ''}">
                     <div class="top-user-name">${user.username}</div>
                     <div class="user-points">${formatCount(user.points)}</div>
+                    ${user.hasSubscription ? '<div class="subscription-badge">PRO</div>' : ''}
                 </div>
             `).join('');
 
@@ -1458,7 +1752,7 @@
                                 <div class="user-info">
                                     <h4>
                                         ${post.user.username}
-                                        ✓
+                                        ${post.user.hasSubscription ? '✓' : ''}
                                     </h4>
                                     <div class="ai-tag">🤖 ${post.aiModel}</div>
                                 </div>
@@ -1573,7 +1867,10 @@
                     <div class="rank-number ${getRankClass(item.rank)}">${item.rank}</div>
                     <img src="${item.user.avatar}" alt="${item.user.username}" class="leaderboard-avatar">
                     <div class="leaderboard-info">
-                        <div class="leaderboard-username">${item.user.username}</div>
+                        <div class="leaderboard-username">
+                            ${item.user.username} 
+                            ${item.user.hasSubscription ? '<span style="color: var(--accent-color);">PRO</span>' : ''}
+                        </div>
                         <div class="leaderboard-score">${formatCount(item.score)} taškai • ${item.change} šiandien</div>
                     </div>
                 </div>
@@ -1582,32 +1879,69 @@
             container.innerHTML = leaderboardHTML;
         }
 
+        // Token-based position buying
+        function buyPosition(targetPosition) {
+            const costs = { 10: 250, 5: 500, 3: 1000 };
+            const cost = costs[targetPosition];
+            
+            if (!currentUser.hasSubscription) {
+                showNotification('❌ Reikalinga prenumerata pozicijų pirkimui!');
+                return;
+            }
+            
+            if (userTokens < cost) {
+                showNotification(`❌ Nepakanka tokenų! Reikia ${cost}, turite ${userTokens}`);
+                return;
+            }
+            
+            userTokens -= cost;
+            currentUser.points += targetPosition === 3 ? 2000 : targetPosition === 5 ? 1000 : 500;
+            
+            showNotification(`✅ Top ${targetPosition} pozicija nupirkta! -${cost} tokenų`);
+            
+            // Update leaderboard position
+            renderCompetitionLeaderboard();
+        }
+
         // Setup event listeners
         function setupEventListeners() {
-            // Content type selector
-            document.querySelectorAll('.content-type-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.content-type-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
+            try {
+                // Content type selector
+                document.querySelectorAll('.content-type-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        document.querySelectorAll('.content-type-btn').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                    });
                 });
-            });
 
-            // Upload form
-            document.getElementById('uploadForm').addEventListener('submit', handleUploadSubmit);
-
-            // Close modal on outside click
-            document.getElementById('uploadModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeUploadModal();
+                // Upload form
+                const uploadForm = document.getElementById('uploadForm');
+                if (uploadForm) {
+                    uploadForm.addEventListener('submit', handleUploadSubmit);
                 }
-            });
 
-            // Story modal
-            document.getElementById('storyModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeStory();
+                // Close modal on outside click
+                const uploadModal = document.getElementById('uploadModal');
+                if (uploadModal) {
+                    uploadModal.addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            closeUploadModal();
+                        }
+                    });
                 }
-            });
+
+                // Story modal
+                const storyModal = document.getElementById('storyModal');
+                if (storyModal) {
+                    storyModal.addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            closeStory();
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Event listener setup error:', error);
+            }
         }
 
         // Navigation functions
@@ -1669,29 +2003,37 @@
         }
 
         function openStory(user, storyUrl) {
-            const modal = document.getElementById('storyModal');
-            const media = document.getElementById('storyMedia');
-            const avatar = document.getElementById('storyAvatar');
-            const username = document.getElementById('storyUsername');
-            const points = document.getElementById('storyPoints');
-            const time = document.getElementById('storyTime');
-            
-            media.src = storyUrl;
-            avatar.src = user.avatar;
-            username.textContent = user.username;
-            points.textContent = formatCount(user.points) + ' tšk';
-            time.textContent = '2h atgal';
-            
-            modal.style.display = 'flex';
-            
-            // Auto close after 5 seconds
-            setTimeout(() => {
-                closeStory();
-            }, 5000);
+            try {
+                const modal = document.getElementById('storyModal');
+                const media = document.getElementById('storyMedia');
+                const avatar = document.getElementById('storyAvatar');
+                const username = document.getElementById('storyUsername');
+                const points = document.getElementById('storyPoints');
+                const time = document.getElementById('storyTime');
+                
+                media.src = storyUrl;
+                avatar.src = user.avatar;
+                username.textContent = user.username;
+                points.textContent = formatCount(user.points) + ' tšk';
+                time.textContent = '2h atgal';
+                
+                modal.style.display = 'flex';
+                
+                // Auto close after 5 seconds
+                setTimeout(() => {
+                    closeStory();
+                }, 5000);
+            } catch (error) {
+                console.error('Story opening error:', error);
+                showNotification('Klaida atidarant story');
+            }
         }
 
         function closeStory() {
-            document.getElementById('storyModal').style.display = 'none';
+            const modal = document.getElementById('storyModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
         }
 
         // Interaction functions
@@ -1768,7 +2110,7 @@
         }
 
         function viewMyProfile() {
-            showNotification(`👤 Jūsų profilis (${formatCount(currentUser.points)} taškai)`);
+            showNotification(`👤 Jūsų profilis (${formatCount(currentUser.points)} taškai, ${userTokens} tokenų)`);
         }
 
         function viewTrendingItem(itemId) {
@@ -1780,18 +2122,34 @@
 
         // Upload functions
         function openUploadModal() {
-            document.getElementById('uploadModal').style.display = 'flex';
+            const modal = document.getElementById('uploadModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
         }
 
         function closeUploadModal() {
-            document.getElementById('uploadModal').style.display = 'none';
-            document.getElementById('uploadForm').reset();
-            document.getElementById('uploadLoading').style.display = 'none';
-            document.getElementById('uploadForm').style.display = 'block';
+            const modal = document.getElementById('uploadModal');
+            const form = document.getElementById('uploadForm');
+            const loading = document.getElementById('uploadLoading');
+            
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            if (form) {
+                form.reset();
+                form.style.display = 'block';
+            }
+            if (loading) {
+                loading.style.display = 'none';
+            }
         }
 
         function triggerFileUpload() {
-            document.getElementById('fileInput').click();
+            const input = document.getElementById('fileInput');
+            if (input) {
+                input.click();
+            }
         }
 
         function handleFileSelect(event) {
@@ -1805,21 +2163,24 @@
             event.preventDefault();
             
             const formData = {
-                caption: document.getElementById('postCaption').value || 'Naujas AI kūrinys!',
-                aiModel: document.getElementById('aiModel').value || 'AI Modelis',
-                hashtags: document.getElementById('hashtags').value,
-                type: document.querySelector('.content-type-btn.active').dataset.type
+                caption: document.getElementById('postCaption')?.value || 'Naujas AI kūrinys!',
+                aiModel: document.getElementById('aiModel')?.value || 'AI Modelis',
+                hashtags: document.getElementById('hashtags')?.value,
+                type: document.querySelector('.content-type-btn.active')?.dataset.type || 'photo'
             };
 
-            document.getElementById('uploadLoading').style.display = 'block';
-            document.getElementById('uploadForm').style.display = 'none';
+            const loading = document.getElementById('uploadLoading');
+            const form = document.getElementById('uploadForm');
+            
+            if (loading) loading.style.display = 'block';
+            if (form) form.style.display = 'none';
 
             setTimeout(() => {
                 const newPost = {
                     id: posts.length + 1,
                     user: currentUser,
                     type: formData.type,
-                    mediaUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop',
+                    mediaUrl: generatePlaceholderImage(400, 600, 'Your AI Content', '#6366f1'),
                     caption: formData.caption + (formData.hashtags ? ' ' + formData.hashtags : ''),
                     aiModel: formData.aiModel,
                     likes: Math.floor(Math.random() * 50),
@@ -1833,16 +2194,19 @@
 
                 posts.unshift(newPost);
                 currentUser.points += 25;
+                userTokens += 10; // Reward for posting
                 renderFeed();
                 closeUploadModal();
                 switchTab('home');
-                showNotification('🎉 AI kūrinys sėkmingai publikuotas! +25 taškai');
+                showNotification('🎉 AI kūrinys publikuotas! +25 taškai, +10 tokenų');
             }, 2000);
         }
 
         // Competition timer
         function startCompetitionTimer() {
             const timerElement = document.getElementById('competitionTimer');
+            if (!timerElement) return;
+            
             let timeLeft = 15 * 24 * 60 * 60 + 8 * 60 * 60 + 23 * 60; // 15 days 8 hours 23 minutes
 
             setInterval(() => {
@@ -1904,13 +2268,17 @@
 
         // Simulate real-time activity
         setInterval(() => {
-            const randomPost = posts[Math.floor(Math.random() * posts.length)];
-            if (randomPost && Math.random() > 0.7) {
-                randomPost.views += Math.floor(Math.random() * 5) + 1;
-                if (Math.random() > 0.8) {
-                    randomPost.likes += Math.floor(Math.random() * 3) + 1;
+            try {
+                const randomPost = posts[Math.floor(Math.random() * posts.length)];
+                if (randomPost && Math.random() > 0.7) {
+                    randomPost.views += Math.floor(Math.random() * 5) + 1;
+                    if (Math.random() > 0.8) {
+                        randomPost.likes += Math.floor(Math.random() * 3) + 1;
+                    }
+                    renderFeed();
                 }
-                renderFeed();
+            } catch (error) {
+                console.error('Activity simulation error:', error);
             }
         }, 10000);
 
@@ -1923,6 +2291,10 @@
             if (e.key === 'n' && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
                 openUploadModal();
+            }
+            if (e.key === 't' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                toggleTheme();
             }
         });
     </script>
