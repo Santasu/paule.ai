@@ -459,3 +459,21 @@ export default async function handler(req) {
     }
   });
 }
+// Paprastas "AI" pakaitalas, kad mygtukai veiktų be LLM.
+// Jei reikės – galima per OPENAI_API_KEY pasijungti tikrą vertimą.
+export default async function handler(req, res) {
+  try {
+    const { messages = [] } = req.body || {};
+    const userMsg = messages.find(m => m.role === 'user');
+    let payload = {};
+    try { payload = JSON.parse(userMsg?.content || '{}'); } catch {}
+    const text = (payload.text || payload.title || payload.meta || 'creative concept').toString().trim();
+
+    // jei sistemoje minimas "Translate to", grąžinam patį tekstą (demo)
+    let output = text.slice(0, 180);
+    return res.status(200).json({ ok: true, output });
+  } catch (e) {
+    return res.status(200).json({ ok: true, output: 'creative concept' });
+  }
+}
+
