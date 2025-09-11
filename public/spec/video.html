@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Paule – Video (Runway)</title>
+<style>
+:root{--bg:#05080f;--bg2:#0b111c;--ink:#e8eeff;--mut:#9fb0c7;--line:#1b2436;--pri:#7c8aff;--ok:#16c98a;--err:#ff5869;--br:16px}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,#0e1530 0%,#05080f 55%) fixed;color:var(--ink);font:15px/1.5 system-ui,Segoe UI,Roboto}
+.wrap{max-width:980px;margin:0 auto;padding:18px}
+.top{display:flex;align-items:center;gap:12px}.x{margin-left:auto;cursor:pointer;font-size:22px;line-height:1;border:1px solid var(--line);border-radius:12px;padding:6px 10px;background:#0f1522}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--br);padding:16px;margin-top:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap}.col{flex:1 1 260px}
+label{display:block;margin:6px 0;color:#b8c4d9}
+input,textarea,select{width:100%;padding:11px;border-radius:12px;background:#0a101a;color:var(--ink);border:1px solid #1b2436;outline:0}
+.btn{display:inline-flex;gap:8px;align-items:center;padding:9px 13px;border-radius:12px;border:1px solid #2a3550;background:#141b2b;color:#fff;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,#6b7bff,#9e76ff);border:0}
+.status{margin-top:8px}
+.thumb{border:1px solid #1f2942;border-radius:12px;overflow:hidden;background:#0a121e}
+.thumb video{width:100%;display:block}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div style="display:flex;gap:10px;align-items:center">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M5 17c0-5 3-10 7-12 4-2 7 1 7 6 0 5-3 10-7 12-4 2-7-1-7-6Z" fill="url(#g)"/><defs><linearGradient id="g" x1="0" x2="24" y1="0" y2="24"><stop stop-color="#6b7bff"/><stop offset=".7" stop-color="#9e76ff"/></linearGradient></defs></svg>
+        <strong>Runway – Image → Video</strong>
+      </div>
+      <button class="x" onclick="closeMe()">✕ Uždaryti</button>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="col">
+          <label>Image URL</label>
+          <input id="img" placeholder="https://… (arba ateita iš Foto)">
+          <label>Aprašymas (EN)</label>
+          <textarea id="prompt" placeholder="A cinematic motion with dramatic lighting"></textarea>
+        </div>
+        <div class="col">
+          <label>Ilgis / Dydis</label>
+          <div class="row">
+            <div class="col"><input id="sec" type="number" min="4" max="10" value="5"></div>
+            <div class="col">
+              <select id="size"><option value="1280:720">1280:720</option><option value="720:1280">720:1280</option></select>
+            </div>
+          </div>
+          <div class="row" style="margin-top:6px">
+            <button class="btn primary" id="go">🎬 Generuoti</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="status" class="status"></div>
+
+      <div id="out" class="thumb" style="display:none;margin-top:12px">
+        <video id="v" controls playsinline></video>
+        <div class="pad" style="padding:10px;border-top:1px solid #18223a;display:flex;gap:8px">
+          <button class="btn" id="copy">🔗 Kopijuoti</button>
+          <a id="dl" class="btn" href="#" target="_blank">⬇️ Atsisiųsti</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const qs=(s)=>document.querySelector(s);
+function closeMe(){ if(history.length>1) history.back(); else location.href='/' }
+async function ensureJson(r){try{return await r.json()}catch(e){return {ok:false,error:'JSON',status:r.status}}}
+function getHashParam(name){ const m=location.hash.match(new RegExp(name+'=([^&]+)')); return m?decodeURIComponent(m[1]):'' }
+
+window.addEventListener('load', ()=>{
+  const fromImg = getHashParam('img'); if(fromImg) qs('#img').value = fromImg;
+  const fromP   = getHashParam('prompt'); if(fromP) qs('#prompt').value = fromP;
+});
+
+qs('#go').onclick = async ()=>{
+  const image_url = (qs('#img').value||'').trim();
+  let prompt = (qs('#prompt').value||'').trim() || 'cinematic motion';
+  const ratio = qs('#size').value; const duration = parseInt(qs('#sec').value||'5',10);
+  if(!image_url){ qs('#status').innerHTML='<span style="color:#ff5869">Reikia image URL</span>'; return; }
+
+  qs('#status').textContent='⏳ Siunčiama…';
+  const r = await fetch('/api/runway/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_url, prompt, duration, ratio})});
+  const j = await ensureJson(r);
+  if(!j.ok || !j.task_id){ qs('#status').innerHTML='<span style="color:#ff5869">'+(j.error||'Nepavyko')+'</span>'; return; }
+
+  const task = j.task_id;
+  let tries=0;
+  async function poll(){
+    tries++;
+    const rr = await fetch('/api/runway/status?task='+encodeURIComponent(task));
+    const s  = await ensureJson(rr);
+    if(s.status==='ready' && s.video_url){
+      qs('#v').src = s.video_url;
+      qs('#dl').href = s.video_url;
+      qs('#out').style.display='block';
+      qs('#status').innerHTML='<span style="color:#16c98a">✅ Paruošta</span>';
+      qs('#copy').onclick = ()=> navigator.clipboard.writeText(s.video_url);
+      return;
+    }
+    if(s.status==='failed'){ qs('#status').innerHTML='<span style="color:#ff5869">❌ Nepavyko</span>'; return; }
+    qs('#status').textContent='⏳ '+(s.status||'laukiama')+'…';
+    if(tries<120) setTimeout(poll, 5000); else qs('#status').textContent='⏳ Ilgiau nei įprasta…';
+  }
+  poll();
+};
+</script>
+</body>
+</html>
