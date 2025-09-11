@@ -60,7 +60,6 @@ async function pumpOpenAI({ model, message, maxTokens, write }){
     model,
     stream: true,
     messages: [{ role: 'user', content: String(message) }],
-    // svarbu: naujiems modeliams − max_completion_tokens
     max_completion_tokens: maxTokens
   };
   const resp = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -71,17 +70,14 @@ async function pumpOpenAI({ model, message, maxTokens, write }){
 
   // Jei stream draudžiamas – darom non-stream ir patys „suSSE’inam“
   if (!resp.ok) {
-    let txt = await resp.text().catch(()=>String(resp.status));
-    // pabandom non-stream
     const r2 = await fetch('https://api.openai.com/v1/chat/completions', {
       method:'POST',
       headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${getenv('OPENAI_API_KEY')}` },
       body: JSON.stringify({ ...body, stream:false })
     });
     const j = await r2.json().catch(()=>null);
-    if (!r2.ok) throw new Error(`OpenAI HTTP ${r2.status}: ${j?.error?.message || txt.slice(0,300)}`);
+    if (!r2.ok) throw new Error(`OpenAI HTTP ${r2.status}: ${j?.error?.message || 'request failed'}`);
     const text = j?.choices?.[0]?.message?.content || '';
-    // „supjaustom“ ir paleidžiam kaip SSE
     for (const part of String(text).split(/(\s+)/)) {
       if (part) write(sse.delta(part));
       await new Promise(r=>setTimeout(r, 8));
@@ -112,45 +108,73 @@ async function pumpOpenAI({ model, message, maxTokens, write }){
   }
 }
 
-// ——— Anthropic (Claude) — stream su jų eventais; „thinking“ NENAUDOJAM
-async function pumpAnthropic({ model, message, maxTokens, write }){
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key': getenv('ANTHROPIC_API_KEY'),
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model, max_tokens: maxTokens, stream: true,
-      messages: [{ role:'user', content:String(message) }]
-      // jokių `thinking`
-    })
-  });
-  if (!resp.ok){
-    const txt = await resp.text().catch(()=>String(resp.status));
-    throw new Error(`Anthropic HTTP ${resp.status}: ${txt.slice(0,300)}`);
+// ——— Anthropic (Claude) — su MODELIO FALLBACK jeigu 404
+function anthropicCandidates(requested){
+  const m = String(requested||'');
+  // jei paprašyta „claude-4-sonnet“, bandome žemyn iki 3.5
+  if (/^claude-4-sonnet/i.test(m)) {
+    return [
+      'claude-4-sonnet',
+      'claude-3-7-sonnet-latest',
+      'claude-3-5-sonnet-20241022',
+      'claude-3-5-sonnet-latest'
+    ];
   }
-  const reader = resp.body.getReader();
-  let buf = '';
-  for(;;){
-    const {done, value} = await reader.read(); if (done) break;
-    buf += dec.decode(value, {stream:true});
-    let i;
-    while ((i = buf.indexOf('\n\n')) >= 0){
-      const frame = buf.slice(0,i).trim(); buf = buf.slice(i+2);
-      if (!frame) continue;
-      const evLine = frame.split('\n').find(l=>l.startsWith('event:'));
-      const dataLine = frame.split('\n').find(l=>l.startsWith('data:'));
-      const ev = evLine ? evLine.replace(/^event:\s*/,'').trim() : '';
-      const data = dataLine ? dataLine.replace(/^data:\s*/,'').trim() : '';
-      if (data === '[DONE]') return;
-      if (ev === 'error'){ write(sse.event('error', {message:data})); continue; }
-      if (ev === 'content_block_delta'){
-        try { const j = JSON.parse(data); const piece = j?.delta?.text || ''; if (piece) write(sse.delta(piece)); } catch(_){}
+  // jei paprašyta „latest“ – paliekam kaip yra
+  return [m];
+}
+async function pumpAnthropic({ model, message, maxTokens, write }){
+  const tries = anthropicCandidates(model);
+  let last404 = null;
+
+  for (const tryModel of tries){
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': getenv('ANTHROPIC_API_KEY'),
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: tryModel,
+        max_tokens: maxTokens,
+        stream: true,
+        messages: [{ role:'user', content:String(message) }]
+      })
+    });
+
+    if (!resp.ok){
+      const txt = await resp.text().catch(()=>String(resp.status));
+      if (resp.status === 404) { last404 = `${tryModel}: ${txt.slice(0,200)}`; continue; }
+      throw new Error(`Anthropic HTTP ${resp.status}: ${txt.slice(0,300)}`);
+    }
+
+    // sėkmingas stream — pumpuojam ir baigiam
+    const reader = resp.body.getReader();
+    let buf = '';
+    for(;;){
+      const {done, value} = await reader.read(); if (done) break;
+      buf += dec.decode(value, {stream:true});
+      let i;
+      while ((i = buf.indexOf('\n\n')) >= 0){
+        const frame = buf.slice(0,i).trim(); buf = buf.slice(i+2);
+        if (!frame) continue;
+        const evLine = frame.split('\n').find(l=>l.startsWith('event:'));
+        const dataLine = frame.split('\n').find(l=>l.startsWith('data:'));
+        const ev = evLine ? evLine.replace(/^event:\s*/,'').trim() : '';
+        const data = dataLine ? dataLine.replace(/^data:\s*/,'').trim() : '';
+        if (data === '[DONE]') return;
+        if (ev === 'error'){ write(sse.event('error', {message:data})); continue; }
+        if (ev === 'content_block_delta'){
+          try { const j = JSON.parse(data); const piece = j?.delta?.text || ''; if (piece) write(sse.delta(piece)); } catch(_){}
+        }
       }
     }
+    return;
   }
+
+  // nieko neradome
+  throw new Error(`Anthropic model not found. Tried: ${tries.join(', ')}${last404 ? ` • last 404: ${last404}` : ''}`);
 }
 
 // ——— DeepSeek (OpenAI-style)
@@ -168,11 +192,11 @@ async function pumpDeepSeek({ model, message, maxTokens, write }){
     const txt = await resp.text().catch(()=>String(resp.status));
     throw new Error(`DeepSeek HTTP ${resp.status}: ${txt.slice(0,300)}`);
   }
-  const reader = resp.body.getReader();
-  let buf = '';
+  const reader=resp.body.getReader();
+  let buf='';
   for(;;){
-    const {done, value} = await reader.read(); if (done) break;
-    buf += dec.decode(value, {stream:true});
+    const {done,value}=await reader.read(); if(done) break;
+    buf+=dec.decode(value,{stream:true});
     let i; while((i=buf.indexOf('\n\n'))>=0){
       const frame=buf.slice(0,i).trim(); buf=buf.slice(i+2);
       if(!frame) continue;
@@ -342,7 +366,6 @@ export default async function handler(req) {
 
   return streamResponse(async ({ write, fail, close })=>{
     try {
-      // Pasirenkam „driverį“:
       if (isOpenAI(model) && HAS.OPENAI) {
         await pumpOpenAI({ model, message, maxTokens, write }); write(sse.done()); return close();
       }
@@ -364,7 +387,7 @@ export default async function handler(req) {
         throw new Error('Llama tiekėjui trūksta API rakto (TOGETHER_API_KEY arba OPENROUTER_API_KEY).');
       }
 
-      // Jei neatpažinome – bandome OpenRouter kaip universalų
+      // universalus fallback — OpenRouter
       if (HAS.OPENROUTER) {
         await pumpOpenRouter({ model, message, maxTokens, write }); write(sse.done()); return close();
       }
