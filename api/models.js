@@ -34,3 +34,15 @@ export default async function handler() {
     headers:{ 'Content-Type':'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*', 'Cache-Control':'no-store' }
   });
 }
+export default async function handler(_req, res) {
+  res.status(200).json({
+    ok: true,
+    llama: false,
+    services: {
+      suno: !!process.env.SUNO_API_KEY,
+      bfl:  !!process.env.BFL_API_KEY,
+      runway: !!process.env.RUNWAYML_API_SECRET
+    }
+  });
+}
+
