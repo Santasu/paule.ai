@@ -4,8 +4,8 @@ export default async function handler(_req, res) {
   const models = [];
 
   if (process.env.OPENAI_API_KEY) {
-    models.push({ key:'paule',   id:'gpt-4o-mini', label:'Paule',   icon:`${ICONS}/ai.svg` });
-    models.push({ key:'chatgpt', id:'gpt-4o-mini', label:'ChatGPT', icon:`${ICONS}/chatgpt.svg` });
+    models.push({ key:'paule',   id:'gpt-5-mini', label:'Paule',   icon:`${ICONS}/ai.svg` });
+    models.push({ key:'chatgpt', id:'gpt-5-mini', label:'ChatGPT', icon:`${ICONS}/chatgpt.svg` });
   }
   if (process.env.ANTHROPIC_API_KEY) {
     models.push({ key:'claude', id:'claude-4-sonnet', label:'Claude', icon:`${ICONS}/claude-seeklogo.svg` });
