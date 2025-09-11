@@ -111,7 +111,6 @@ async function pumpOpenAI({ model, message, maxTokens, write }){
 // ——— Anthropic (Claude) — su MODELIO FALLBACK jeigu 404
 function anthropicCandidates(requested){
   const m = String(requested||'');
-  // jei paprašyta „claude-4-sonnet“, bandome žemyn iki 3.5
   if (/^claude-4-sonnet/i.test(m)) {
     return [
       'claude-4-sonnet',
@@ -120,7 +119,6 @@ function anthropicCandidates(requested){
       'claude-3-5-sonnet-latest'
     ];
   }
-  // jei paprašyta „latest“ – paliekam kaip yra
   return [m];
 }
 async function pumpAnthropic({ model, message, maxTokens, write }){
@@ -149,7 +147,6 @@ async function pumpAnthropic({ model, message, maxTokens, write }){
       throw new Error(`Anthropic HTTP ${resp.status}: ${txt.slice(0,300)}`);
     }
 
-    // sėkmingas stream — pumpuojam ir baigiam
     const reader = resp.body.getReader();
     let buf = '';
     for(;;){
@@ -173,7 +170,6 @@ async function pumpAnthropic({ model, message, maxTokens, write }){
     return;
   }
 
-  // nieko neradome
   throw new Error(`Anthropic model not found. Tried: ${tries.join(', ')}${last404 ? ` • last 404: ${last404}` : ''}`);
 }
 
@@ -209,7 +205,7 @@ async function pumpDeepSeek({ model, message, maxTokens, write }){
   }
 }
 
-// ——— xAI Grok
+// --- xAI Grok: aiškiai parodom 403 (kreditų) klaidą
 async function pumpGrok({ model, message, write }){
   const resp = await fetch('https://api.x.ai/v1/chat/completions', {
     method:'POST',
@@ -220,10 +216,15 @@ async function pumpGrok({ model, message, write }){
       search_parameters: { mode: 'auto' }
     })
   });
+
   if (!resp.ok){
-    const txt = await resp.text().catch(()=>String(resp.status));
-    throw new Error(`Grok HTTP ${resp.status}: ${txt.slice(0,300)}`);
+    const raw = await resp.text().catch(()=>String(resp.status));
+    if (resp.status === 403 && /credits/i.test(raw)) {
+      throw new Error('xAI Grok: paskyroje nėra kreditų arba nėra leidimų šiam modeliui (403). Prisijunk prie https://console.x.ai ir pridėk kreditų/planą.');
+    }
+    throw new Error(`Grok HTTP ${resp.status}: ${raw.slice(0,300)}`);
   }
+
   const reader=resp.body.getReader();
   let buf='';
   for(;;){
@@ -241,46 +242,101 @@ async function pumpGrok({ model, message, write }){
   }
 }
 
-// ——— Google Gemini: NDJSON -> SSE
+// --- Gemini: STREAM (NDJSON) su fallback į JSON + modelių kaskada
+function geminiCandidates(requested){
+  const m = String(requested || '').trim();
+  const fallbacks = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+  return [m, ...fallbacks.filter(x => x && x !== m)];
+}
 async function pumpGemini({ model, message, maxTokens, write }){
   const key = getenv('GOOGLE_API_KEY') || getenv('GEMINI_API_KEY');
   if (!key) throw new Error('Missing GOOGLE_API_KEY/GEMINI_API_KEY');
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?key=${key}`;
-  const resp = await fetch(endpoint, {
-    method:'POST',
-    headers:{ 'Content-Type':'application/json' },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts:[{ text:String(message) }]}],
-      generationConfig: { maxOutputTokens: maxTokens }
-    })
-  });
-  if (!resp.ok){
-    const txt = await resp.text().catch(()=>String(resp.status));
-    throw new Error(`Gemini HTTP ${resp.status}: ${txt.slice(0,300)}`);
-  }
-  const reader = resp.body.getReader();
-  let buf = '';
-  for(;;){
-    const {done, value} = await reader.read(); if (done) break;
-    buf += dec.decode(value, {stream:true});
-    let idx;
-    while ((idx = buf.indexOf('\n')) >= 0) {
-      const line = buf.slice(0, idx).trim();
-      buf = buf.slice(idx+1);
-      if (!line) continue;
-      try{
-        const j = JSON.parse(line);
-        const cands = j?.candidates || [];
-        for (const c of cands){
-          const parts = (c?.content?.parts) || (c?.delta?.parts) || [];
-          for (const p of parts){
-            const piece = p?.text || '';
-            if (piece) write(sse.delta(piece));
-          }
+
+  let lastErr = null;
+
+  for (const tryModel of geminiCandidates(model)) {
+    let emitted = false;
+
+    // 1) Bandome STREAM (NDJSON)
+    try {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(tryModel)}:streamGenerateContent?key=${key}`;
+      const resp = await fetch(endpoint, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts:[{ text:String(message) }]}],
+          generationConfig: { maxOutputTokens: maxTokens }
+        })
+      });
+
+      if (!resp.ok){
+        const txt = await resp.text().catch(()=>String(resp.status));
+        throw new Error(`Gemini STREAM HTTP ${resp.status}: ${txt.slice(0,300)}`);
+      }
+
+      const reader = resp.body.getReader();
+      let buf = '';
+      for(;;){
+        const it = await reader.read(); if (it.done) break;
+        buf += dec.decode(it.value, {stream:true});
+        let idx;
+        while ((idx = buf.indexOf('\n')) >= 0) {
+          const line = buf.slice(0, idx).trim();
+          buf = buf.slice(idx+1);
+          if (!line) continue;
+          try{
+            const j = JSON.parse(line);
+            const cands = j?.candidates || [];
+            for (const c of cands){
+              const parts = (c?.delta?.parts) || (c?.content?.parts) || [];
+              for (const p of parts){
+                const piece = p?.text || '';
+                if (piece){ write(sse.delta(piece)); emitted = true; }
+              }
+            }
+          }catch(_){}
         }
-      }catch(_){}
+      }
+      if (emitted) return; // stream'as davė tekstą – baigiame
+    } catch (e) {
+      lastErr = e;
+      // pereisim į JSON fallback
     }
+
+    // 2) Non-stream JSON fallback
+    try {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(tryModel)}:generateContent?key=${key}`;
+      const r = await fetch(endpoint, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          contents: [{ role:'user', parts:[{ text:String(message) }]}],
+          generationConfig: { maxOutputTokens: maxTokens }
+        })
+      });
+      const j = await r.json().catch(()=>null);
+      if (!r.ok){
+        const msg = j?.error?.message || `Gemini JSON HTTP ${r.status}`;
+        lastErr = new Error(msg);
+      } else {
+        const text = j?.candidates?.[0]?.content?.parts?.map(p=>p?.text||'').join('') || '';
+        if (text.trim()){
+          for (const part of text.split(/(\s+)/)) {
+            if (part) write(sse.delta(part));
+          }
+          return;
+        } else {
+          lastErr = new Error('Gemini JSON grąžino tuščią atsakymą.');
+        }
+      }
+    } catch (e) {
+      lastErr = e;
+    }
+
+    // bandysim su kitu kandidatu
   }
+
+  throw (lastErr || new Error('Gemini: nepavyko gauti atsakymo.'));
 }
 
 // ——— OpenRouter (OpenAI-style)
@@ -356,6 +412,7 @@ async function pumpTogether({ model, message, maxTokens, write }){
 
 export default async function handler(req) {
   const url = new URL(req.url);
+  the: // nope
   const modelRaw = url.searchParams.get('model') || '';
   const model = cleanModelId(modelRaw);
   const message = url.searchParams.get('message') || '';
