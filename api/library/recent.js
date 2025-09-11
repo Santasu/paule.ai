@@ -1,33 +1,15 @@
-export default async function handler(req, res) {
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin','*');
-    res.setHeader('Access-Control-Allow-Methods','GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers','Content-Type');
-    return res.status(204).end();
-  }
-  if (req.method !== 'GET') return res.status(405).json({ ok:false, error:'Method Not Allowed' });
+// filename: api/library/recent.js
+export const config = { runtime: 'edge' };
 
-  const limit = Math.max(1, Math.min(6, Number(req.query.limit)||3));
-  const mk = (arr)=> arr.slice(0,limit);
+export default async function handler(req){
+  const url = new URL(req.url);
+  const limit = Math.max(1, Math.min(3, parseInt(url.searchParams.get('limit')||'3',10)));
+  const mk = (t, i) => Array.from({length:limit}, (_,k)=>({ title: `${t} #${k+1}`, cover:'/assets/hero/music.webp', thumb:'/assets/hero/photo.webp', link:'#' }));
 
-  res.setHeader('Access-Control-Allow-Origin','*');
-  res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({
+  return new Response(JSON.stringify({
     ok:true,
-    songs: mk([
-      { title:'„Vasaros vėjas“', cover:'/assets/hero/music.webp', link:'#' },
-      { title:'„Nakties šviesos“', cover:'/assets/hero/music.webp', link:'#' },
-      { title:'„Miesto pulsas“', cover:'/assets/hero/music.webp', link:'#' }
-    ]),
-    photos: mk([
-      { title:'Produktas', cover:'/assets/hero/photo.webp', link:'#' },
-      { title:'Kampanija', cover:'/assets/hero/photo.webp', link:'#' },
-      { title:'Viršelis', cover:'/assets/hero/photo.webp', link:'#' }
-    ]),
-    videos: mk([
-      { title:'Reklama 15s', cover:'/assets/hero/video.webp', link:'#' },
-      { title:'Pristatymas',  cover:'/assets/hero/video.webp', link:'#' },
-      { title:'Užkulisiai',   cover:'/assets/hero/video.webp', link:'#' }
-    ])
-  });
+    songs: mk('Daina'),
+    photos: mk('Nuotrauka'),
+    videos: mk('Video')
+  }), { headers:{ 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store', 'Access-Control-Allow-Origin':'*' }});
 }
