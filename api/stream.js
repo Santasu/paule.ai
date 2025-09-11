@@ -1,4 +1,4 @@
-// /api/stream.js
+// api/stream.js
 export const config = { runtime: 'edge' };
 
 const enc = new TextEncoder();
@@ -17,10 +17,10 @@ const sse = {
   done:  () => `data: [DONE]\n\n`
 };
 
-// Paprasti „detektoriai“
+// Modelio "detektoriai"
 const isAnthropic = m => /^claude|sonnet/i.test(m);
 const isXAI       = m => /grok/i.test(m);
-const isOpenAI    = m => /^gpt-/i.test(m); // apima gpt-5-mini
+const isOpenAI    = m => /^gpt-/i.test(m); // gpt-5-mini
 const isDeepSeek  = m => /deepseek/i.test(m);
 const isOpenRouter= m => /meta-llama|llama|openrouter\//i.test(m);
 
@@ -29,8 +29,8 @@ export default async function handler(req) {
   const model   = url.searchParams.get('model')   || '';
   const message = url.searchParams.get('message') || '';
   const maxTok  = Math.max(1, parseInt(url.searchParams.get('max_tokens')||'1024',10));
-  const thinking= url.searchParams.get('thinking');
-  const search  = url.searchParams.get('search');
+  const thinking= url.searchParams.get('thinking'); // '1' -> Claude thinking
+  const search  = url.searchParams.get('search');   // 'auto' -> Grok Live Search
 
   if (!model || !message) {
     return new Response(sse.json({ok:false,message:'model and message required'}) + sse.done(), { headers: okHdrs });
@@ -55,8 +55,8 @@ export default async function handler(req) {
             method:'POST',
             headers:{
               'Content-Type':'application/json',
-              'x-api-key':        (process.env.ANTHROPIC_API_KEY||''),
-              'anthropic-version':'2023-06-01'
+              'x-api-key'        : (process.env.ANTHROPIC_API_KEY||''),
+              'anthropic-version': '2023-06-01'
             },
             body: JSON.stringify(body)
           });
@@ -188,7 +188,7 @@ export default async function handler(req) {
           write(sse.done()); return close();
         }
 
-        // === OpenRouter (Meta/Llama & pan.) ===
+        // === OpenRouter (Llama/Paule) ===
         if (isOpenRouter(model)) {
           const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method:'POST',
