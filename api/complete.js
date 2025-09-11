@@ -1,4 +1,4 @@
-// /api/complete.js
+// api/complete.js
 export default async function handler(req, res){
   try{
     if (req.method !== 'POST'){ res.status(405).json({ok:false,message:'Method not allowed'}); return; }
@@ -107,7 +107,7 @@ export default async function handler(req, res){
       return { model, text: j?.choices?.[0]?.message?.content || '' };
     }
 
-    // ✅ GEMINI
+    // ✅ GEMINI (JSON only)
     async function askGemini(model){
       const key = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || '';
       if (!key) return { model, error:'Missing GOOGLE_API_KEY' };
