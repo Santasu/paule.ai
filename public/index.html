@@ -22,15 +22,12 @@
   <link rel="preconnect" href="/" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://js.stripe.com" crossorigin>
-  <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
-
-  <!-- ⚡️ Clerk greitinimas -->
   <link rel="preconnect" href="https://clerk.com" crossorigin>
   <link rel="preconnect" href="https://api.clerk.com" crossorigin>
   <link rel="preconnect" href="https://img.clerk.com" crossorigin>
-  <link rel="preconnect" href="https://f.clerk.com" crossorigin>
-  <link rel="preload" as="script"
-        href="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
+  <!-- Pašalinta: f.clerk.com (kėlė DNS klaidą) -->
+
+  <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
 
   <!-- Pagrindinis CSS -->
   <link rel="stylesheet" href="/assets/css/paule.css?v=1.1.5"/>
@@ -86,7 +83,7 @@
     })();
   </script>
 
-  <!-- HOTFIX: SSE -> JSON kai mode=once (palikta suderinamumui) -->
+  <!-- HOTFIX: SSE -> JSON kai mode=once -->
   <script>
     (function(){
       'use strict';
@@ -161,10 +158,31 @@
     };
   </script>
 
-  <!-- Clerk JS (ĮKLIJUOK SAVO PUBLISHABLE KEY) -->
+  <!-- Clerk (naudojamas tavo PK ir custom Frontend API) -->
+  <script>
+    window.__CLERK_PUBLISHABLE_KEY__ = "pk_live_Y2xlcmsucGF1bGUuYWkk";
+    window.__CLERK_FRONTEND_API__    = "clerk.paule.ai";
+  </script>
   <script async crossorigin="anonymous"
-    data-clerk-publishable-key="PK_LIVE_REPLACE_ME"
+    data-clerk-publishable-key="pk_live_Y2xlcmsucGF1bGUuYWkk"
+    data-clerk-frontend-api="clerk.paule.ai"
     src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
+  </script>
+  <script>
+    // Patikimas Clerk paleidimas ir fallback
+    window.addEventListener('load', async () => {
+      try{
+        const c = window.Clerk;
+        if (c?.load) {
+          await c.load({
+            publishableKey: window.__CLERK_PUBLISHABLE_KEY__,
+            frontendApi: window.__CLERK_FRONTEND_API__,
+          });
+        }
+      }catch(err){
+        console.error("Clerk boot error:", err);
+      }
+    });
   </script>
 
   <noscript>
@@ -366,17 +384,17 @@
       </div>
     </div>
 
-  <div class="tools-bar" id="toolsBar" role="toolbar" aria-label="Įrankiai">
+    <div class="tools-bar" id="toolsBar" role="toolbar" aria-label="Įrankiai">
       <div class="tool" data-tool="mindmap" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Mindmap</div>
-      <div class="tool" data-tool="photo" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-photo.svg" alt=""> Foto</div>
-      <div class="tool" data-tool="file" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-file.svg" alt=""> Failas</div>
-      <div class="tool" data-tool="song" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-music.svg" alt=""> Sukurti dainą</div>
-      <div class="tool" data-tool="video" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/video-plus.svg" alt=""> Sukurti video</div>
-      <div class="tool" data-tool="goals" tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų sistema</div>
+      <div class="tool" data-tool="photo"   tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-photo.svg" alt=""> Foto</div>
+      <div class="tool" data-tool="file"    tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-file.svg" alt=""> Failas</div>
+      <div class="tool" data-tool="song"    tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-music.svg" alt=""> Sukurti dainą</div>
+      <div class="tool" data-tool="video"   tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/video-plus.svg" alt=""> Sukurti video</div>
+      <div class="tool" data-tool="goals"   tabindex="0" role="button"><img class="ui-icon" src="/assets/icon/tool-mindmap.svg" alt=""> Tikslų sistema</div>
     </div>
   </div>
 
-  <!-- ===== Orchestrator JS ===== -->
+  <!-- ===== Orchestrator JS + Spec router ===== -->
   <script>
   (function(){
     'use strict';
@@ -403,19 +421,21 @@
     const COMPLETE_URL = API_BASE + '/complete';
     const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
 
-    /* 🔁 Modelių žemėlapis (front -> back) — atnaujintas */
+    // Router state
+    const routerState = { currentSpec:null };
+
+    /* 🔁 Modelių žemėlapis (front -> back) */
     const FRONT_TO_BACK={
-      paule   :'meta-llama/Llama-4-Scout-17B-16E-Instruct',  // Together ID
+      paule:'openrouter/meta-llama/llama-3.1-70b-instruct',
       chatgpt:'gpt-5-mini',
-      claude :'claude-4-sonnet',
-      gemini :'gemini-2.5-flash',
-      grok   :'grok-2-latest',       // jei turi „grok-4“ prieigą – gali pakeisti čia
+      claude:'claude-3-5-sonnet-20241022',
+      gemini:'gemini-2.5-flash',
+      grok:'grok-2-latest',
       deepseek:'deepseek-chat',
-      llama  :'meta-llama/Llama-4-Scout-17B-16E-Instruct'   // Together ID
+      llama:'openrouter/meta-llama/llama-3.1-70b-instruct'
     };
 
-    /* ✅ Visi modeliai per SSE (serveris emuliuoja OpenAI streamą) */
-    const NON_SSE_FRONT = new Set(); // tuščia: niekas neina per JSON once
+    const NON_SSE_FRONT = new Set(); // visi per SSE
 
     const MODEL_ICON = {
       paule: '/assets/icon/paule-logo.webp',
@@ -470,7 +490,7 @@
       ttl?.addEventListener('click', ()=>{ sec.classList.toggle('collapsed'); });
     })();
 
-    /* Modal valdymas */
+    /* Modal valdymas + Router */
     function openModal(type, htmlOrEl){
       modal.classList.add('show');
       modal.setAttribute('aria-hidden','false');
@@ -491,11 +511,16 @@
       modal.setAttribute('aria-hidden','true');
       document.body.style.overflow='';
       modalSheetBody.innerHTML=''; modalToolBody.innerHTML='';
+      if (routerState.currentSpec){
+        routerState.currentSpec=null;
+        history.replaceState(null,'','/');
+      }
     }
     modalClose.addEventListener('click', closeModal);
     modal.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
     window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal.classList.contains('show')) closeModal(); });
 
+    // Pricing kaip sheet modale
     (function(){
       const link=document.querySelector('a[data-nav="pricing"][href="#pricing"]');
       const source=document.getElementById('pricing');
@@ -505,21 +530,52 @@
         const clone = source.cloneNode(true);
         clone.hidden=false;
         openModal('sheet', clone);
+        history.replaceState(null,'','/#pricing');
       });
     })();
 
-    document.getElementById('specialistGrid')?.addEventListener('click', async (e)=>{
-      const a=e.target.closest('a[data-modal="tool"]'); if(!a) return;
-      e.preventDefault();
+    // Spec grid: atidarymas modale + hash
+    async function openSpecModal(slug){
       try{
-        const res = await fetch(a.getAttribute('href'), {cache:'no-store'}); 
+        const res = await fetch(`/spec/${slug}.html`, {cache:'no-store'});
         const html = await res.text();
         openModal('tool', html);
+        routerState.currentSpec = slug;
       }catch(err){
         openModal('tool', `<div style="padding:24px">Nepavyko įkelti. Bandykite dar kartą.</div>`);
       }
+    }
+
+    document.getElementById('specialistGrid')?.addEventListener('click', async (e)=>{
+      const a=e.target.closest('a[data-modal="tool"]'); if(!a) return;
+      const href=a.getAttribute('href')||'';
+      const slug = (href.split('/').pop()||'').replace(/\.html?$/i,'');
+      if (!slug) return;
+      e.preventDefault();
+      history.replaceState(null,'',`/#spec=${encodeURIComponent(slug)}`);
+      openSpecModal(slug);
     });
 
+    // Hash router: #spec=slug
+    function parseHash(){
+      const h=(location.hash||'').replace(/^#/,'').trim();
+      if (!h) return {kind:null};
+      const [k,v] = h.split('=');
+      return {kind:k||null, value:v?decodeURIComponent(v):null};
+    }
+    async function handleHash(){
+      const r=parseHash();
+      if (r.kind==='spec' && r.value){
+        await openSpecModal(r.value);
+      } else if (modal.classList.contains('show')){
+        closeModal();
+      }
+    }
+    window.addEventListener('hashchange', handleHash);
+    // Auto paleidimas jei ateinama su #spec=...
+    handleHash();
+
+    // Poraštės nuorodos atsidaro kaip „sheet“
     function hijackSheet(selector){
       document.querySelectorAll(selector).forEach(a=>{
         a.addEventListener('click', async (e)=>{
@@ -645,7 +701,6 @@
         runJSONOnce({ fronts: jsonFronts, text, chatId: state.chatId }).catch(()=>{});
       }
 
-      /* Patvaresnis watchdog — 60 s */
       setTimeout(()=>{ if (state.pending>0){ state.pending=0; finalizeRound(); } }, 60000);
     }
 
@@ -679,7 +734,6 @@
           models: back,
           message:text,
           max_tokens:'4096',
-          // thinking: (PAŠALINTA — Claude 400),
           search:'auto',
           chat_id:chatId,
           _t:Date.now().toString()
@@ -688,7 +742,7 @@
         const resp=await fetch(`${SSE_URL}?${qs}`, { headers:{ 'Accept':'text/event-stream' }, cache:'no-store', credentials:'same-origin' });
         const ct=(resp.headers.get('content-type')||'').toLowerCase();
 
-        // jei neatėjo SSE – bandome JSON fallback (neužlaužom UI)
+        // Fallback į JSON jei SSE neatėjo
         if(!ct.includes('text/event-stream')){
           try{
             const j=await resp.json();
@@ -827,7 +881,7 @@
       async function loadClerk(){
         const c = window.Clerk;
         if (!c || !c.load) return null;
-        try { await c.load(); return c; } catch(_) { return null; }
+        try { await c.load({ publishableKey: window.__CLERK_PUBLISHABLE_KEY__, frontendApi: window.__CLERK_FRONTEND_API__ }); return c; } catch(_) { return null; }
       }
       window.openAuth = async function(){
         if (!window.PauleModal) return alert('Kraunama…');
@@ -879,7 +933,7 @@
         try{
           const clerk = window.Clerk;
           if (!clerk || !clerk.load) { renderFallback(); return; }
-          await clerk.load();
+          await clerk.load({ publishableKey: window.__CLERK_PUBLISHABLE_KEY__, frontendApi: window.__CLERK_FRONTEND_API__ });
           const rerender = () => {
             if (!root) return;
             root.innerHTML='';
@@ -896,10 +950,8 @@
           };
           rerender(); clerk.addListener(rerender);
 
-          // 🔎 Diagnostika – pamatysi įvykius Console
-          clerk.addListener((evt) => {
-            try { console.log('[Clerk]', evt?.type || evt, evt); } catch(_){}
-          });
+          // Diagnostika
+          clerk.addListener((evt) => { try { console.log('[Clerk]', evt?.type || evt, evt); } catch(_){ } });
 
         }catch(_){ renderFallback(); }
       });
@@ -923,7 +975,6 @@
       <p>Naudodami paslaugą sutinkate, kad turinys teikiamas „kaip yra“, laikantis mūsų taisyklių.</p>
     </div>
   </footer>
-
 
   <!-- ===== Cookie bar ===== -->
   <div id="cookie-bar" role="dialog" aria-live="polite" aria-label="Slapukų pranešimas" style="display:none">
@@ -951,7 +1002,6 @@
       function setChoice(val){
         try{ localStorage.setItem(KEY,val); }catch(_){}
         bar.style.display='none';
-        // pranešimas kitiems skriptams (jei reikia)
         try{ document.dispatchEvent(new CustomEvent('cookie-preference',{detail:{value:val}})); }catch(_){}
       }
 
