@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Paule – Foto (FLUX)</title>
+<style>
+:root{--bg:#05080f;--bg2:#0b111c;--ink:#e8eeff;--mut:#9fb0c7;--line:#1b2436;--pri:#7c8aff;--ok:#16c98a;--err:#ff5869;--br:16px}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,#0e1530 0%,#05080f 55%) fixed;color:var(--ink);font:15px/1.5 system-ui,Segoe UI,Roboto}
+.wrap{max-width:1100px;margin:0 auto;padding:18px}
+.top{display:flex;align-items:center;gap:12px}.x{margin-left:auto;cursor:pointer;font-size:22px;line-height:1;border:1px solid var(--line);border-radius:12px;padding:6px 10px;background:#0f1522}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--br);padding:16px;margin-top:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap}.col{flex:1 1 260px}
+label{display:block;margin:6px 0;color:#b8c4d9}
+textarea,input{width:100%;padding:11px;border-radius:12px;background:#0a101a;color:var(--ink);border:1px solid #1b2436;outline:0}
+.btn{display:inline-flex;gap:8px;align-items:center;padding:9px 13px;border-radius:12px;border:1px solid #2a3550;background:#141b2b;color:#fff;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,#6b7bff,#9e76ff);border:0}
+.grid{display:grid;gap:12px}
+.grid.gallery{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:860px){.grid.gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.thumb{border:1px solid #1f2942;border-radius:12px;overflow:hidden;background:#0a121e}
+.thumb img{width:100%;display:block}
+.status{margin-top:8px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div style="display:flex;gap:10px;align-items:center">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M5 17c0-5 3-10 7-12 4-2 7 1 7 6 0 5-3 10-7 12-4 2-7-1-7-6Z" fill="url(#g)"/><defs><linearGradient id="g" x1="0" x2="24" y1="0" y2="24"><stop stop-color="#6b7bff"/><stop offset=".7" stop-color="#9e76ff"/></linearGradient></defs></svg>
+        <strong>FLUX – vaizdų generatorius</strong>
+      </div>
+      <button class="x" onclick="closeMe()">✕ Uždaryti</button>
+    </div>
+
+    <div class="card">
+      <label>Aprašymas (LT arba EN)</label>
+      <textarea id="desc" placeholder="pvz.: realistiškas produktas ant tamsaus stalo, dramatiška šviesa"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="ai">✨ Sugeneruoti aprašymą (AI)</button>
+        <button class="btn primary" id="go">🖼️ Generuoti foto</button>
+      </div>
+      <div id="status" class="status"></div>
+      <div id="gal" class="grid gallery" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+<script>
+const qs=(s)=>document.querySelector(s);
+function closeMe(){ if(history.length>1) history.back(); else location.href='/' }
+async function ensureJson(r){try{return await r.json()}catch(e){return {ok:false,error:'JSON',status:r.status}}}
+const oneLine = s => (s||'').toString().replace(/\s+/g,' ').trim();
+const limit = (s,n)=>{s=oneLine(s); if(s.length<=n) return s; let cut=s.slice(0,n), last=cut.lastIndexOf(' '); return (last>50?cut.slice(0,last):cut).trim();}
+
+qs('#ai').onclick = async ()=>{
+  const base = oneLine(qs('#desc').value||'');
+  const r = await fetch('/api/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:'Return ≤180 chars concise Lithuanian photo prompt'},{role:'user',content:JSON.stringify({text:base})}]})});
+  const j = await ensureJson(r); qs('#desc').value = limit(j.output||base||'kūrybinė idėja',180);
+};
+
+qs('#go').onclick = async ()=>{
+  const prompt = oneLine(qs('#desc').value||'cinematic portrait, soft light');
+  qs('#status').textContent='⏳ Generuojama…';
+  const r = await fetch('/api/flux/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt, model:'flux-pro-1.1'})});
+  const j = await ensureJson(r);
+  if(!j.ok || !j.image_url){ qs('#status').innerHTML='<span style="color:#ff5869">❌ Nepavyko</span>'; return; }
+  qs('#status').innerHTML='<span style="color:#16c98a">✅ OK</span>';
+  addCard(j.image_url, prompt);
+};
+
+function addCard(url,title){
+  const g=qs('#gal');
+  const d=document.createElement('div');
+  d.className='thumb';
+  d.innerHTML=`<img src="${url}" alt=""><div class="pad" style="padding:10px;border-top:1px solid #18223a;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn" data-a="copy">🔗 Kopijuoti</button>
+    <button class="btn" data-a="dl">⬇️ Atsisiųsti</button>
+    <button class="btn" data-a="vid">🎬 Kurti video</button>
+  </div>`;
+  d.onclick = (e)=>{
+    const b=e.target.closest('.btn'); if(!b) return;
+    const a=b.getAttribute('data-a');
+    if(a==='copy') navigator.clipboard.writeText(url);
+    if(a==='dl') window.open(url,'_blank');
+    if(a==='vid') location.href='/spec/video.html#img='+encodeURIComponent(url)+'&prompt='+encodeURIComponent(title||'from photo');
+  };
+  g.prepend(d);
+}
+</script>
+</body>
+</html>
