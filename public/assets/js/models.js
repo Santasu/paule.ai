@@ -1,6 +1,5 @@
-// assets/js/models.js
 /* =======================================================================
-   Paule – Modelių žemėlapis • v1.4.0
+   Paule – Modelių žemėlapis • v1.5.0
    Front (mygtuko id) -> Back (API model id) + transporto gebėjimai
    ======================================================================= */
 (function () {
@@ -9,25 +8,27 @@
   // Front (mygtuko id) -> Back (API model id)
   const FRONT_TO_BACK = Object.freeze({
     'auto'      : 'auto',
-    'paule'     : 'meta-llama/Llama-4-Scout-17B-16E-Instruct', // per OpenRouter
     'augam-auto': 'auto',
 
-    // ✅ ChatGPT 5 mini vietoj 4o-mini
+    // Paule (alias į Llama per Together/OpenRouter – pagal back-end logiką)
+    'paule'     : 'meta-llama/Llama-4-Scout-17B-16E-Instruct',
+
+    // OpenAI
     'chatgpt'   : 'gpt-5-mini',
 
-    // ✅ Claude Sonnet 4
+    // Anthropic (Claude Sonnet 4)
     'claude'    : 'claude-4-sonnet',
 
-    // ✅ Gemini 2.5 Flash (JSON per /api/complete)
+    // Google
     'gemini'    : 'gemini-2.5-flash',
 
-    // ✅ Grok 4
-    'grok'      : 'grok-4',
+    // xAI
+    'grok'      : 'grok-2-latest',
 
-    // ✅ DeepSeek
+    // DeepSeek
     'deepseek'  : 'deepseek-chat',
 
-    // ✅ Llama (per OpenRouter)
+    // Llama per Together (jei naudosi OpenRouter, back-end priima ir openrouter/…)
     'llama'     : 'meta-llama/Llama-4-Scout-17B-16E-Instruct'
   });
 
@@ -40,7 +41,7 @@
     'chatgpt':'ChatGPT','gpt-5-mini':'ChatGPT',
     'claude':'Claude','claude-4-sonnet':'Claude',
     'gemini':'Gemini','gemini-2.5-flash':'Gemini',
-    'grok':'Grok','grok-4':'Grok',
+    'grok':'Grok','grok-2-latest':'Grok',
     'deepseek':'DeepSeek','deepseek-chat':'DeepSeek',
     'llama':'Llama','meta-llama/Llama-4-Scout-17B-16E-Instruct':'Llama',
     'judge':'Teisėjas'
@@ -59,8 +60,8 @@
     'judge'  : `${ICONS_BASE}/legal-contract.svg`
   });
 
-  // ✅ JSON only: Gemini (visi kiti – SSE per /api/stream)
-  const NON_SSE_FRONT = new Set(['gemini']);
+  // ✅ Visi frontai per SSE – /api/stream serveris pats adaptuoja
+  const NON_SSE_FRONT = new Set([]);
 
   const lc = s => String(s||'').toLowerCase().trim();
   function canonicalFrontId(id){
