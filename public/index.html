@@ -403,18 +403,18 @@
     const COMPLETE_URL = API_BASE + '/complete';
     const ICONS_BASE = (window.PAULE_CONFIG && window.PAULE_CONFIG.iconsBase) || '/assets/icon';
 
-    /* 🔁 Modelių žemėlapis (front -> back) */
+    /* 🔁 Modelių žemėlapis (front -> back) — atnaujintas */
     const FRONT_TO_BACK={
-      paule:'openrouter/meta-llama/llama-3.1-70b-instruct',
+      paule   :'meta-llama/Llama-4-Scout-17B-16E-Instruct',  // Together ID
       chatgpt:'gpt-5-mini',
-      claude:'claude-3-5-sonnet-20241022',
-      gemini:'gemini-2.5-flash',
-      grok:'grok-2-latest',
+      claude :'claude-4-sonnet',
+      gemini :'gemini-2.5-flash',
+      grok   :'grok-2-latest',       // jei turi „grok-4“ prieigą – gali pakeisti čia
       deepseek:'deepseek-chat',
-      llama:'openrouter/meta-llama/llama-3.1-70b-instruct'
+      llama  :'meta-llama/Llama-4-Scout-17B-16E-Instruct'   // Together ID
     };
 
-    /* ✅ Visi modeliai per SSE (Gemini įjungtas) */
+    /* ✅ Visi modeliai per SSE (serveris emuliuoja OpenAI streamą) */
     const NON_SSE_FRONT = new Set(); // tuščia: niekas neina per JSON once
 
     const MODEL_ICON = {
@@ -679,8 +679,8 @@
           models: back,
           message:text,
           max_tokens:'4096',
-          thinking:'1',               // 🧠 Claude extended thinking (ignoruoja kiti)
-          search:'auto',              // 🔎 Live Search Grok/Gemini (ignoruoja kiti)
+          // thinking: (PAŠALINTA — Claude 400),
+          search:'auto',
           chat_id:chatId,
           _t:Date.now().toString()
         });
