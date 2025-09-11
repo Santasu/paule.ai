@@ -13,11 +13,15 @@
     { "src": "^/api/diagnostics$",          "dest": "/api/diagnostics.js" },
     { "src": "^/api/library/recent$",       "dest": "/api/library/recent.js" },
     { "src": "/api/complete",               "dest": "/api/complete.js" },
-    
+
     { "src": "^/api/flux/create$",          "dest": "/api/flux/create.js" },
     { "src": "^/api/comic/create$",         "dest": "/api/comic/create.js" },
+
     { "src": "^/api/runway/image$",         "dest": "/api/runway/image.js" },
+    { "src": "^/api/runway/image-to-video$", "dest": "/api/runway/image.js" },
     { "src": "^/api/runway/status$",        "dest": "/api/runway/status.js" },
+    { "src": "^/api/runway/ping$",          "dest": "/api/diagnostics.js" },
+
     { "src": "^/api/music/create$",         "dest": "/api/music/create.js" },
     { "src": "^/api/music/status$",         "dest": "/api/music/status.js" },
     { "src": "^/api/clerk/pk$",             "dest": "/api/clerk/pk.js" },
@@ -46,7 +50,24 @@
     { "src": "^/wp-json/paule/v1/music/create$",  "dest": "/api/music/create.js" },
     { "src": "^/wp-json/paule/v1/music/status$",  "dest": "/api/music/status.js" },
 
+    { "src": "^/wp-json/augam/v1/stream$",        "dest": "/api/stream.js" },
+    { "src": "^/wp-json/augam/v1/complete$",      "dest": "/api/complete.js" },
+    { "src": "^/wp-json/augam/v1/suggest$",       "dest": "/api/suggest.js" },
+    { "src": "^/wp-json/augam/v1/models$",        "dest": "/api/models.js" },
+    { "src": "^/wp-json/augam/v1/diagnostics$",   "dest": "/api/diagnostics.js" },
+    { "src": "^/wp-json/augam/v1/flux/create$",   "dest": "/api/flux/create.js" },
+    { "src": "^/wp-json/augam/v1/comic/create$",  "dest": "/api/comic/create.js" },
+    { "src": "^/wp-json/augam/v1/runway/image$",  "dest": "/api/runway/image.js" },
+    { "src": "^/wp-json/augam/v1/runway/image-to-video$", "dest": "/api/runway/image.js" },
+    { "src": "^/wp-json/augam/v1/runway/status$", "dest": "/api/runway/status.js" },
+    { "src": "^/wp-json/augam/v1/runway/ping$",   "dest": "/api/diagnostics.js" },
+    { "src": "^/wp-json/augam/v1/music/create$",  "dest": "/api/music/create.js" },
+    { "src": "^/wp-json/augam/v1/music/status$",  "dest": "/api/music/status.js" },
+
+    { "src": "^/wp-json$",                   "dest": "/api/diagnostics.js" },
+
     { "src": "^/$",                 "dest": "/public/index.html" },
     { "src": "^(?!/api)(.*)$",      "dest": "/public$1" }
   ]
 }
+
