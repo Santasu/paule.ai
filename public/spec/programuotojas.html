@@ -1,1 +1,2644 @@
 
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Developer Suite</title>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: #1a1a1a;
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background: #444;
+        }
+
+        .btn-primary {
+            background: #0066cc;
+            border-color: #0066cc;
+        }
+
+        .btn-primary:hover {
+            background: #0080ff;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #1a1a1a;
+            border-right: 1px solid #333;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #00ff88;
+        }
+
+        .model-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .model-card {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .model-card:hover {
+            background: #333;
+        }
+
+        .model-card.active {
+            background: #003d1a;
+            border-color: #00ff88;
+        }
+
+        .file-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .file-item {
+            background: #2a2a2a;
+            margin-bottom: 4px;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #444;
+        }
+
+        .file-item:hover {
+            background: #333;
+        }
+
+        .file-item.active {
+            background: #003d66;
+            border-color: #0066cc;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-tabs {
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            padding: 10px 20px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .tab {
+            background: #333;
+            border: 1px solid #555;
+            padding: 8px 16px;
+            border-radius: 4px 4px 0 0;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .tab.active {
+            background: #0066cc;
+            border-color: #0066cc;
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+        }
+
+        .editor {
+            flex: 1;
+            background: #0a0a0a;
+            color: #ffffff;
+            border: none;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+        }
+
+        .preview-panel {
+            width: 50%;
+            background: white;
+            border-left: 1px solid #333;
+            display: none;
+        }
+
+        .preview-panel.show {
+            display: block;
+        }
+
+        .preview-header {
+            background: #1a1a1a;
+            color: white;
+            padding: 10px 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .preview-iframe {
+            width: 100%;
+            height: calc(100% - 50px);
+            border: none;
+        }
+
+        .ai-panel {
+            width: 320px;
+            background: #1a1a1a;
+            border-left: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            background: #2a2a2a;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #555;
+        }
+
+        .message.user {
+            background: #003d66;
+            border-left-color: #0066cc;
+        }
+
+        .message.ai {
+            background: #1a3d1a;
+            border-left-color: #00ff88;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .chat-input {
+            width: 100%;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+            padding: 12px;
+            border-radius: 4px;
+            resize: none;
+            height: 80px;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .quick-buttons {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            background: #444;
+            border: none;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .quick-btn:hover {
+            background: #555;
+        }
+
+        .template-grid {
+            display: grid;
+            gap: 8px;
+        }
+
+        .template-card {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .template-card:hover {
+            background: #333;
+            border-color: #555;
+        }
+
+        .template-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .template-desc {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #00ff88;
+            color: #000;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            z-index: 1000;
+            display: none;
+        }
+
+        .notification.error {
+            background: #ff4444;
+            color: white;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .model-info {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">AI Developer Suite</div>
+        <div class="buttons">
+            <button class="btn" onclick="newProject()">Naujas</button>
+            <button class="btn" onclick="saveProject()">Išsaugoti</button>
+            <button class="btn" onclick="loadProject()">Įkelti</button>
+            <button class="btn" onclick="togglePreview()">Preview</button>
+            <button class="btn btn-primary" onclick="focusChat()">AI Chat</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- AI Models -->
+            <div class="section">
+                <div class="section-title">AI Modeliai</div>
+                <div class="model-grid">
+                    <div class="model-card active" data-model="claude">
+                        <div><strong>Claude 4</strong></div>
+                        <div style="font-size: 10px; color: #00ff88;">Aktyvus</div>
+                    </div>
+                    <div class="model-card" data-model="chatgpt">
+                        <div><strong>ChatGPT 4</strong></div>
+                        <div style="font-size: 10px; color: #00ff88;">Aktyvus</div>
+                    </div>
+                    <div class="model-card" data-model="deepseek">
+                        <div><strong>DeepSeek</strong></div>
+                        <div style="font-size: 10px; color: #00ff88;">Aktyvus</div>
+                    </div>
+                    <div class="model-card" data-model="gemini">
+                        <div><strong>Gemini</strong></div>
+                        <div style="font-size: 10px; color: #00ff88;">Aktyvus</div>
+                    </div>
+                </div>
+                <div class="model-info">
+                    <div>Tokenų limitas: 30,000</div>
+                    <div>Konteksto langas: 10M</div>
+                    <div>Kodo eilutės: 20,000</div>
+                </div>
+            </div>
+
+            <!-- Files -->
+            <div class="section">
+                <div class="section-title">Failai</div>
+                <ul class="file-list" id="fileList">
+                    <li class="file-item active" data-file="index.html">📄 index.html</li>
+                    <li class="file-item" data-file="style.css">🎨 style.css</li>
+                    <li class="file-item" data-file="script.js">⚡ script.js</li>
+                </ul>
+                <button class="btn" onclick="addFile()" style="width: 100%; margin-top: 10px;">+ Naujas failas</button>
+            </div>
+
+            <!-- Templates -->
+            <div class="section">
+                <div class="section-title">Šablonai</div>
+                <div class="template-grid">
+                    <div class="template-card" data-template="landing">
+                        <div class="template-title">🚀 Landing Page</div>
+                        <div class="template-desc">Modernus puslapis su animacijomis</div>
+                    </div>
+                    <div class="template-card" data-template="blog">
+                        <div class="template-title">📝 Blog</div>
+                        <div class="template-desc">Responzivus blog dizainas</div>
+                    </div>
+                    <div class="template-card" data-template="app">
+                        <div class="template-title">⚡ Web App</div>
+                        <div class="template-desc">Interaktyvi aplikacija</div>
+                    </div>
+                    <div class="template-card" data-template="portfolio">
+                        <div class="template-title">🎨 Portfolio</div>
+                        <div class="template-desc">Profesionalus portfolio</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content">
+            <!-- Editor Tabs -->
+            <div class="editor-tabs" id="editorTabs">
+                <div class="tab active" data-file="index.html">📄 index.html</div>
+                <div class="tab" data-file="style.css">🎨 style.css</div>
+                <div class="tab" data-file="script.js">⚡ script.js</div>
+            </div>
+
+            <!-- Editor Container -->
+            <div class="editor-container">
+                <textarea class="editor" id="codeEditor" placeholder="Pradėkite rašyti kodą arba pasirinkite šabloną..."></textarea>
+                
+                <!-- Preview Panel -->
+                <div class="preview-panel" id="previewPanel">
+                    <div class="preview-header">👁️ Live Preview</div>
+                    <iframe class="preview-iframe" id="previewIframe"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Panel -->
+        <div class="ai-panel">
+            <div class="chat-area" id="chatArea">
+                <div class="message ai">
+                    <strong>AI Asistentas:</strong><br>
+                    Sveiki! Aš jūsų AI programavimo asistentas. Galiu padėti kurti kodą, spręsti problemas ir optimizuoti projektus. Ko reikia?
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <textarea class="chat-input" id="chatInput" placeholder="Parašykite klausimą arba užduotį..."></textarea>
+                <div class="quick-buttons">
+                    <button class="quick-btn" onclick="quickPrompt('Sukurk landing page')">🚀 Landing</button>
+                    <button class="quick-btn" onclick="quickPrompt('Pridėk animacijas')">✨ Animacijos</button>
+                    <button class="quick-btn" onclick="quickPrompt('Pataisyk kodą')">🔧 Pataisyti</button>
+                    <button class="quick-btn" onclick="quickPrompt('Optimizuok kodą')">⚡ Optimizuoti</button>
+                    <button class="quick-btn" onclick="quickPrompt('Responsive dizainas')">📱 Mobile</button>
+                    <button class="quick-btn" onclick="quickPrompt('Sukurk komponentą')">🧩 Komponentas</button>
+                </div>
+                <button class="btn btn-primary" onclick="sendMessage()" style="width: 100%; margin-top: 10px;">Siųsti žinutę</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <!-- File input for loading projects -->
+    <input type="file" id="fileInput" accept=".json" style="display: none;">
+
+    <script>
+        // Global state
+        let currentFile = 'index.html';
+        let currentModel = 'claude';
+        let showPreview = false;
+        let isTyping = false;
+        
+        // File storage with improved default content
+        let files = {
+            'index.html': `<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mano Projektas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Sveiki atvykę!</h1>
+        <p>Pradėkite kurti savo projektą su AI pagalba...</p>
+        <button onclick="showMessage()">Spausti čia</button>
+        <div id="message-area"></div>
+    </div>
+    <script src="script.js"><\/script>
+</body>
+</html>`,
+            'style.css': `/* CSS Stiliai */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    animation: fadeInUp 1s ease;
+}
+
+p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    animation: fadeInUp 1s ease 0.2s both;
+}
+
+button {
+    background: rgba(255,255,255,0.2);
+    border: 2px solid white;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    animation: fadeInUp 1s ease 0.4s both;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+button:hover {
+    background: white;
+    color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+#message-area {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    display: none;
+}
+
+@keyframes fadeInUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(50px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* Responsive dizainas */
+@media (max-width: 768px) {
+    h1 { font-size: 2rem; }
+    p { font-size: 1.1rem; }
+    button { padding: 10px 20px; font-size: 14px; }
+    .container { padding: 20px 15px; }
+}`,
+            'script.js': `// JavaScript kodas
+console.log("AI Developer Suite projektas paleistas!");
+
+// Funkcija mygtukui
+function showMessage() {
+    const messageArea = document.getElementById('message-area');
+    const messages = [
+        'Puiku! Jūsų kodas veikia!',
+        'AI Developer Suite - geriausia kūrimo aplinka!',
+        'Pradėkite kurti nuostabius projektus!',
+        'Su AI pagalba viskas įmanoma!'
+    ];
+    
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    messageArea.innerHTML = \`<strong>Žinutė:</strong> \${randomMessage}\`;
+    messageArea.style.display = 'block';
+    
+    // Animacija
+    messageArea.style.opacity = '0';
+    messageArea.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+        messageArea.style.transition = 'all 0.5s ease';
+        messageArea.style.opacity = '1';
+        messageArea.style.transform = 'translateY(0)';
+    }, 100);
+}
+
+// DOM užkrovimo tikrinimas
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("Puslapis visiškai užkrautas!");
+    
+    // Pridėti hover efektus
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px) scale(1.05)';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+});
+
+// Eksportuojama funkcija
+window.showMessage = showMessage;`
+        };
+
+        // Initialize application
+        function init() {
+            try {
+                const editor = document.getElementById('codeEditor');
+                if (editor) {
+                    editor.value = files[currentFile] || '';
+                    
+                    // Add input listener with debouncing
+                    let timeoutId;
+                    editor.addEventListener('input', function() {
+                        files[currentFile] = this.value;
+                        
+                        // Debounce preview updates
+                        clearTimeout(timeoutId);
+                        timeoutId = setTimeout(() => {
+                            if (showPreview) {
+                                updatePreview();
+                            }
+                        }, 500);
+                    });
+                }
+                
+                // Add event listeners
+                setupEventListeners();
+                
+                // Add keyboard shortcuts
+                setupKeyboardShortcuts();
+                
+                showNotification('Sistema paleista sėkmingai!');
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showNotification('Klaida paleidžiant sistemą: ' + error.message, 'error');
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Model selection
+            const modelCards = document.querySelectorAll('.model-card');
+            modelCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    selectModel(this, this.dataset.model);
+                });
+            });
+
+            // File selection
+            const fileItems = document.querySelectorAll('.file-item');
+            fileItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    openFile(this.dataset.file);
+                });
+            });
+
+            // Tab selection
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    switchTab(this, this.dataset.file);
+                });
+            });
+
+            // Template selection
+            const templateCards = document.querySelectorAll('.template-card');
+            templateCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    loadTemplate(this.dataset.template);
+                });
+            });
+
+            // Chat input
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) {
+                chatInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+            }
+
+            // File input for loading projects
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                fileInput.addEventListener('change', handleFileLoad);
+            }
+        }
+
+        // Setup keyboard shortcuts
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key) {
+                        case 's':
+                            e.preventDefault();
+                            saveProject();
+                            break;
+                        case 'o':
+                            e.preventDefault();
+                            loadProject();
+                            break;
+                        case 'n':
+                            e.preventDefault();
+                            newProject();
+                            break;
+                        case 'p':
+                            e.preventDefault();
+                            togglePreview();
+                            break;
+                    }
+                }
+            });
+        }
+
+        // File management functions
+        function openFile(fileName) {
+            if (!fileName || !files.hasOwnProperty(fileName)) {
+                showNotification('Failas nerastas: ' + fileName, 'error');
+                return;
+            }
+
+            try {
+                currentFile = fileName;
+                const editor = document.getElementById('codeEditor');
+                if (editor) {
+                    editor.value = files[fileName] || '';
+                }
+                
+                updateFileUI();
+                updateTabUI();
+                
+                if (showPreview) {
+                    updatePreview();
+                }
+                
+                showNotification('Atidaryta: ' + fileName);
+                
+            } catch (error) {
+                console.error('Error opening file:', error);
+                showNotification('Klaida atidarant failą: ' + error.message, 'error');
+            }
+        }
+
+        function updateFileUI() {
+            const fileItems = document.querySelectorAll('.file-item');
+            fileItems.forEach(item => {
+                if (item.dataset.file === currentFile) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        function updateTabUI() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                if (tab.dataset.file === currentFile) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+        }
+
+        function addFile() {
+            const fileName = prompt('Įveskite failo pavadinimą (pvz: naujas.html):');
+            if (fileName && fileName.trim()) {
+                const trimmedName = fileName.trim();
+                
+                if (files.hasOwnProperty(trimmedName)) {
+                    showNotification('Failas jau egzistuoja!', 'error');
+                    return;
+                }
+                
+                // Determine file type and set appropriate content
+                let defaultContent = '';
+                const extension = trimmedName.split('.').pop().toLowerCase();
+                
+                switch(extension) {
+                    case 'html':
+                        defaultContent = `<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${trimmedName}</title>
+</head>
+<body>
+    <h1>Naujas failas: ${trimmedName}</h1>
+</body>
+</html>`;
+                        break;
+                    case 'css':
+                        defaultContent = `/* ${trimmedName} stiliai */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}`;
+                        break;
+                    case 'js':
+                        defaultContent = `// ${trimmedName}
+console.log("${trimmedName} užkrautas!");`;
+                        break;
+                    default:
+                        defaultContent = `// Naujas failas: ${trimmedName}`;
+                }
+                
+                files[trimmedName] = defaultContent;
+                
+                // Add to file list UI
+                const fileList = document.getElementById('fileList');
+                if (fileList) {
+                    const newItem = document.createElement('li');
+                    newItem.className = 'file-item';
+                    newItem.dataset.file = trimmedName;
+                    
+                    // Choose appropriate icon
+                    let icon = '📄';
+                    if (extension === 'css') icon = '🎨';
+                    else if (extension === 'js') icon = '⚡';
+                    
+                    newItem.innerHTML = `${icon} ${trimmedName}`;
+                    newItem.addEventListener('click', function() {
+                        openFile(this.dataset.file);
+                    });
+                    
+                    fileList.appendChild(newItem);
+                }
+                
+                // Add to tabs
+                const editorTabs = document.getElementById('editorTabs');
+                if (editorTabs) {
+                    const newTab = document.createElement('div');
+                    newTab.className = 'tab';
+                    newTab.dataset.file = trimmedName;
+                    
+                    let icon = '📄';
+                    if (extension === 'css') icon = '🎨';
+                    else if (extension === 'js') icon = '⚡';
+                    
+                    newTab.innerHTML = `${icon} ${trimmedName}`;
+                    newTab.addEventListener('click', function() {
+                        switchTab(this, this.dataset.file);
+                    });
+                    
+                    editorTabs.appendChild(newTab);
+                }
+                
+                // Open the new file
+                openFile(trimmedName);
+                
+                showNotification('Failas sukurtas: ' + trimmedName);
+            }
+        }
+
+        function switchTab(tabElement, fileName) {
+            if (!tabElement || !fileName) return;
+            openFile(fileName);
+        }
+
+        // Preview functions
+        function togglePreview() {
+            showPreview = !showPreview;
+            const panel = document.getElementById('previewPanel');
+            if (panel) {
+                if (showPreview) {
+                    panel.classList.add('show');
+                    updatePreview();
+                    showNotification('Preview įjungtas');
+                } else {
+                    panel.classList.remove('show');
+                    showNotification('Preview išjungtas');
+                }
+            }
+        }
+
+        function updatePreview() {
+            if (!showPreview) return;
+            
+            try {
+                const iframe = document.getElementById('previewIframe');
+                if (iframe) {
+                    let html = files['index.html'] || '';
+                    const css = files['style.css'] || '';
+                    const js = files['script.js'] || '';
+                    
+                    // Inject CSS
+                    if (css && html.includes('</head>')) {
+                        html = html.replace('</head>', `<style>${css}</style></head>`);
+                    }
+                    
+                    // Inject JavaScript
+                    if (js && html.includes('</body>')) {
+                        html = html.replace('</body>', `<script>${js}<\/script></body>`);
+                    }
+                    
+                    iframe.srcdoc = html;
+                }
+            } catch (error) {
+                console.error('Preview update error:', error);
+                showNotification('Klaida atnaujinant preview: ' + error.message, 'error');
+            }
+        }
+
+        // AI functions
+        function selectModel(element, model) {
+            if (!element || !model) return;
+            
+            currentModel = model;
+            const models = document.querySelectorAll('.model-card');
+            models.forEach(card => card.classList.remove('active'));
+            element.classList.add('active');
+            
+            showNotification('AI modelis: ' + model.toUpperCase());
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const chatArea = document.getElementById('chatArea');
+            
+            if (!input || !chatArea || !input.value.trim()) {
+                return;
+            }
+            
+            try {
+                const message = input.value.trim();
+                
+                // Add user message
+                addChatMessage(message, 'user');
+                input.value = '';
+                
+                // Show typing indicator
+                showTypingIndicator();
+                
+                // Generate AI response with delay
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    const aiResponse = generateAIResponse(message);
+                    addChatMessage(aiResponse, 'ai');
+                }, 1000 + Math.random() * 2000); // Random delay 1-3 seconds
+                
+            } catch (error) {
+                console.error('Chat error:', error);
+                showNotification('Klaida siunčiant žinutę: ' + error.message, 'error');
+            }
+        }
+
+        function addChatMessage(message, type) {
+            const chatArea = document.getElementById('chatArea');
+            if (!chatArea) return;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const sender = type === 'user' ? 'Jūs' : `AI (${currentModel.toUpperCase()})`;
+            messageDiv.innerHTML = `<strong>${sender}:</strong><br>${message}`;
+            
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const chatArea = document.getElementById('chatArea');
+            if (!chatArea) return;
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message ai typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = '<strong>AI rašo...</strong><br>●●●';
+            
+            chatArea.appendChild(typingDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function generateAIResponse(message) {
+            const msg = message.toLowerCase();
+            
+            // Save current editor content
+            const editor = document.getElementById('codeEditor');
+            if (editor) {
+                files[currentFile] = editor.value;
+            }
+            
+            if (msg.includes('landing') || msg.includes('landing page')) {
+                loadTemplate('landing');
+                return 'Sukūriau modernų landing page su animacijomis! Kodas automatiškai atnaujintas visuose failuose. Paspaudę "Preview" mygtuką pamatysite rezultatą. Landing page turi gradiento foną, animacijas ir responzivų dizainą.';
+            }
+            
+            if (msg.includes('blog')) {
+                loadTemplate('blog');
+                return 'Sukūriau blog šabloną su profesionaliu dizainu! Įtrauktas responsive layout, navigation ir article struktūra. Galite pridėti daugiau įrašų ir customizuoti stilius.';
+            }
+            
+            if (msg.includes('portfolio')) {
+                loadTemplate('portfolio');
+                return 'Sukūriau portfolio šabloną! Puikiai tiks demonstruoti jūsų darbus su galerija ir kontaktų forma.';
+            }
+            
+            if (msg.includes('app') || msg.includes('aplikacij')) {
+                loadTemplate('app');
+                return 'Sukūriau web aplikacijos šabloną su interaktyviais elementais! Įtrauktas state management ir modern JavaScript funkcionalumas.';
+            }
+            
+            if (msg.includes('animacij') || msg.includes('animation')) {
+                // Add animation code to current CSS
+                if (files['style.css']) {
+                    const animationCSS = `
+
+/* Animacijos */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+    0%, 20%, 60%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-30px); }
+    80% { transform: translateY(-15px); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.fade-in { animation: fadeIn 0.6s ease; }
+.bounce { animation: bounce 2s infinite; }
+.pulse { animation: pulse 2s infinite; }
+
+/* Hover efektai */
+.hover-lift { transition: transform 0.3s ease; }
+.hover-lift:hover { transform: translateY(-5px); }`;
+                    
+                    files['style.css'] += animationCSS;
+                    if (currentFile === 'style.css') {
+                        document.getElementById('codeEditor').value = files['style.css'];
+                    }
+                }
+                return 'Pridėjau CSS animacijas! Galite naudoti klases: .fade-in, .bounce, .pulse, .hover-lift. Taip pat pridėjau hover efektus elementams.';
+            }
+            
+            if (msg.includes('responsive') || msg.includes('mobile')) {
+                const responsiveCSS = `
+
+/* Responsive dizainas */
+@media (max-width: 1200px) {
+    .container { max-width: 90%; }
+}
+
+@media (max-width: 768px) {
+    .container { 
+        padding: 20px 15px; 
+        font-size: 14px;
+    }
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.4rem; }
+    button { 
+        padding: 10px 20px; 
+        font-size: 14px; 
+        width: 100%;
+        margin: 5px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .container { padding: 15px 10px; }
+    h1 { font-size: 1.5rem; }
+    p { font-size: 1rem; }
+}`;
+                
+                if (files['style.css']) {
+                    files['style.css'] += responsiveCSS;
+                    if (currentFile === 'style.css') {
+                        document.getElementById('codeEditor').value = files['style.css'];
+                    }
+                }
+                return 'Pridėjau responsive dizainą! Jūsų puslapis dabar puikiai atrodys mobiliuose įrenginiuose, planšetėse ir desktop kompiuteriuose.';
+            }
+            
+            if (msg.includes('component') || msg.includes('komponent')) {
+                const componentJS = `
+
+// Naujas komponentas
+class ModernComponent {
+    constructor(element) {
+        this.element = element;
+        this.init();
+    }
+    
+    init() {
+        this.render();
+        this.attachEvents();
+    }
+    
+    render() {
+        this.element.innerHTML = \`
+            <div class="modern-component">
+                <h3>Modernus komponentas</h3>
+                <button class="component-btn">Spausti</button>
+                <div class="component-content"></div>
+            </div>
+        \`;
+    }
+    
+    attachEvents() {
+        const btn = this.element.querySelector('.component-btn');
+        const content = this.element.querySelector('.component-content');
+        
+        btn.addEventListener('click', () => {
+            content.innerHTML = \`<p>Komponentas veikia! Laikas: \${new Date().toLocaleTimeString()}</p>\`;
+        });
+    }
+}
+
+// Inicializuoti komponentą
+document.addEventListener('DOMContentLoaded', () => {
+    const componentElement = document.getElementById('modern-component');
+    if (componentElement) {
+        new ModernComponent(componentElement);
+    }
+});`;
+                
+                if (files['script.js']) {
+                    files['script.js'] += componentJS;
+                    if (currentFile === 'script.js') {
+                        document.getElementById('codeEditor').value = files['script.js'];
+                    }
+                }
+                return 'Sukūriau modernų JavaScript komponentą! Pridėjau class-based komponentą su event handling ir dynamic content. Pridėkite <div id="modern-component"></div> į HTML kad pamatytumėte veikiantį komponentą.';
+            }
+            
+            if (msg.includes('patais') || msg.includes('fix') || msg.includes('debug')) {
+                return `Analizuoju kodą "${currentFile}"...\n\nRekomenduoju:\n✓ Patikrinti HTML validatorių\n✓ Optimizuoti CSS selektorius\n✓ Pridėti error handling JavaScript\n✓ Patikrinti browser console\n✓ Testhuoti responsive dizainą\n✓ Validuoti accessibility\n\nAr yra konkreti problema kurią reikia išspręsti?`;
+            }
+            
+            if (msg.includes('optimiz')) {
+                return `Kodo optimizavimo rekomendacijos:\n\n📈 Performance:\n• Minifikuoti CSS ir JS\n• Optimizuoti nuotraukų dydžius\n• Naudoti WebP formatą\n• Pridėti lazy loading\n\n🚀 Loading speed:\n• Sumažinti HTTP užklausų skaičių\n• Naudoti CDN\n• Gzip compression\n• Cache strategijos\n\n♿ SEO ir Accessibility:\n• Meta tags\n• Alt tekstai\n• Semantic HTML\n• ARIA labels`;
+            }
+            
+            if (msg.includes('color') || msg.includes('spalv')) {
+                return 'Spalvų paletės rekomendacijos:\n\n🎨 Modernūs gradientai:\n• linear-gradient(135deg, #667eea 0%, #764ba2 100%)\n• linear-gradient(45deg, #f093fb 0%, #f5576c 100%)\n• linear-gradient(120deg, #a8edea 0%, #fed6e3 100%)\n\n🌈 Harmoningos spalvos:\n• Primary: #3b82f6\n• Secondary: #8b5cf6\n• Success: #10b981\n• Warning: #f59e0b\n• Danger: #ef4444';
+            }
+            
+            // Default response
+            const responses = [
+                `Supratau jūsų užklausą: "${message}"\n\n💡 Galiu padėti su:\n• Landing pages kūrimu\n• CSS animacijų pridėjimu\n• Kodo optimizavimu ir debug\n• JavaScript funkcionalumu\n• Responsive dizaino sprendimais\n• Komponentų kūrimu\n\nTiesiog pasakykite konkrečiau, ko reikia!`,
+                
+                `Analizuoju jūsų užklausą... 🤔\n\nRekomenduoju:\n• Pradėti nuo šablono pasirinkimo\n• Naudoti moderne CSS grid/flexbox\n• Pridėti interaktyvumo su JavaScript\n• Optimizuoti mobile įrenginiams\n\nKokią dalį norėtumėte patobulinti pirmiausia?`,
+                
+                `Puikus klausimas! 🚀\n\nGaliu sukurti:\n• Modernų UI su animacijomis\n• Responsive komponentus\n• Interactive funkcionalumą\n• Performance optimizacijas\n\nPapasakokite daugiau apie jūsų viziją!`
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        function quickPrompt(prompt) {
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.value = prompt;
+                sendMessage();
+            }
+        }
+
+        function focusChat() {
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.focus();
+            }
+        }
+
+        // Project management
+        function newProject() {
+            if (confirm('Sukurti naują projektą? Dabartinis bus praraštas.')) {
+                // Reset to default files
+                files = {
+                    'index.html': `<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naujas Projektas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Naujas projektas</h1>
+        <p>Pradėkite kurti su AI pagalba...</p>
+        <button onclick="showMessage()">Spausti čia</button>
+        <div id="message-area"></div>
+    </div>
+    <script src="script.js"><\/script>
+</body>
+</html>`,
+                    'style.css': `/* Naujo projekto stiliai */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+#message-area {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    display: none;
+}`,
+                    'script.js': `// Naujo projekto JavaScript
+console.log("Naujas projektas paleistas!");
+
+function showMessage() {
+    const messageArea = document.getElementById('message-area');
+    messageArea.innerHTML = '<strong>Sveiki!</strong> Jūsų naujas projektas veikia!';
+    messageArea.style.display = 'block';
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("Naujas projektas užkrautas!");
+});
+
+window.showMessage = showMessage;`
+                };
+                
+                currentFile = 'index.html';
+                const editor = document.getElementById('codeEditor');
+                if (editor) {
+                    editor.value = files[currentFile];
+                }
+                
+                updateFileUI();
+                updateTabUI();
+                
+                if (showPreview) {
+                    updatePreview();
+                }
+                
+                showNotification('Naujas projektas sukurtas!');
+            }
+        }
+
+        function saveProject() {
+            try {
+                // Save current editor content
+                const editor = document.getElementById('codeEditor');
+                if (editor) {
+                    files[currentFile] = editor.value;
+                }
+                
+                const projectData = {
+                    name: 'AI Developer Suite Project',
+                    created: new Date().toISOString(),
+                    version: '1.0',
+                    currentFile: currentFile,
+                    files: files
+                };
+                
+                const dataStr = JSON.stringify(projectData, null, 2);
+                const blob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `project_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                URL.revokeObjectURL(url);
+                showNotification('Projektas išsaugotas!');
+                
+            } catch (error) {
+                console.error('Save error:', error);
+                showNotification('Klaida išsaugant projektą: ' + error.message, 'error');
+            }
+        }
+
+        function loadProject() {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+
+        function handleFileLoad(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const projectData = JSON.parse(e.target.result);
+                    
+                    if (projectData.files) {
+                        files = projectData.files;
+                        currentFile = projectData.currentFile || 'index.html';
+                        
+                        // Update editor
+                        const editor = document.getElementById('codeEditor');
+                        if (editor) {
+                            editor.value = files[currentFile] || '';
+                        }
+                        
+                        updateFileUI();
+                        updateTabUI();
+                        
+                        if (showPreview) {
+                            updatePreview();
+                        }
+                        
+                        showNotification('Projektas įkeltas sėkmingai!');
+                    } else {
+                        throw new Error('Neteisingas projekto formatas');
+                    }
+                } catch (error) {
+                    console.error('Load error:', error);
+                    showNotification('Klaida įkeliant projektą: ' + error.message, 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+            
+            // Reset file input
+            event.target.value = '';
+        }
+
+        function loadTemplate(templateName) {
+            const templates = {
+                'landing': {
+                    'index.html': `<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderni Landing Page</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Sveiki atvykę į ateitį</h1>
+            <p class="hero-subtitle">Inovatyvūs sprendimai jūsų verslui</p>
+            <button class="cta-button" onclick="showCTAMessage()">Pradėkime</button>
+        </div>
+        <div class="hero-animation"></div>
+    </section>
+    
+    <section class="features">
+        <div class="container">
+            <h2>Mūsų pranašumai</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Greitas startas</h3>
+                    <p>Pradėkite naudoti iš karto</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Aukštas našumas</h3>
+                    <p>Optimizuota maksimaliam greičiui</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Saugumas</h3>
+                    <p>Jūsų duomenys saugūs</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <script src="script.js"><\/script>
+</body>
+</html>`,
+                    'style.css': `/* Landing Page Stiliai */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+body { 
+    font-family: 'Arial', sans-serif; 
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+.hero {
+    height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    animation: float 20s ease-in-out infinite;
+}
+
+.hero-content { 
+    position: relative; 
+    z-index: 2;
+    max-width: 800px;
+    padding: 0 20px;
+}
+
+.hero-title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    margin-bottom: 1rem;
+    animation: slideInUp 1s ease;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    animation: slideInUp 1s ease 0.2s both;
+}
+
+.cta-button {
+    background: white;
+    color: #667eea;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: slideInUp 1s ease 0.4s both;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.cta-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    background: #f8f9fa;
+}
+
+.hero-animation {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 30px;
+    border: 2px solid white;
+    border-radius: 50%;
+    animation: bounce 2s infinite;
+}
+
+.features {
+    padding: 80px 0;
+    background: #f8f9fa;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.features h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    color: #333;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.feature-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.feature-card p {
+    color: #666;
+    line-height: 1.6;
+}
+
+/* Animacijos */
+@keyframes slideInUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(50px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) translateX(-50%); }
+    50% { transform: translateY(-20px) translateX(-50%); }
+}
+
+@keyframes bounce {
+    0%, 20%, 60%, 100% { 
+        transform: translateY(0) translateX(-50%); 
+    }
+    40% { 
+        transform: translateY(-30px) translateX(-50%); 
+    }
+    80% { 
+        transform: translateY(-15px) translateX(-50%); 
+    }
+}
+
+/* Responsive dizainas */
+@media (max-width: 768px) {
+    .hero-title { font-size: 2rem; }
+    .hero-subtitle { font-size: 1.1rem; }
+    .cta-button { 
+        padding: 12px 24px; 
+        font-size: 1rem; 
+    }
+    .features { padding: 60px 0; }
+    .features h2 { font-size: 2rem; }
+    .feature-grid { gap: 1.5rem; }
+    .feature-card { padding: 1.5rem; }
+}`,
+                    'script.js': `// Landing Page JavaScript
+console.log("Landing page užkrautas!");
+
+// CTA button funkcionalumas
+function showCTAMessage() {
+    alert('Puiku! Landing page veikia! 🚀\\n\\nŠis šablonas turi:\\n• Modernų dizainą\\n• CSS animacijas\\n• Responsive layout\\n• Interactive elementus');
+}
+
+// Smooth scroll funkcionalumas
+function smoothScroll(target) {
+    const element = document.querySelector(target);
+    if (element) {
+        element.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
+}
+
+// Animacijų stebėjimas
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = "1";
+            entry.target.style.transform = "translateY(0)";
+        }
+    });
+}, observerOptions);
+
+// Parallax efektas
+function updateParallax() {
+    const scrolled = window.pageYOffset;
+    const heroAnimation = document.querySelector('.hero-animation');
+    
+    if (heroAnimation) {
+        heroAnimation.style.transform = \`translateX(-50%) translateY(\${scrolled * 0.5}px)\`;
+    }
+}
+
+// Event listeners
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("Landing page visiškai užkrautas!");
+    
+    // Pridėti observer feature cards
+    const featureCards = document.querySelectorAll('.feature-card');
+    featureCards.forEach(card => {
+        card.style.opacity = "0";
+        card.style.transform = "translateY(30px)";
+        card.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+        observer.observe(card);
+    });
+    
+    // Parallax scroll listener
+    window.addEventListener('scroll', updateParallax);
+    
+    // Hover efektai
+    featureCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-10px) scale(1.05)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(-10px) scale(1)';
+        });
+    });
+});
+
+// Export functions
+window.showCTAMessage = showCTAMessage;
+window.smoothScroll = smoothScroll;`
+                },
+                
+                'blog': {
+                    'index.html': `<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mano Blogas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="blog-header">
+        <div class="container">
+            <h1 class="blog-title">Mano Blogas</h1>
+            <nav class="blog-nav">
+                <a href="#home" onclick="showSection('home')">Pradžia</a>
+                <a href="#about" onclick="showSection('about')">Apie</a>
+                <a href="#contact" onclick="showSection('contact')">Kontaktai</a>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="blog-main">
+        <div class="container">
+            <div id="home" class="section active">
+                <article class="blog-post">
+                    <h2>Pirmasis blog įrašas</h2>
+                    <div class="post-meta">
+                        <span>📅 ${new Date().toLocaleDateString('lt-LT')}</span>
+                        <span>👤 Autorius</span>
+                        <span>🏷️ Technologijos</span>
+                    </div>
+                    <div class="post-content">
+                        <p>Sveiki atvykę į mano blogą! Čia rasite įdomių straipsnių apie web development, dizainą ir technologijas.</p>
+                        <p>Šis blog sukurtas naudojant moderne HTML, CSS ir JavaScript technologijas.</p>
+                        <button onclick="likePost(this)">👍 Patinka (0)</button>
+                    </div>
+                </article>
+                
+                <article class="blog-post">
+                    <h2>Antrasis įrašas</h2>
+                    <div class="post-meta">
+                        <span>📅 ${new Date().toLocaleDateString('lt-LT')}</span>
+                        <span>👤 Autorius</span>
+                        <span>🏷️ Dizainas</span>
+                    </div>
+                    <div class="post-content">
+                        <p>Responsive dizainas yra labai svarbus šiuolaikiniuose web projektuose.</p>
+                        <p>Naudojant CSS Grid ir Flexbox galima sukurti puikius layouts.</p>
+                        <button onclick="likePost(this)">👍 Patinka (0)</button>
+                    </div>
+                </article>
+            </div>
+            
+            <div id="about" class="section">
+                <h2>Apie blogą</h2>
+                <p>Čia aprašymas apie blogą ir autorių...</p>
+                <div class="about-stats">
+                    <div class="stat">
+                        <strong>50+</strong>
+                        <span>Straipsnių</span>
+                    </div>
+                    <div class="stat">
+                        <strong>1000+</strong>
+                        <span>Skaitytojų</span>
+                    </div>
+                    <div class="stat">
+                        <strong>5</strong>
+                        <span>Metų patirties</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="contact" class="section">
+                <h2>Kontaktai</h2>
+                <div class="contact-form">
+                    <form onsubmit="submitForm(event)">
+                        <input type="text" placeholder="Jūsų vardas" required>
+                        <input type="email" placeholder="El. paštas" required>
+                        <textarea placeholder="Žinutė" rows="5" required></textarea>
+                        <button type="submit">Siųsti žinutę</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script src="script.js"><\/script>
+</body>
+</html>`,
+                    'style.css': `/* Blog stiliai */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Georgia, serif;
+    line-height: 1.6;
+    color: #333;
+    background: #f8f9fa;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header */
+.blog-header {
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.blog-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+}
+
+.blog-title {
+    color: #2c3e50;
+    font-size: 1.8rem;
+}
+
+.blog-nav {
+    display: flex;
+    gap: 30px;
+}
+
+.blog-nav a {
+    text-decoration: none;
+    color: #666;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.blog-nav a:hover {
+    color: #3498db;
+    background: #f0f0f0;
+}
+
+/* Main content */
+.blog-main {
+    padding: 40px 0;
+}
+
+.section {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.section.active {
+    display: block;
+}
+
+/* Blog posts */
+.blog-post {
+    background: white;
+    padding: 30px;
+    margin-bottom: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.blog-post:hover {
+    transform: translateY(-5px);
+}
+
+.blog-post h2 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.8rem;
+}
+
+.post-meta {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.post-content p {
+    margin-bottom: 15px;
+    color: #555;
+}
+
+.post-content button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.post-content button:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+}
+
+.post-content button.liked {
+    background: #e74c3c;
+}
+
+/* About section */
+.about-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.stat {
+    text-align: center;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.stat strong {
+    display: block;
+    font-size: 2rem;
+    color: #3498db;
+    margin-bottom: 5px;
+}
+
+/* Contact form */
+.contact-form {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.contact-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.contact-form input,
+.contact-form textarea {
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.contact-form button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.contact-form button:hover {
+    background: #2980b9;
+}
+
+/* Animacijos */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive dizainas */
+@media (max-width: 768px) {
+    .blog-header .container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .blog-nav {
+        gap: 15px;
+    }
+    
+    .blog-post {
+        padding: 20px;
+    }
+    
+    .post-meta {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .about-stats {
+        grid-template-columns: 1fr;
+    }
+}`,
+                    'script.js': `// Blog JavaScript
+console.log("Blog užkrautas!");
+
+// Navigation funkcionalumas
+function showSection(sectionId) {
+    // Paslėpti visas sekcijas
+    const sections = document.querySelectorAll('.section');
+    sections.forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // Rodyti pasirinktą sekciją
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
+    
+    // Atnaujinti navigation active state
+    const navLinks = document.querySelectorAll('.blog-nav a');
+    navLinks.forEach(link => {
+        link.style.background = '';
+        link.style.color = '#666';
+    });
+    
+    const activeLink = document.querySelector(\`[href="#\${sectionId}"]\`);
+    if (activeLink) {
+        activeLink.style.background = '#3498db';
+        activeLink.style.color = 'white';
+    }
+}
+
+// Like post funkcionalumas
+function likePost(button) {
+    const currentText = button.textContent;
+    const currentCount = parseInt(currentText.match(/\\d+/)[0]);
+    const newCount = currentCount + 1;
+    
+    button.textContent = \`👍 Patinka (\${newCount})\`;
+    button.classList.add('liked');
+    button.onclick = null; // Išjungti pakartotinį paspaudimą
+    
+    // Animacijos efektas
+    button.style.transform = 'scale(1.2)';
+    setTimeout(() => {
+        button.style.transform = 'scale(1)';
+    }, 200);
+}
+
+// Kontaktų formos siuntimas
+function submitForm(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const name = formData.get('name') || event.target.elements[0].value;
+    const email = formData.get('email') || event.target.elements[1].value;
+    const message = formData.get('message') || event.target.elements[2].value;
+    
+    alert(\`Ačiū už žinutę!\\n\\nVardas: \${name}\\nEl. paštas: \${email}\\nŽinutė: \${message}\`);
+    
+    // Išvalyti formą
+    event.target.reset();
+}
+
+// Smooth scroll
+function smoothScrollTo(element) {
+    element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+// Inicializacija
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("Blog visiškai užkrautas!");
+    
+    // Nustatyti default sekciją
+    showSection('home');
+    
+    // Pridėti scroll efektus
+    const blogPosts = document.querySelectorAll('.blog-post');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    });
+    
+    blogPosts.forEach(post => {
+        post.style.opacity = '0';
+        post.style.transform = 'translateY(30px)';
+        post.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(post);
+    });
+});
+
+// Export functions
+window.showSection = showSection;
+window.likePost = likePost;
+window.submitForm = submitForm;`
+                },
+                
+                'app': {
+                    'index.html': `<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktyvi Web Aplikacija</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <header class="app-header">
+            <h1>🚀 Web Aplikacija</h1>
+            <div class="header-stats">
+                <span id="online-status">🟢 Online</span>
+                <span id="user-count">👥 1 vartotojas</span>
+            </div>
+        </header>
+        
+        <nav class="app-nav">
+            <button class="nav-btn active" onclick="showTab('dashboard')">📊 Dashboard</button>
+            <button class="nav-btn" onclick="showTab('tasks')">✅ Užduotys</button>
+            <button class="nav-btn" onclick="showTab('analytics')">📈 Analitika</button>
+            <button class="nav-btn" onclick="showTab('settings')">⚙️ Nustatymai</button>
+        </nav>
+        
+        <main class="app-main">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="dashboard-widgets">
+                    <div class="widget">
+                        <h3>💰 Pajamos</h3>
+                        <div class="widget-value" id="revenue">€12,450</div>
+                        <div class="widget-change positive">+15.3%</div>
+                    </div>
+                    
+                    <div class="widget">
+                        <h3>👥 Vartotojai</h3>
+                        <div class="widget-value" id="users">1,234</div>
+                        <div class="widget-change positive">+8.7%</div>
+                    </div>
+                    
+                    <div class="widget">
+                        <h3>📦 Produktai</h3>
+                        <div class="widget-value" id="products">567</div>
+                        <div class="widget-change negative">-2.1%</div>
+                    </div>
+                    
+                    <div class="widget">
+                        <h3>⭐ Reitingas</h3>
+                        <div class="widget-value" id="rating">4.8/5</div>
+                        <div class="widget-change positive">+0.3</div>
+                    </div>
+                </div>
+                
+                <div class="action-panel">
+                    <h3>Greitieji veiksmai</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="performAction('export')">📊 Eksportuoti duomenis</button>
+                        <button class="action-btn" onclick="performAction('backup')">💾 Sukurti atsarginę kopiją</button>
+                        <button class="action-btn" onclick="performAction('update')">🔄 Atnaujinti sistemą</button>
+                        <button class="action-btn" onclick="performAction('report')">📋 Generuoti ataskaitą</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tasks Tab -->
+            <div id="tasks" class="tab-content">
+                <div class="task-header">
+                    <h3>Užduočių sąrašas</h3>
+                    <button class="add-task-btn" onclick="addNewTask()">➕ Pridėti užduotį</button>
+                </div>
+                
+                <div class="task-filters">
+                    <button class="filter-btn active" onclick="filterTasks('all')">Visos</button>
+                    <button class="filter-btn" onclick="filterTasks('pending')">Laukiančios</button>
+                    <button class="filter-btn" onclick="filterTasks('completed')">Atliktos</button>
+                </div>
+                
+                <div id="task-list" class="task-list">
+                    <div class="task-item" data-status="pending">
+                        <div class="task-content">
+                            <h4>Sukurti landing page</h4>
+                            <p>Modernaus dizaino puslapis su animacijomis</p>
+                            <span class="task-priority high">Aukštas prioritetas</span>
+                        </div>
+                        <div class="task-actions">
+                            <button onclick="toggleTask(this)">✅</button>
+                            <button onclick="editTask(this)">✏️</button>
+                            <button onclick="deleteTask(this)">🗑️</button>
+                        </div>
+                    </div>
+                    
+                    <div class="task-item" data-status="completed">
+                        <div class="task-content">
+                            <h4>Optimizuoti duomenų bazę</h4>
+                            <p>Pagerinti užklausų našumą</p>
+                            <span class="task-priority medium">Vidutinis prioritetas</span>
+                        </div>
+                        <div class="task-actions">
+                            <button onclick="toggleTask(this)">✅</button>
+                            <button onclick="editTask(this)">✏️</button>
+                            <button onclick="deleteTask(this)">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analytics Tab -->
+            <div id="analytics" class="tab-content">
+                <h3>Analitikos duomenys</h3>
+                <div class="analytics-charts">
+                    <div class="chart-container">
+                        <h4>Mėnesio statistika</h4>
+                        <div class="chart" id="monthlyChart">
+                            <div class="chart-bar" style="height: 60%"></div>
+                            <div class="chart-bar" style="height: 80%"></div>
+                            <div class="chart-bar" style="height: 45%"></div>
+                            <div class="chart-bar" style="height: 90%"></div>
+                            <div class="chart-bar" style="height: 70%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-table">
+                        <h4>Detalūs duomenys</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Veiksmai</th>
+                                    <th>Rezultatas</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analytics-data">
+                                <tr>
+                                    <td>2024-01-15</td>
+                                    <td>150</td>
+                                    <td>+12%</td>
+                                </tr>
+                                <tr>
+                                    <td>2024-01-14</td>
+                                    <td>134</td>
+                                    <td>+8%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <h3>Nustatymai</h3>
+                <div class="settings-form">
+                    <div class="setting-group">
+                        <label>Tema</label>
+                        <select onchange="changeTheme(this.value)">
+                            <option value="light">Šviesi</option>
+                            <option value="dark">Tamsi</option>
+                            <option value="auto">Automatinė</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Kalbos</label>
+                        <select>
+                            <option>Lietuvių</option>
+                            <option>English</option>
+                            <option>Русский</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Pranešimai</label>
+                        <label class="toggle">
+                            <input type="checkbox" checked onchange="toggleNotifications(this)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Automatinis išsaugojimas</label>
+                        <label class="toggle">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <button class="save-settings-btn" onclick="saveSettings()">💾 Išsaugoti nustatymus</button>
+                </div>
+            </div>
+        </main>
+        
+        <div id="result-area" class="result-area"></div>
+    </div>
+    
+    <script src="script.js"><\/script>
+</body>
+</html>`,
+                    'style.css': `/* Web App stiliai */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+#app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.app-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.app-header h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.header-stats {
+    display: flex;
+    gap: 20px;
+    font-size: 0.9rem;
+}
+
+/* Navigation */
+.app-nav {
+    background: white;
+    padding: 15px 20px;
+    display: flex;
+    gap: 10px;
+    border-bottom: 1px solid #e1e5e9;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.nav-btn {
+    background: transparent;
+    border: 2px solid #e1e5e9;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    color: #666;
+}
+
+.nav-btn:hover {
+    background: #f8f9fa;
+    border-color: #667eea;
+}
+
+.nav-btn.active {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+/* Main content */
+.app-main {
+    flex: 1;
+    padding: 30px;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Dashboard */
+.dashboard-widgets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.widget {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.widget:hover {
+    transform: translateY(-5px);
+}
+
+.widget h3 {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.widget-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.widget-change {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.widget-change.positive {
+    color: #22c55e;
+}
+
+.widget-change.negative {
+    color: #ef4444;
+}
+
+.action-panel {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.action-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    background: #5a67d8;
+    transform: translateY(-2px);
+}
+
+/* Tasks */
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.add-task-btn {
+    background: #22c55e;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.task-filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.filter-btn {
+    background: white;
+    border: 2px solid #e1e5e9;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.filter-btn.active {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.task-item {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.task-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.task-item[data-status="completed"] {
+    opacity: 0.7;
+}
+
+.task-item[data-status="completed"] .task-content h4 {
+    text-decoration: line-through;
+}
+
+.task-content h4 {
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.task-content p {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.task-priority {
+    font-size: 0.8rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.task-priority.high {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.task-priority.medium {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.task-priority.low {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.task-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.task-actions button {
+    background: #f8f9fa;
+    border: 1px solid #e1e5e9;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.task-actions button:hover {
+    background: #e9ecef;
+}
+
+/* Analytics */
+.analytics-charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.chart-container {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.chart {
+    display: flex;
+    align-items: end;
+    gap: 10px;
+    height: 200px;
+    margin-top: 20px;
+}
+
+.chart-bar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    width: 40px;
+    border-radius: 4px 4px 0 0;
+    animation: growUp 1s ease;
+}
+
+.analytics-table {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6
