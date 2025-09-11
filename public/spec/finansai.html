@@ -1896,5 +1896,125 @@ body {
     // Initialize
     console.log('🚀 Finansų konsultanto AI asistentas su content generavimu paleistas!');
   </script>
+  <script>
+(function(){
+  const MODEL_PREFS = [
+    (window.AI_MODEL || 'gpt-5-mini'),
+    'gpt-4o-mini',
+    'gpt-4o'
+  ];
+
+  async function askStreamFirst(message){
+    // 1) bandome stream su pirmu modeliu
+    try {
+      const model = MODEL_PREFS[0];
+      const url = `/api/stream?model=${encodeURIComponent(model)}&message=${encodeURIComponent(message)}&chat_id=${Date.now()}&max_tokens=1024`;
+      const res = await fetch(url, { headers: { Accept: 'text/event-stream' }});
+      if (!res.ok || !res.body) throw new Error('no stream');
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = '', full = '';
+      window.aiOnToken = (t)=>{}; // gali perrašyti, jei nori „typewriter“
+      for(;;){
+        const it = await reader.read(); if (it.done) break;
+        buf += dec.decode(it.value, {stream:true});
+        let i;
+        while((i = buf.indexOf('\n\n')) >= 0){
+          const chunk = buf.slice(0,i).trim(); buf = buf.slice(i+2);
+          if(!chunk) continue;
+          const dataLine = chunk.split('\n').find(l=>l.startsWith('data:'));
+          if (!dataLine) continue;
+          const payload = dataLine.replace(/^data:\s*/,'').trim();
+          if (payload === '[DONE]') break;
+          try {
+            const j = JSON.parse(payload);
+            const piece = j?.choices?.[0]?.delta?.content || '';
+            if (piece){ full += piece; window.aiOnToken(piece); }
+          } catch(_){}
+        }
+      }
+      if (full.trim()) return full;
+      throw new Error('empty');
+    } catch(e) {
+      // 2) fallback į /api/complete su kelių modelių sąrašu
+      const modelsCsv = MODEL_PREFS.join(',');
+      const r = await fetch('/api/complete', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ message, models: modelsCsv, max_tokens: 1024 })
+      });
+      const j = await r.json().catch(()=>({}));
+      // paimam pirmą sėkmingą
+      const ok = (j.answers||[]).find(a => a && a.text && !a.error);
+      return ok?.text || j.text || 'Nepavyko gauti atsakymo.';
+    }
+  }
+
+  async function genFlux(prompt){
+    const r = await fetch('/api/flux/create', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ prompt, width:1024, height:1024 })
+    });
+    const j = await r.json().catch(()=>({}));
+    if (j?.image) return j.image;
+    throw new Error(j?.error || 'FLUX klaida');
+  }
+
+  // ——— UI hook’ai: bandome prisikabinti prie tavo esamų ID; jei jų nėra — duodam mini dialogą
+  const input   = document.querySelector('#messageInput, [data-ai-input]');
+  const sendBtn = document.querySelector('#sendBtn, [data-ai-send]');
+  const box     = document.querySelector('#chatMessages, [data-ai-messages]');
+
+  function addMsg(html, who='ai'){
+    const wrap = document.createElement('div');
+    wrap.className = `message ${who==='user'?'user':'ai'}`;
+    wrap.innerHTML = `
+      <div class="message-avatar">${who==='user' ? (window.userData?.name?.[0]?.toUpperCase() || 'U') : 'AI'}</div>
+      <div class="message-content">${html}</div>`;
+    (box || document.body).appendChild(wrap);
+    if (box) box.scrollTop = box.scrollHeight;
+  }
+
+  async function handleSend(){
+    const msg = (input?.value || '').trim();
+    if (!msg) return;
+    addMsg(msg, 'user');
+    if (input){ input.value=''; input.style.height='auto'; }
+
+    // paveikslo užklausa?
+    if (/foto|nuotrauk|image|paveiksl|flux/i.test(msg)) {
+      try {
+        const url = await genFlux(msg.replace(/^(foto|image|paveikslas)[: ]*/i,''));
+        addMsg(`<img src="${url}" alt="AI image" style="max-width:100%;border-radius:12px">`, 'ai');
+        return;
+      } catch(e){ addMsg('⚠️ ' + (e?.message||e), 'ai'); return; }
+    }
+
+    // teksto atsakymas
+    try {
+      let buf=''; window.aiOnToken = (t)=>{ buf += t; };
+      const full = await askStreamFirst(msg);
+      addMsg(full || buf || '(tuščia)', 'ai');
+    } catch(e){
+      addMsg('⚠️ ' + (e?.message||e), 'ai');
+    }
+  }
+
+  if (sendBtn && input){
+    sendBtn.addEventListener('click', handleSend);
+    input.addEventListener('keydown', (e)=>{ if (e.key==='Enter' && !e.shiftKey){ e.preventDefault(); handleSend(); }});
+  } else {
+    // Minimalus plaukiojantis mygtukas, jei puslapyje nėra tavo Chat UI
+    const btn = document.createElement('button');
+    btn.textContent = '💬';
+    btn.style.cssText = 'position:fixed;right:16px;bottom:16px;width:50px;height:50px;border:none;border-radius:50%;background:#4b7;box-shadow:0 8px 28px rgba(0,0,0,.35);color:#fff;font-size:20px;z-index:9999;cursor:pointer';
+    document.body.appendChild(btn);
+    btn.addEventListener('click', async ()=>{
+      const q = prompt('Klausimas AI:'); if (!q) return;
+      addMsg(q, 'user'); const a = await askStreamFirst(q); addMsg(a, 'ai');
+    });
+  }
+})();
+</script>
+
 </body>
 </html>
