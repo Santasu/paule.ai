@@ -569,3 +569,66 @@ stripe-pricing-table{ display:block; width:100% }
   }
   .site-footer.left .sep{ margin:0 6px; opacity:.5 }
 
+
+    :root{ --icon-xxs:13px; --pill-scale:0.7; }
+
+    #chatArea{min-height:calc(100vh - 240px);overflow:auto}
+    @supports(height:100dvh){#chatArea{min-height:calc(100dvh - 240px)}}
+
+    .jump-latest{bottom:2cm!important}
+    .jump-latest span{display:none}
+    .jump-latest img{width:16px;height:16px}
+
+    .models-in-topbar .ui-icon,
+    .avatar img,
+    .message .avatar img{width:var(--icon-xxs);height:var(--icon-xxs)}
+
+    .models-in-topbar{display:flex;gap:8px;flex-wrap:wrap}
+    .models-in-topbar .model-pill{
+      transform:scale(var(--pill-scale));
+      transform-origin:left center;
+      white-space:nowrap;
+    }
+
+    #bottomSection .input-bar .input-container{ width:calc(100% - 6cm); margin:0 3cm; }
+    @media (max-width:900px){ #bottomSection .input-bar .input-container{width:100%;margin:0} }
+
+    #inputSuggestDeck, #followSuggestBar{display:none !important}
+    #messageInput::placeholder{color:transparent}
+
+    .modal-overlay{ position:fixed; inset:0; display:none; place-items:center; z-index:9999; background:rgba(0,0,0,.66); }
+    .modal-overlay.show{display:grid}
+    .modal-window{position:relative; width:min(1100px, 92vw); max-height:92vh; overflow:auto;
+      background:var(--bg-primary,#fff); color:var(--text,#111827);
+      border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);}
+    .modal-window.modal--sheet{padding:20px 24px}
+    .modal-window.modal--tool{ width:100vw; height:100vh; max-height:100vh; border-radius:0; padding:0; background:#0b0b0b; color:#e5e7eb;}
+    .modal-close{ position:fixed; top:16px; right:16px; z-index:10000; width:36px; height:36px; border-radius:999px; display:grid; place-items:center;
+      border:1px solid rgba(255,255,255,.25); background:rgba(0,0,0,.45); color:#fff; cursor:pointer; backdrop-filter:saturate(130%) blur(6px); }
+    .modal--sheet .modal-close{position:absolute; background:var(--bg-primary,#fff); color:#111827; border:1px solid var(--border,#e5e7eb)}
+    .modal-body{padding:0; height:100%; overflow:auto}
+    .modal-sheet-inner{padding:8px 6px 28px}
+
+    .side-section.collapsible .side-title{ display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+    .side-section.collapsible .side-title .car{transition:transform .2s ease}
+    .side-section.collapsible.collapsed .specialist-grid{display:none}
+    .side-section.collapsible.collapsed .side-title .car{transform:rotate(-90deg)}
+
+    .welcome-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+    .welcome-card{display:block; border-radius:16px; overflow:hidden; position:relative}
+    .welcome-card img{width:100%; display:block}
+    .welcome-card b{position:absolute; left:12px; bottom:34px; color:#fff}
+    .welcome-card span{position:absolute; left:12px; bottom:12px; color:#e5e7eb; font-size:12px}
+    @media (max-width:900px){.welcome-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+    .dim{opacity:.65}
+    .pricing-section{margin-top:8px}
+
+    /* 🔧 Typing dots */
+    .typing-dots{display:inline-flex;gap:4px;align-items:center;opacity:.7}
+    .typing-dots i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--fg-muted,#6b7280);animation:tdot 1s infinite}
+    .typing-dots i:nth-child(2){animation-delay:.15s}
+    .typing-dots i:nth-child(3){animation-delay:.3s}
+    @keyframes tdot{0%{transform:translateY(0)}50%{transform:translateY(-2px)}100%{transform:translateY(0)}}
+  
+
