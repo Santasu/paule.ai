@@ -23,6 +23,7 @@ function isDeepSeek(m=''){ return /deepseek/i.test(m); }
 function isXAI(m=''){ return /grok/i.test(m); }
 function isGemini(m=''){ return /^(gemini[-\w]*|google\/)/i.test(m); }
 function isLlamaFamily(m=''){ return /meta-llama|llama/i.test(m); }
+function looksLikeRouterName(m=''){ return /.+\/.+/.test(m); } // pvz. "openai/gpt-oss-20b"
 function cleanModelId(m=''){ return String(m).replace(/^openrouter\//i,'').replace(/^together\//i,''); }
 
 function getenv(name){ return (process.env[name] || '').trim(); }
@@ -170,13 +171,15 @@ async function pumpAnthropic({ model, message, maxTokens, write }){
   throw new Error(`Anthropic model not found. Tried: ${tries.join(', ')}${last404 ? ` • last 404: ${last404}` : ''}`);
 }
 
-// ——— DeepSeek (OpenAI-style)
+// ——— DeepSeek (OpenAI-style) — numatytasis: V3.1 (override: DEEPSEEK_MODEL)
+function deepseekModel(){ return getenv('DEEPSEEK_MODEL') || 'deepseek-v3.1'; }
 async function pumpDeepSeek({ model, message, maxTokens, write }){
+  const useModel = (model && !/^deepseek$/i.test(model)) ? model : deepseekModel();
   const resp = await fetch('https://api.deepseek.com/chat/completions', {
     method:'POST',
     headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${getenv('DEEPSEEK_API_KEY')}` },
     body: JSON.stringify({
-      model, stream:true,
+      model: useModel, stream:true,
       messages:[{role:'user', content:String(message)}],
       max_tokens: maxTokens
     })
@@ -419,29 +422,36 @@ export default async function handler(req) {
     return new Response(sse.data({ ok:false, message:'model and message required' }) + sse.done(), { headers: okHdrs });
   }
 
-  return streamResponse(async ({ write, close, fail })=>{
-    // „start“ pranešimas visiems
+  return streamResponse(async ({ write, close })=>{
+    // „start“ visiems
     write(sse.event('start', { model, chat_id: chatId }));
 
     try {
-      if (isOpenAI(model) && HAS.OPENAI)        { await pumpOpenAI({ model, message, maxTokens, write }); }
-      else if (isAnthropic(model) && HAS.ANTHROPIC){ await pumpAnthropic({ model, message, maxTokens, write }); }
-      else if (isDeepSeek(model) && HAS.DEEPSEEK){ await pumpDeepSeek({ model, message, maxTokens, write }); }
-      else if (isXAI(model) && HAS.XAI)         { await pumpGrok({ model, message, write }); }
-      else if (isGemini(model) && HAS.GOOGLE)   { await pumpGemini({ model, message, maxTokens, write }); }
+      // 0) Specialu: vendor/name → prioritetas Together (Paule: openai/gpt-oss-20b)
+      if (looksLikeRouterName(model)) {
+        if (HAS.TOGETHER)          { await pumpTogether({ model, message, maxTokens, write }); }
+        else if (HAS.OPENROUTER)   { await pumpOpenRouter({ model, message, maxTokens, write }); }
+        else throw new Error('Reikalingas TOGETHER_API_KEY arba OPENROUTER_API_KEY šiam modeliui.');
+      }
+      // 1) Klasikiniai tiekėjai
+      else if (isOpenAI(model) && HAS.OPENAI)        { await pumpOpenAI({ model, message, maxTokens, write }); }
+      else if (isAnthropic(model) && HAS.ANTHROPIC)  { await pumpAnthropic({ model, message, maxTokens, write }); }
+      else if (isDeepSeek(model) && HAS.DEEPSEEK)    { await pumpDeepSeek({ model, message, maxTokens, write }); }
+      else if (isXAI(model) && HAS.XAI)              { await pumpGrok({ model, message, write }); }
+      else if (isGemini(model) && HAS.GOOGLE)        { await pumpGemini({ model, message, maxTokens, write }); }
       else if (isLlamaFamily(model)) {
-        if (HAS.TOGETHER) { await pumpTogether({ model, message, maxTokens, write }); }
-        else if (HAS.OPENROUTER){ await pumpOpenRouter({ model, message, maxTokens, write }); }
+        if (HAS.TOGETHER)        { await pumpTogether({ model, message, maxTokens, write }); }
+        else if (HAS.OPENROUTER) { await pumpOpenRouter({ model, message, maxTokens, write }); }
         else throw new Error('Llama tiekėjui trūksta API rakto (TOGETHER_API_KEY arba OPENROUTER_API_KEY).');
       }
-      else if (HAS.OPENROUTER)                  { await pumpOpenRouter({ model, message, maxTokens, write }); }
+      // 2) Universalus fallback – OpenRouter
+      else if (HAS.OPENROUTER) { await pumpOpenRouter({ model, message, maxTokens, write }); }
       else throw new Error(`Unsupported model or missing API key: ${model}`);
 
       write(sse.event('done', { finish_reason:'stop' }));
       write(sse.done());
       return close();
     } catch (e) {
-      // aiški klaida + pabaiga
       write(sse.event('error', { message: String(e?.message || e) }));
       write(sse.event('done', { finish_reason:'error' }));
       write(sse.done());
