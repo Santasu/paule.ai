@@ -11,7 +11,9 @@ module.exports = async (req, res) => {
       return res.status(200).json({
         ok:true, status:'ready',
         audio_url: DEMO_AUDIO_URL,
-        tracks:[{ id:task, title:'Demo', duration:60, audio_url:DEMO_AUDIO_URL, stream:DEMO_AUDIO_URL, image:'' }]
+        tracks:[{ id:task, title:'Demo', duration:60, audio_url:DEMO_AUDIO_URL, stream:DEMO_AUDIO_URL, image:'' }],
+        vendor_status:'SUCCESS',
+        source:'demo'
       });
     }
 
@@ -24,7 +26,10 @@ module.exports = async (req, res) => {
 
     const d = j.data || {};
     const vendorStatus = String(d.status || 'PENDING').toUpperCase();
-    const rows = Array.isArray(d.response?.data) ? d.response.data : [];
+
+    const rows = Array.isArray(d.response?.data) ? d.response.data
+               : Array.isArray(d.response?.sunoData) ? d.response.sunoData
+               : [];
 
     const tracks = rows.map(row => ({
       id:         row.id || '',
@@ -43,7 +48,7 @@ module.exports = async (req, res) => {
 
     const firstAudio = tracks?.[0]?.audio_url || '';
 
-    return res.status(200).json({ ok:true, status, audio_url:firstAudio, tracks, vendor_status:vendorStatus });
+    return res.status(200).json({ ok:true, status, audio_url:firstAudio, tracks, vendor_status:vendorStatus, source:'record-info' });
   } catch (e) {
     return res.status(200).json({ ok:false, status:'pending', error: e?.message || 'status error' });
   }
