@@ -8,46 +8,54 @@
 :root{--bg:#05080f;--bg2:#0b111c;--ink:#e8eeff;--mut:#9fb0c7;--line:#1b2436;--pri:#7c8aff;--ok:#16c98a;--err:#ff5869;--br:16px}
 *{box-sizing:border-box}html,body{height:100%}
 body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,#0e1530 0%,#05080f 55%) fixed;color:var(--ink);font:15px/1.5 system-ui,Segoe UI,Roboto;overflow-y:auto}
-.wrap{max-width:980px;margin:0 auto;padding:18px}
+.wrap{max-width:1100px;margin:0 auto;padding:18px}
 .top{display:flex;align-items:center;gap:12px}
 .x{margin-left:auto;cursor:pointer;font-size:22px;line-height:1;border:1px solid var(--line);border-radius:12px;padding:6px 10px;background:#0f1522}
 .card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--br);padding:16px;margin-top:16px}
 label{display:block;margin:6px 0;color:#b8c4d9}
 input,textarea,select{width:100%;padding:11px;border-radius:12px;background:#0a101a;color:var(--ink);border:1px solid #1b2436;outline:0}
+small.muted{color:#9fb0c7}
 .btn{display:inline-flex;gap:8px;align-items:center;padding:9px 13px;border-radius:12px;border:1px solid #2a3550;background:#141b2b;color:#fff;cursor:pointer}
 .btn.primary{background:linear-gradient(90deg,#6b7bff,#9e76ff);border:0}
+.btn.ghost{background:#0e1422}
 .row{display:flex;gap:12px;flex-wrap:wrap}.col{flex:1 1 260px}
 .status{margin-top:8px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:12px}
 .track{background:#0b121f;border:1px solid #1f2942;border-radius:12px;overflow:hidden;position:relative}
 .track .pad{padding:10px;border-top:1px solid #18223a}
 .track .cover{width:100%;aspect-ratio:1/1;object-fit:cover;background:#0b111c}
 .skel{position:relative;overflow:hidden}
 .skel::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);animation:sh 1.2s infinite}
 @keyframes sh{to{transform:translateX(100%)}}
-
 .badge{position:absolute;left:10px;top:10px;background:#101a2e;border:1px solid #213055;padding:4px 8px;border-radius:999px;font-size:12px;opacity:.9}
 .badge.ok{background:#0f1e18;border-color:#1f3c33;color:#9af0cd}
 
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.tools .btn{padding:7px 10px;font-size:13px;border-radius:10px}
+
 #now{position:fixed;left:0;right:0;bottom:0;background:#0b111c;border-top:1px solid #1b2436}
-#now .in{max-width:980px;margin:0 auto;padding:8px 12px;display:flex;gap:10px;align-items:center}
+#now .in{max-width:1100px;margin:0 auto;padding:8px 12px;display:flex;gap:10px;align-items:center}
 #now img{width:36px;height:36px;border-radius:8px;border:1px solid #273453;object-fit:cover}
 .muted{color:#9fb0c7}
 
-/* ===== Loader (3 žiedai + natos) ===== */
-.loader-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,8,15,.6);backdrop-filter:blur(2px);z-index:9999}
+/* ===== Premium loader (3 žiedai priešingom kryptim + natos) ===== */
+.loader-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,8,15,.62);backdrop-filter:blur(2px);z-index:9999}
 .loader-overlay.hidden{display:none}
-.rings{position:relative;width:140px;height:140px;display:grid;place-items:center}
+.rings{position:relative;width:150px;height:150px;display:grid;place-items:center;filter:drop-shadow(0 4px 14px rgba(124,138,255,.25))}
 .ring{position:absolute;border-radius:50%;border:3px solid transparent;border-top-color:#7c8aff;border-right-color:#7c8aff;animation:spin 1.2s linear infinite}
-.ring.r2{width:100px;height:100px;border-top-color:#9e76ff;border-left-color:#9e76ff;animation:spinR 1.6s linear infinite}
-.ring.r3{width:70px;height:70px;border-bottom-color:#6bd0ff;border-left-color:#6bd0ff;animation:spin 2.1s linear infinite}
-.ring.r1{width:130px;height:130px}
+.ring.r2{width:110px;height:110px;border-top-color:#9e76ff;border-left-color:#9e76ff;animation:spinR 1.7s linear infinite}
+.ring.r3{width:80px;height:80px;border-bottom-color:#6bd0ff;border-left-color:#6bd0ff;animation:spin 2.3s linear infinite}
+.ring.r1{width:140px;height:140px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes spinR{to{transform:rotate(-360deg)}}
 .note-wrap{position:absolute;display:flex;gap:6px;align-items:end}
-.note{font-size:20px;opacity:.85;animation:float 1.6s ease-in-out infinite}
-.note.n2{animation-delay:.25s}.note.n3{animation-delay:.5s}
-@keyframes float{0%{transform:translateY(6px) scale(.98)}50%{transform:translateY(-6px) scale(1)}100%{transform:translateY(6px) scale(.98)}}
+.note{font-size:22px;opacity:.9;animation:float 1.6s ease-in-out infinite}
+.note.n2{animation-delay:.22s}.note.n3{animation-delay:.44s}
+@keyframes float{0%{transform:translateY(7px) scale(.98)}50%{transform:translateY(-7px) scale(1)}100%{transform:translateY(7px) scale(.98)}}
+
+/* toast */
+.toast{position:fixed;right:14px;bottom:74px;background:#121b2e;border:1px solid #223358;color:#e8eeff;padding:10px 12px;border-radius:12px;z-index:99999;box-shadow:0 6px 30px rgba(0,0,0,.35)}
+.toast.err{border-color:#5b2b36;background:#1b0f14}
 </style>
 </head>
 <body>
@@ -70,16 +78,20 @@ input,textarea,select{width:100%;padding:11px;border-radius:12px;background:#0a1
           <small class="muted">AI santrauką/žodžius (≤180) suformatuos į 2–3 eilutes.</small>
         </div>
         <div class="col">
-          <label>Žanras / nuotaika</label>
+          <label>Žanras / stilius</label>
           <input id="meta" placeholder="pvz.: synthwave, dreamy">
           <div class="row">
             <div class="col">
               <label>Modelis</label>
-              <select id="model"><option>V3_5</option><option selected>V4_5PLUS</option></select>
+              <select id="model"><option>V3_5</option><option>V4</option><option selected>V4_5</option></select>
             </div>
             <div class="col">
               <label>Vokalas</label>
               <select id="voice"><option value="female" selected>Moteris</option><option value="male">Vyras</option><option value="none">Instrumental</option></select>
+            </div>
+            <div class="col">
+              <label>Trukmė (s)</label>
+              <input id="length" type="number" min="15" max="480" value="60">
             </div>
           </div>
           <div class="row" style="align-items:flex-end">
@@ -105,9 +117,14 @@ input,textarea,select{width:100%;padding:11px;border-radius:12px;background:#0a1
           <div class="pad">
             <h3 id="ttA" style="margin:6px 0 8px">Kūrinys A</h3>
             <audio id="audA" controls style="width:100%"></audio>
-            <div class="row" style="margin-top:8px">
-              <button class="btn" id="playA">▶️ Groti</button>
-              <button class="btn" id="dlA">⬇️ Atsisiųsti</button>
+            <div class="tools">
+              <button class="btn ghost" id="playA">▶️ Groti</button>
+              <button class="btn ghost" id="dlA">⬇️ Atsisiųsti</button>
+              <button class="btn" id="extA">➕ Extend +30s</button>
+              <button class="btn" id="vocA">🎤 Add Vocals</button>
+              <button class="btn" id="insA">🎼 Add Instrumental</button>
+              <button class="btn" id="covGA">🖼️ Cover (generate)</button>
+              <button class="btn" id="covSA">🖼️ Cover (status)</button>
             </div>
           </div>
         </div>
@@ -118,9 +135,14 @@ input,textarea,select{width:100%;padding:11px;border-radius:12px;background:#0a1
           <div class="pad">
             <h3 id="ttB" style="margin:6px 0 8px">Kūrinys B</h3>
             <audio id="audB" controls style="width:100%"></audio>
-            <div class="row" style="margin-top:8px">
-              <button class="btn" id="playB">▶️ Groti</button>
-              <button class="btn" id="dlB">⬇️ Atsisiųsti</button>
+            <div class="tools">
+              <button class="btn ghost" id="playB">▶️ Groti</button>
+              <button class="btn ghost" id="dlB">⬇️ Atsisiųsti</button>
+              <button class="btn" id="extB">➕ Extend +30s</button>
+              <button class="btn" id="vocB">🎤 Add Vocals</button>
+              <button class="btn" id="insB">🎼 Add Instrumental</button>
+              <button class="btn" id="covGB">🖼️ Cover (generate)</button>
+              <button class="btn" id="covSB">🖼️ Cover (status)</button>
             </div>
           </div>
         </div>
@@ -152,6 +174,7 @@ const qs = (s)=>document.querySelector(s);
 const oneLine = s => (s||'').toString().replace(/\s+/g,' ').trim();
 const limit = (s,n)=>{s=oneLine(s); if(s.length<=n) return s; let cut=s.slice(0,n), last=cut.lastIndexOf(' '); return (last>50?cut.slice(0,last):cut).trim();}
 
+function toast(msg,err){ const n=document.createElement('div'); n.className='toast'+(err?' err':''); n.innerHTML=msg; document.body.appendChild(n); setTimeout(()=>n.remove(), 5000); }
 function closeMe(){ if(history.length>1) history.back(); else location.href='/' }
 async function ensureJson(r){try{return await r.json()}catch(e){return {ok:false,error:'JSON',status:r.status}}}
 function showLoader(v){ qs('#loader')?.classList.toggle('hidden', !v); }
@@ -160,14 +183,20 @@ function setNow(url,title,cover){
   if(!url) return;
   const a=qs('#na'); const img=qs('#nimg'); const ttl=qs('#nttl');
   const play = (src)=>{ a.src=src; a.play().catch(()=>{}); };
-  // bandome blob (greitesnis startas kai CORS leidžia)
   fetch(url).then(r=>r.blob()).then(b=>{play(URL.createObjectURL(b))}).catch(_=>play(url));
   img.src=cover||''; ttl.textContent=title||'Track';
 }
 
+let stateA = { taskId:null, track:null };
+let stateB = { taskId:null, track:null };
+
 qs('#ai').onclick=async ()=>{
   const title=oneLine(qs('#title').value||''); const meta=oneLine(qs('#meta').value||'');
-  const r = await fetch('/api/stream', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'augam-auto',messages:[{role:'system',content:'Return ≤180 chars clean Lithuanian lyrics'},{role:'user',content:JSON.stringify({title,meta,text:title||meta})}]})});
+  const r = await fetch('/api/stream', {method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'augam-auto',messages:[
+      {role:'system',content:'Return ≤180 chars clean Lithuanian lyrics'},
+      {role:'user',content:JSON.stringify({title,meta,text:title||meta})}
+    ]})});
   const j = await ensureJson(r); qs('#lyrics').value = limit(j.output||title||'nauja daina', 180);
 };
 
@@ -176,75 +205,97 @@ qs('#go').onclick = async ()=>{
   let text = oneLine(qs('#lyrics').value||'');
   const meta = oneLine(qs('#meta').value||'');
   const model= qs('#model').value; const voice=qs('#voice').value;
-  const lang = qs('#lang').value;
+  const lang = qs('#lang').value; const length = Math.max(15, Math.min(480, parseInt(qs('#length').value||'60',10)||60));
 
   if(!text){
-    const r = await fetch('/api/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:'Return ≤180 chars catchy song idea'},{role:'user',content:JSON.stringify({title,meta})}]})});
+    const r = await fetch('/api/stream',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:[
+        {role:'system',content:'Return ≤180 chars catchy song idea'},
+        {role:'user',content:JSON.stringify({title,meta})}
+      ]})});
     const j=await ensureJson(r); text = limit(j.output||'melodic chorus, dreamy vibe',180);
   }
 
   // paruošiame UI
   qs('#status').textContent='⏳ Kuriame du kūrinius paraleliai…';
   qs('#cards').style.display='grid';
-  prepCard('A', {title: title+' — A'});
-  prepCard('B', {title: title+' — B'});
+  prepCard('A', {title: title+' — A'}); stateA={taskId:null,track:null};
+  prepCard('B', {title: title+' — B'}); stateB={taskId:null,track:null};
   showLoader(true);
 
-  // startinam 2 užduotis
-  const payload = (variant)=>({title: title + (variant ? ' — '+variant : ''), prompt: text, model, genre:meta, instrumental:(voice==='none'), vocalGender:voice, language:lang, lyrics_language:lang});
-  const r1 = await fetch('/api/music/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload('A'))});
-  const r2 = await fetch('/api/music/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload('B'))});
-  const j1 = await ensureJson(r1), j2 = await ensureJson(r2);
+  // payload pagal Suno dokus
+  const payload = (variant)=>({
+    title: title + (variant ? ' — '+variant : ''),
+    prompt: text,
+    model,
+    style: meta,
+    customMode: true,
+    instrumental: (voice==='none'),
+    vocalGender: voice,
+    language: lang, lyrics_language: lang,
+    styleWeight: 0.65, weirdnessConstraint: 0.65, audioWeight: 0.65,
+    length
+  });
+
+  const [r1,r2] = await Promise.all([
+    fetch('/api/music/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload('A'))}),
+    fetch('/api/music/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload('B'))})
+  ]);
+
+  const [j1,j2] = await Promise.all([ensureJson(r1), ensureJson(r2)]);
+
+  if (j1.demo || j2.demo) {
+    qs('#status').innerHTML = '⚠️ DEMO: nėra <code>SUNO_API_KEY</code>. Realūs skambučiai į Suno nevykdomi.';
+  }
 
   let doneA=false, doneB=false;
   const finishMaybe=()=>{ if(doneA && doneB){ showLoader(false); qs('#status').innerHTML='<span style="color:#16c98a">✅ Abu kūriniai paruošti</span>'; } };
 
-  // jeigu tiesiog gauta audio
-  if(j1.audio_url){ fillCard('A', {title, image:j1.image||'', audio_url:j1.audio_url}); doneA=true; }
-  if(j2.audio_url){ fillCard('B', {title, image:j2.image||'', audio_url:j2.audio_url}); doneB=true; }
-
-  const t1=j1.task_id, t2=j2.task_id;
-  if(!t1 && !j1.audio_url){ badgeFail('A','Nepavyko paleisti'); doneA=true; }
-  if(!t2 && !j2.audio_url){ badgeFail('B','Nepavyko paleisti'); doneB=true; }
-  finishMaybe();
-  if(doneA && doneB) return;
+  if(!j1.task_id){ badgeFail('A','Nepavyko paleisti'); doneA=true; }
+  if(!j2.task_id){ badgeFail('B','Nepavyko paleisti'); doneB=true; }
+  stateA.taskId=j1.task_id||null; stateB.taskId=j2.task_id||null;
+  finishMaybe(); if(doneA && doneB) return;
 
   // poll’eriai
-  async function pollOne(which, taskId){
-    let tries=0, gotCover=false, gotStream=false;
-    while(tries<180){ // iki ~12 min
-      tries++;
-      const rr = await fetch('/api/music/status?task='+encodeURIComponent(taskId));
-      const s  = await ensureJson(rr);
-
-      if(s?.tracks && s.tracks[0]){
-        const t=s.tracks[0];
-        // cover ASAP
-        if(t.image && !gotCover){ setCover(which, t.image); gotCover=true; }
-        // stream ASAP
-        if(t.stream && !getAudioEl(which).src && !gotStream){ setAudio(which, t.stream); gotStream=true; }
-      }
-
-      if(s.status==='ready'){
-        const t = s.audio_url ? {title: qs('#tt'+which).textContent, image: (s.tracks?.[0]?.image||''), audio_url:s.audio_url}
-                              : (s.tracks||[])[0];
-        fillCard(which, t||{});
-        if(which==='A') doneA=true; else doneB=true;
-        finishMaybe();
-        return;
-      }
-      if(s.status==='failed'){ badgeFail(which,'Klaida'); if(which==='A') doneA=true; else doneB=true; finishMaybe(); return; }
-      setBadge(which,'⏳ '+(s.status||'laukiama')+'…');
-      await new Promise(r=>setTimeout(r, 4000));
-    }
-    setBadge(which,'⏳ Ilgiau nei įprasta…');
-    if(which==='A') doneA=true; else doneB=true;
-    finishMaybe();
-  }
-
-  if(t1) pollOne('A', t1);
-  if(t2) pollOne('B', t2);
+  if(stateA.taskId) pollOne('A', stateA);
+  if(stateB.taskId) pollOne('B', stateB);
 };
+
+async function pollOne(which, st){
+  let tries=0, gotCover=false, gotStream=false;
+  while(tries<180){
+    tries++;
+    const rr = await fetch('/api/music/status?task='+encodeURIComponent(st.taskId));
+    const s  = await ensureJson(rr);
+
+    if(s?.tracks && s.tracks[0]){
+      const t=s.tracks[0];
+      // cover ASAP
+      if(t.image && !gotCover){ setCover(which, t.image); gotCover=true; }
+      // stream ASAP
+      const aEl = getAudioEl(which);
+      if(t.stream && !aEl.src && !gotStream){ setAudio(which, t.stream); gotStream=true; }
+      // atnaujink lokalią būseną
+      st.track = t;
+    }
+
+    if(s.status==='ready'){
+      const t = s.audio_url ? {title: qs('#tt'+which).textContent, image: (s.tracks?.[0]?.image||''), audio_url:s.audio_url}
+                            : (s.tracks||[])[0];
+      fillCard(which, t||{});
+      if(which==='A') window.doneA=true; else window.doneB=true;
+      if(which==='A') window.doneA=true; else window.doneB=true;
+      setBadge(which,'Paruošta', true);
+      break;
+    }
+    if(s.status==='failed'){ badgeFail(which,'Klaida'); break; }
+    setBadge(which,'⏳ '+(s.status||'laukiama')+'…');
+    await new Promise(r=>setTimeout(r, 4000));
+  }
+  if(which==='A') window.doneA=true; else window.doneB=true;
+  const doneA=!!window.doneA, doneB=!!window.doneB;
+  if(doneA && doneB){ showLoader(false); qs('#status').innerHTML='<span style="color:#16c98a">✅ Abu kūriniai paruošti</span>'; }
+}
 
 // ==== UI helperiai dviem kortelėms ====
 function prepCard(which, {title}){
@@ -252,24 +303,99 @@ function prepCard(which, {title}){
   qs('#cover'+which).src=''; qs('#cover'+which).classList.add('skel');
   const a=getAudioEl(which); a.removeAttribute('src'); a.load();
   setBadge(which,'Kuriama…');
+
+  // įrankių mygtukai (bus aktyvuoti kai turėsime track + taskId)
+  qs('#play'+which).onclick = ()=> setNow(getAudioEl(which).src, qs('#tt'+which).textContent, qs('#cover'+which).src);
+  qs('#dl'+which).onclick   = ()=> window.open(getAudioEl(which).src, '_blank');
+  qs('#ext'+which).onclick  = ()=> doExtend(which);
+  qs('#voc'+which).onclick  = ()=> doAddVocals(which);
+  qs('#ins'+which).onclick  = ()=> doAddInstrumental(which);
+  qs('#covG'+which).onclick = ()=> doCoverGenerate(which);
+  qs('#covS'+which).onclick = ()=> doCoverStatus(which);
 }
 function fillCard(which, t){
   if(t.image){ setCover(which, t.image); }
   if(t.audio_url){ setAudio(which, t.audio_url); }
   setBadge(which,'Paruošta', true);
-  // mygtukai
-  qs('#play'+which).onclick = ()=> setNow(getAudioEl(which).src, qs('#tt'+which).textContent, qs('#cover'+which).src);
-  qs('#dl'+which).onclick   = ()=> window.open(getAudioEl(which).src, '_blank');
 }
 function setCover(which, url){ const im=qs('#cover'+which); if(im.src!==url){ im.src=url; } im.classList.remove('skel'); }
 function setAudio(which, url){
   const a=getAudioEl(which);
-  // pirmiausia bandome blob (pradeda groti greičiau jei CORS leidžia)
   fetch(url).then(r=>r.blob()).then(b=>{a.src=URL.createObjectURL(b);a.load();}).catch(_=>{a.src=url;a.load();});
 }
 function getAudioEl(which){ return qs('#aud'+which); }
 function setBadge(which, text, ok){ const b=qs('#badge'+which); b.textContent=text; b.classList.toggle('ok', !!ok); }
 function badgeFail(which, text){ const b=qs('#badge'+which); b.textContent='❌ '+(text||'Nepavyko'); b.classList.remove('ok'); }
+
+// ===== Įrankiai (extend / vocals / instrumental / cover) =====
+async function doExtend(which){
+  const st = (which==='A') ? stateA : stateB;
+  if(!st?.track?.id){ return toast('Nėra ką „extendinti“ – dar neturim audio ID.', true); }
+  const contAt = Math.max(0, Math.round((st.track.duration||60) - 30));
+  showLoader(true);
+  const r = await fetch('/api/music/extend',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ defaultParamFlag:true, audioId: st.track.id, prompt:'Extend with a beautiful instrumental outro', continueAt: contAt, model: qs('#model').value })});
+  const j = await ensureJson(r);
+  showLoader(false);
+  if(!j.ok){ return toast('Extend nepavyko: '+(j.error||'klaida'), true); }
+  toast('Extend užduotis paleista ✔️'); 
+}
+
+async function doAddVocals(which){
+  const st = (which==='A') ? stateA : stateB;
+  if(!st?.track?.audio_url){ return toast('Nėra audio URL „add-vocals“ užduočiai.', true); }
+  showLoader(true);
+  const r = await fetch('/api/music/add-vocals',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ prompt:'Add smooth, airy vocals', title: qs('#tt'+which).textContent+' (vocals)', style: qs('#meta').value, vocalGender: (qs('#voice').value||'female'), uploadUrl: st.track.audio_url })});
+  const j = await ensureJson(r);
+  showLoader(false);
+  if(!j.ok){ return toast('Add-vocals nepavyko: '+(j.error||'klaida'), true); }
+  toast('Add-vocals paleista ✔️'); 
+}
+
+async function doAddInstrumental(which){
+  const st = (which==='A') ? stateA : stateB;
+  if(!st?.track?.audio_url){ return toast('Nėra audio URL „add-instrumental“ užduočiai.', true); }
+  showLoader(true);
+  const r = await fetch('/api/music/add-instrumental',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ title: qs('#tt'+which).textContent+' (instrumental)', tags:'instrumental, ambient', uploadUrl: st.track.audio_url })});
+  const j = await ensureJson(r);
+  showLoader(false);
+  if(!j.ok){ return toast('Add-instrumental nepavyko: '+(j.error||'klaida'), true); }
+  toast('Add-instrumental paleista ✔️'); 
+}
+
+async function doCoverGenerate(which){
+  const st = (which==='A') ? stateA : stateB;
+  if(!st?.taskId){ return toast('Trūksta taskId – pirma sugeneruok muziką.', true); }
+  showLoader(true);
+  const r = await fetch('/api/music/cover-generate',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ taskId: st.taskId })});
+  const j = await ensureJson(r);
+  showLoader(false);
+  if(!j.ok){ return toast('Cover generate nepavyko: '+(j.error||'klaida'), true); }
+  toast('Cover generacija paleista ✔️');
+}
+
+async function doCoverStatus(which){
+  showLoader(true);
+  const r = await fetch('/api/music/cover-status');
+  const j = await ensureJson(r);
+  showLoader(false);
+  if(!j.ok){ return toast('Cover status nepavyko: '+(j.error||'klaida'), true); }
+  const imgs = j.images || [];
+  if(imgs.length){ setCover(which, imgs[0]); toast('Gautas viršelis ✔️'); } else { toast('Kol kas nėra cover rezultatų.'); }
+}
+
+// ===== Credits (parodyti viršuje) =====
+(async ()=>{
+  try{
+    const r = await fetch('/api/music/credits'); const j = await r.json();
+    if (j.ok && j.credits!=null) {
+      qs('#status').innerHTML = `🎟️ Creditai: <b>${j.credits}</b>`;
+    }
+  }catch(_){}
+})();
 </script>
 </body>
 </html>
