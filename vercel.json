@@ -1,59 +1,18 @@
-{
+as nesuprantu kur keltin duomenu baze as nemioku man reikia labai aiskai.  tada cia vercel tai islaikyk struktura ir papildyk ir asikaii surasyk kur koki faila kelti.  {
   "version": 2,
   "framework": null,
-
-  "regions": ["fra1", "arn1"],
-  "cleanUrls": true,
-  "trailingSlash": false,
-
   "builds": [
     { "src": "api/**/*.js", "use": "@vercel/node" },
     { "src": "public/**/*", "use": "@vercel/static" }
   ],
-
-  "functions": {
-    "api/stream.js": { "maxDuration": 300, "memory": 1024 },
-    "api/**.js":     { "maxDuration": 60,  "memory": 512 }
-  },
-
-  "env": {
-    "DATABASE_URL": "@database_url",          
-    "NEON_DATABASE_URL": "@database_url"
-  },
-
-  "headers": [
-    { "source": "/(index.html)?", "headers": [ { "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" } ] },
-    { "source": "/(.*)\\.html",   "headers": [ { "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" } ] },
-    { "source": "/spec/(.*)\\.html", "headers": [ { "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" } ] },
-
-    { "source": "/api/(.*)", "headers": [
-      { "key": "Cache-Control", "value": "no-store" },
-      { "key": "Pragma", "value": "no-cache" },
-      { "key": "Expires", "value": "0" }
-    ] },
-
-    { "source": "/(.*)\\.(css|js|mjs|svg|png|jpg|jpeg|gif|webp|ico|woff2)", "headers": [
-      { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-    ] },
-
-    { "source": "/assets/(.*)", "headers": [
-      { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-    ] }
-  ],
-
   "routes": [
     { "src": "^/api/stream$",               "dest": "/api/stream.js" },
     { "src": "^/api/complete$",             "dest": "/api/complete.js" },
     { "src": "^/api/suggest$",              "dest": "/api/suggest.js" },
     { "src": "^/api/models$",               "dest": "/api/models.js" },
     { "src": "^/api/diagnostics$",          "dest": "/api/diagnostics.js" },
-
     { "src": "^/api/library/recent$",       "dest": "/api/library/recent.js" },
-
-    { "src": "^/api/chats$",                "dest": "/api/chats/index.js" },
-    { "src": "^/api/chats/([^/]+)/messages$", "dest": "/api/chats/[id]/messages.js" },
-    { "src": "^/api/assets$",               "dest": "/api/assets/index.js" },
-    { "src": "^/api/assets/upload$",        "dest": "/api/assets/upload.js" },
+    { "src": "/api/complete",               "dest": "/api/complete.js" },
 
     { "src": "^/api/flux/create$",          "dest": "/api/flux/create.js" },
     { "src": "^/api/comic/create$",         "dest": "/api/comic/create.js" },
@@ -141,10 +100,10 @@
     { "src": "^/wp-json/augam/v1/music/credits$",      "dest": "/api/music/credits.js" },
     { "src": "^/wp-json/augam/v1/music/callback$",     "dest": "/api/music/callback.js" },
 
-    { "src": "^/wp-json$", "dest": "/api/diagnostics.js" },
+    { "src": "^/wp-json$",                   "dest": "/api/diagnostics.js" },
 
-    { "src": "^/$",            "dest": "/public/index.html" },
-    { "src": "^(?!/api)(.*)$", "dest": "/public$1" }
+    { "src": "^/$",                 "dest": "/public/index.html" },
+    { "src": "^(?!/api)(.*)$",      "dest": "/public$1" }
   ]
 }
 
