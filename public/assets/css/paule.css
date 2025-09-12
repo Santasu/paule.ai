@@ -678,6 +678,40 @@ stripe-pricing-table iframe{
 /* 7) Jei į modalą įdėtum kitų gridų – nulinam nereikalingus tarpus */
 #modal .welcome-grid{ margin:0 auto; }
 
+/* paslepiam seną apačios juostą */
+#decisionBar{ display:none !important }
+
+/* mini kapsulės po burbulu */
+.inline-decisions{
+  display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;
+}
+.inline-decisions .decision-chip{
+  padding:6px 8px; font-size:11.5px; border-radius:10px;
+  border:1px solid var(--border); background:var(--bg-primary);
+}
+.inline-decisions .decision-chip img{ width:14px; height:14px }
+
+/* ---- įvesties blokas mažesnis ir siauresnis ---- */
+#bottomSection{ padding:6px 0 8px }
+#bottomSection .input-bar{ padding:6px 10px }
+#bottomSection .input-container{
+  width:min(900px, calc(100% - 4cm));
+  margin:0 auto; padding:6px 8px;
+  border:1px solid var(--border);
+  border-radius:12px; background:var(--bg-secondary);
+}
+.message-input{ min-height:36px; max-height:96px; padding-bottom:0; font-size:15px }
+.message-input:focus::placeholder{ color:transparent }
+
+/* „Į naujausią“ – kad nepersidengtų su įvestimi */
+.jump-latest{ bottom:120px }
+
+/* ---- pricing modalas platesnis (Stripe pats peršoks į 3 stulpelius) ---- */
+.modal--sheet{ max-width:min(1600px, 98vw) }
+.pricing-section{ margin:12px auto; width:min(1200px, 96%) }
+stripe-pricing-table{ display:block; width:100% } /* Shadow DOM – tiesiog duodam daugiau pločio */
+
+
 
   
 
