@@ -11,5 +11,5 @@ module.exports = async (_req, res) => {
     }
 
     return res.status(200).json({ ok:true, credits: j?.data?.credits ?? null });
-  } catch (e) { return res.status(500).json({ ok:false, error:String(e?.message||e) }); }
+  } catch (e) { return res.status(200).json({ ok:false, error:String(e?.message||e) }); }
 };
