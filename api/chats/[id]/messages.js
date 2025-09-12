@@ -1,35 +1,48 @@
-const { q } = require('../../../lib/db');
-const { getAuth } = require('../../../lib/auth');
-const { json, bad, method, notFound, unauthorized } = require('../../../lib/http');
-
+// filename: api/chats/[id]/messages.js
 module.exports = async (req, res) => {
-  const auth = await getAuth(req);
-  if (!auth.userId) return unauthorized(res);
+  const { getSql } = require('../../../lib/db-any');
+  const sql = await getSql();
+  const userKey = req.headers['x-user-id'] || null;
+  if (!userKey) return res.status(401).json({ error: 'Unauthorized' });
 
   const chatId = req.query.id;
 
-  const own = await q('SELECT id FROM chats WHERE id=$1 AND user_id=$2', [chatId, auth.userId]);
-  if (!own.rows[0]) return notFound(res);
+  // ownership check
+  const own = await sql`
+    SELECT 1 FROM chats
+    WHERE id = ${chatId}
+      AND user_id = (SELECT id FROM users WHERE clerk_id = ${String(userKey)})
+    LIMIT 1
+  `;
+  if (!own[0]) return res.status(404).json({ error: 'Not found' });
 
   if (req.method === 'GET') {
-    const { rows } = await q(
-      'SELECT id, role, content, created_at FROM messages WHERE chat_id=$1 ORDER BY created_at ASC',
-      [chatId]
-    );
-    return json(res, 200, { messages: rows });
+    const rows = await sql`
+      SELECT id, role, content, created_at
+      FROM messages
+      WHERE chat_id = ${chatId}
+      ORDER BY created_at ASC
+    `;
+    res.setHeader('Cache-Control','no-store');
+    return res.status(200).json({ messages: rows });
   }
 
   if (req.method === 'POST') {
-    const body = typeof req.body === 'object' && req.body ? req.body : {};
-    const role = String(body.role || '');
-    const content = String(body.content || '');
-    if (!content || !['user','assistant'].includes(role)) return bad(res, 'role(user|assistant) + content');
-    const { rows } = await q(
-      'INSERT INTO messages (chat_id, role, content) VALUES ($1,$2,$3) RETURNING id, role, content, created_at',
-      [chatId, role, content]
-    );
-    return json(res, 200, rows[0]);
+    const b = typeof req.body === 'object' && req.body ? req.body : {};
+    const role = String(b.role || '');
+    const content = String(b.content || '');
+    if (!['user','assistant'].includes(role) || !content) {
+      return res.status(400).json({ error: 'role(user|assistant) + content required' });
+    }
+    const rows = await sql`
+      INSERT INTO messages (chat_id, role, content)
+      VALUES (${chatId}, ${role}, ${content})
+      RETURNING id, role, content, created_at
+    `;
+    res.setHeader('Cache-Control','no-store');
+    return res.status(200).json(rows[0]);
   }
 
-  return method(res, ['GET','POST']);
+  res.setHeader('Allow','GET, POST');
+  res.status(405).json({ error: 'Method Not Allowed' });
 };
