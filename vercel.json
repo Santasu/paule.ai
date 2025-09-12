@@ -24,6 +24,14 @@
 
     { "src": "^/api/music/create$",         "dest": "/api/music/create.js" },
     { "src": "^/api/music/status$",         "dest": "/api/music/status.js" },
+    { "src": "^/api/music/extend$",         "dest": "/api/music/extend.js" },
+    { "src": "^/api/music/add-vocals$",     "dest": "/api/music/add-vocals.js" },
+    { "src": "^/api/music/add-instrumental$", "dest": "/api/music/add-instrumental.js" },
+    { "src": "^/api/music/upload-cover$",   "dest": "/api/music/upload-cover.js" },
+    { "src": "^/api/music/cover-generate$", "dest": "/api/music/cover-generate.js" },
+    { "src": "^/api/music/cover-status$",   "dest": "/api/music/cover-status.js" },
+    { "src": "^/api/music/credits$",        "dest": "/api/music/credits.js" },
+
     { "src": "^/api/clerk/pk$",             "dest": "/api/clerk/pk.js" },
 
     { "src": "^/api/paule/v1/stream$",        "dest": "/api/stream.js" },
@@ -35,8 +43,16 @@
     { "src": "^/api/paule/v1/comic/create$",  "dest": "/api/comic/create.js" },
     { "src": "^/api/paule/v1/runway/image$",  "dest": "/api/runway/image.js" },
     { "src": "^/api/paule/v1/runway/status$", "dest": "/api/runway/status.js" },
-    { "src": "^/api/paule/v1/music/create$",  "dest": "/api/music/create.js" },
-    { "src": "^/api/paule/v1/music/status$",  "dest": "/api/music/status.js" },
+
+    { "src": "^/api/paule/v1/music/create$",       "dest": "/api/music/create.js" },
+    { "src": "^/api/paule/v1/music/status$",       "dest": "/api/music/status.js" },
+    { "src": "^/api/paule/v1/music/extend$",       "dest": "/api/music/extend.js" },
+    { "src": "^/api/paule/v1/music/add-vocals$",   "dest": "/api/music/add-vocals.js" },
+    { "src": "^/api/paule/v1/music/add-instrumental$", "dest": "/api/music/add-instrumental.js" },
+    { "src": "^/api/paule/v1/music/upload-cover$", "dest": "/api/music/upload-cover.js" },
+    { "src": "^/api/paule/v1/music/cover-generate$", "dest": "/api/music/cover-generate.js" },
+    { "src": "^/api/paule/v1/music/cover-status$", "dest": "/api/music/cover-status.js" },
+    { "src": "^/api/paule/v1/music/credits$",      "dest": "/api/music/credits.js" },
 
     { "src": "^/wp-json/paule/v1/stream$",        "dest": "/api/stream.js" },
     { "src": "^/wp-json/paule/v1/complete$",      "dest": "/api/complete.js" },
@@ -47,8 +63,16 @@
     { "src": "^/wp-json/paule/v1/comic/create$",  "dest": "/api/comic/create.js" },
     { "src": "^/wp-json/paule/v1/runway/image$",  "dest": "/api/runway/image.js" },
     { "src": "^/wp-json/paule/v1/runway/status$", "dest": "/api/runway/status.js" },
-    { "src": "^/wp-json/paule/v1/music/create$",  "dest": "/api/music/create.js" },
-    { "src": "^/wp-json/paule/v1/music/status$",  "dest": "/api/music/status.js" },
+
+    { "src": "^/wp-json/paule/v1/music/create$",       "dest": "/api/music/create.js" },
+    { "src": "^/wp-json/paule/v1/music/status$",       "dest": "/api/music/status.js" },
+    { "src": "^/wp-json/paule/v1/music/extend$",       "dest": "/api/music/extend.js" },
+    { "src": "^/wp-json/paule/v1/music/add-vocals$",   "dest": "/api/music/add-vocals.js" },
+    { "src": "^/wp-json/paule/v1/music/add-instrumental$", "dest": "/api/music/add-instrumental.js" },
+    { "src": "^/wp-json/paule/v1/music/upload-cover$", "dest": "/api/music/upload-cover.js" },
+    { "src": "^/wp-json/paule/v1/music/cover-generate$", "dest": "/api/music/cover-generate.js" },
+    { "src": "^/wp-json/paule/v1/music/cover-status$", "dest": "/api/music/cover-status.js" },
+    { "src": "^/wp-json/paule/v1/music/credits$",      "dest": "/api/music/credits.js" },
 
     { "src": "^/wp-json/augam/v1/stream$",        "dest": "/api/stream.js" },
     { "src": "^/wp-json/augam/v1/complete$",      "dest": "/api/complete.js" },
@@ -61,8 +85,16 @@
     { "src": "^/wp-json/augam/v1/runway/image-to-video$", "dest": "/api/runway/image.js" },
     { "src": "^/wp-json/augam/v1/runway/status$", "dest": "/api/runway/status.js" },
     { "src": "^/wp-json/augam/v1/runway/ping$",   "dest": "/api/diagnostics.js" },
-    { "src": "^/wp-json/augam/v1/music/create$",  "dest": "/api/music/create.js" },
-    { "src": "^/wp-json/augam/v1/music/status$",  "dest": "/api/music/status.js" },
+
+    { "src": "^/wp-json/augam/v1/music/create$",       "dest": "/api/music/create.js" },
+    { "src": "^/wp-json/augam/v1/music/status$",       "dest": "/api/music/status.js" },
+    { "src": "^/wp-json/augam/v1/music/extend$",       "dest": "/api/music/extend.js" },
+    { "src": "^/wp-json/augam/v1/music/add-vocals$",   "dest": "/api/music/add-vocals.js" },
+    { "src": "^/wp-json/augam/v1/music/add-instrumental$", "dest": "/api/music/add-instrumental.js" },
+    { "src": "^/wp-json/augam/v1/music/upload-cover$", "dest": "/api/music/upload-cover.js" },
+    { "src": "^/wp-json/augam/v1/music/cover-generate$", "dest": "/api/music/cover-generate.js" },
+    { "src": "^/wp-json/augam/v1/music/cover-status$", "dest": "/api/music/cover-status.js" },
+    { "src": "^/wp-json/augam/v1/music/credits$",      "dest": "/api/music/credits.js" },
 
     { "src": "^/wp-json$",                   "dest": "/api/diagnostics.js" },
 
@@ -70,4 +102,3 @@
     { "src": "^(?!/api)(.*)$",      "dest": "/public$1" }
   ]
 }
-
