@@ -28,7 +28,7 @@
   <!-- Stripe -->
   <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
 
-  <!-- Tavo CSS failas -->
+  <!-- Pagrindinis CSS (tavo failas) -->
   <link rel="stylesheet" href="/assets/css/paule.css?v=1.1.6"/>
 </head>
 <body>
@@ -306,7 +306,7 @@
     })();
   </script>
 
-  <!-- HOTFIX: SSE -> JSON kai mode=once (palikta suderinamumui, nenaudojam su SSE) -->
+  <!-- HOTFIX: SSE -> JSON kai mode=once (palikta suderinamumui) -->
   <script>
     (function(){
       'use strict';
@@ -410,6 +410,7 @@
     // Tunables
     const SOFT_TIMEOUT_MS = 900;
     const HARD_DEADLINE_MS = 25000;
+    const MAX_TOKENS = 1024;
 
     // --- Bendra būsena ---
     const state = {
@@ -690,12 +691,13 @@
     // --- Orchestrator ---
     const FRONT_TO_BACK={
       paule:'together/openai/gpt-oss-20b',
-      chatgpt:'gpt-5-mini',           // ← SSE per EventSource
-      claude:'claude-4-sonnet',
-      gemini:'gemini-2.5-flash',
-      grok:'grok-4',                  // ← pridėtas Grok 4
-      deepseek:'deepseek-chat',
-      llama:'openrouter/meta-llama/llama-3.1-70b-instruct'
+      chatgpt:'openai/gpt-5-mini',              // Tikras SSE, ne JSON
+      claude:'anthropic/claude-4-sonnet',       // „Claude Sonnet 4“
+      gemini:'google/gemini-2.5-flash',
+      grok:'xai/grok-4',
+      deepseek:'deepseek/deepseek-chat',
+      // Together taisyklingas kelias – kad 404 nebeliktų
+      llama:'together/meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo'
     };
     function splitTransports(fronts){ return { stream:fronts||[], json:[] }; }
     function getBackId(front){ return FRONT_TO_BACK[front]||front; }
@@ -734,7 +736,7 @@
 
     function runSSE({ front, back, message, chatId }){
       return new Promise((resolve) => {
-        const url = buildStreamUrl({ model: back, models: back, message, max_tokens:4096, chat_id:chatId, _t:Date.now() });
+        const url = buildStreamUrl({ model: back, models: back, message, max_tokens:MAX_TOKENS, chat_id:chatId, _t:Date.now() });
         const es = new EventSource(url);
         let gotAny=false, closed=false;
 
@@ -821,7 +823,36 @@
         showFollowUps().catch(()=>{});
       }
 
-      maybeShowDecisionBar();
+      // Maži režimų žetonai po paskutinio atsakymo burbulu
+      renderInlineDecisions();
+
+      // Jei dar turi seną apačios juostą – paslepiam
+      if (el.decisionBar) el.decisionBar.style.display = 'none';
+    }
+
+    function renderInlineDecisions(){
+      const keys = Object.keys(state.panels||{});
+      if (!keys.length) return;
+      const lastKey = keys[keys.length-1];
+      const lastBubble = document.querySelector(`.bubble[data-model="${CSS.escape(lastKey)}"] .bubble-card`);
+      if (!lastBubble || lastBubble.querySelector('.inline-decisions')) return;
+
+      const box = document.createElement('div');
+      box.className = 'inline-decisions';
+      box.innerHTML = `
+        <button class="decision-chip" data-mode="debate"><img class="ui-icon" src="${ICONS_BASE}/swords.svg" alt=""> AI Ginčas</button>
+        <button class="decision-chip" data-mode="judge"><img class="ui-icon" src="${ICONS_BASE}/legal-contract.svg" alt=""> AI Teisėjas</button>
+        <button class="decision-chip" data-mode="compromise"><img class="ui-icon" src="${ICONS_BASE}/handshake.svg" alt=""> Kompromisas</button>
+      `;
+      lastBubble.appendChild(box);
+
+      box.addEventListener('click', (e)=>{
+        const b = e.target.closest('.decision-chip'); if (!b) return;
+        const mode=b.getAttribute('data-mode');
+        if (mode==='debate') startDebate();
+        else if (mode==='compromise') startCompromise();
+        else if (mode==='judge') startJudge();
+      });
     }
 
     async function showFollowUps(){
@@ -849,13 +880,6 @@
       el.followSuggestBar.classList.add('show');
     }
 
-    function maybeShowDecisionBar(){
-      if (!el.decisionBar) return;
-      const hasAny = Object.keys(state.panels||{}).length>0;
-      el.decisionBar.style.display = hasAny ? 'flex' : 'none';
-      state.decisionBarShown = hasAny;
-    }
-
     // --- Feeds demo ---
     function startFeedsAutoRefresh(){ refreshFeeds(); setInterval(refreshFeeds, 6000); }
     function refreshFeeds(){
@@ -881,7 +905,7 @@
       const w = document.createElement('div');
       w.className='_ai-wait';
       w.setAttribute('aria-live','polite');
-      w.innerHTML = `<div class="_ai-wait-inner"><div class="dots"><span></span><span></span><span></span></div><div>AI mąsto, palaukite akimirką…</div></div>`;
+      w.innerHTML = `<div class="_ai-wait-inner"><div class="dots"><span></span><span></span><span></span></div><div>AI mąsto…</div></div>`;
       el.chatArea?.appendChild(w);
       scrollToBottomIfNeeded();
     }
@@ -942,7 +966,7 @@
     // --- Markdown (lengvas parseris) ---
     function parseMarkdown(input){
       let t = String(input||'');
-      t = t.replace(/(^|\n)#{1,6}\s*$/g, '$1'); // pašalinti tuščias #
+      t = t.replace(/(^|\n)#{1,6}\s*$/g, '$1');
       const H={1:'#111827',2:'#2563eb',3:'#7c3aed',4:'#16a34a',5:'#f59e0b',6:'#6b7280'};
       const STORE=[];
       t=t.replace(/```([\s\S]*?)```/g,(_,m)=>`@@CB_${STORE.push(m)-1}@@`);
@@ -989,23 +1013,21 @@
       try{
         const o = JSON.parse(str);
         if (typeof o === 'string') return o;
-        if (o?.text) return String(o.text);                   // kai ateina {text:"…"} delta
+        if (o?.text) return String(o.text);
         if (o?.delta && typeof o.delta === 'string') return o.delta;
-        if (o?.content && typeof o.content === 'string') return o.content; // kai ateina cumulative "content"
+        if (o?.content && typeof o.content === 'string') return o.content;
         const ch = o?.choices?.[0];
         if (ch?.delta?.content) return String(ch.delta.content);
-        if (ch?.message?.content) return String(ch.message.content); // cumulative
+        if (ch?.message?.content) return String(ch.message.content);
         if (Array.isArray(o?.content) && o.content[0]?.text) return String(o.content[0].text);
       }catch(_){}
       return str;
     }
 
-    // jei atsiunčia KUMULIACINĘ žinutę – pridedam tik naują uodegą
     function diffAppend(prev, incoming){
       if (!incoming) return '';
       if (!prev) return incoming;
       if (incoming.startsWith(prev)) return incoming.slice(prev.length);
-      // ieškome didžiausio sutapimo (prev pabaiga == incoming pradžia)
       const max = Math.min(prev.length, incoming.length);
       for (let i=max; i>0; i--){
         if (prev.endsWith(incoming.slice(0,i))) return incoming.slice(i);
@@ -1013,13 +1035,12 @@
       return incoming;
     }
     function appendSmart(panel, incoming){
-      // jei backend grąžina tik „delta“ – append; jei „cumulative“ – diffAppend
       const inc = String(incoming||'');
       const maybeSuffix = diffAppend(panel.content, inc);
-      if (maybeSuffix.length >= inc.length){ // tik delta
-        panel.content += inc;
-      } else if (maybeSuffix){               // cumulative – tik nauja dalis
-        panel.content += maybeSuffix;
+      if (maybeSuffix.length >= inc.length){
+        panel.content += inc;          // delta
+      } else if (maybeSuffix){
+        panel.content += maybeSuffix;  // cumulative
       }
     }
 
