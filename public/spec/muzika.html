@@ -8,54 +8,43 @@
 :root{--bg:#05080f;--bg2:#0b111c;--ink:#e8eeff;--mut:#9fb0c7;--line:#1b2436;--pri:#7c8aff;--ok:#16c98a;--err:#ff5869;--br:16px}
 *{box-sizing:border-box}html,body{height:100%}
 body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,#0e1530 0%,#05080f 55%) fixed;color:var(--ink);font:15px/1.5 system-ui,Segoe UI,Roboto;overflow-y:auto}
-.wrap{max-width:1100px;margin:0 auto;padding:18px}
+.wrap{max-width:980px;margin:0 auto;padding:18px}
 .top{display:flex;align-items:center;gap:12px}
 .x{margin-left:auto;cursor:pointer;font-size:22px;line-height:1;border:1px solid var(--line);border-radius:12px;padding:6px 10px;background:#0f1522}
 .card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--br);padding:16px;margin-top:16px}
 label{display:block;margin:6px 0;color:#b8c4d9}
 input,textarea,select{width:100%;padding:11px;border-radius:12px;background:#0a101a;color:var(--ink);border:1px solid #1b2436;outline:0}
-small.muted{color:#9fb0c7}
 .btn{display:inline-flex;gap:8px;align-items:center;padding:9px 13px;border-radius:12px;border:1px solid #2a3550;background:#141b2b;color:#fff;cursor:pointer}
 .btn.primary{background:linear-gradient(90deg,#6b7bff,#9e76ff);border:0}
-.btn.ghost{background:#0e1422}
 .row{display:flex;gap:12px;flex-wrap:wrap}.col{flex:1 1 260px}
-.status{margin-top:8px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:12px}
-.track{background:#0b121f;border:1px solid #1f2942;border-radius:12px;overflow:hidden;position:relative}
+.status{margin-top:8px;min-height:24px}
+.tracks{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.track{background:#0b121f;border:1px solid #1f2942;border-radius:12px;overflow:hidden;min-height:360px;position:relative}
+.track .cover{width:100%;aspect-ratio:1/1;object-fit:cover;background:#090e19}
 .track .pad{padding:10px;border-top:1px solid #18223a}
-.track .cover{width:100%;aspect-ratio:1/1;object-fit:cover;background:#0b111c}
-.skel{position:relative;overflow:hidden}
-.skel::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);animation:sh 1.2s infinite}
-@keyframes sh{to{transform:translateX(100%)}}
-.badge{position:absolute;left:10px;top:10px;background:#101a2e;border:1px solid #213055;padding:4px 8px;border-radius:999px;font-size:12px;opacity:.9}
-.badge.ok{background:#0f1e18;border-color:#1f3c33;color:#9af0cd}
+.hint{color:#9fb0c7;font-size:12px}
 
-.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.tools .btn{padding:7px 10px;font-size:13px;border-radius:10px}
-
-#now{position:fixed;left:0;right:0;bottom:0;background:#0b111c;border-top:1px solid #1b2436}
-#now .in{max-width:1100px;margin:0 auto;padding:8px 12px;display:flex;gap:10px;align-items:center}
-#now img{width:36px;height:36px;border-radius:8px;border:1px solid #273453;object-fit:cover}
-.muted{color:#9fb0c7}
-
-/* ===== Premium loader (3 žiedai priešingom kryptim + natos) ===== */
-.loader-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,8,15,.62);backdrop-filter:blur(2px);z-index:9999}
-.loader-overlay.hidden{display:none}
-.rings{position:relative;width:150px;height:150px;display:grid;place-items:center;filter:drop-shadow(0 4px 14px rgba(124,138,255,.25))}
-.ring{position:absolute;border-radius:50%;border:3px solid transparent;border-top-color:#7c8aff;border-right-color:#7c8aff;animation:spin 1.2s linear infinite}
-.ring.r2{width:110px;height:110px;border-top-color:#9e76ff;border-left-color:#9e76ff;animation:spinR 1.7s linear infinite}
-.ring.r3{width:80px;height:80px;border-bottom-color:#6bd0ff;border-left-color:#6bd0ff;animation:spin 2.3s linear infinite}
-.ring.r1{width:140px;height:140px}
+/* Loader – 3 žiedai + natos */
+.loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(8,13,24,.35);backdrop-filter:blur(2px)}
+.rings{position:relative;width:120px;height:120px}
+.rings .ring{position:absolute;inset:0;border-radius:50%;border:3px solid transparent}
+.r1{border-top-color:#7c8aff;animation:spin 1.2s linear infinite}
+.r2{inset:10px;border-right-color:#9e76ff;animation:spinR 1.6s linear infinite}
+.r3{inset:20px;border-bottom-color:#6bd0ff;animation:spin 2.0s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes spinR{to{transform:rotate(-360deg)}}
-.note-wrap{position:absolute;display:flex;gap:6px;align-items:end}
-.note{font-size:22px;opacity:.9;animation:float 1.6s ease-in-out infinite}
-.note.n2{animation-delay:.22s}.note.n3{animation-delay:.44s}
-@keyframes float{0%{transform:translateY(7px) scale(.98)}50%{transform:translateY(-7px) scale(1)}100%{transform:translateY(7px) scale(.98)}}
+.notes{position:absolute;bottom:18%;left:50%;transform:translateX(-50%);display:flex;gap:10px;pointer-events:none;opacity:.9}
+.notes span{font-size:18px;animation:up 1.6s ease-in infinite}
+.notes span:nth-child(2){animation-delay:.2s}.notes span:nth-child(3){animation-delay:.4s}
+@keyframes up{0%{transform:translateY(0);opacity:.2}40%{opacity:1}100%{transform:translateY(-80px);opacity:0}}
 
-/* toast */
-.toast{position:fixed;right:14px;bottom:74px;background:#121b2e;border:1px solid #223358;color:#e8eeff;padding:10px 12px;border-radius:12px;z-index:99999;box-shadow:0 6px 30px rgba(0,0,0,.35)}
-.toast.err{border-color:#5b2b36;background:#1b0f14}
+#now{position:fixed;left:0;right:0;bottom:0;background:#0b111c;border-top:1px solid #1b2436}
+#now .in{max-width:980px;margin:0 auto;padding:8px 12px;display:flex;gap:10px;align-items:center}
+#now img{width:36px;height:36px;border-radius:8px;border:1px solid #273453;object-fit:cover}
+.muted{color:#9fb0c7}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:5px 8px;border-radius:20px;border:1px solid #273453;background:#0f1626}
+.badge.ok{border-color:#1f6e55}
+.badge.err{border-color:#7a3040}
 </style>
 </head>
 <body>
@@ -65,6 +54,7 @@ small.muted{color:#9fb0c7}
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M5 17c0-5 3-10 7-12 4-2 7 1 7 6 0 5-3 10-7 12-4 2-7-1-7-6Z" fill="url(#g)"/><defs><linearGradient id="g" x1="0" x2="24" y1="0" y2="24"><stop stop-color="#6b7bff"/><stop offset=".7" stop-color="#9e76ff"/></linearGradient></defs></svg>
         <strong>Muzikos generatorius (Suno)</strong>
       </div>
+      <div id="credits" class="badge" title="Likutis">Kreditai: —</div>
       <button class="x" onclick="closeMe()">✕ Uždaryti</button>
     </div>
 
@@ -75,10 +65,10 @@ small.muted{color:#9fb0c7}
           <input id="title" placeholder="pvz.: Meilė tavo sieloje">
           <label>Žodžiai / aprašymas (≤180)</label>
           <textarea id="lyrics" placeholder="Palik tuščią – AI sugeneruos"></textarea>
-          <small class="muted">AI santrauką/žodžius (≤180) suformatuos į 2–3 eilutes.</small>
+          <small class="hint">AI santrauką/žodžius (≤180) suformatuos į 2–3 eilutes.</small>
         </div>
         <div class="col">
-          <label>Žanras / stilius</label>
+          <label>Žanras / nuotaika</label>
           <input id="meta" placeholder="pvz.: synthwave, dreamy">
           <div class="row">
             <div class="col">
@@ -88,10 +78,6 @@ small.muted{color:#9fb0c7}
             <div class="col">
               <label>Vokalas</label>
               <select id="voice"><option value="female" selected>Moteris</option><option value="male">Vyras</option><option value="none">Instrumental</option></select>
-            </div>
-            <div class="col">
-              <label>Trukmė (s)</label>
-              <input id="length" type="number" min="15" max="480" value="60">
             </div>
           </div>
           <div class="row" style="align-items:flex-end">
@@ -109,48 +95,43 @@ small.muted{color:#9fb0c7}
 
       <div id="status" class="status"></div>
 
-      <div class="grid" id="cards" style="display:none">
-        <!-- Kortelė A -->
-        <div class="track" id="cardA">
-          <span class="badge" id="badgeA">Kuriama…</span>
-          <img id="coverA" class="cover skel" alt="">
+      <div class="tracks">
+        <div class="track" id="t1">
+          <img class="cover" id="c1" alt="">
+          <div class="loader" id="l1" hidden>
+            <div class="rings"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div></div>
+            <div class="notes"><span>♪</span><span>♫</span><span>♩</span></div>
+          </div>
           <div class="pad">
-            <h3 id="ttA" style="margin:6px 0 8px">Kūrinys A</h3>
-            <audio id="audA" controls style="width:100%"></audio>
-            <div class="tools">
-              <button class="btn ghost" id="playA">▶️ Groti</button>
-              <button class="btn ghost" id="dlA">⬇️ Atsisiųsti</button>
-              <button class="btn" id="extA">➕ Extend +30s</button>
-              <button class="btn" id="vocA">🎤 Add Vocals</button>
-              <button class="btn" id="insA">🎼 Add Instrumental</button>
-              <button class="btn" id="covGA">🖼️ Cover (generate)</button>
-              <button class="btn" id="covSA">🖼️ Cover (status)</button>
+            <h3 id="tt1" style="margin:6px 0 8px">Daina A</h3>
+            <audio id="a1" controls style="width:100%"></audio>
+            <div class="row" style="margin-top:8px">
+              <button class="btn" id="p1">▶️ Groti</button>
+              <button class="btn" id="d1">⬇️ Atsisiųsti</button>
             </div>
           </div>
         </div>
-        <!-- Kortelė B -->
-        <div class="track" id="cardB">
-          <span class="badge" id="badgeB">Kuriama…</span>
-          <img id="coverB" class="cover skel" alt="">
+        <div class="track" id="t2">
+          <img class="cover" id="c2" alt="">
+          <div class="loader" id="l2" hidden>
+            <div class="rings"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div></div>
+            <div class="notes"><span>♪</span><span>♫</span><span>♩</span></div>
+          </div>
           <div class="pad">
-            <h3 id="ttB" style="margin:6px 0 8px">Kūrinys B</h3>
-            <audio id="audB" controls style="width:100%"></audio>
-            <div class="tools">
-              <button class="btn ghost" id="playB">▶️ Groti</button>
-              <button class="btn ghost" id="dlB">⬇️ Atsisiųsti</button>
-              <button class="btn" id="extB">➕ Extend +30s</button>
-              <button class="btn" id="vocB">🎤 Add Vocals</button>
-              <button class="btn" id="insB">🎼 Add Instrumental</button>
-              <button class="btn" id="covGB">🖼️ Cover (generate)</button>
-              <button class="btn" id="covSB">🖼️ Cover (status)</button>
+            <h3 id="tt2" style="margin:6px 0 8px">Daina B</h3>
+            <audio id="a2" controls style="width:100%"></audio>
+            <div class="row" style="margin-top:8px">
+              <button class="btn" id="p2">▶️ Groti</button>
+              <button class="btn" id="d2">⬇️ Atsisiųsti</button>
             </div>
           </div>
         </div>
       </div>
+
+      <small class="hint">Patarimas: viršeliai gali atsirasti dar prieš galutinę audio – rodom juos vos tik gaunam.</small>
     </div>
   </div>
 
-  <!-- Now playing juosta -->
   <div id="now">
     <div class="in">
       <img id="nimg" src="" alt="">
@@ -159,243 +140,138 @@ small.muted{color:#9fb0c7}
     </div>
   </div>
 
-  <!-- Loader -->
-  <div id="loader" class="loader-overlay hidden" aria-live="polite" aria-busy="true">
-    <div class="rings">
-      <span class="ring r1"></span>
-      <span class="ring r2"></span>
-      <span class="ring r3"></span>
-      <div class="note-wrap"><span class="note">♪</span><span class="note n2">♫</span><span class="note n3">♬</span></div>
-    </div>
-  </div>
-
 <script>
-const qs = (s)=>document.querySelector(s);
+const qs = s=>document.querySelector(s);
 const oneLine = s => (s||'').toString().replace(/\s+/g,' ').trim();
 const limit = (s,n)=>{s=oneLine(s); if(s.length<=n) return s; let cut=s.slice(0,n), last=cut.lastIndexOf(' '); return (last>50?cut.slice(0,last):cut).trim();}
-
-function toast(msg,err){ const n=document.createElement('div'); n.className='toast'+(err?' err':''); n.innerHTML=msg; document.body.appendChild(n); setTimeout(()=>n.remove(), 5000); }
 function closeMe(){ if(history.length>1) history.back(); else location.href='/' }
-async function ensureJson(r){try{return await r.json()}catch(e){return {ok:false,error:'JSON',status:r.status}}}
-function showLoader(v){ qs('#loader')?.classList.toggle('hidden', !v); }
+async function jres(r){ try{return await r.json()}catch(e){ return { ok:false, error:`JSON_${r.status}` }} }
+function setNow(url,title,cover){ if(!url) return; const a=qs('#na'); const img=qs('#nimg'); const ttl=qs('#nttl'); a.src=url; a.play().catch(()=>{}); img.src=cover||''; ttl.textContent=title||'Track'; }
 
-function setNow(url,title,cover){
-  if(!url) return;
-  const a=qs('#na'); const img=qs('#nimg'); const ttl=qs('#nttl');
-  const play = (src)=>{ a.src=src; a.play().catch(()=>{}); };
-  fetch(url).then(r=>r.blob()).then(b=>{play(URL.createObjectURL(b))}).catch(_=>play(url));
-  img.src=cover||''; ttl.textContent=title||'Track';
-}
-
-let stateA = { taskId:null, track:null };
-let stateB = { taskId:null, track:null };
-
-qs('#ai').onclick=async ()=>{
-  const title=oneLine(qs('#title').value||''); const meta=oneLine(qs('#meta').value||'');
-  const r = await fetch('/api/stream', {method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'augam-auto',messages:[
-      {role:'system',content:'Return ≤180 chars clean Lithuanian lyrics'},
-      {role:'user',content:JSON.stringify({title,meta,text:title||meta})}
-    ]})});
-  const j = await ensureJson(r); qs('#lyrics').value = limit(j.output||title||'nauja daina', 180);
-};
-
-qs('#go').onclick = async ()=>{
-  const title=oneLine(qs('#title').value||'Daina');
-  let text = oneLine(qs('#lyrics').value||'');
-  const meta = oneLine(qs('#meta').value||'');
-  const model= qs('#model').value; const voice=qs('#voice').value;
-  const lang = qs('#lang').value; const length = Math.max(15, Math.min(480, parseInt(qs('#length').value||'60',10)||60));
-
-  if(!text){
-    const r = await fetch('/api/stream',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({messages:[
-        {role:'system',content:'Return ≤180 chars catchy song idea'},
-        {role:'user',content:JSON.stringify({title,meta})}
-      ]})});
-    const j=await ensureJson(r); text = limit(j.output||'melodic chorus, dreamy vibe',180);
+function setLoader(idx, on){ qs('#l'+idx).hidden = !on; }
+function paint(idx, data){
+  const img=qs('#c'+idx), h=qs('#tt'+idx), a=qs('#a'+idx), p=qs('#p'+idx), d=qs('#d'+idx);
+  if(data.image) img.src = data.image;
+  if(data.title) h.textContent = data.title;
+  if(data.audio_url){
+    a.src = data.audio_url;
+    d.onclick = ()=> window.open(data.audio_url, '_blank');
+    p.onclick = ()=> setNow(data.audio_url, data.title, data.image);
+  } else if (data.stream){
+    a.src = data.stream;
+    p.onclick = ()=> setNow(data.stream, data.title, data.image);
+    d.onclick = ()=> window.open(data.stream, '_blank');
   }
-
-  // paruošiame UI
-  qs('#status').textContent='⏳ Kuriame du kūrinius paraleliai…';
-  qs('#cards').style.display='grid';
-  prepCard('A', {title: title+' — A'}); stateA={taskId:null,track:null};
-  prepCard('B', {title: title+' — B'}); stateB={taskId:null,track:null};
-  showLoader(true);
-
-  // payload pagal Suno dokus
-  const payload = (variant)=>({
-    title: title + (variant ? ' — '+variant : ''),
-    prompt: text,
-    model,
-    style: meta,
-    customMode: true,
-    instrumental: (voice==='none'),
-    vocalGender: voice,
-    language: lang, lyrics_language: lang,
-    styleWeight: 0.65, weirdnessConstraint: 0.65, audioWeight: 0.65,
-    length
-  });
-
-  const [r1,r2] = await Promise.all([
-    fetch('/api/music/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload('A'))}),
-    fetch('/api/music/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload('B'))})
-  ]);
-
-  const [j1,j2] = await Promise.all([ensureJson(r1), ensureJson(r2)]);
-
-  if (j1.demo || j2.demo) {
-    qs('#status').innerHTML = '⚠️ DEMO: nėra <code>SUNO_API_KEY</code>. Realūs skambučiai į Suno nevykdomi.';
-  }
-
-  let doneA=false, doneB=false;
-  const finishMaybe=()=>{ if(doneA && doneB){ showLoader(false); qs('#status').innerHTML='<span style="color:#16c98a">✅ Abu kūriniai paruošti</span>'; } };
-
-  if(!j1.task_id){ badgeFail('A','Nepavyko paleisti'); doneA=true; }
-  if(!j2.task_id){ badgeFail('B','Nepavyko paleisti'); doneB=true; }
-  stateA.taskId=j1.task_id||null; stateB.taskId=j2.task_id||null;
-  finishMaybe(); if(doneA && doneB) return;
-
-  // poll’eriai
-  if(stateA.taskId) pollOne('A', stateA);
-  if(stateB.taskId) pollOne('B', stateB);
-};
-
-async function pollOne(which, st){
-  let tries=0, gotCover=false, gotStream=false;
-  while(tries<180){
-    tries++;
-    const rr = await fetch('/api/music/status?task='+encodeURIComponent(st.taskId));
-    const s  = await ensureJson(rr);
-
-    if(s?.tracks && s.tracks[0]){
-      const t=s.tracks[0];
-      // cover ASAP
-      if(t.image && !gotCover){ setCover(which, t.image); gotCover=true; }
-      // stream ASAP
-      const aEl = getAudioEl(which);
-      if(t.stream && !aEl.src && !gotStream){ setAudio(which, t.stream); gotStream=true; }
-      // atnaujink lokalią būseną
-      st.track = t;
-    }
-
-    if(s.status==='ready'){
-      const t = s.audio_url ? {title: qs('#tt'+which).textContent, image: (s.tracks?.[0]?.image||''), audio_url:s.audio_url}
-                            : (s.tracks||[])[0];
-      fillCard(which, t||{});
-      if(which==='A') window.doneA=true; else window.doneB=true;
-      if(which==='A') window.doneA=true; else window.doneB=true;
-      setBadge(which,'Paruošta', true);
-      break;
-    }
-    if(s.status==='failed'){ badgeFail(which,'Klaida'); break; }
-    setBadge(which,'⏳ '+(s.status||'laukiama')+'…');
-    await new Promise(r=>setTimeout(r, 4000));
-  }
-  if(which==='A') window.doneA=true; else window.doneB=true;
-  const doneA=!!window.doneA, doneB=!!window.doneB;
-  if(doneA && doneB){ showLoader(false); qs('#status').innerHTML='<span style="color:#16c98a">✅ Abu kūriniai paruošti</span>'; }
 }
 
-// ==== UI helperiai dviem kortelėms ====
-function prepCard(which, {title}){
-  qs('#tt'+which).textContent = title || ('Kūrinys '+which);
-  qs('#cover'+which).src=''; qs('#cover'+which).classList.add('skel');
-  const a=getAudioEl(which); a.removeAttribute('src'); a.load();
-  setBadge(which,'Kuriama…');
-
-  // įrankių mygtukai (bus aktyvuoti kai turėsime track + taskId)
-  qs('#play'+which).onclick = ()=> setNow(getAudioEl(which).src, qs('#tt'+which).textContent, qs('#cover'+which).src);
-  qs('#dl'+which).onclick   = ()=> window.open(getAudioEl(which).src, '_blank');
-  qs('#ext'+which).onclick  = ()=> doExtend(which);
-  qs('#voc'+which).onclick  = ()=> doAddVocals(which);
-  qs('#ins'+which).onclick  = ()=> doAddInstrumental(which);
-  qs('#covG'+which).onclick = ()=> doCoverGenerate(which);
-  qs('#covS'+which).onclick = ()=> doCoverStatus(which);
-}
-function fillCard(which, t){
-  if(t.image){ setCover(which, t.image); }
-  if(t.audio_url){ setAudio(which, t.audio_url); }
-  setBadge(which,'Paruošta', true);
-}
-function setCover(which, url){ const im=qs('#cover'+which); if(im.src!==url){ im.src=url; } im.classList.remove('skel'); }
-function setAudio(which, url){
-  const a=getAudioEl(which);
-  fetch(url).then(r=>r.blob()).then(b=>{a.src=URL.createObjectURL(b);a.load();}).catch(_=>{a.src=url;a.load();});
-}
-function getAudioEl(which){ return qs('#aud'+which); }
-function setBadge(which, text, ok){ const b=qs('#badge'+which); b.textContent=text; b.classList.toggle('ok', !!ok); }
-function badgeFail(which, text){ const b=qs('#badge'+which); b.textContent='❌ '+(text||'Nepavyko'); b.classList.remove('ok'); }
-
-// ===== Įrankiai (extend / vocals / instrumental / cover) =====
-async function doExtend(which){
-  const st = (which==='A') ? stateA : stateB;
-  if(!st?.track?.id){ return toast('Nėra ką „extendinti“ – dar neturim audio ID.', true); }
-  const contAt = Math.max(0, Math.round((st.track.duration||60) - 30));
-  showLoader(true);
-  const r = await fetch('/api/music/extend',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ defaultParamFlag:true, audioId: st.track.id, prompt:'Extend with a beautiful instrumental outro', continueAt: contAt, model: qs('#model').value })});
-  const j = await ensureJson(r);
-  showLoader(false);
-  if(!j.ok){ return toast('Extend nepavyko: '+(j.error||'klaida'), true); }
-  toast('Extend užduotis paleista ✔️'); 
-}
-
-async function doAddVocals(which){
-  const st = (which==='A') ? stateA : stateB;
-  if(!st?.track?.audio_url){ return toast('Nėra audio URL „add-vocals“ užduočiai.', true); }
-  showLoader(true);
-  const r = await fetch('/api/music/add-vocals',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ prompt:'Add smooth, airy vocals', title: qs('#tt'+which).textContent+' (vocals)', style: qs('#meta').value, vocalGender: (qs('#voice').value||'female'), uploadUrl: st.track.audio_url })});
-  const j = await ensureJson(r);
-  showLoader(false);
-  if(!j.ok){ return toast('Add-vocals nepavyko: '+(j.error||'klaida'), true); }
-  toast('Add-vocals paleista ✔️'); 
-}
-
-async function doAddInstrumental(which){
-  const st = (which==='A') ? stateA : stateB;
-  if(!st?.track?.audio_url){ return toast('Nėra audio URL „add-instrumental“ užduočiai.', true); }
-  showLoader(true);
-  const r = await fetch('/api/music/add-instrumental',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ title: qs('#tt'+which).textContent+' (instrumental)', tags:'instrumental, ambient', uploadUrl: st.track.audio_url })});
-  const j = await ensureJson(r);
-  showLoader(false);
-  if(!j.ok){ return toast('Add-instrumental nepavyko: '+(j.error||'klaida'), true); }
-  toast('Add-instrumental paleista ✔️'); 
-}
-
-async function doCoverGenerate(which){
-  const st = (which==='A') ? stateA : stateB;
-  if(!st?.taskId){ return toast('Trūksta taskId – pirma sugeneruok muziką.', true); }
-  showLoader(true);
-  const r = await fetch('/api/music/cover-generate',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ taskId: st.taskId })});
-  const j = await ensureJson(r);
-  showLoader(false);
-  if(!j.ok){ return toast('Cover generate nepavyko: '+(j.error||'klaida'), true); }
-  toast('Cover generacija paleista ✔️');
-}
-
-async function doCoverStatus(which){
-  showLoader(true);
-  const r = await fetch('/api/music/cover-status');
-  const j = await ensureJson(r);
-  showLoader(false);
-  if(!j.ok){ return toast('Cover status nepavyko: '+(j.error||'klaida'), true); }
-  const imgs = j.images || [];
-  if(imgs.length){ setCover(which, imgs[0]); toast('Gautas viršelis ✔️'); } else { toast('Kol kas nėra cover rezultatų.'); }
-}
-
-// ===== Credits (parodyti viršuje) =====
-(async ()=>{
+async function fetchCredits(){
   try{
-    const r = await fetch('/api/music/credits'); const j = await r.json();
-    if (j.ok && j.credits!=null) {
-      qs('#status').innerHTML = `🎟️ Creditai: <b>${j.credits}</b>`;
-    }
+    const r = await fetch('/api/music/credits');
+    const j = await jres(r);
+    const el = qs('#credits');
+    if(j.ok && j.credits!=null){ el.textContent = 'Kreditai: '+j.credits; el.classList.add('ok'); }
+    else { el.textContent = 'Kreditai: —'; }
   }catch(_){}
-})();
+}
+
+qs('#ai').addEventListener('click', async ()=>{
+  try{
+    const title=oneLine(qs('#title').value||''); const meta=oneLine(qs('#meta').value||'');
+    const r = await fetch('/api/stream', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:'Return ≤180 chars clean Lithuanian lyrics'},{role:'user',content:JSON.stringify({title,meta,text:title||meta})}]})});
+    const j = await jres(r);
+    qs('#lyrics').value = limit(j.output || title || 'nauja daina', 180);
+  }catch(e){ console.error('lyrics error', e); }
+});
+
+qs('#go').addEventListener('click', async ()=>{
+  try{
+    const title=oneLine(qs('#title').value||'Daina');
+    let text = oneLine(qs('#lyrics').value||'');
+    const meta = oneLine(qs('#meta').value||'');
+    const model= qs('#model').value; const voice=qs('#voice').value; const lang = qs('#lang').value;
+
+    if(!text){
+      const r = await fetch('/api/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:'Return ≤180 chars catchy song idea'},{role:'user',content:JSON.stringify({title,meta})}]})});
+      const j=await jres(r); text = limit(j.output||'melodic chorus, dreamy vibe',180);
+    }
+
+    qs('#status').textContent='⏳ Siunčiama…';
+    setLoader(1,true); setLoader(2,true);
+
+    const resp = await fetch('/api/music/create',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({title, prompt:text, model, style:meta, instrumental:(voice==='none'), vocalGender:voice, language:lang })
+    });
+    const j = await jres(resp);
+
+    if(!j.ok || !j.task_id){
+      setLoader(1,false); setLoader(2,false);
+      qs('#status').innerHTML='<span style="color:#ff5869">❌ Nepavyko: '+(j.error||'klaida')+'</span>';
+      console.error('create fail', j);
+      return;
+    }
+
+    // start cover generation in parallel (optional, if API supports)
+    fetch('/api/music/cover-generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({taskId:j.task_id})}).catch(()=>{});
+
+    let tries=0, got=0, seenCovers=false;
+    async function poll(){
+      tries++;
+      const rr = await fetch('/api/music/status?task='+encodeURIComponent(j.task_id));
+      const s  = await jres(rr);
+
+      if (Array.isArray(s?.tracks) && s.tracks.length){
+        // try assign early covers
+        if (!seenCovers) {
+          s.tracks.forEach((t, i) => { if (t.image) paint((i+1), { image:t.image, title:t.title }); });
+          seenCovers = s.tracks.some(t=>t.image);
+        }
+      }
+
+      if (s.status==='ready'){
+        const tA = s.tracks?.[0] || null;
+        const tB = s.tracks?.[1] || null;
+        if (tA){ paint(1, tA); setLoader(1,false); got++; }
+        if (tB){ paint(2, tB); setLoader(2,false); got++; }
+        if (!tB && tA){ setLoader(2,false); }
+        qs('#status').innerHTML='<span style="color:#16c98a">✅ Paruošta</span>';
+        return;
+      }
+      if (s.status==='failed'){
+        setLoader(1,false); setLoader(2,false);
+        qs('#status').innerHTML='<span style="color:#ff5869">❌ Nepavyko</span>';
+        return;
+      }
+      qs('#status').textContent='⏳ '+(s.vendor_status||s.status||'laukiama')+'…';
+      if(tries<180) setTimeout(poll, 3000); else qs('#status').textContent='⏳ Ilgiau nei įprasta…';
+    }
+    poll();
+
+    // also poll covers endpoint, to maybe show covers even earlier
+    (async function pollCovers(){
+      for(let k=0;k<60;k++){
+        try{
+          const rr = await fetch('/api/music/cover-status');
+          const cj = await jres(rr);
+          if(cj.ok && Array.isArray(cj.images) && cj.images.length){
+            const img = cj.images[0];
+            if(!qs('#c1').src) qs('#c1').src = img;
+            if(!qs('#c2').src) qs('#c2').src = img;
+            break;
+          }
+        }catch(_){}
+        await new Promise(r=>setTimeout(r, 3000));
+      }
+    })();
+
+  }catch(e){
+    setLoader(1,false); setLoader(2,false);
+    qs('#status').innerHTML='<span style="color:#ff5869">❌ Klaida naršyklėje. Žr. Console.</span>';
+    console.error('go error', e);
+  }
+});
+
+fetchCredits();
 </script>
 </body>
 </html>
