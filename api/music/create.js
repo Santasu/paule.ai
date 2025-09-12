@@ -1,6 +1,6 @@
 module.exports = async (req, res) => {
   try {
-    if (req.method !== 'POST') return res.status(405).json({ ok:false, error:'Method Not Allowed' });
+    if (req.method !== 'POST') return res.status(405).json({ ok:false, error:'METHOD_NOT_ALLOWED' });
 
     const SUNO_API_KEY  = process.env.SUNO_API_KEY;
     const SUNO_API_BASE = process.env.SUNO_API_BASE || 'https://api.sunoapi.org/api/v1';
@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
       weirdnessConstraint: isFinite(b.weirdnessConstraint) ? Number(b.weirdnessConstraint) : undefined,
       audioWeight: isFinite(b.audioWeight) ? Number(b.audioWeight) : undefined,
       audioLength: isFinite(b.length) ? Number(b.length) : undefined,
-      callBackUrl: (b.callBackUrl || (PUBLIC_URL ? `${PUBLIC_URL.replace(/\/+$/,'')}/api/music/callback` : undefined))
+      callBackUrl: b.callBackUrl || (PUBLIC_URL ? `${PUBLIC_URL.replace(/\/+$/,'')}/api/music/callback` : undefined)
     };
 
     if (!SUNO_API_KEY) {
