@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(204).end();
 
   try {
-    const task = String(req.query.task || req.query.task_id || req.query.taskId || req.query.id || '').trim();
+    const task = String(req.query.task || req.query.task_id || req.query.taskId || '').trim();
     if (!task) return res.status(200).json({ ok:false, error:'TASK_ID_MISSING' });
 
     const SUNO_API_KEY  = process.env.SUNO_API_KEY;
@@ -35,7 +35,6 @@ module.exports = async (req, res) => {
 
     const d = j.data || {};
     const vendorStatus = String(d.status || 'PENDING').toUpperCase();
-
     const rows = Array.isArray(d.response?.data) ? d.response.data
                : Array.isArray(d.response?.sunoData) ? d.response.sunoData
                : [];
@@ -50,13 +49,12 @@ module.exports = async (req, res) => {
       image:      row.image_url  || row.imageUrl  || row.source_image_url  || ''
     }));
 
-    const status = vendorStatus === 'SUCCESS' ? 'ready'
-                 : vendorStatus === 'FAILED'  ? 'failed'
-                 : (vendorStatus === 'GENERATING' || vendorStatus === 'PENDING') ? 'pending'
+    const status = vendorStatus==='SUCCESS' ? 'ready'
+                 : vendorStatus==='FAILED'  ? 'failed'
+                 : (vendorStatus==='GENERATING' || vendorStatus==='PENDING') ? 'pending'
                  : 'pending';
 
     const firstAudio = tracks?.[0]?.audio_url || '';
-
     return res.status(200).json({ ok:true, status, audio_url:firstAudio, tracks, vendor_status:vendorStatus, source:'record-info' });
   } catch (e) {
     return res.status(200).json({ ok:false, status:'pending', error: e?.message || 'status error' });
