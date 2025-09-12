@@ -1,4 +1,3 @@
-// /api/music/status
 module.exports = async (req, res) => {
   try {
     const task = String(req.query.task || req.query.task_id || req.query.taskId || '').trim();
@@ -8,29 +7,25 @@ module.exports = async (req, res) => {
     const SUNO_API_BASE = process.env.SUNO_API_BASE || 'https://api.sunoapi.org/api/v1';
     const DEMO_AUDIO_URL = process.env.DEMO_AUDIO_URL || '';
 
-    // DEMO
     if (!SUNO_API_KEY || task.startsWith('demo-')) {
       return res.status(200).json({
         ok:true, status:'ready',
         audio_url: DEMO_AUDIO_URL,
-        tracks:[{ id: task, title:'Demo', duration:60, audio_url:DEMO_AUDIO_URL, stream:DEMO_AUDIO_URL, image:'' }]
+        tracks:[{ id:task, title:'Demo', duration:60, audio_url:DEMO_AUDIO_URL, stream:DEMO_AUDIO_URL, image:'' }]
       });
     }
 
     const url = `${SUNO_API_BASE}/generate/record-info?taskId=${encodeURIComponent(task)}`;
     const r = await fetch(url, { headers:{ 'Authorization':`Bearer ${SUNO_API_KEY}` } });
     const j = await r.json().catch(()=> ({}));
-
-    // Oficialus formatas: { code, msg, data:{ status, response:{data:[...] } } }
     if (!r.ok || j.code !== 200) {
       return res.status(200).json({ ok:false, status:'pending', error: j.msg || `HTTP_${r.status}`, raw:j });
     }
 
     const d = j.data || {};
     const vendorStatus = String(d.status || 'PENDING').toUpperCase();
-
     const rows = Array.isArray(d.response?.data) ? d.response.data : [];
-    // Normalizacija (snake + camel atvejai)
+
     const tracks = rows.map(row => ({
       id:         row.id || '',
       title:      row.title || '',
