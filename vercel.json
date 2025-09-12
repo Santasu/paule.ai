@@ -31,6 +31,7 @@
     { "src": "^/api/music/cover-generate$", "dest": "/api/music/cover-generate.js" },
     { "src": "^/api/music/cover-status$",   "dest": "/api/music/cover-status.js" },
     { "src": "^/api/music/credits$",        "dest": "/api/music/credits.js" },
+    { "src": "^/api/music/callback$",       "dest": "/api/music/callback.js" },
 
     { "src": "^/api/clerk/pk$",             "dest": "/api/clerk/pk.js" },
 
@@ -53,6 +54,7 @@
     { "src": "^/api/paule/v1/music/cover-generate$", "dest": "/api/music/cover-generate.js" },
     { "src": "^/api/paule/v1/music/cover-status$", "dest": "/api/music/cover-status.js" },
     { "src": "^/api/paule/v1/music/credits$",      "dest": "/api/music/credits.js" },
+    { "src": "^/api/paule/v1/music/callback$",     "dest": "/api/music/callback.js" },
 
     { "src": "^/wp-json/paule/v1/stream$",        "dest": "/api/stream.js" },
     { "src": "^/wp-json/paule/v1/complete$",      "dest": "/api/complete.js" },
@@ -73,6 +75,7 @@
     { "src": "^/wp-json/paule/v1/music/cover-generate$", "dest": "/api/music/cover-generate.js" },
     { "src": "^/wp-json/paule/v1/music/cover-status$", "dest": "/api/music/cover-status.js" },
     { "src": "^/wp-json/paule/v1/music/credits$",      "dest": "/api/music/credits.js" },
+    { "src": "^/wp-json/paule/v1/music/callback$",     "dest": "/api/music/callback.js" },
 
     { "src": "^/wp-json/augam/v1/stream$",        "dest": "/api/stream.js" },
     { "src": "^/wp-json/augam/v1/complete$",      "dest": "/api/complete.js" },
@@ -95,6 +98,7 @@
     { "src": "^/wp-json/augam/v1/music/cover-generate$", "dest": "/api/music/cover-generate.js" },
     { "src": "^/wp-json/augam/v1/music/cover-status$", "dest": "/api/music/cover-status.js" },
     { "src": "^/wp-json/augam/v1/music/credits$",      "dest": "/api/music/credits.js" },
+    { "src": "^/wp-json/augam/v1/music/callback$",     "dest": "/api/music/callback.js" },
 
     { "src": "^/wp-json$",                   "dest": "/api/diagnostics.js" },
 
