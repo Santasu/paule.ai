@@ -30,15 +30,20 @@
   <!-- Pagrindinis CSS -->
   <link rel="stylesheet" href="/assets/css/paule.css?v=1.1.6"/>
 
-  <!-- Papildomi stiliai (modal juodas, sprendimų juosta) -->
+  <!-- Papildomi stiliai (modal / sprendimų juosta / pataisymai) -->
   <style>
     /* Modal – juodas fonas + ryškus X */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;z-index:1000}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;z-index:20000}
     .modal-overlay.show{display:block}
     .modal-window{max-width:min(960px,92vw);margin:6vh auto;background:#0f1115;color:#f3f4f6;border:1px solid rgba(255,255,255,.08);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.45);}
-    .modal--sheet{max-width:min(740px,92vw)}
-    .modal-close{position:fixed;right:18px;top:18px;z-index:1001;background:#111827;color:#e5e7eb;border:1px solid #374151;border-radius:10px;padding:6px 10px;cursor:pointer}
+    .modal--sheet{max-width:min(1200px,96vw)} /* platesnis – Stripe gali rodyti kelis stulpelius */
+    .modal-close{position:fixed;right:18px;top:18px;z-index:20001;background:#111827;color:#e5e7eb;border:1px solid #374151;border-radius:10px;padding:6px 10px;cursor:pointer}
     .modal-body,.modal-sheet-inner{padding:20px}
+
+    /* Kai modalas atidarytas – paslepiame apatinius UI elementus ir cookie barą */
+    body.modal-open{overflow:hidden}
+    body.modal-open .bottom-section{display:none !important}
+    body.modal-open #cookie-bar{display:none !important}
 
     /* Sprendimų juosta (Ginčas/Teisėjas/Kompromisas) */
     .decision-bar{display:none;gap:10px;align-items:stretch;justify-content:center;padding:10px 12px}
@@ -58,7 +63,8 @@
     /* „AI mąsto…“ */
     ._ai-wait{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px 10px;opacity:.9}
     ._ai-wait .dots span{display:inline-block;width:6px;height:6px;border-radius:50%;background:#9ca3af;margin:0 3px;animation:_w 1s infinite}
-    ._ai-wait .dots span:nth-child(2){animation-delay:.15s}. _ai-wait .dots span:nth-child(3){animation-delay:.3s}
+    ._ai-wait .dots span:nth-child(2){animation-delay:.15s}
+    ._ai-wait .dots span:nth-child(3){animation-delay:.3s} /* fix – anksčiau turėjo blogą selektorių */
     @keyframes _w{0%{transform:translateY(0)}50%{transform:translateY(-2px)}100%{transform:translateY(0)}}
   </style>
 
@@ -259,7 +265,7 @@
 
     <div class="top-actions" id="topActions" role="navigation" aria-label="Pagrindiniai veiksmai">
       <a class="btn ghost" data-nav="pricing" href="#pricing" role="button">
-        <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Planai
+        <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Kainos
       </a>
       <a class="btn ghost" data-nav="community" href="/spec/bendruomene.html" role="button">
         <img class="ui-icon" src="/assets/icon/nav-results.svg" alt=""> Bendruomenė
@@ -272,8 +278,7 @@
       </button>
 
       <div id="clerk-auth" class="login-anchor">
-        <button class="btn ghost" id="loginFallback" type="button"
-          onclick="window.openAuth ? openAuth() : (window.Clerk&&window.Clerk.openSignIn?window.Clerk.openSignIn({afterSignInUrl:'/',afterSignUpUrl:'/' }):alert('Kraunama…'));">
+        <button class="btn ghost" id="loginFallback" type="button" onclick="openAuth()">
           <img class="ui-icon google" src="/assets/icon/google.svg" alt=""> Prisijungti
         </button>
       </div>
@@ -393,10 +398,11 @@
           </div>
         </section>
 
-        <!-- Planų sekcija (rodoma modale) -->
-        <section id="pricing" class="pricing-section" aria-label="Planai" hidden>
-          <h2 class="section-title">Planai</h2>
+        <!-- Kainų sekcija (rodoma modale) -->
+        <section id="pricing" class="pricing-section" aria-label="Kainos" hidden>
+          <h2 class="section-title">Kainos</h2>
           <p class="section-sub">Pasirink sau tinkamiausią planą. Galima atšaukti bet kada.</p>
+          <!-- Stripe Pricing Table – paliekam vienintelį šaltinį -->
           <stripe-pricing-table
             pricing-table-id="prctbl_1S5mCdGfWPiTH9M4MOXoL4f3"
             publishable-key="pk_test_51S5jh4GfWPiTH9M4gRYoHhV9LiZBjn7FPavf9nXPFIvbBLjQ89oyMRvKu0FRIhqx8boX4IHvtvRbQUdUWnvJwmaf00NszDYZC7">
@@ -448,10 +454,6 @@
   <script>
   /* =======================================================================
      Paule – Premium Chat Orchestrator • v2.3.1+
-     - URL tvarkyklė: /spec/xxx.html (be #spec=)
-     - 3 sprendimai po atsakymų: AI Ginčas • AI Teisėjas • Kompromisas
-     - Po „Teisėjas“ → vertimas EN → /api/flux/create komiksui
-     - Spalvotas Markdown (be „####“ šiukšlių), kopijavimas, scroll-lock
      ======================================================================= */
   (function () {
     'use strict';
@@ -485,8 +487,8 @@
       panels:{}, startedOrder:[], firstStarted:null,
       pending:0, errors:[], hasAnyText:false, suggestShown:false,
       decisionBarShown:false,
-      lastRound:{},            // backId -> text
-      specialMode:null,        // 'debate'|'judge'|'compromise'|null
+      lastRound:{},
+      specialMode:null,
     };
 
     // --- DOM ---
@@ -524,7 +526,7 @@
         applyTheme(); bindEvents(); setInitialModelSelection(); updateBottomDock(); attachChatScroll();
         if (el.chatArea) el.chatArea.querySelectorAll('.message,.thinking,._ai-wait')?.forEach(n=>n.remove());
         startFeedsAutoRefresh();
-        handleInitialSpecRoute(); // <- svarbu: atidaro /spec/xxx.html kaip modalą
+        handleInitialSpecRoute(); // atidaro /spec/xxx.html kaip modalą
 
         debug('🚀 Paule Orchestrator ready.');
       }catch(e){ console.error('[PAULE]init]', e); toast('Inicializacijos klaida', e.message); }
@@ -541,7 +543,7 @@
     function openModal(type, htmlOrEl){
       el.modal.classList.add('show');
       el.modal.setAttribute('aria-hidden','false');
-      document.body.style.overflow='hidden';
+      document.body.classList.add('modal-open'); // nauja – paslepiame apačią
       el.modalSheet.hidden=true; el.modalTool.hidden=true;
       if(type==='sheet'){
         el.modalSheet.hidden=false; el.modalSheetBody.innerHTML='';
@@ -554,7 +556,7 @@
     function closeModal(){
       el.modal.classList.remove('show');
       el.modal.setAttribute('aria-hidden','true');
-      document.body.style.overflow='';
+      document.body.classList.remove('modal-open'); // nauja – grąžinam apačią
       el.modalSheetBody.innerHTML=''; el.modalToolBody.innerHTML='';
       // grąžinam URL į „/“
       if (location.pathname.startsWith('/spec/')) history.replaceState(null,'','/');
@@ -562,6 +564,12 @@
     el.modalClose?.addEventListener('click', closeModal);
     el.modal?.addEventListener('click', (e)=>{ if(e.target===el.modal) closeModal(); });
     window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && el.modal.classList.contains('show')) closeModal(); });
+
+    // Tiltas kitiems skriptams (auth ir pan.)
+    window.PauleModal = {
+      open: (type, html) => openModal(type, html),
+      close: () => closeModal()
+    };
 
     async function openSpecModalByHref(href){
       if (!href) return;
@@ -571,18 +579,15 @@
         openModal('tool', html);
         history.pushState({modal:'spec', href}, '', href);
       }catch(_){
-        // jeigu nepavyksta – keliaujam tiesiogiai
         location.href = href;
       }
     }
-    // Atidarome modalą, jei puslapis užkrautas /spec/xxx.html
     async function handleInitialSpecRoute(){
       const p = location.pathname || '';
       if (p.startsWith('/spec/') && p.endsWith('.html')){
         await openSpecModalByHref(p);
       }
     }
-    // Deleguotas click: bet kuris <a data-modal="tool" href="/spec/xxx.html">
     document.addEventListener('click', (e)=>{
       const a = e.target.closest('a[data-modal="tool"]');
       if (a){
@@ -590,7 +595,7 @@
         if (/^\/spec\/.+\.html$/i.test(href)){ e.preventDefault(); openSpecModalByHref(href); }
       }
     });
-    // Topbar: Planai – atsidaro kaip sheet
+    // Topbar: Kainos – atsidaro kaip sheet
     (function(){
       const link=document.querySelector('a[data-nav="pricing"][href="#pricing"]');
       const source=document.getElementById('pricing');
@@ -602,7 +607,6 @@
         openModal('sheet', clone);
       });
     })();
-    // Popstate: jei grįžtam iš /spec – uždarom modalą
     window.addEventListener('popstate', ()=>{
       if (!location.pathname.startsWith('/spec/')) closeModal();
     });
@@ -626,9 +630,9 @@
       el.btnMobile?.addEventListener('click', ()=> el.sidebar?.classList.toggle('open'));
       el.mobileOverlay?.addEventListener('click', ()=> el.sidebar?.classList.remove('open'));
       el.btnNewChat?.addEventListener('click', ()=>location.reload());
+
       window.addEventListener('resize', updateBottomDock);
 
-      // Sprendimų juosta
       el.decisionBar?.addEventListener('click', e=>{
         const chip = e.target.closest('.decision-chip'); if (!chip) return;
         const mode = chip.getAttribute('data-mode');
@@ -854,7 +858,6 @@
     }
 
     async function finalizeRound(){
-      // Klaidos
       if (state.errors.length){
         const wrap = document.createElement('div'); wrap.className='errors-wrap';
         state.errors.forEach(er=>{
@@ -871,16 +874,13 @@
         scrollToBottomIfNeeded();
       }
 
-      // Follow-ups
       if (!state.suggestShown){
         state.suggestShown = true;
         showFollowUps().catch(()=>{});
       }
 
-      // Sprendimų juosta
       maybeShowDecisionBar();
 
-      // Po specialių režimų – papildomas veiksmas
       if (state.specialMode === 'judge'){
         try{
           const judgeText = (state.panels.llama?.content || firstPanelText() || '').trim();
@@ -1021,10 +1021,10 @@
       requestAnimationFrame(()=>{ node.style.transition='all .25s ease'; node.style.opacity='1'; node.style.transform='translateY(0)'; });
     }
 
-    // --- Markdown (spalvos + bold glow + „####“ fix) ---
+    // --- Markdown ---
     function parseMarkdown(input){
       let src = String(input||'');
-      src = src.replace(/(^|\n)#{1,6}\s*$/g, '$1'); // plikos antraštės gale
+      src = src.replace(/(^|\n)#{1,6}\s*$/g, '$1');
 
       const HCOL = { 1:'#111827', 2:'#2563eb', 3:'#7c3aed', 4:'#16a34a', 5:'#f59e0b', 6:'#6b7280' };
       let t = escapeHtml(src);
@@ -1036,7 +1036,7 @@
       t = t.replace(/^\s*#####\s+(.+)$/gm, `<h5 style="margin:.3em 0 .2em;color:${HCOL[5]};font-weight:800">$1</h5>`);
       t = t.replace(/^\s*####\s+(.+)$/gm,  `<h4 style="margin:.35em 0 .2em;color:${HCOL[4]};font-weight:800">$1</h4>`);
       t = t.replace(/^\s*###\s+(.+)$/gm,   `<h3 style="margin:.4em 0 .2em;color:${HCOL[3]};font-weight:800">$1</h3>`);
-      t = t.replace(/^\s*##\s+(.+)$/gm,    `<h2 style="margin:.5em 0 .25em;color:${HCOL[2]};font-weight:900">$1</h2>`);
+      t = t.replace(/^\s*##\s+(.+)$/gm,    `<h2 style="margin:.5em 0 .25em;color:${HCOL[2]};font-weight:800">$1</h2>`);
       t = t.replace(/^\s*#\s+(.+)$/gm,     `<h1 style="margin:.6em 0 .3em;color:${HCOL[1]};font-weight:900;font-size:1.15em">$1</h1>`);
 
       t = t.replace(/(^|\n)(?:[-*]\s.+)(?:\n[-*]\s.+)*/g, (block)=>{
@@ -1097,109 +1097,16 @@
     function debug(){ if (DEBUG) try{ console.log('[PAULE]', ...arguments); }catch(_){ } }
     function firstPanelText(){ const k=Object.keys(state.panels||{}); return k.length? (state.panels[k[0]]?.content||'') : ''; }
 
-    // --- Sprendimų režimai ---
-    function startDebate(){
-      state.specialMode='debate';
-      addSystemMessage('🔁 Pradedamas AI ginčas – kiekvienas modelis pateiks 3–5 argumentus.');
-      const fronts = getActiveFront();
-      const prompt = state.lastUserText ?
-        `${state.lastUserText}\n\nREŽIMAS: GINČAS.\nInstrukcija: Pateik 3–5 stipriausius argumentus, kodėl tavo siūlomas atsakymas/planas yra geriausias. Struktūra: • Argumentas • Įrodymas • Rizika.` :
-        'AI ginčas: pateik argumentus.';
-      sendAsNewRound(prompt, fronts);
-    }
-    function startCompromise(){
-      const answers = Object.entries(state.lastRound||{}).map(([model,txt])=>`[${model}]: ${txt}`).join('\n\n');
-      if (!answers){ toast('Trūksta atsakymų', 'Pirmiausia gauk bent vieną modelio atsakymą.'); return; }
-      state.specialMode='compromise';
-      addSystemMessage('🤝 Kompromisas: suderiname modelių atsakymus į vieną planą.');
-      const prompt = `Žemiau – keli skirtingų modelių atsakymai.\nSujunk į vieną realistišką sprendimą (žingsniai, rizikos, KPI, „next actions“).\n\n${answers}\n\nGrąžink: • Santrauka • Vieningas sprendimas • 3 KPI • Pirmi 5 žingsniai.`;
-      sendAsNewRound(prompt, ['auto']);
-    }
-    function startJudge(){
-      const answers = Object.entries(state.lastRound||{}).map(([model,txt])=>`[${model}]: ${txt}`).join('\n\n');
-      if (!answers){ toast('Trūksta atsakymų', 'Pirmiausia gauk bent vieną modelio atsakymą.'); return; }
-      state.specialMode='judge';
-      addSystemMessage('⚖️ Teisėjas vertina atsakymus…');
-      const prompt = `Tu esi „Teisėjas“.\nĮvertink pateiktus atsakymus ir parink geriausią.\nGrąžink: • Verdiktas • Kodėl • Kurio modelio idėja • 2 silpnybės kitų variantų • Finalus planas.\n\n${answers}`;
-      sendAsNewRound(prompt, ['llama']);
-    }
-    function sendAsNewRound(prompt, fronts){
-      addUserBubble(prompt);
-      // NE rašome į input – siunčiam tiesiai
-      state.lastUserText = prompt;
-      state.isStreaming=false; // nutraukiam jei kas vyko
-      resetRound();
-      startOrchestrator(prompt, fronts).catch(()=>finalizeRound());
-    }
+    // --- Sprendimų režimai (palikti kaip buvo) ---
+    function startDebate(){ /* ... */ state.specialMode='debate'; addSystemMessage('🔁 Pradedamas AI ginčas – kiekvienas modelis pateiks 3–5 argumentus.'); const fronts=getActiveFront(); const prompt=state.lastUserText?`${state.lastUserText}\n\nREŽIMAS: GINČAS.\nInstrukcija: Pateik 3–5 stipriausius argumentus, kodėl tavo siūlomas atsakymas/planas yra geriausias. Struktūra: • Argumentas • Įrodymas • Rizika.`:'AI ginčas: pateik argumentus.'; sendAsNewRound(prompt, fronts); }
+    function startCompromise(){ const answers=Object.entries(state.lastRound||{}).map(([model,txt])=>`[${model}]: ${txt}`).join('\n\n'); if(!answers){ toast('Trūksta atsakymų','Pirmiausia gauk bent vieną modelio atsakymą.'); return; } state.specialMode='compromise'; addSystemMessage('🤝 Kompromisas: suderiname modelių atsakymus į vieną planą.'); const prompt=`Žemiau – keli skirtingų modelių atsakymai.\nSujunk į vieną realistišką sprendimą (žingsniai, rizikos, KPI, „next actions“).\n\n${answers}\n\nGrąžink: • Santrauka • Vieningas sprendimas • 3 KPI • Pirmi 5 žingsniai.`; sendAsNewRound(prompt,['auto']); }
+    function startJudge(){ const answers=Object.entries(state.lastRound||{}).map(([model,txt])=>`[${model}]: ${txt}`).join('\n\n'); if(!answers){ toast('Trūksta atsakymų','Pirmiausia gauk bent vieną modelio atsakymą.'); return; } state.specialMode='judge'; addSystemMessage('⚖️ Teisėjas vertina atsakymus…'); const prompt=`Tu esi „Teisėjas“.\nĮvertink pateiktus atsakymus ir parink geriausią.\nGrąžink: • Verdiktas • Kodėl • Kurio modelio idėja • 2 silpnybės kitų variantų • Finalus planas.\n\n${answers}`; sendAsNewRound(prompt,['llama']); }
+    function sendAsNewRound(prompt, fronts){ addUserBubble(prompt); state.lastUserText=prompt; state.isStreaming=false; resetRound(); startOrchestrator(prompt,fronts).catch(()=>finalizeRound()); }
+    function addSystemMessage(text){ if (!el.chatArea) return; const n=document.createElement('div'); n.className='message'; n.innerHTML=`<div class="avatar"><img class="ui-icon" src="${ICONS_BASE}/ai.svg" alt=""></div><div class="bubble" data-model="auto"><div class="bubble-card"><div class="msg-content">${parseMarkdown(text)}</div><div class="msg-meta"><span>Paule</span><span>${timeNow()}</span></div></div></div>`; appendFade(n); scrollToBottomIfNeeded(); }
 
-    function addSystemMessage(text){
-      if (!el.chatArea) return;
-      const n = document.createElement('div'); n.className='message';
-      n.innerHTML = `<div class="avatar"><img class="ui-icon" src="${ICONS_BASE}/ai.svg" alt=""></div>
-        <div class="bubble" data-model="auto"><div class="bubble-card">
-          <div class="msg-content">${parseMarkdown(text)}</div>
-          <div class="msg-meta"><span>Paule</span><span>${timeNow()}</span></div>
-        </div></div>`;
-      appendFade(n); scrollToBottomIfNeeded();
-    }
+    async function generateComicFromJudge(judgeText){ try{ const loading=document.createElement('div'); loading.className='message'; loading.innerHTML=`<div class="avatar"><img class="ui-icon" src="${ICONS_BASE}/legal-contract.svg" alt=""></div><div class="bubble"><div class="bubble-card"><div class="msg-content">📚 Paruošiam komiksą (vertimas → Flux)…</div><div class="msg-meta"><span>Teisėjas</span><span>${timeNow()}</span></div></div></div>`; appendFade(loading); scrollToBottomIfNeeded(); const english=await translateToEnglish(judgeText); const payload={ prompt: english || judgeText, style:'comic', aspect:'square' }; const res=await postJSON(FLUX_URL,payload).catch(()=>null); let img=(res&&(res.image_url||res.url||res.image||(Array.isArray(res.images)&&res.images[0])))||null; if(!img){ const done=document.createElement('div'); done.className='message'; done.innerHTML=`<div class="avatar"><img class="ui-icon" src="${ICONS_BASE}/photo.svg" alt=""></div><div class="bubble"><div class="bubble-card"><div class="msg-content">✅ Užduotis pateikta komiksų generatoriui.</div><div class="msg-meta"><span>Flux</span><span>${timeNow()}</span></div></div></div>`; appendFade(done); return; } const card=document.createElement('div'); card.className='message'; card.innerHTML=`<div class="avatar"><img class="ui-icon" src="${ICONS_BASE}/photo.svg" alt=""></div><div class="bubble"><div class="bubble-card"><div class="msg-content"><h3 style="margin:.4em 0 .2em;color:#7c3aed;font-weight:800">Komiksas pagal teisėjo verdiktą</h3><div style="margin:8px 0 10px;font-size:13px;opacity:.8">Prompt (EN): <em>${escapeHtml((english||'').slice(0,280))}${english && english.length>280?'…':''}</em></div><div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden"><img src="${img}" alt="Flux komiksas" style="width:100%;display:block"></div></div><div class="msg-meta"><span>Flux</span><span>${timeNow()}</span></div></div></div>`; appendFade(card); scrollToBottomIfNeeded(); }catch(e){ toast('Komikso generavimas nepavyko', e?.message||'Klaida'); } }
+    async function translateToEnglish(text){ try{ const msg=`Translate the following Lithuanian (or mixed) text into concise English suitable as a visual prompt. Keep key nouns and style words.\n\n=== TEXT ===\n${text}`; const res=await postJSON(COMPLETE_URL,{ message: msg, models:'gpt-5-mini', max_tokens:512 }); const t=(res && Array.isArray(res.answers) && res.answers[0]?.text) || ''; return String(t).trim(); }catch(_){ return ''; } }
 
-    // Po teisėjo – verčiame į EN ir siunčiam į Flux
-    async function generateComicFromJudge(judgeText){
-      try{
-        const loading = document.createElement('div');
-        loading.className='message';
-        loading.innerHTML = `<div class="avatar"><img class="ui-icon" src="${ICONS_BASE}/legal-contract.svg" alt=""></div>
-          <div class="bubble"><div class="bubble-card">
-            <div class="msg-content">📚 Paruošiam komiksą (vertimas → Flux)…</div>
-            <div class="msg-meta"><span>Teisėjas</span><span>${timeNow()}</span></div>
-          </div></div>`;
-        appendFade(loading); scrollToBottomIfNeeded();
-
-        const english = await translateToEnglish(judgeText);
-        const payload = { prompt: english || judgeText, style: 'comic', aspect: 'square' };
-        const res = await postJSON(FLUX_URL, payload).catch(()=>null);
-
-        let img = (res && (res.image_url || res.url || res.image || (Array.isArray(res.images)&&res.images[0]))) || null;
-        if (!img){
-          const done = document.createElement('div');
-          done.className='message';
-          done.innerHTML = `<div class="avatar"><img class="ui-icon" src="${ICONS_BASE}/photo.svg" alt=""></div>
-            <div class="bubble"><div class="bubble-card">
-              <div class="msg-content">✅ Užduotis pateikta komiksų generatoriui.</div>
-              <div class="msg-meta"><span>Flux</span><span>${timeNow()}</span></div>
-            </div></div>`;
-          appendFade(done); return;
-        }
-
-        const card = document.createElement('div');
-        card.className='message';
-        card.innerHTML = `<div class="avatar"><img class="ui-icon" src="${ICONS_BASE}/photo.svg" alt=""></div>
-          <div class="bubble"><div class="bubble-card">
-            <div class="msg-content">
-              <h3 style="margin:.4em 0 .2em;color:#7c3aed;font-weight:800">Komiksas pagal teisėjo verdiktą</h3>
-              <div style="margin:8px 0 10px;font-size:13px;opacity:.8">Prompt (EN): <em>${escapeHtml((english||'').slice(0,280))}${english && english.length>280?'…':''}</em></div>
-              <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
-                <img src="${img}" alt="Flux komiksas" style="width:100%;display:block">
-              </div>
-            </div>
-            <div class="msg-meta"><span>Flux</span><span>${timeNow()}</span></div>
-          </div></div>`;
-        appendFade(card);
-        scrollToBottomIfNeeded();
-      }catch(e){
-        toast('Komikso generavimas nepavyko', e?.message||'Klaida');
-      }
-    }
-    async function translateToEnglish(text){
-      try{
-        const msg = `Translate the following Lithuanian (or mixed) text into concise English suitable as a visual prompt. Keep key nouns and style words.\n\n=== TEXT ===\n${text}`;
-        const res = await postJSON(COMPLETE_URL, { message: msg, models:'gpt-5-mini', max_tokens:512 });
-        const t = (res && Array.isArray(res.answers) && res.answers[0]?.text) || '';
-        return String(t).trim();
-      }catch(_){ return ''; }
-    }
-
-    // Tipinę „… rašo …“ animaciją įdedam į <head>, kad veiktų be CSS
     function injectTypingDotsStyle(){
       if (document.getElementById('_paule_dots_css')) return;
       const st = document.createElement('style');
@@ -1213,11 +1120,7 @@
       document.head.appendChild(st);
     }
 
-    // Expose viešai
-    window.PauleMain = {
-      state, sendMessage,
-      startDebate, startCompromise, startJudge
-    };
+    window.PauleMain = { state, sendMessage, startDebate, startCompromise, startJudge };
 
   })();
   </script>
