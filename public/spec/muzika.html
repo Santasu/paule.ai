@@ -1,346 +1,296 @@
 <!DOCTYPE html>
 <html lang="lt">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Paule – Muzika (Suno)</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paule • Muzikos generatorius</title>
 <style>
 :root{--bg:#05080f;--bg2:#0b111c;--ink:#e8eeff;--mut:#9fb0c7;--line:#1b2436;--pri:#7c8aff;--ok:#16c98a;--err:#ff5869;--br:16px}
 *{box-sizing:border-box}html,body{height:100%}
 body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,#0e1530 0%,#05080f 55%) fixed;color:var(--ink);font:15px/1.5 system-ui,Segoe UI,Roboto;overflow-y:auto}
 .wrap{max-width:980px;margin:0 auto;padding:18px}
-.top{display:flex;align-items:center;gap:12px}
-.x{margin-left:auto;cursor:pointer;font-size:22px;line-height:1;border:1px solid var(--line);border-radius:12px;padding:6px 10px;background:#0f1522}
+h1{margin:0 0 8px}
 .card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--br);padding:16px;margin-top:16px}
 label{display:block;margin:6px 0;color:#b8c4d9}
 input,textarea,select{width:100%;padding:11px;border-radius:12px;background:#0a101a;color:var(--ink);border:1px solid #1b2436;outline:0}
 .btn{display:inline-flex;gap:8px;align-items:center;padding:9px 13px;border-radius:12px;border:1px solid #2a3550;background:#141b2b;color:#fff;cursor:pointer}
 .btn.primary{background:linear-gradient(90deg,#6b7bff,#9e76ff);border:0}
 .row{display:flex;gap:12px;flex-wrap:wrap}.col{flex:1 1 260px}
-.status{margin-top:8px;min-height:24px}
-.tracks{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-.track{background:#0b121f;border:1px solid #1f2942;border-radius:12px;overflow:hidden;min-height:360px;position:relative}
-.track .cover{width:100%;aspect-ratio:1/1;object-fit:cover;background:#090e19}
-.track .pad{padding:10px;border-top:1px solid #18223a}
-.hint{color:#9fb0c7;font-size:12px}
+.status{margin-top:8px;min-height:22px}
 
-/* Loader – 3 žiedai + natos */
-.loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(8,13,24,.35);backdrop-filter:blur(2px)}
-.rings{position:relative;width:120px;height:120px}
-.rings .ring{position:absolute;inset:0;border-radius:50%;border:3px solid transparent}
-.r1{border-top-color:#7c8aff;animation:spin 1.2s linear infinite}
-.r2{inset:10px;border-right-color:#9e76ff;animation:spinR 1.6s linear infinite}
-.r3{inset:20px;border-bottom-color:#6bd0ff;animation:spin 2.0s linear infinite}
+/* two track layout */
+.tracks{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+@media(min-width:780px){.tracks{grid-template-columns:1fr 1fr}}
+.track{background:#0b121f;border:1px solid #1f2942;border-radius:12px;overflow:hidden}
+.track img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#0a101a}
+.track .pad{padding:10px;border-top:1px solid #18223a}
+.track h3{margin:6px 0 8px}
+
+/* triple-ring loader + bouncing note */
+.loader{display:none;align-items:center;gap:12px;margin-top:8px}
+.loader.show{display:flex}
+.rings{position:relative;width:44px;height:44px}
+.r1,.r2,.r3{position:absolute;border-radius:50%;border:3px solid transparent;inset:0}
+.r1{border-top-color:#7c8aff;border-left-color:#7c8aff;animation:spin 1.1s linear infinite}
+.r2{inset:5px;border-bottom-color:#9e76ff;border-right-color:#9e76ff;animation:spinR 1.4s linear infinite}
+.r3{inset:10px;border-top-color:#16c98a;border-left-color:#16c98a;animation:spin 1.7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes spinR{to{transform:rotate(-360deg)}}
-.notes{position:absolute;bottom:18%;left:50%;transform:translateX(-50%);display:flex;gap:10px;pointer-events:none;opacity:.9}
-.notes span{font-size:18px;animation:up 1.6s ease-in infinite}
-.notes span:nth-child(2){animation-delay:.2s}.notes span:nth-child(3){animation-delay:.4s}
-@keyframes up{0%{transform:translateY(0);opacity:.2}40%{opacity:1}100%{transform:translateY(-80px);opacity:0}}
+.note{font-size:18px;opacity:.9;animation:bob 1s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 
+/* now playing */
 #now{position:fixed;left:0;right:0;bottom:0;background:#0b111c;border-top:1px solid #1b2436}
 #now .in{max-width:980px;margin:0 auto;padding:8px 12px;display:flex;gap:10px;align-items:center}
 #now img{width:36px;height:36px;border-radius:8px;border:1px solid #273453;object-fit:cover}
 .muted{color:#9fb0c7}
-.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:5px 8px;border-radius:20px;border:1px solid #273453;background:#0f1626}
-.badge.ok{border-color:#1f6e55}
-.badge.err{border-color:#7a3040}
+.dim{opacity:.8}
+.ok{color:var(--ok)}
+.err{color:var(--err)}
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div style="display:flex;gap:10px;align-items:center">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M5 17c0-5 3-10 7-12 4-2 7 1 7 6 0 5-3 10-7 12-4 2-7-1-7-6Z" fill="url(#g)"/><defs><linearGradient id="g" x1="0" x2="24" y1="0" y2="24"><stop stop-color="#6b7bff"/><stop offset=".7" stop-color="#9e76ff"/></linearGradient></defs></svg>
-        <strong>Muzikos generatorius (Suno)</strong>
+<div class="wrap">
+  <h1>🎶 Muzikos generatorius (Suno)</h1>
+
+  <div class="card">
+    <div class="row">
+      <div class="col">
+        <label>Pavadinimas</label>
+        <input id="title" placeholder="pvz.: Meilė tavo sieloje">
+        <label>Žodžiai / aprašymas (≤180)</label>
+        <textarea id="lyrics" placeholder="Palik tuščią – AI sugeneruos"></textarea>
+        <small class="dim">Trumpa santrauka/žodžiai (≤180) bus suformatuoti į 2–3 eilutes.</small>
       </div>
-      <div id="credits" class="badge" title="Likutis">Kreditai: —</div>
-      <button class="x" onclick="closeMe()">✕ Uždaryti</button>
+      <div class="col">
+        <label>Žanras / nuotaika</label>
+        <input id="meta" placeholder="pvz.: synthwave, dreamy">
+        <div class="row">
+          <div class="col">
+            <label>Modelis</label>
+            <select id="model"><option>V3_5</option><option selected>V4_5</option></select>
+          </div>
+          <div class="col">
+            <label>Vokalas</label>
+            <select id="voice"><option value="female" selected>Moteris</option><option value="male">Vyras</option><option value="none">Instrumental</option></select>
+          </div>
+        </div>
+        <div class="row" style="align-items:flex-end">
+          <div class="col">
+            <label>Kalba</label>
+            <select id="lang"><option value="lt" selected>LT</option><option value="en">EN</option></select>
+          </div>
+          <div class="col" style="text-align:right">
+            <button class="btn" id="ai">✍️ Sukurti žodžius (AI)</button>
+            <button class="btn primary" id="go">🎶 Generuoti</button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="row">
-        <div class="col">
-          <label>Pavadinimas</label>
-          <input id="title" placeholder="pvz.: Meilė tavo sieloje">
-          <label>Žodžiai / aprašymas (≤180)</label>
-          <textarea id="lyrics" placeholder="Palik tuščią – AI sugeneruos"></textarea>
-          <small class="hint">AI santrauką/žodžius (≤180) suformatuos į 2–3 eilutes.</small>
-        </div>
-        <div class="col">
-          <label>Žanras / nuotaika</label>
-          <input id="meta" placeholder="pvz.: synthwave, dreamy">
-          <div class="row">
-            <div class="col">
-              <label>Modelis</label>
-              <select id="model"><option>V3_5</option><option>V4</option><option selected>V4_5</option></select>
-            </div>
-            <div class="col">
-              <label>Vokalas</label>
-              <select id="voice"><option value="female" selected>Moteris</option><option value="male">Vyras</option><option value="none">Instrumental</option></select>
-            </div>
-          </div>
-          <div class="row" style="align-items:flex-end">
-            <div class="col">
-              <label>Kalba</label>
-              <select id="lang"><option value="lt" selected>LT</option><option value="en">EN</option></select>
-            </div>
-            <div class="col" style="text-align:right">
-              <button class="btn" id="ai">✍️ Sukurti žodžius (AI)</button>
-              <button class="btn primary" id="go">🎶 Generuoti</button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div id="status" class="status"></div>
 
-      <div id="status" class="status"></div>
-
-      <div class="tracks">
-        <div class="track" id="t1">
-          <img class="cover" id="c1" alt="">
-          <div class="loader" id="l1" hidden>
-            <div class="rings"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div></div>
-            <div class="notes"><span>♪</span><span>♫</span><span>♩</span></div>
-          </div>
-          <div class="pad">
-            <h3 id="tt1" style="margin:6px 0 8px">Daina A</h3>
-            <audio id="a1" controls style="width:100%"></audio>
-            <div class="row" style="margin-top:8px">
-              <button class="btn" id="p1">▶️ Groti</button>
-              <button class="btn" id="d1">⬇️ Atsisiųsti</button>
-            </div>
-          </div>
-        </div>
-        <div class="track" id="t2">
-          <img class="cover" id="c2" alt="">
-          <div class="loader" id="l2" hidden>
-            <div class="rings"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div></div>
-            <div class="notes"><span>♪</span><span>♫</span><span>♩</span></div>
-          </div>
-          <div class="pad">
-            <h3 id="tt2" style="margin:6px 0 8px">Daina B</h3>
-            <audio id="a2" controls style="width:100%"></audio>
-            <div class="row" style="margin-top:8px">
-              <button class="btn" id="p2">▶️ Groti</button>
-              <button class="btn" id="d2">⬇️ Atsisiųsti</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <small class="hint">Patarimas: viršeliai gali atsirasti dar prieš galutinę audio – rodom juos vos tik gaunam.</small>
+    <div class="loader" id="loader">
+      <div class="rings"><div class="r1"></div><div class="r2"></div><div class="r3"></div></div>
+      <div class="note">♫</div>
+      <div class="dim" id="phase">Jungiama…</div>
     </div>
+
+    <div class="tracks" id="tracks" style="display:none">
+      <div class="track" id="t1">
+        <img id="c1" alt="">
+        <div class="pad">
+          <h3 id="tt1">Daina #1</h3>
+          <audio id="a1" controls style="width:100%"></audio>
+          <div class="row" style="margin-top:8px">
+            <button class="btn" id="p1">▶️ Groti</button>
+            <button class="btn" id="d1">⬇️ Atsisiųsti</button>
+          </div>
+        </div>
+      </div>
+      <div class="track" id="t2">
+        <img id="c2" alt="">
+        <div class="pad">
+          <h3 id="tt2">Daina #2</h3>
+          <audio id="a2" controls style="width:100%"></audio>
+          <div class="row" style="margin-top:8px">
+            <button class="btn" id="p2">▶️ Groti</button>
+            <button class="btn" id="d2">⬇️ Atsisiųsti</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status dim" id="hint"></div>
   </div>
+</div>
 
-  <div id="now">
-    <div class="in">
-      <img id="nimg" src="" alt="">
-      <div id="nttl" class="muted" style="flex:1">Nieko negroja</div>
-      <audio id="na" preload="metadata" crossorigin="anonymous" style="width:420px"></audio>
-    </div>
+<div id="now">
+  <div class="in">
+    <img id="nimg" src="" alt="">
+    <div id="nttl" class="muted" style="flex:1">Nieko negroja</div>
+    <audio id="na" preload="metadata" crossorigin="anonymous" style="width:420px"></audio>
   </div>
+</div>
 
 <script>
-const qs = s=>document.querySelector(s);
-const oneLine = s => (s||'').toString().replace(/\s+/g,' ').trim();
-const limit = (s,n)=>{s=oneLine(s); if(s.length<=n) return s; let cut=s.slice(0,n), last=cut.lastIndexOf(' '); return (last>50?cut.slice(0,last):cut).trim();}
-function closeMe(){ if(history.length>1) history.back(); else location.href='/' }
-async function jres(r){ try{return await r.json()}catch(e){ return { ok:false, error:`JSON_${r.status}` }} }
-function setNow(url,title,cover){ if(!url) return; const a=qs('#na'); const img=qs('#nimg'); const ttl=qs('#nttl'); a.src=url; a.play().catch(()=>{}); img.src=cover||''; ttl.textContent=title||'Track'; }
+(function(){
+  const $=s=>document.querySelector(s);
+  const j = r=>r.json().catch(()=>({}));
+  const BASE = location.origin; // veiks paule.ai ir vercel preview
+  const setPhase = s=>{ const ph=$('#phase'); if(ph) ph.textContent=s; };
+  const loader = on => { $('#loader')?.classList.toggle('show', !!on); };
+  const status = (html)=> { const n=$('#status'); if(n){ n.innerHTML = html; } };
+  const hint = (html)=> { const n=$('#hint'); if(n){ n.innerHTML = html; } };
 
-function setLoader(idx, on){ qs('#l'+idx).hidden = !on; }
-function paint(idx, data){
-  const img=qs('#c'+idx), h=qs('#tt'+idx), a=qs('#a'+idx), p=qs('#p'+idx), d=qs('#d'+idx);
-  if(data.image) img.src = data.image;
-  if(data.title) h.textContent = data.title;
-  if(data.audio_url){
-    a.src = data.audio_url;
-    d.onclick = ()=> window.open(data.audio_url, '_blank');
-    p.onclick = ()=> setNow(data.audio_url, data.title, data.image);
-  } else if (data.stream){
-    a.src = data.stream;
-    p.onclick = ()=> setNow(data.stream, data.title, data.image);
-    d.onclick = ()=> window.open(data.stream, '_blank');
+  function setNow(url,title,cover){
+    if(!url) return;
+    const a=$('#na'), img=$('#nimg'), ttl=$('#nttl');
+    fetch(url).then(r=>r.blob()).then(b=>{a.src=URL.createObjectURL(b);a.play().catch(()=>{})}).catch(_=>{a.src=url;a.play().catch(()=>{})});
+    img.src=cover||''; ttl.textContent=title||'Track';
   }
-}
 
-async function fetchCredits(){
-  try{
-    const r = await fetch('/api/music/credits');
-    const j = await jres(r);
-    const el = qs('#credits');
-    if(j.ok && j.credits!=null){ el.textContent = 'Kreditai: '+j.credits; el.classList.add('ok'); }
-    else { el.textContent = 'Kreditai: —'; }
-  }catch(_){}
-}
-
-qs('#ai').addEventListener('click', async ()=>{
-  try{
-    const title=oneLine(qs('#title').value||''); const meta=oneLine(qs('#meta').value||'');
-    const r = await fetch('/api/stream', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:'Return ≤180 chars clean Lithuanian lyrics'},{role:'user',content:JSON.stringify({title,meta,text:title||meta})}]})});
-    const j = await jres(r);
-    qs('#lyrics').value = limit(j.output || title || 'nauja daina', 180);
-  }catch(e){ console.error('lyrics error', e); }
-});
-
-qs('#go').addEventListener('click', async ()=>{
-  try{
-    const title=oneLine(qs('#title').value||'Daina');
-    let text = oneLine(qs('#lyrics').value||'');
-    const meta = oneLine(qs('#meta').value||'');
-    const model= qs('#model').value; const voice=qs('#voice').value; const lang = qs('#lang').value;
-
-    if(!text){
-      const r = await fetch('/api/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:'Return ≤180 chars catchy song idea'},{role:'user',content:JSON.stringify({title,meta})}]})});
-      const j=await jres(r); text = limit(j.output||'melodic chorus, dreamy vibe',180);
-    }
-
-    qs('#status').textContent='⏳ Siunčiama…';
-    setLoader(1,true); setLoader(2,true);
-
-    const resp = await fetch('/api/music/create',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({title, prompt:text, model, style:meta, instrumental:(voice==='none'), vocalGender:voice, language:lang })
+  async function ensureLyrics(title, meta){
+    const r = await fetch('/api/stream',{method:'POST',headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({messages:[
+        {role:'system',content:'Return ≤180 chars catchy Lithuanian song idea (2–3 short lines)'},
+        {role:'user', content: JSON.stringify({title,meta})}
+      ]})
     });
-    const j = await jres(resp);
+    const jj = await j(r);
+    const txt = String(jj.output||title||meta||'melodic chorus, dreamy vibe').trim();
+    return txt.length>180 ? (txt.slice(0,180).trim()) : txt;
+  }
 
-    if(!j.ok || !j.task_id){
-      setLoader(1,false); setLoader(2,false);
-      qs('#status').innerHTML='<span style="color:#ff5869">❌ Nepavyko: '+(j.error||'klaida')+'</span>';
-      console.error('create fail', j);
-      return;
-    }
+  async function startCover(taskId){
+    try{
+      setPhase('Kuriamas viršelis…');
+      await fetch('/api/music/cover-generate', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ taskId })
+      });
+    }catch(_){}
+  }
+  async function pollCover(taskId){
+    try{
+      const r = await fetch('/api/music/cover-status?task='+encodeURIComponent(taskId));
+      const jj = await j(r);
+      const imgs = (jj.images||[]);
+      if (imgs[0]) $('#c1').src = imgs[0];
+      if (imgs[1]) $('#c2').src = imgs[1];
+      if (imgs.length) return true;
+    }catch(_){}
+    return false;
+  }
 
-    // start cover generation in parallel (optional, if API supports)
-    fetch('/api/music/cover-generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({taskId:j.task_id})}).catch(()=>{});
-
-    let tries=0, got=0, seenCovers=false;
-    async function poll(){
+  async function pollStatus(taskId){
+    let tries=0; const MAX=200;
+    const iv = setInterval(async ()=>{
       tries++;
-      const rr = await fetch('/api/music/status?task='+encodeURIComponent(j.task_id));
-      const s  = await jres(rr);
-
-      if (Array.isArray(s?.tracks) && s.tracks.length){
-        // try assign early covers
-        if (!seenCovers) {
-          s.tracks.forEach((t, i) => { if (t.image) paint((i+1), { image:t.image, title:t.title }); });
-          seenCovers = s.tracks.some(t=>t.image);
-        }
-      }
-
+      const r = await fetch('/api/music/status?task='+encodeURIComponent(taskId));
+      const s = await j(r);
+      if (s.ok===false && s.error){ status('<span class="err">❌ '+(s.error||'klaida')+'</span>'); loader(false); clearInterval(iv); return; }
       if (s.status==='ready'){
-        const tA = s.tracks?.[0] || null;
-        const tB = s.tracks?.[1] || null;
-        if (tA){ paint(1, tA); setLoader(1,false); got++; }
-        if (tB){ paint(2, tB); setLoader(2,false); got++; }
-        if (!tB && tA){ setLoader(2,false); }
-        qs('#status').innerHTML='<span style="color:#16c98a">✅ Paruošta</span>';
+        setPhase('Paruošta');
+        const tracks = Array.isArray(s.tracks)?s.tracks:[];
+        $('#tracks').style.display='grid';
+        // T1
+        const t1 = tracks[0] || {};
+        if (t1.image) $('#c1').src = t1.image;
+        if (t1.title) $('#tt1').textContent = t1.title;
+        if (t1.audio_url || t1.stream){
+          const url = t1.audio_url || t1.stream;
+          const a1 = $('#a1'); fetch(url).then(r=>r.blob()).then(b=>{a1.src=URL.createObjectURL(b)}).catch(_=>{a1.src=url});
+          $('#p1').onclick = ()=> setNow(url, t1.title||'Daina', t1.image||'');
+          $('#d1').onclick = ()=> window.open(url, '_blank');
+        }
+        // T2 (jei yra)
+        const t2 = tracks[1] || {};
+        if (t2.image) $('#c2').src = t2.image;
+        if (t2.title) $('#tt2').textContent = t2.title;
+        if (t2.audio_url || t2.stream){
+          const url2 = t2.audio_url || t2.stream;
+          const a2 = $('#a2'); fetch(url2).then(r=>r.blob()).then(b=>{a2.src=URL.createObjectURL(b)}).catch(_=>{a2.src=url2});
+          $('#p2').onclick = ()=> setNow(url2, t2.title||'Daina', t2.image||'');
+          $('#d2').onclick = ()=> window.open(url2, '_blank');
+        }
+
+        status('<span class="ok">✅ Paruošta</span>');
+        loader(false); clearInterval(iv);
         return;
       }
       if (s.status==='failed'){
-        setLoader(1,false); setLoader(2,false);
-        qs('#status').innerHTML='<span style="color:#ff5869">❌ Nepavyko</span>';
-        return;
+        status('<span class="err">❌ Nepavyko</span>');
+        loader(false); clearInterval(iv); return;
       }
-      qs('#status').textContent='⏳ '+(s.vendor_status||s.status||'laukiama')+'…';
-      if(tries<180) setTimeout(poll, 3000); else qs('#status').textContent='⏳ Ilgiau nei įprasta…';
-    }
-    poll();
-
-    // also poll covers endpoint, to maybe show covers even earlier
-    (async function pollCovers(){
-      for(let k=0;k<60;k++){
-        try{
-          const rr = await fetch('/api/music/cover-status');
-          const cj = await jres(rr);
-          if(cj.ok && Array.isArray(cj.images) && cj.images.length){
-            const img = cj.images[0];
-            if(!qs('#c1').src) qs('#c1').src = img;
-            if(!qs('#c2').src) qs('#c2').src = img;
-            break;
-          }
-        }catch(_){}
-        await new Promise(r=>setTimeout(r, 3000));
-      }
-    })();
-
-  }catch(e){
-    setLoader(1,false); setLoader(2,false);
-    qs('#status').innerHTML='<span style="color:#ff5869">❌ Klaida naršyklėje. Žr. Console.</span>';
-    console.error('go error', e);
+      if (tries===1) setPhase('Generuojama…');
+      if (tries%5===0) setPhase('Vis dar generuojama…');
+      if (tries===4) { await pollCover(taskId); } // pabandome anksti gauti viršelį
+      if (tries>MAX){ status('⏳ Ilgiau nei įprasta…'); loader(false); clearInterval(iv); }
+    }, 3000);
   }
-});
 
-fetchCredits();
-</script>
-  <script>
-(function(){
-  const $ = (s)=>document.querySelector(s);
-  function setLoader(on){
-    const l1 = document.getElementById('l1');
-    const l2 = document.getElementById('l2');
-    if (l1) l1.hidden = !on;
-    if (l2) l2.hidden = !on;
-  }
-  async function jres(r){ try{return await r.json()}catch(_){ return {ok:false} } }
-
-  // deleguotas paspaudimo gaudymas (veiks net jei mygtukas įterpiamas vėliau)
+  // AI lyrics
   document.addEventListener('click', async (e)=>{
-    const btn = e.target.closest('#go');
-    if (!btn) return;
+    if (!e.target.closest('#ai')) return;
+    const title=($('#title')?.value||'').trim();
+    const meta = ($('#meta')?.value||'').trim();
+    const txt = await ensureLyrics(title, meta);
+    $('#lyrics').value = txt;
+  });
 
+  // Generate
+  document.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('#go'); if (!btn) return;
     try{
-      setLoader(true);
-      const title = ($('#title')?.value||'Daina').trim();
+      $('#tracks').style.display='none';
+      $('#c1').src=''; $('#c2').src='';
+      $('#a1').src=''; $('#a2').src='';
+      $('#tt1').textContent='Daina #1'; $('#tt2').textContent='Daina #2';
+
+      const title=($('#title')?.value||'Daina').trim();
+      let text  = ($('#lyrics')?.value||'').trim();
       const meta  = ($('#meta')?.value||'').trim();
-      const voice = $('#voice')?.value || 'female';
       const model = $('#model')?.value || 'V3_5';
+      const voice = $('#voice')?.value || 'female';
       const lang  = $('#lang')?.value || 'lt';
-      let text    = ($('#lyrics')?.value||'').trim();
 
-      if (!text) {
-        const r0 = await fetch('/api/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:'Return ≤180 chars catchy song idea'},{role:'user',content:JSON.stringify({title,meta})}]})});
-        const j0 = await jres(r0);
-        text = (j0.output||'dreamy chorus, melodic hook').slice(0,180);
-      }
+      loader(true); setPhase('Jungiama…'); status(''); hint('');
 
-      const r = await fetch('/api/music/create',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ title, prompt:text, model, style:meta, instrumental:(voice==='none'), vocalGender:voice, language:lang })
-      });
-      const j = await jres(r);
-      if (!j.ok || !j.task_id) {
-        // atsarginis GET kelias, jei kažkur POST „nepralenda“
-        const q = new URLSearchParams({ title, prompt:text, model, style:meta, instrumental:String(voice==='none'), vocalGender:voice });
+      if(!text) text = await ensureLyrics(title, meta);
+
+      const payload = {
+        title,
+        prompt: text,
+        model,
+        style: meta,
+        instrumental: (voice==='none'),
+        vocalGender: voice,
+        language: lang
+      };
+
+      const r = await fetch('/api/music/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const jj = await j(r);
+      if (!jj.ok || !jj.task_id){
+        // fallback GET, jei kokiam edge scenarijuj POST neperteka
+        const q = new URLSearchParams(payload); 
         const r2 = await fetch('/api/music/create?'+q.toString());
-        const j2 = await jres(r2);
-        if (!j2.ok || !j2.task_id){ setLoader(false); console.error('create failed', j, j2); return; }
-        j.task_id = j2.task_id;
+        const j2 = await j(r2);
+        if (!j2.ok || !j2.task_id){ loader(false); status('<span class="err">❌ Nepavyko paleisti (create)</span>'); return; }
+        jj.task_id = j2.task_id;
       }
 
-      let tries=0;
-      async function poll(){
-        tries++;
-        const rr = await fetch('/api/music/status?task='+encodeURIComponent(j.task_id));
-        const s  = await jres(rr);
-        if (s.status==='ready'){
-          const a1 = document.getElementById('a1'), c1=document.getElementById('c1'), tt1=document.getElementById('tt1');
-          const t = s.tracks?.[0]; if (t && a1){ a1.src=t.audio_url||t.stream||''; if (c1 && t.image) c1.src=t.image; if (tt1 && t.title) tt1.textContent=t.title; }
-          const t2 = s.tracks?.[1]; const a2 = document.getElementById('a2'), c2=document.getElementById('c2'), tt2=document.getElementById('tt2');
-          if (t2 && a2){ a2.src=t2.audio_url||t2.stream||''; if (c2 && t2.image) c2.src=t2.image; if (tt2 && t2.title) tt2.textContent=t2.title; }
-          setLoader(false); return;
-        }
-        if (s.status==='failed'){ setLoader(false); return; }
-        if (tries<180) setTimeout(poll, 3000); else setLoader(false);
-      }
-      poll();
+      status('⏳ Laukiama…'); setPhase('Užduotis sukurta');
+      $('#tracks').style.display='grid';
+
+      startCover(jj.task_id).catch(()=>{});
+      pollStatus(jj.task_id);
     }catch(err){
-      setLoader(false);
-      console.error('music click error', err);
+      loader(false); status('<span class="err">❌ Klaida: '+(err?.message||String(err))+'</span>');
+      console.error(err);
     }
   });
 })();
 </script>
-
 </body>
 </html>
