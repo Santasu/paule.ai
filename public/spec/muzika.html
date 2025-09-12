@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="lt">
 <head>
@@ -19,12 +18,36 @@ input,textarea,select{width:100%;padding:11px;border-radius:12px;background:#0a1
 .btn.primary{background:linear-gradient(90deg,#6b7bff,#9e76ff);border:0}
 .row{display:flex;gap:12px;flex-wrap:wrap}.col{flex:1 1 260px}
 .status{margin-top:8px}
-.track{background:#0b121f;border:1px solid #1f2942;border-radius:12px;overflow:hidden;margin-top:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px}
+.track{background:#0b121f;border:1px solid #1f2942;border-radius:12px;overflow:hidden;position:relative}
 .track .pad{padding:10px;border-top:1px solid #18223a}
+.track .cover{width:100%;aspect-ratio:1/1;object-fit:cover;background:#0b111c}
+.skel{position:relative;overflow:hidden}
+.skel::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);animation:sh 1.2s infinite}
+@keyframes sh{to{transform:translateX(100%)}}
+
+.badge{position:absolute;left:10px;top:10px;background:#101a2e;border:1px solid #213055;padding:4px 8px;border-radius:999px;font-size:12px;opacity:.9}
+.badge.ok{background:#0f1e18;border-color:#1f3c33;color:#9af0cd}
+
 #now{position:fixed;left:0;right:0;bottom:0;background:#0b111c;border-top:1px solid #1b2436}
 #now .in{max-width:980px;margin:0 auto;padding:8px 12px;display:flex;gap:10px;align-items:center}
 #now img{width:36px;height:36px;border-radius:8px;border:1px solid #273453;object-fit:cover}
 .muted{color:#9fb0c7}
+
+/* ===== Loader (3 žiedai + natos) ===== */
+.loader-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,8,15,.6);backdrop-filter:blur(2px);z-index:9999}
+.loader-overlay.hidden{display:none}
+.rings{position:relative;width:140px;height:140px;display:grid;place-items:center}
+.ring{position:absolute;border-radius:50%;border:3px solid transparent;border-top-color:#7c8aff;border-right-color:#7c8aff;animation:spin 1.2s linear infinite}
+.ring.r2{width:100px;height:100px;border-top-color:#9e76ff;border-left-color:#9e76ff;animation:spinR 1.6s linear infinite}
+.ring.r3{width:70px;height:70px;border-bottom-color:#6bd0ff;border-left-color:#6bd0ff;animation:spin 2.1s linear infinite}
+.ring.r1{width:130px;height:130px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes spinR{to{transform:rotate(-360deg)}}
+.note-wrap{position:absolute;display:flex;gap:6px;align-items:end}
+.note{font-size:20px;opacity:.85;animation:float 1.6s ease-in-out infinite}
+.note.n2{animation-delay:.25s}.note.n3{animation-delay:.5s}
+@keyframes float{0%{transform:translateY(6px) scale(.98)}50%{transform:translateY(-6px) scale(1)}100%{transform:translateY(6px) scale(.98)}}
 </style>
 </head>
 <body>
@@ -74,25 +97,53 @@ input,textarea,select{width:100%;padding:11px;border-radius:12px;background:#0a1
 
       <div id="status" class="status"></div>
 
-      <div id="card" class="track" style="display:none">
-        <img id="cover" alt="" style="width:100%;aspect-ratio:1/1;object-fit:cover">
-        <div class="pad">
-          <h3 id="tt" style="margin:6px 0 8px">Daina</h3>
-          <audio id="aud" controls style="width:100%"></audio>
-          <div class="row" style="margin-top:8px">
-            <button class="btn" id="play">▶️ Groti</button>
-            <button class="btn" id="dl">⬇️ Atsisiųsti</button>
+      <div class="grid" id="cards" style="display:none">
+        <!-- Kortelė A -->
+        <div class="track" id="cardA">
+          <span class="badge" id="badgeA">Kuriama…</span>
+          <img id="coverA" class="cover skel" alt="">
+          <div class="pad">
+            <h3 id="ttA" style="margin:6px 0 8px">Kūrinys A</h3>
+            <audio id="audA" controls style="width:100%"></audio>
+            <div class="row" style="margin-top:8px">
+              <button class="btn" id="playA">▶️ Groti</button>
+              <button class="btn" id="dlA">⬇️ Atsisiųsti</button>
+            </div>
+          </div>
+        </div>
+        <!-- Kortelė B -->
+        <div class="track" id="cardB">
+          <span class="badge" id="badgeB">Kuriama…</span>
+          <img id="coverB" class="cover skel" alt="">
+          <div class="pad">
+            <h3 id="ttB" style="margin:6px 0 8px">Kūrinys B</h3>
+            <audio id="audB" controls style="width:100%"></audio>
+            <div class="row" style="margin-top:8px">
+              <button class="btn" id="playB">▶️ Groti</button>
+              <button class="btn" id="dlB">⬇️ Atsisiųsti</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Now playing juosta -->
   <div id="now">
     <div class="in">
       <img id="nimg" src="" alt="">
       <div id="nttl" class="muted" style="flex:1">Nieko negroja</div>
       <audio id="na" preload="metadata" crossorigin="anonymous" style="width:420px"></audio>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div id="loader" class="loader-overlay hidden" aria-live="polite" aria-busy="true">
+    <div class="rings">
+      <span class="ring r1"></span>
+      <span class="ring r2"></span>
+      <span class="ring r3"></span>
+      <div class="note-wrap"><span class="note">♪</span><span class="note n2">♫</span><span class="note n3">♬</span></div>
     </div>
   </div>
 
@@ -102,13 +153,15 @@ const oneLine = s => (s||'').toString().replace(/\s+/g,' ').trim();
 const limit = (s,n)=>{s=oneLine(s); if(s.length<=n) return s; let cut=s.slice(0,n), last=cut.lastIndexOf(' '); return (last>50?cut.slice(0,last):cut).trim();}
 
 function closeMe(){ if(history.length>1) history.back(); else location.href='/' }
-
 async function ensureJson(r){try{return await r.json()}catch(e){return {ok:false,error:'JSON',status:r.status}}}
+function showLoader(v){ qs('#loader')?.classList.toggle('hidden', !v); }
 
 function setNow(url,title,cover){
   if(!url) return;
   const a=qs('#na'); const img=qs('#nimg'); const ttl=qs('#nttl');
-  fetch(url).then(r=>r.blob()).then(b=>{a.src=URL.createObjectURL(b);a.play().catch(()=>{})}).catch(_=>{a.src=url;a.play().catch(()=>{})});
+  const play = (src)=>{ a.src=src; a.play().catch(()=>{}); };
+  // bandome blob (greitesnis startas kai CORS leidžia)
+  fetch(url).then(r=>r.blob()).then(b=>{play(URL.createObjectURL(b))}).catch(_=>play(url));
   img.src=cover||''; ttl.textContent=title||'Track';
 }
 
@@ -130,48 +183,93 @@ qs('#go').onclick = async ()=>{
     const j=await ensureJson(r); text = limit(j.output||'melodic chorus, dreamy vibe',180);
   }
 
-  qs('#status').textContent='⏳ Siunčiama…';
-  const resp = await fetch('/api/music/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title, prompt:text, model, genre:meta, instrumental:(voice==='none'), vocalGender:voice, language:lang, lyrics_language:lang})});
-  const j = await ensureJson(resp);
-  if(!j.ok && !j.task_id && !j.audio_url){ qs('#status').innerHTML='<span style="color:#ff5869">❌ Nepavyko</span>'; return; }
+  // paruošiame UI
+  qs('#status').textContent='⏳ Kuriame du kūrinius paraleliai…';
+  qs('#cards').style.display='grid';
+  prepCard('A', {title: title+' — A'});
+  prepCard('B', {title: title+' — B'});
+  showLoader(true);
 
-  if(j.audio_url){
-    // tiesioginis variantas
-    showTrack({title,image:j.image||'',audio_url:j.audio_url});
-    qs('#status').innerHTML='<span style="color:#16c98a">✅ Paruošta</span>';
-    return;
-  }
+  // startinam 2 užduotis
+  const payload = (variant)=>({title: title + (variant ? ' — '+variant : ''), prompt: text, model, genre:meta, instrumental:(voice==='none'), vocalGender:voice, language:lang, lyrics_language:lang});
+  const r1 = await fetch('/api/music/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload('A'))});
+  const r2 = await fetch('/api/music/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload('B'))});
+  const j1 = await ensureJson(r1), j2 = await ensureJson(r2);
 
-  // poll
-  const task = j.task_id;
-  let tries = 0;
-  async function poll(){
-    tries++;
-    const rr = await fetch('/api/music/status?task='+encodeURIComponent(task));
-    const s  = await ensureJson(rr);
-    if(s.status==='ready' && (s.audio_url || (s.tracks||[]).some(t=>t.audio_url))){
-      const t = s.audio_url ? {title, image:s.tracks?.[0]?.image || '', audio_url:s.audio_url}
-                            : (s.tracks || [])[0];
-      showTrack(t||{});
-      qs('#status').innerHTML='<span style="color:#16c98a">✅ Paruošta</span>';
-      return;
+  let doneA=false, doneB=false;
+  const finishMaybe=()=>{ if(doneA && doneB){ showLoader(false); qs('#status').innerHTML='<span style="color:#16c98a">✅ Abu kūriniai paruošti</span>'; } };
+
+  // jeigu tiesiog gauta audio
+  if(j1.audio_url){ fillCard('A', {title, image:j1.image||'', audio_url:j1.audio_url}); doneA=true; }
+  if(j2.audio_url){ fillCard('B', {title, image:j2.image||'', audio_url:j2.audio_url}); doneB=true; }
+
+  const t1=j1.task_id, t2=j2.task_id;
+  if(!t1 && !j1.audio_url){ badgeFail('A','Nepavyko paleisti'); doneA=true; }
+  if(!t2 && !j2.audio_url){ badgeFail('B','Nepavyko paleisti'); doneB=true; }
+  finishMaybe();
+  if(doneA && doneB) return;
+
+  // poll’eriai
+  async function pollOne(which, taskId){
+    let tries=0, gotCover=false, gotStream=false;
+    while(tries<180){ // iki ~12 min
+      tries++;
+      const rr = await fetch('/api/music/status?task='+encodeURIComponent(taskId));
+      const s  = await ensureJson(rr);
+
+      if(s?.tracks && s.tracks[0]){
+        const t=s.tracks[0];
+        // cover ASAP
+        if(t.image && !gotCover){ setCover(which, t.image); gotCover=true; }
+        // stream ASAP
+        if(t.stream && !getAudioEl(which).src && !gotStream){ setAudio(which, t.stream); gotStream=true; }
+      }
+
+      if(s.status==='ready'){
+        const t = s.audio_url ? {title: qs('#tt'+which).textContent, image: (s.tracks?.[0]?.image||''), audio_url:s.audio_url}
+                              : (s.tracks||[])[0];
+        fillCard(which, t||{});
+        if(which==='A') doneA=true; else doneB=true;
+        finishMaybe();
+        return;
+      }
+      if(s.status==='failed'){ badgeFail(which,'Klaida'); if(which==='A') doneA=true; else doneB=true; finishMaybe(); return; }
+      setBadge(which,'⏳ '+(s.status||'laukiama')+'…');
+      await new Promise(r=>setTimeout(r, 4000));
     }
-    if(s.status==='failed'){ qs('#status').innerHTML='<span style="color:#ff5869">❌ Nepavyko</span>'; return; }
-    qs('#status').textContent='⏳ '+(s.status||'laukiama')+'…';
-    if(tries<120) setTimeout(poll, 4000); else qs('#status').textContent='⏳ Ilgiau nei įprasta…';
+    setBadge(which,'⏳ Ilgiau nei įprasta…');
+    if(which==='A') doneA=true; else doneB=true;
+    finishMaybe();
   }
-  poll();
+
+  if(t1) pollOne('A', t1);
+  if(t2) pollOne('B', t2);
 };
 
-function showTrack(t){
-  const card=qs('#card'); card.style.display='block';
-  qs('#cover').src = t.image || 'https://placehold.co/512x512/jpg?text=Cover';
-  qs('#tt').textContent = t.title || 'Daina';
-  const a=qs('#aud');
-  fetch(t.audio_url).then(r=>r.blob()).then(b=>{a.src=URL.createObjectURL(b)}).catch(_=>{a.src=t.audio_url});
-  qs('#play').onclick = ()=> setNow(t.audio_url, t.title, t.image);
-  qs('#dl').onclick   = ()=> window.open(t.audio_url, '_blank');
+// ==== UI helperiai dviem kortelėms ====
+function prepCard(which, {title}){
+  qs('#tt'+which).textContent = title || ('Kūrinys '+which);
+  qs('#cover'+which).src=''; qs('#cover'+which).classList.add('skel');
+  const a=getAudioEl(which); a.removeAttribute('src'); a.load();
+  setBadge(which,'Kuriama…');
 }
+function fillCard(which, t){
+  if(t.image){ setCover(which, t.image); }
+  if(t.audio_url){ setAudio(which, t.audio_url); }
+  setBadge(which,'Paruošta', true);
+  // mygtukai
+  qs('#play'+which).onclick = ()=> setNow(getAudioEl(which).src, qs('#tt'+which).textContent, qs('#cover'+which).src);
+  qs('#dl'+which).onclick   = ()=> window.open(getAudioEl(which).src, '_blank');
+}
+function setCover(which, url){ const im=qs('#cover'+which); if(im.src!==url){ im.src=url; } im.classList.remove('skel'); }
+function setAudio(which, url){
+  const a=getAudioEl(which);
+  // pirmiausia bandome blob (pradeda groti greičiau jei CORS leidžia)
+  fetch(url).then(r=>r.blob()).then(b=>{a.src=URL.createObjectURL(b);a.load();}).catch(_=>{a.src=url;a.load();});
+}
+function getAudioEl(which){ return qs('#aud'+which); }
+function setBadge(which, text, ok){ const b=qs('#badge'+which); b.textContent=text; b.classList.toggle('ok', !!ok); }
+function badgeFail(which, text){ const b=qs('#badge'+which); b.textContent='❌ '+(text||'Nepavyko'); b.classList.remove('ok'); }
 </script>
 </body>
 </html>
