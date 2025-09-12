@@ -1,4 +1,7 @@
-<meta charset="UTF-8" />
+<!DOCTYPE html>
+<html lang="lt" data-theme="light" data-backend="vercel">
+<head>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>Paule – Premium AI Chat</title>
 
@@ -14,7 +17,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <!-- Host + Clerk + Stripe -->
+  <!-- Preconnect -->
   <link rel="preconnect" href="/" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://js.stripe.com" crossorigin>
@@ -22,263 +25,15 @@
   <link rel="preconnect" href="https://api.clerk.com" crossorigin>
   <link rel="preconnect" href="https://img.clerk.com" crossorigin>
 
+  <!-- Stripe -->
   <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
 
-  <!-- Pagrindinis CSS -->
+  <!-- Tavo CSS failas -->
   <link rel="stylesheet" href="/assets/css/paule.css?v=1.1.6"/>
-
-  <!-- Papildomi stiliai (modal / sprendimų juosta / pataisymai) -->
-  <style>
-    /* Modal – juodas fonas + ryškus X */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;z-index:20000}
-    .modal-overlay.show{display:block}
-    .modal-window{max-width:min(960px,92vw);margin:6vh auto;background:#0f1115;color:#f3f4f6;border:1px solid rgba(255,255,255,.08);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.45);}
-    .modal--sheet{max-width:min(1200px,96vw)}
-    .modal-close{position:fixed;right:18px;top:18px;z-index:20001;background:#111827;color:#e5e7eb;border:1px solid #374151;border-radius:10px;padding:6px 10px;cursor:pointer}
-    .modal-body,.modal-sheet-inner{padding:20px}
-
-    body.modal-open{overflow:hidden}
-    body.modal-open .bottom-section{display:none !important}
-    body.modal-open #cookie-bar{display:none !important}
-
-    /* Sprendimų juosta (Ginčas/Teisėjas/Kompromisas) */
-    .decision-bar{display:none;gap:10px;align-items:stretch;justify-content:center;padding:10px 12px}
-    .decision-chip{flex:1;display:flex;gap:10px;align-items:center;justify-content:center;border-radius:14px;padding:10px;border:2px solid transparent;cursor:pointer;font-weight:700;user-select:none}
-    .decision-chip:active{transform:translateY(1px)}
-    .decision-chip[data-mode="debate"]{border-color:#ef4444;background:rgba(239,68,68,.06)}
-    .decision-chip[data-mode="judge"]{border-color:#3b82f6;background:rgba(59,130,246,.06)}
-    .decision-chip[data-mode="compromise"]{border-color:#10b981;background:rgba(16,185,129,.06)}
-    .decision-chip img{width:18px;height:18px;opacity:.9}
-    .decision-bar.boom{animation:db .28s ease}
-    @keyframes db{0%{transform:scale(.99)}100%{transform:scale(1)}}
-
-    /* „Į naujausią“ */
-    .jump-latest{position:fixed;right:16px;bottom:2cm;display:none;padding:10px 12px;border-radius:12px;border:1px solid var(--border,#e5e7eb);background:var(--bg-primary,#fff);z-index:9}
-    .jump-latest.show{display:flex;gap:8px;align-items:center}
-
-    /* „AI mąsto…“ */
-    ._ai-wait{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px 10px;opacity:.9}
-    ._ai-wait .dots span{display:inline-block;width:6px;height:6px;border-radius:50%;background:#9ca3af;margin:0 3px;animation:_w 1s infinite}
-    ._ai-wait .dots span:nth-child(2){animation-delay:.15s}
-    ._ai-wait .dots span:nth-child(3){animation-delay:.3s}
-    @keyframes _w{0%{transform:translateY(0)}50%{transform:translateY(-2px)}100%{transform:translateY(0)}}
-  </style>
-
-  <!-- 🛠️ HOTFIX: kontrastas, tema, chip'ai, kainų plotis, Google tekstas, įvesties rėmelis -->
-  <style id="paule-hotfix-2025-09-12">
-    /* Tema – spalvų kintamieji */
-    :root{
-      --bg-primary:#ffffff;
-      --fg-primary:#111827;
-      --fg-muted:#4b5563;
-      --border:#e5e7eb;
-      --md-h1: var(--fg-primary);
-      --md-h2:#2563eb; --md-h3:#7c3aed; --md-h4:#10b981; --md-h5:#f59e0b; --md-h6:#6b7280;
-    }
-    :root[data-theme="dark"]{
-      --bg-primary:#0f1115;
-      --fg-primary:#e5e7eb;
-      --fg-muted:#9ca3af;
-      --border:rgba(255,255,255,.12);
-      --md-h1:#e5e7eb; --md-h2:#60a5fa; --md-h3:#c084fc; --md-h4:#34d399; --md-h5:#fbbf24; --md-h6:#9ca3af;
-    }
-    body, .bubble-card, .msg-content { color: var(--fg-primary); }
-    .bubble-card { background: var(--bg-primary); border-color: var(--border); }
-
-    /* Markdown antraščių spalvų override (kad DARK visada matytųsi) */
-    .msg-content h1{ color:var(--md-h1) !important; }
-    .msg-content h2{ color:var(--md-h2) !important; }
-    .msg-content h3{ color:var(--md-h3) !important; }
-    .msg-content h4{ color:var(--md-h4) !important; }
-    .msg-content h5{ color:var(--md-h5) !important; }
-    .msg-content h6{ color:var(--md-h6) !important; }
-    .msg-content strong{ color:inherit !important; text-shadow:0 0 1px rgba(124,58,237,.6); }
-
-    /* Įvesties „išorinio“ rėmelio siaurinimas */
-    .input-container{ border:1px solid var(--border) !important; padding:8px 10px !important; border-radius:12px !important; }
-
-    /* Google: juodas tekstas */
-    #authGoogle{ color:#111 !important; }
-
-    /* Chip’ai ~3× mažesni */
-    .decision-bar{ gap:6px !important; padding:6px 8px !important; }
-    .decision-chip{ padding:6px 8px !important; font-size:12px !important; border-radius:10px !important; }
-    .decision-chip img{ width:14px !important; height:14px !important; }
-
-    /* Visi popup’ai turi X */
-    .modal-close{ display:inline-flex !important; }
-
-    /* Kainos – platesnis lapas, kad išsidėstytų horizontaliai */
-    .modal--sheet{ max-width:min(1600px,98vw) !important; }
-  </style>
-
-  <!-- App konfigūracija -->
-  <script>
-    (function () {
-      var MODE=(document.documentElement.getAttribute('data-backend')||'').trim().toLowerCase()==='vercel'?'vercel':'wp';
-      var restBase=MODE==='vercel'?'/api':'/wp-json/paule/v1';
-      var routes={
-        base:restBase,
-        stream:restBase+'/stream',
-        models:restBase+'/models',
-        diagnostics:restBase+'/diagnostics',
-        comicCreate:restBase+'/comic/create',
-        fluxCreate:restBase+'/flux/create',
-        musicCreate:restBase+'/music/create',
-        musicStatus:restBase+'/music/status',
-        runwayImage:restBase+'/runway/image',
-        runwayStatus:restBase+'/runway/status',
-        suggest:restBase+'/suggest'
-      };
-      var CFG={mode:MODE,restBase:routes.base,restStream:routes.stream,restStreamSSE:routes.stream,sseDefault:1,
-        pluginBase:'/assets',iconsBase:'/assets/icon',featuresBase:'/assets/features',routes:routes,version:'paule-1.1.6'};
-      window.PAULE_CONFIG=CFG; window.AUGAM_CONFIG=CFG;
-      try{Object.defineProperty(window,'API_BASE',{configurable:true,get:function(){return CFG.restBase;},set:function(_){}});}catch(e){}
-      window.__SET_API_BASE__=function(v){};
-    })();
-  </script>
-
-  <!-- Bridge WP -> /api -->
-  <script>
-    (function(){
-      'use strict';
-      try{
-        var restBase=(window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)||'/api';
-        if(window.EventSource){
-          var OrigES=window.EventSource;
-          window.EventSource=function(url,opts){
-            try{url=String(url).replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/,'/api$1').replace(/\/(?:augam|paule)\/v1(\/|$)/,'/api$1');}catch(_){}
-            return new OrigES(url,opts);
-          };
-          window.EventSource.prototype=OrigES.prototype;
-        }
-        if(window.fetch){
-          var origFetch=window.fetch;
-          window.fetch=function(input,init){
-            try{
-              var u=(typeof input==='string')?input:(input&&input.url);
-              if(u){
-                var nu=String(u).replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/,'/api$1').replace(/\/(?:augam|paule)\/v1(\/|$)/,'/api$1');
-                if(nu!==u) input=(typeof input==='string')?nu:new Request(nu,input);
-              }
-            }catch(_){}
-            return origFetch(input,init);
-          };
-        }
-        window.__FORCE_STREAM_ENDPOINT__=restBase.replace(/\/+$/,'')+'/stream';
-      }catch(e){console.warn('[PAULE bridge] warning:',e);}
-    })();
-  </script>
-
-  <!-- HOTFIX: SSE -> JSON kai mode=once -->
-  <script>
-    (function(){
-      'use strict';
-      if (!window.fetch) return;
-      const prevFetch = window.fetch;
-
-      async function toJsonFromSSE(resp, models){
-        const reader  = resp.body?.getReader?.();
-        if (!reader) return null;
-        const dec = new TextDecoder();
-        let buf = '', text = '';
-        for(;;){
-          const it = await reader.read();
-          if (it.done) break;
-          buf += dec.decode(it.value, {stream:true});
-          let idx;
-          while ((idx = buf.indexOf('\n\n')) >= 0){
-            const frame = buf.slice(0, idx).trim(); buf = buf.slice(idx+2);
-            if (!frame) continue;
-            const dataLine = frame.split('\n').find(l => l.startsWith('data:'));
-            if (!dataLine) continue;
-            const payload = dataLine.replace(/^data:\s*/,'').trim();
-            if (payload === '[DONE]') { buf=''; break; }
-            try{
-              const j = JSON.parse(payload);
-              const piece = j?.choices?.[0]?.delta?.content ?? j?.text ?? '';
-              if (typeof piece === 'string') text += piece;
-            }catch(_){}
-          }
-        }
-        const answers = (models && models.length ? models : ['auto']).map(m => ({ model:m, text }));
-        return { ok:true, answers };
-      }
-
-      window.fetch = async function(input, init){
-        const url  = typeof input==='string' ? input : (input && input.url) || '';
-        const meth = (init && init.method) || (typeof input!=='string' && input && input.method) || 'GET';
-        const isStreamOnce = /\/api\/stream(?:\?|$)/.test(url) && /mode=once/.test(url) && String(meth).toUpperCase()==='POST';
-        if (!isStreamOnce) return prevFetch(input, init);
-
-        let models = [];
-        try {
-          const raw = (init && init.body) ? String(init.body) : '';
-          if (raw) {
-            const b = JSON.parse(raw);
-            if (typeof b.models === 'string') { models = b.models.split(',').map(s=>s.trim()).filter(Boolean); }
-          }
-        } catch(_){}
-
-        const resp = await prevFetch(input, init);
-        const ct   = (resp.headers.get('content-type')||'').toLowerCase();
-        if (ct.includes('text/event-stream')) {
-          const json = await toJsonFromSSE(resp, models);
-          if (json) {
-            return new Response(JSON.stringify(json), {
-              status: 200,
-              headers: { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store' }
-            });
-          }
-        }
-        return resp;
-      };
-    })();
-  </script>
-
-  <!-- Global alias -->
-  <script>
-    window.sendMessage = function(){
-      if (window.PauleMain && typeof window.PauleMain.sendMessage === 'function'){
-        return window.PauleMain.sendMessage();
-      }
-    };
-  </script>
-
-  <!-- Clerk -->
-  <script>
-    window.__CLERK_PUBLISHABLE_KEY__ = "pk_live_Y2xlcmsucGF1bGUuYWkk";
-    window.__CLERK_FRONTEND_API__    = "clerk.paule.ai";
-  </script>
-  <script async crossorigin="anonymous"
-    data-clerk-publishable-key="pk_live_Y2xlcmsucGF1bGUuYWkk"
-    data-clerk-frontend-api="clerk.paule.ai"
-    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
-  </script>
-  <script>
-    window.addEventListener('load', async () => {
-      try{
-        const c = window.Clerk;
-        if (c?.load) {
-          await c.load({
-            publishableKey: window.__CLERK_PUBLISHABLE_KEY__,
-            frontendApi: window.__CLERK_FRONTEND_API__,
-          });
-        }
-      }catch(err){
-        console.error("Clerk boot error:", err);
-      }
-    });
-  </script>
-
-  <noscript>
-    <style>.nojs{position:fixed;inset:auto 0 0 0;background:#111827;color:#fff;padding:12px 16px;text-align:center;font:14px/1.4 system-ui}</style>
-    <div class="nojs">Norint naudotis prisijungimu reikia įjungti JavaScript.</div>
-  </noscript>
 </head>
 <body>
 
-  <!-- ======== MODAL ROOT ======== -->
+  <!-- ===== MODAL ROOT ===== -->
   <div id="modal" class="modal-overlay" aria-hidden="true">
     <button class="modal-close" type="button" aria-label="Uždaryti (Esc)">✕</button>
     <div class="modal-window modal--sheet" role="dialog" aria-modal="true" hidden>
@@ -456,7 +211,7 @@
     </main>
   </div>
 
-  <!-- ===== BOTTOM (sprendimų juosta + įvestis) ===== -->
+  <!-- ===== BOTTOM ===== -->
   <div class="bottom-section after-message" id="bottomSection" data-responsive="true">
     <div class="decision-bar" id="decisionBar" aria-live="polite">
       <div class="decision-chip" data-mode="debate" title="AI ginčas">
@@ -493,11 +248,152 @@
     </div>
   </div>
 
-  <!-- ===== Orchestrator JS + Spec router ===== -->
+  <!-- ===== App konfigūracija ===== -->
   <script>
-  /* =======================================================================
-     Paule – Premium Chat Orchestrator • v2.3.1 (SSE kaip anksčiau)
-     ======================================================================= */
+    (function () {
+      var MODE=(document.documentElement.getAttribute('data-backend')||'').trim().toLowerCase()==='vercel'?'vercel':'wp';
+      var restBase=MODE==='vercel'?'/api':'/wp-json/paule/v1';
+      var routes={
+        base:restBase,
+        stream:restBase+'/stream',
+        models:restBase+'/models',
+        diagnostics:restBase+'/diagnostics',
+        comicCreate:restBase+'/comic/create',
+        fluxCreate:restBase+'/flux/create',
+        musicCreate:restBase+'/music/create',
+        musicStatus:restBase+'/music/status',
+        runwayImage:restBase+'/runway/image',
+        runwayStatus:restBase+'/runway/status',
+        suggest:restBase+'/suggest'
+      };
+      var CFG={mode:MODE,restBase:routes.base,restStream:routes.stream,restStreamSSE:routes.stream,sseDefault:1,
+        pluginBase:'/assets',iconsBase:'/assets/icon',featuresBase:'/assets/features',routes:routes,version:'paule-1.1.6'};
+      window.PAULE_CONFIG=CFG; window.AUGAM_CONFIG=CFG;
+      try{Object.defineProperty(window,'API_BASE',{configurable:true,get:function(){return CFG.restBase;},set:function(_){}});}catch(e){}
+      window.__SET_API_BASE__=function(v){};
+    })();
+  </script>
+
+  <!-- Bridge WP -> /api -->
+  <script>
+    (function(){
+      'use strict';
+      try{
+        var restBase=(window.PAULE_CONFIG&&window.PAULE_CONFIG.restBase)||'/api';
+        if(window.EventSource){
+          var OrigES=window.EventSource;
+          window.EventSource=function(url,opts){
+            try{url=String(url).replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/,'/api$1').replace(/\/(?:augam|paule)\/v1(\/|$)/,'/api$1');}catch(_){}
+            return new OrigES(url,opts);
+          };
+          window.EventSource.prototype=OrigES.prototype;
+        }
+        if(window.fetch){
+          var origFetch=window.fetch;
+          window.fetch=function(input,init){
+            try{
+              var u=(typeof input==='string')?input:(input&&input.url);
+              if(u){
+                var nu=String(u).replace(/\/wp-json\/(?:augam|paule)\/v1(\/|$)/,'/api$1').replace(/\/(?:augam|paule)\/v1(\/|$)/,'/api$1');
+                if(nu!==u) input=(typeof input==='string')?nu:new Request(nu,input);
+              }
+            }catch(_){}
+            return origFetch(input,init);
+          };
+        }
+        window.__FORCE_STREAM_ENDPOINT__=restBase.replace(/\/+$/,'')+'/stream';
+      }catch(e){console.warn('[PAULE bridge] warning:',e);}
+    })();
+  </script>
+
+  <!-- HOTFIX: SSE -> JSON kai mode=once (palikta suderinamumui, nenaudojam su SSE) -->
+  <script>
+    (function(){
+      'use strict';
+      if (!window.fetch) return;
+      const prevFetch = window.fetch;
+
+      async function toJsonFromSSE(resp, models){
+        const reader  = resp.body?.getReader?.();
+        if (!reader) return null;
+        const dec = new TextDecoder();
+        let buf = '', text = '';
+        for(;;){
+          const it = await reader.read();
+          if (it.done) break;
+          buf += dec.decode(it.value, {stream:true});
+          let idx;
+          while ((idx = buf.indexOf('\n\n')) >= 0){
+            const frame = buf.slice(0, idx).trim(); buf = buf.slice(idx+2);
+            if (!frame) continue;
+            const dataLine = frame.split('\n').find(l => l.startsWith('data:'));
+            if (!dataLine) continue;
+            const payload = dataLine.replace(/^data:\s*/,'').trim();
+            if (payload === '[DONE]') { buf=''; break; }
+            try{
+              const j = JSON.parse(payload);
+              const piece = j?.choices?.[0]?.delta?.content ?? j?.text ?? '';
+              if (typeof piece === 'string') text += piece;
+            }catch(_){}
+          }
+        }
+        const answers = (models && models.length ? models : ['auto']).map(m => ({ model:m, text }));
+        return { ok:true, answers };
+      }
+
+      window.fetch = async function(input, init){
+        const url  = typeof input==='string' ? input : (input && input.url) || '';
+        const meth = (init && init.method) || (typeof input!=='string' && input && input.method) || 'GET';
+        const isStreamOnce = /\/api\/stream(?:\?|$)/.test(url) && /mode=once/.test(url) && String(meth).toUpperCase()==='POST';
+        if (!isStreamOnce) return prevFetch(input, init);
+
+        let models = [];
+        try {
+          const raw = (init && init.body) ? String(init.body) : '';
+          if (raw) {
+            const b = JSON.parse(raw);
+            if (typeof b.models === 'string') { models = b.models.split(',').map(s=>s.trim()).filter(Boolean); }
+          }
+        } catch(_){}
+
+        const resp = await prevFetch(input, init);
+        const ct   = (resp.headers.get('content-type')||'').toLowerCase();
+        if (ct.includes('text/event-stream')) {
+          const json = await toJsonFromSSE(resp, models);
+          if (json) {
+            return new Response(JSON.stringify(json), {
+              status: 200,
+              headers: { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store' }
+            });
+          }
+        }
+        return resp;
+      };
+    })();
+  </script>
+
+  <!-- Global alias -->
+  <script>
+    window.sendMessage = function(){
+      if (window.PauleMain && typeof window.PauleMain.sendMessage === 'function'){
+        return window.PauleMain.sendMessage();
+      }
+    };
+  </script>
+
+  <!-- Clerk keys -->
+  <script>
+    window.__CLERK_PUBLISHABLE_KEY__ = "pk_live_Y2xlcmsucGF1bGUuYWkk";
+    window.__CLERK_FRONTEND_API__    = "clerk.paule.ai";
+  </script>
+  <script async crossorigin="anonymous"
+    data-clerk-publishable-key="pk_live_Y2xlcmsucGF1bGUuYWkk"
+    data-clerk-frontend-api="clerk.paule.ai"
+    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
+  </script>
+
+  <!-- ===== Orchestrator JS + Spec router (SSE) ===== -->
+  <script>
   (function () {
     'use strict';
 
@@ -514,8 +410,6 @@
     // Tunables
     const SOFT_TIMEOUT_MS = 900;
     const HARD_DEADLINE_MS = 25000;
-    const TYPE_MIN_DELAY = 8, TYPE_MAX_DELAY = 16;
-    const SENTENCE_PAUSE_MIN = 120, SENTENCE_PAUSE_MAX = 220;
 
     // --- Bendra būsena ---
     const state = {
@@ -601,6 +495,8 @@
       el.modal.setAttribute('aria-hidden','true');
       document.body.classList.remove('modal-open');
       el.modalSheetBody.innerHTML=''; el.modalToolBody.innerHTML='';
+      // grąžinam plotį
+      try{ el.modalSheet.style.maxWidth=''; }catch(_){}
       if (location.pathname.startsWith('/spec/')) history.replaceState(null,'','/');
     }
     el.modalClose?.addEventListener('click', closeModal);
@@ -642,6 +538,8 @@
         const clone = source.cloneNode(true);
         clone.hidden=false;
         openModal('sheet', clone);
+        // praplatinam lapą, kad Stripe tilptų į horizontalią eilę
+        try{ document.querySelector('#modal .modal--sheet').style.maxWidth='min(1600px, 98vw)'; }catch(_){}
       });
     })();
     window.addEventListener('popstate', ()=>{
@@ -668,7 +566,7 @@
       el.btnNewChat?.addEventListener('click', ()=>location.reload());
       window.addEventListener('resize', updateBottomDock);
 
-      // Tema toggle (fix)
+      // Tema toggle
       document.getElementById('btnTheme')?.addEventListener('click', ()=>{
         const key='paule_theme';
         const cur = (function(){ try{ return localStorage.getItem(key)||document.documentElement.getAttribute('data-theme')||'light'; }catch(_){ return document.documentElement.getAttribute('data-theme')||'light'; } })();
@@ -792,10 +690,10 @@
     // --- Orchestrator ---
     const FRONT_TO_BACK={
       paule:'together/openai/gpt-oss-20b',
-      chatgpt:'gpt-5-mini',
-      claude:'claude-4-sonnet',                 // ← palikta kaip prašei
+      chatgpt:'gpt-5-mini',           // ← SSE per EventSource
+      claude:'claude-4-sonnet',
       gemini:'gemini-2.5-flash',
-      grok:'grok-2-latest',
+      grok:'grok-4',                  // ← pridėtas Grok 4
       deepseek:'deepseek-chat',
       llama:'openrouter/meta-llama/llama-3.1-70b-instruct'
     };
@@ -867,7 +765,7 @@
             if (!state.firstStarted) state.firstStarted = front;
           }
           const panel = ensurePanel(front);
-          panel.content += piece;
+          appendSmart(panel, piece);
           panel.el.innerHTML = parseMarkdown(panel.content);
           scrollToBottomIfNeeded();
         };
@@ -996,7 +894,7 @@
       if (!jumpBtn){
         jumpBtn = document.createElement('button');
         jumpBtn.className='jump-latest';
-        jumpBtn.innerHTML = `<img class="ui-icon" src="${ICONS_BASE}/arrow-down.svg" alt=""> Į naujausią`;
+        jumpBtn.innerHTML = `<img class="ui-icon" src="${ICONS_BASE}/arrow-down.svg" alt=""> <span>Į naujausią</span>`;
         jumpBtn.addEventListener('click', ()=>{ el.chatArea.scrollTo({top:el.chatArea.scrollHeight, behavior:'smooth'}); jumpBtn.classList.remove('show'); state.stickToBottom=true; });
         document.body.appendChild(jumpBtn);
       }
@@ -1035,44 +933,27 @@
       return res.json();
     }
 
-    function randomBetween(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
-    function splitWordsPreserve(text){ return String(text||'').split(/(\s+)/); }
-    async function typeInto(panel, text){
-      const parts = splitWordsPreserve(text);
-      for (let i=0;i<parts.length;i++){
-        const w = parts[i];
-        panel.content += w;
-        panel.el.innerHTML = parseMarkdown(panel.content);
-        scrollToBottomIfNeeded();
-        const isSentenceEnd = /[.!?…]$/.test(w);
-        await sleep(isSentenceEnd ? randomBetween(SENTENCE_PAUSE_MIN,SENTENCE_PAUSE_MAX) : randomBetween(TYPE_MIN_DELAY, TYPE_MAX_DELAY));
-      }
-    }
-
     function appendFade(node){
       node.style.opacity='0'; node.style.transform='translateY(16px)';
       el.chatArea?.appendChild(node);
       requestAnimationFrame(()=>{ node.style.transition='all .25s ease'; node.style.opacity='1'; node.style.transform='translateY(0)'; });
     }
 
-    // --- Markdown ---
+    // --- Markdown (lengvas parseris) ---
     function parseMarkdown(input){
-      let src = String(input||'');
-      src = src.replace(/(^|\n)#{1,6}\s*$/g, '$1');
-
-      const HCOL = { 1:'#111827', 2:'#2563eb', 3:'#7c3aed', 4:'#16a34a', 5:'#f59e0b', 6:'#6b7280' };
-      let t = escapeHtml(src);
-
-      const STORE=[]; t=t.replace(/```([\s\S]*?)```/g,(_,m)=>`@@CB_${STORE.push(m)-1}@@`);
+      let t = String(input||'');
+      t = t.replace(/(^|\n)#{1,6}\s*$/g, '$1'); // pašalinti tuščias #
+      const H={1:'#111827',2:'#2563eb',3:'#7c3aed',4:'#16a34a',5:'#f59e0b',6:'#6b7280'};
+      const STORE=[];
+      t=t.replace(/```([\s\S]*?)```/g,(_,m)=>`@@CB_${STORE.push(m)-1}@@`);
+      t = escapeHtml(t);
       t = t.replace(/`([^`]+)`/g, (_,m)=> `<code style="background:rgba(0,0,0,.06);padding:2px 4px;border-radius:4px">${m}</code>`);
-
-      t = t.replace(/^\s*######\s+(.+)$/gm, `<h6 style="margin:.25em 0 .15em;color:${HCOL[6]};font-weight:800">$1</h6>`);
-      t = t.replace(/^\s*#####\s+(.+)$/gm, `<h5 style="margin:.3em 0 .2em;color:${HCOL[5]};font-weight:800">$1</h5>`);
-      t = t.replace(/^\s*####\s+(.+)$/gm,  `<h4 style="margin:.35em 0 .2em;color:${HCOL[4]};font-weight:800">$1</h4>`);
-      t = t.replace(/^\s*###\s+(.+)$/gm,   `<h3 style="margin:.4em 0 .2em;color:${HCOL[3]};font-weight:800">$1</h3>`);
-      t = t.replace(/^\s*##\s+(.+)$/gm,    `<h2 style="margin:.5em 0 .25em;color:${HCOL[2]};font-weight:800">$1</h2>`);
-      t = t.replace(/^\s*#\s+(.+)$/gm,     `<h1 style="margin:.6em 0 .3em;color:${HCOL[1]};font-weight:900;font-size:1.15em">$1</h1>`);
-
+      t = t.replace(/^\s*######\s+(.+)$/gm, `<h6 style="margin:.25em 0 .15em;color:${H[6]};font-weight:800">$1</h6>`);
+      t = t.replace(/^\s*#####\s+(.+)$/gm, `<h5 style="margin:.3em 0 .2em;color:${H[5]};font-weight:800">$1</h5>`);
+      t = t.replace(/^\s*####\s+(.+)$/gm,  `<h4 style="margin:.35em 0 .2em;color:${H[4]};font-weight:800">$1</h4>`);
+      t = t.replace(/^\s*###\s+(.+)$/gm,   `<h3 style="margin:.4em 0 .2em;color:${H[3]};font-weight:800">$1</h3>`);
+      t = t.replace(/^\s*##\s+(.+)$/gm,    `<h2 style="margin:.5em 0 .25em;color:${H[2]};font-weight:800">$1</h2>`);
+      t = t.replace(/^\s*#\s+(.+)$/gm,     `<h1 style="margin:.6em 0 .3em;color:${H[1]};font-weight:900;font-size:1.15em">$1</h1>`);
       t = t.replace(/(^|\n)(?:[-*]\s.+)(?:\n[-*]\s.+)*/g, (block)=>{
         const lines = block.trim().split('\n').map(l=> l.replace(/^[-*]\s+/,'').trim());
         return `\n<ul style="margin:.25em 0 .25em .9em; padding:0; list-style:disc inside;">` +
@@ -1083,8 +964,7 @@
         return `\n<ol style="margin:.25em 0 .25em 1.1em; padding:0; list-style:decimal inside;">` +
           lines.map(li=>`<li>${li}</li>`).join('') + `</ol>`;
       });
-
-      t = t.replace(/\*\*([^*]+)\*\*/g, `<strong style="color:#111827;text-shadow:0 0 1px #5b3cc4">$1</strong>`);
+      t = t.replace(/\*\*([^*]+)\*\*/g, `<strong style="color:#111827;font-weight:700">$1</strong>`);
       t = t.replace(/\*([^*]+)\*/g, `<em>$1</em>`);
       t = t.replace(/\n/g, '<br>');
       t = t.replace(/@@CB_(\d+)@@/g, (_,i)=> `<pre style="background:rgba(0,0,0,.06);padding:10px;border-radius:10px;overflow:auto"><code>${STORE[Number(i)]||''}</code></pre>`);
@@ -1098,10 +978,10 @@
       }catch(_){ return 'Klaida'; }
     }
     function stripMd(s){ return String(s||'').replace(/`{1,3}[\s\S]*?`{1,3}/g,'').replace(/[*_#>-]/g,''); }
-    function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
     function timeNow(){ return new Date().toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'}); }
     function escapeHtml(x){ const d=document.createElement('div'); d.textContent=(x==null?'':String(x)); return d.innerHTML; }
 
+    // ====== SAUGUS DELTŲ IŠPAKAVIMAS + DEDUP ======
     function safeDelta(s){
       if (!s) return '';
       if (s === '[DONE]') return '';
@@ -1109,29 +989,53 @@
       try{
         const o = JSON.parse(str);
         if (typeof o === 'string') return o;
-        if (o?.text) return String(o.text);
+        if (o?.text) return String(o.text);                   // kai ateina {text:"…"} delta
         if (o?.delta && typeof o.delta === 'string') return o.delta;
-        if (o?.content && typeof o.content === 'string') return o.content;
+        if (o?.content && typeof o.content === 'string') return o.content; // kai ateina cumulative "content"
         const ch = o?.choices?.[0];
         if (ch?.delta?.content) return String(ch.delta.content);
-        if (ch?.message?.content) return String(ch.message.content);
+        if (ch?.message?.content) return String(ch.message.content); // cumulative
         if (Array.isArray(o?.content) && o.content[0]?.text) return String(o.content[0].text);
       }catch(_){}
       return str;
     }
+
+    // jei atsiunčia KUMULIACINĘ žinutę – pridedam tik naują uodegą
+    function diffAppend(prev, incoming){
+      if (!incoming) return '';
+      if (!prev) return incoming;
+      if (incoming.startsWith(prev)) return incoming.slice(prev.length);
+      // ieškome didžiausio sutapimo (prev pabaiga == incoming pradžia)
+      const max = Math.min(prev.length, incoming.length);
+      for (let i=max; i>0; i--){
+        if (prev.endsWith(incoming.slice(0,i))) return incoming.slice(i);
+      }
+      return incoming;
+    }
+    function appendSmart(panel, incoming){
+      // jei backend grąžina tik „delta“ – append; jei „cumulative“ – diffAppend
+      const inc = String(incoming||'');
+      const maybeSuffix = diffAppend(panel.content, inc);
+      if (maybeSuffix.length >= inc.length){ // tik delta
+        panel.content += inc;
+      } else if (maybeSuffix){               // cumulative – tik nauja dalis
+        panel.content += maybeSuffix;
+      }
+    }
+
     function uniqueNonEmpty(arr){ const s=new Set(); const out=[]; (arr||[]).forEach(v=>{ const t=String(v||'').trim(); if(t&&!s.has(t)){ s.add(t); out.push(t);} }); return out; }
     function toast(title, details){
       const n=document.createElement('div');
       n.className='error-notification';
-      n.innerHTML = `<div style="font-weight:600;margin-bottom:4px">${escapeHtml(title)}</div>${details?`<div style="font-size:12px;opacity:.8">${escapeHtml(details)}</div>`:''}`;
+      n.style.cssText='position:fixed;right:16px;bottom:16px;z-index:99999;background:#111827;color:#fff;padding:10px 12px;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.35);';
+      n.innerHTML = `<div style="font-weight:600;margin-bottom:4px">${escapeHtml(title)}</div>${details?`<div style="font-size:12px;opacity:.85">${escapeHtml(details)}</div>`:''}`;
       document.body.appendChild(n);
       setTimeout(()=>n.remove(), 6000);
     }
     function debug(){ if (DEBUG) try{ console.log('[PAULE]', ...arguments); }catch(_){ } }
 
-    /* ===== Režimai: tylus siuntimas tik į ChatGPT (be prompto chate / įvestyje) ===== */
+    /* ===== Režimai (send silently į ChatGPT) ===== */
     function silentRoundTo(fronts, prompt){
-      // reset round be user burbulo ir nekeičiam inputo
       state.isStreaming=false; resetRound();
       startOrchestrator(prompt, fronts).catch(()=>finalizeRound());
     }
@@ -1229,110 +1133,5 @@
     })();
   </script>
 
-    <!-- ===== Clerk UI montavimas ===== -->
-  <script>
-    (function(){
-      const root = document.getElementById('clerk-auth');
-
-      function svgGoogle(){
-        const s=document.createElementNS('http://www.w3.org/2000/svg','svg');
-        s.setAttribute('viewBox','0 0 533.5 544.3'); s.setAttribute('width','16'); s.setAttribute('height','16'); s.style.marginRight='6px';
-        const p1=document.createElementNS(s.namespaceURI,'path'); p1.setAttribute('fill','#EA4335'); p1.setAttribute('d','M533.5 278.4c0-18.5-1.7-36.4-5-53.6H272v101.5h147.5c-6.4 34.5-25.9 63.7-55.2 83.2v69.1h89.2c52.2-48.1 80-119 80-200.2z');
-        const p2=document.createElementNS(s.namespaceURI,'path'); p2.setAttribute('fill','#34A853'); p2.setAttribute('d','M272 544.3c74 0 136-24.5 181.4-66.5l-89.2-69.1c-24.8 16.6-56.5 26.5-92.3 26.5-70.9 0-131-47.8-152.5-112.1H27.3v70.4C72.3 486.1 165.4 544.3 272 544.3z');
-        const p3=document.createElementNS(s.namespaceURI,'path'); p3.setAttribute('fill','#4A90E2'); p3.setAttribute('d','M119.5 322.9c-5.6-16.6-8.8-34.3-8.8-52.9s3.2-36.3 8.8-52.9V146.7H27.3C9.7 182.4 0 222.1 0 270s9.7 87.6 27.3 123.3l92.2-70.4z');
-        const p4=document.createElementNS(s.namespaceURI,'path'); p4.setAttribute('fill','#FBBC05'); p4.setAttribute('d','M272 107.7c40.3 0 76.5 13.9 105 41.2l-78.7-78.7C408 25.2 346 0 272 0 165.4 0 72.3 58.2 27.3 146.7l92.2 70.4C141 155.8 201.1 107.7 272 107.7z');
-        s.append(p1,p2,p3,p4); return s;
-      }
-
-      function renderFallback(){
-        if (!root) return;
-        root.innerHTML = '';
-        const btn = document.createElement('button');
-        btn.className = 'btn ghost';
-        btn.type = 'button';
-        const icon = svgGoogle();
-        btn.appendChild(icon);
-        btn.appendChild(document.createTextNode('Prisijungti'));
-        btn.onclick = () => window.openAuth ? openAuth() : alert('Kraunama…');
-        root.appendChild(btn);
-      }
-
-      window.addEventListener('load', async () => {
-        try{
-          const clerk = window.Clerk;
-          if (!clerk || !clerk.load){ renderFallback(); return; }
-          await clerk.load({ publishableKey: window.__CLERK_PUBLISHABLE_KEY__, frontendApi: window.__CLERK_FRONTEND_API__ });
-
-          if (!root){ return; }
-          root.innerHTML = '';
-
-          if (clerk.user){
-            const holder = document.createElement('div');
-            root.appendChild(holder);
-            clerk.mountUserButton(holder, { appearance:{ elements:{ userButtonAvatarBox:'rounded-xl' } } });
-          } else {
-            renderFallback();
-          }
-        }catch(_){
-          renderFallback();
-        }
-      });
-    })();
-  </script>
-
-  <!-- ===== Poraštė ===== -->
-  <footer class="site-footer left">
-    <a class="footer-link" href="/legal/privacy.html" data-sheet>Privatumo politika</a>
-    <span class="sep">•</span>
-    <a class="footer-link" href="/legal/refunds.html" data-sheet>Pinigų grąžinimas</a>
-    <span class="sep">•</span>
-    <a class="footer-link" href="/legal/cookies.html" data-sheet>Slapukų politika</a>
-    <span class="sep">•</span>
-    <a class="footer-link" href="/legal/ai-disclaimer.html" data-sheet>AI atsakomybės ribojimas</a>
-    <span class="sep">•</span>
-    <a class="footer-link" href="/legal/fair-use.html" data-sheet>Sąžiningo naudojimo taisyklės</a>
-
-    <div class="legal-note" style="margin-top:8px;font-size:12px;opacity:.75">
-      <p>AI atsakymai generuojami automatiškai ir gali būti netikslūs – kritinę informaciją patikrinkite.</p>
-      <p>Naudodami paslaugą sutinkate, kad turinys teikiamas „kaip yra“, laikantis mūsų taisyklių.</p>
-    </div>
-  </footer>
-
-  <!-- ===== Cookie bar ===== -->
-  <div id="cookie-bar" role="dialog" aria-live="polite" aria-label="Slapukų pranešimas" style="display:none">
-    <div>
-      Naudojame slapukus paslaugos veikimui ir tobulinimams. Daugiau –
-      <a href="/legal/cookies.html" class="footer-link" data-sheet>Slapukų politikoje</a>.
-    </div>
-    <div class="actions">
-      <button id="cookie-decline" type="button">Atsisakyti</button>
-      <button id="cookie-accept" type="button">Sutinku</button>
-    </div>
-  </div>
-  <script>
-    (function(){
-      const KEY='cookie_choice_v2';
-      const bar=document.getElementById('cookie-bar');
-      const ok = document.getElementById('cookie-accept');
-      const no = document.getElementById('cookie-decline');
-
-      try{
-        const v=localStorage.getItem(KEY);
-        if(!v) bar.style.display='block';
-      }catch(_){ bar.style.display='block'; }
-
-      function setChoice(val){
-        try{ localStorage.setItem(KEY,val); }catch(_){}
-        bar.style.display='none';
-        try{ document.dispatchEvent(new CustomEvent('cookie-preference',{detail:{value:val}})); }catch(_){}
-      }
-
-      ok?.addEventListener('click', ()=> setChoice('allow'));
-      no?.addEventListener('click',  ()=> setChoice('deny'));
-    })();
-  </script>
-
 </body>
 </html>
-
-
