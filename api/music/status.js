@@ -1,7 +1,16 @@
+const allow = (res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+};
+
 module.exports = async (req, res) => {
+  allow(res);
+  if (req.method === 'OPTIONS') return res.status(204).end();
+
   try {
-    const task = String(req.query.task || req.query.task_id || req.query.taskId || '').trim();
-    if (!task) return res.status(200).json({ ok:false, status:'pending', error:'TASK_ID_MISSING' });
+    const task = String(req.query.task || req.query.task_id || req.query.taskId || req.query.id || '').trim();
+    if (!task) return res.status(200).json({ ok:false, error:'TASK_ID_MISSING' });
 
     const SUNO_API_KEY  = process.env.SUNO_API_KEY;
     const SUNO_API_BASE = process.env.SUNO_API_BASE || 'https://api.sunoapi.org/api/v1';
