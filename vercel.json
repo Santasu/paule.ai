@@ -5,14 +5,30 @@
     { "src": "api/**/*.js", "use": "@vercel/node" },
     { "src": "public/**/*", "use": "@vercel/static" }
   ],
+  "headers": [
+    { "source": "/(index.html)?", "headers": [ { "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" } ] },
+    { "source": "/spec/(.*).html", "headers": [ { "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" } ] },
+    { "source": "/api/(.*)", "headers": [
+      { "key": "Cache-Control", "value": "no-store" },
+      { "key": "Pragma", "value": "no-cache" },
+      { "key": "Expires", "value": "0" }
+    ] },
+    { "source": "/public/(.*)", "headers": [ { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" } ] },
+    { "source": "/assets/(.*)", "headers": [ { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" } ] }
+  ],
   "routes": [
     { "src": "^/api/stream$",               "dest": "/api/stream.js" },
     { "src": "^/api/complete$",             "dest": "/api/complete.js" },
     { "src": "^/api/suggest$",              "dest": "/api/suggest.js" },
     { "src": "^/api/models$",               "dest": "/api/models.js" },
     { "src": "^/api/diagnostics$",          "dest": "/api/diagnostics.js" },
+
     { "src": "^/api/library/recent$",       "dest": "/api/library/recent.js" },
-    { "src": "/api/complete",               "dest": "/api/complete.js" },
+
+    { "src": "^/api/chats$",                "dest": "/api/chats/index.js" },
+    { "src": "^/api/chats/([^/]+)/messages$", "dest": "/api/chats/[id]/messages.js" },
+    { "src": "^/api/assets$",               "dest": "/api/assets/index.js" },
+    { "src": "^/api/assets/upload$",        "dest": "/api/assets/upload.js" },
 
     { "src": "^/api/flux/create$",          "dest": "/api/flux/create.js" },
     { "src": "^/api/comic/create$",         "dest": "/api/comic/create.js" },
