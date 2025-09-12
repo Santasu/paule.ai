@@ -1,13 +1,15 @@
-// Suno "suno/cover/generate" – generuoja viršelius pagal muzikinės užduoties taskId
 module.exports = async (req, res) => {
   try {
-    if (req.method !== 'POST') return res.status(405).json({ ok:false, error:'Method Not Allowed' });
+    if (req.method !== 'POST') return res.status(405).json({ ok:false, error:'METHOD_NOT_ALLOWED' });
     const SUNO_API_KEY  = process.env.SUNO_API_KEY;
     const SUNO_API_BASE = process.env.SUNO_API_BASE || 'https://api.sunoapi.org/api/v1';
+    const PUBLIC_URL    = process.env.PUBLIC_URL || process.env.SITE_URL || '';
     if (!SUNO_API_KEY) return res.status(200).json({ ok:false, error:'SUNO_API_KEY missing' });
 
-    const { taskId, callBackUrl } = req.body || {};
+    const taskId = req.body?.taskId;
     if (!taskId) return res.status(200).json({ ok:false, error:'taskId required' });
+    const callBackUrl = req.body?.callBackUrl || (PUBLIC_URL ? `${PUBLIC_URL.replace(/\/+$/,'')}/api/music/callback` : undefined);
+    if (!callBackUrl) return res.status(200).json({ ok:false, error:'callBackUrl missing' });
 
     const r = await fetch(`${SUNO_API_BASE}/suno/cover/generate`, {
       method:'POST',
