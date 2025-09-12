@@ -37,69 +37,7 @@
   <link rel="stylesheet" href="/assets/css/paule.css?v=1.1.7"/>
 
   <!-- Mini UI efektai -->
-  <style>
-    :root {
-      --ring: 0 0 0 3px rgba(99,102,241,.18);
-      --shadow-soft: 0 10px 30px rgba(0,0,0,.08);
-      --chip-bg: rgba(17,24,39,.04);
-      --chip-br: 12px;
-    }
-    body.modal-open { overflow: hidden; }
-
-    /* Topbar */
-    .models-in-topbar .model-pill{
-      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
-      border-radius: 14px; padding:6px 10px; gap:6px;
-    }
-    .models-in-topbar .model-pill.active{ box-shadow: var(--ring); transform: translateY(-1px); }
-
-    /* Chat burbulai */
-    .bubble-card{ transition: box-shadow .12s ease, transform .12s ease; }
-    .bubble-card:hover{ box-shadow: var(--shadow-soft); transform: translateY(-1px); }
-    @keyframes fadeUp { from{opacity:0; transform: translateY(12px);} to{opacity:1; transform:none;} }
-    .message, .errors-wrap{ animation: fadeUp .2s ease both; }
-
-    /* Įvestis – mažesnis išorinis blokas */
-    .input-bar{ padding: 6px 10px 8px; }
-    .input-container{ gap:8px; padding:8px; border-radius:16px; box-shadow: var(--shadow-soft); }
-    .message-input{ min-height:42px; max-height:30vh; }
-    .send-btn{ width:42px; height:42px; }
-    .message-input::placeholder{ opacity:.6; transition: opacity .12s ease; }
-    .message-input:focus::placeholder{ opacity:0; }
-
-    /* Inline sprendimų žetonai – po paskutinio atsakymo */
-    .decision-inline-dock{
-      display:none; gap:8px; flex-wrap:wrap; margin:10px 12px 6px 64px;
-    }
-    .decision-inline-dock.show{ display:flex; }
-    .decision-inline-dock .decision-chip{
-      border-radius: var(--chip-br);
-      background: var(--chip-bg);
-      padding:6px 10px; font-size:.9rem; display:flex; align-items:center; gap:6px;
-      border:1px solid var(--border, #e5e7eb); cursor:pointer;
-      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
-    }
-    .decision-inline-dock .decision-chip:hover{ transform: translateY(-1px); box-shadow: var(--shadow-soft); }
-
-    /* Apačios dideli žetonai paslėpti pagal nutylėjimą */
-    .bottom-section .decision-bar{ display:none; }
-
-    /* Jump mygtukas */
-    .jump-latest{ position:fixed; right:18px; bottom:95px; z-index:30; display:none;
-      padding:10px 12px; border-radius:14px; background:#111827; color:#fff; border:none; box-shadow:var(--shadow-soft);
-    }
-    .jump-latest.show{ display:flex; align-items:center; gap:8px; }
-
-    /* Modal kainoms – platesnis */
-    #modal .modal--sheet{ max-width:min(1600px, 98vw); }
-
-    /* PUKU status */
-    .shield-toast{
-      position:fixed; left:50%; transform:translateX(-50%); bottom:22px; z-index:99999;
-      background:#111827; color:#fff; padding:8px 12px; border-radius:12px; font-size:12px; display:none;
-    }
-    .shield-toast.show{ display:block; }
-  </style>
+  
 </head>
 <body>
 
