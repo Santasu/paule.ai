@@ -17,7 +17,7 @@
   },
 
   "env": {
-    "DATABASE_URL": "@database_url",          // Vercel → Settings → Environment Variables
+    "DATABASE_URL": "@database_url",          
     "NEON_DATABASE_URL": "@database_url"
   },
 
