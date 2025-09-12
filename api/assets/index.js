@@ -1,39 +1,56 @@
-const { q } = require('../../lib/db');
-const { getAuth } = require('../../lib/auth');
-const { json, bad, method, unauthorized } = require('../../lib/http');
-
+// filename: api/assets/index.js
 module.exports = async (req, res) => {
-  const auth = await getAuth(req);
+  const { getSql } = require('../../lib/db-any');
+  const sql = await getSql();
 
+  const userKey = req.headers['x-user-id'] || null; // dev režimas
   if (req.method === 'GET') {
-    if (auth.userId) {
-      const { rows } = await q(
-        'SELECT id, type, url, meta, is_public, created_at FROM assets WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100',
-        [auth.userId]
-      );
-      return json(res, 200, { assets: rows });
+    if (userKey) {
+      const rows = await sql`
+        SELECT id, type, url, meta, is_public, created_at
+        FROM assets
+        WHERE user_id = (SELECT id FROM users WHERE clerk_id = ${String(userKey)})
+        ORDER BY created_at DESC
+        LIMIT 100
+      `;
+      res.setHeader('Cache-Control','no-store');
+      return res.status(200).json({ assets: rows });
     } else {
-      const { rows } = await q(
-        'SELECT id, type, url, meta, created_at FROM assets WHERE is_public=TRUE ORDER BY created_at DESC LIMIT 100'
-      );
-      return json(res, 200, { assets: rows });
+      const rows = await sql`
+        SELECT id, type, url, meta, created_at
+        FROM assets
+        WHERE is_public = TRUE
+        ORDER BY created_at DESC
+        LIMIT 100
+      `;
+      res.setHeader('Cache-Control','no-store');
+      return res.status(200).json({ assets: rows });
     }
   }
 
   if (req.method === 'POST') {
-    if (!auth.userId) return unauthorized(res);
+    if (!userKey) return res.status(401).json({ error: 'Unauthorized' });
     const b = typeof req.body === 'object' && req.body ? req.body : {};
     const type = String(b.type || '');
     const url = String(b.url || '');
+    const meta = b.meta || {};
     const isPublic = !!b.is_public;
-    const meta = b.meta || null;
-    if (!url || !['song','photo','video'].includes(type)) return bad(res, 'type(song|photo|video) + url');
-    const { rows } = await q(
-      'INSERT INTO assets (user_id, type, url, meta, is_public) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-      [auth.userId, type, url, meta, isPublic]
-    );
-    return json(res, 200, rows[0]);
+    if (!['song','photo','video'].includes(type) || !url) {
+      return res.status(400).json({ error: 'Need type(song|photo|video) and url' });
+    }
+
+    // ensure user row
+    await sql`INSERT INTO users (clerk_id) VALUES (${String(userKey)}) ON CONFLICT (clerk_id) DO NOTHING`;
+
+    const rows = await sql`
+      INSERT INTO assets (user_id, type, url, meta, is_public)
+      VALUES ((SELECT id FROM users WHERE clerk_id = ${String(userKey)}), ${type}, ${url}, ${sql.json(meta)}, ${isPublic})
+      RETURNING *
+    `;
+    res.setHeader('Cache-Control','no-store');
+    return res.status(200).json(rows[0]);
   }
 
-  return method(res, ['GET','POST']);
+  res.setHeader('Allow','GET, POST');
+  res.status(405).json({ error: 'Method Not Allowed' });
 };
