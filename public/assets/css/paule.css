@@ -630,5 +630,54 @@ stripe-pricing-table{ display:block; width:100% }
     .typing-dots i:nth-child(2){animation-delay:.15s}
     .typing-dots i:nth-child(3){animation-delay:.3s}
     @keyframes tdot{0%{transform:translateY(0)}50%{transform:translateY(-2px)}100%{transform:translateY(0)}}
+
+/* ================== PAULE PATCH v1.1.6 (įklijuoti į CSS apačią) ================== */
+
+/* 1) Platesnis „sheet“ modalo langas – Stripe planai tilps į vieną eilę */
+#modal.show .modal--sheet{
+  width:auto;
+  max-width:min(1600px, 98vw);
+}
+#modal .modal-sheet-inner{ padding:0; }
+#modal .pricing-section{
+  margin:0;
+  padding:18px 20px;
+  border:0;
+  box-shadow:none;
+}
+
+/* 2) Stripe pricing table – pilnas plotis konteineryje */
+stripe-pricing-table{ display:block; width:100%; }
+stripe-pricing-table iframe{
+  width:100% !important;
+  height:780px !important;    /* jei reikia – pasireguliuok */
+  border:0;
+  overflow:hidden;
+}
+
+/* 3) Burbulų tekstas – tvarkingas laužymas (kad niekas “neišlįstų”) */
+.msg-content{
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* 4) Modelių „pill“ dėžutės – tvarkingas persilankstymas */
+.models-in-topbar{ flex-wrap:wrap; }
+.models-in-topbar .model-pill{ min-width: var(--model-box); }
+
+/* 5) „Į naujausią“ mygtukas – virš siuntimo zonos */
+.jump-latest{ bottom: calc(120px + 1.2cm); }
+
+/* 6) Tamsios temos smulkmenos – kopijavimo mygtukas aiškiai matomas */
+[data-theme="dark"] .bubble-card .copy-btn{
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+/* 7) Jei į modalą įdėtum kitų gridų – nulinam nereikalingus tarpus */
+#modal .welcome-grid{ margin:0 auto; }
+
+
   
 
