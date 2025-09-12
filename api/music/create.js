@@ -1,7 +1,14 @@
-module.exports = async (req, res) => {
-  try {
-    if (req.method !== 'POST') return res.status(405).json({ ok:false, error:'METHOD_NOT_ALLOWED' });
+const allow = (res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+};
 
+module.exports = async (req, res) => {
+  allow(res);
+  if (req.method === 'OPTIONS') return res.status(204).end();
+
+  try {
     const SUNO_API_KEY  = process.env.SUNO_API_KEY;
     const SUNO_API_BASE = process.env.SUNO_API_BASE || 'https://api.sunoapi.org/api/v1';
 
@@ -9,7 +16,27 @@ module.exports = async (req, res) => {
     const host  = req.headers['x-forwarded-host'] || req.headers['host'] || '';
     const base  = (process.env.PUBLIC_URL || process.env.SITE_URL || (host ? `${proto}://${host}` : '')).replace(/\/+$/,'');
 
-    const b = req.body || {};
+    const readBody = () => {
+      if (req.method === 'POST') return req.body || {};
+      // GET „debug/compat“ – leidžiam paramus per query
+      const q = req.query || {};
+      return {
+        prompt: q.prompt,
+        title: q.title,
+        style: q.style || q.genre,
+        model: q.model,
+        instrumental: String(q.instrumental||'').toLowerCase()==='true',
+        vocalGender: q.vocalGender,
+        negativeTags: q.negativeTags,
+        styleWeight: q.styleWeight ? Number(q.styleWeight) : undefined,
+        weirdnessConstraint: q.weirdnessConstraint ? Number(q.weirdnessConstraint) : undefined,
+        audioWeight: q.audioWeight ? Number(q.audioWeight) : undefined,
+        length: q.length ? Number(q.length) : undefined,
+        callBackUrl: q.callBackUrl
+      };
+    };
+
+    const b = readBody();
     const mapVocal = v => v==='male' ? 'm' : v==='female' ? 'f' : undefined;
     const customMode = b.customMode ?? !!(b.title || b.style || b.genre);
 
@@ -29,6 +56,7 @@ module.exports = async (req, res) => {
       callBackUrl: b.callBackUrl || (base ? `${base}/api/music/callback` : undefined)
     };
 
+    // jei nėra rakto – grąžinam demo task’ą, kad UI neužstrigtų
     if (!SUNO_API_KEY) return res.status(200).json({ ok:true, task_id:`demo-${Date.now()}`, demo:true });
 
     const r = await fetch(`${SUNO_API_BASE}/generate`, {
@@ -39,11 +67,11 @@ module.exports = async (req, res) => {
     const j = await r.json().catch(()=> ({}));
 
     if (!r.ok || j.code !== 200) {
-      return res.status(r.ok ? 200 : r.status).json({ ok:false, error: j.msg || 'Suno generate failed', raw:j });
+      return res.status(200).json({ ok:false, error: j.msg || 'Suno generate failed', raw:j });
     }
 
     return res.status(200).json({ ok:true, task_id: j.data?.taskId || null });
   } catch (e) {
-    return res.status(500).json({ ok:false, error: e?.message || 'music/create error' });
+    return res.status(200).json({ ok:false, error: e?.message || 'music/create error' });
   }
 };
