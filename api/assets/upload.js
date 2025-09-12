@@ -1,54 +1,59 @@
-const Busboy = require('busboy');
-const { getAuth } = require('../../lib/auth');
-const { q } = require('../../lib/db');
-const { json, bad, method } = require('../../lib/http');
-
-// reikalinga Vercel'ui tam, kad necovėltų body automatiškai
-module.exports.config = { api: { bodyParser: false } };
+// filename: api/assets/upload.js
+// Body size iki ~30 MB
+module.exports.config = { api: { bodyParser: { sizeLimit: '30mb' } } };
 
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') return method(res, ['POST']);
-  const auth = await getAuth(req);
-  if (!auth.userId) return json(res, 401, { error: 'Unauthorized' });
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-User-Id');
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return bad(res, 'BLOB_READ_WRITE_TOKEN missing');
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  if (req.method !== 'POST')  return res.status(405).json({ error: 'Method Not Allowed' });
 
-  const bb = Busboy({ headers: req.headers });
-  let filePromise = null, assetType = null, isPublic = false, meta = null;
+  const userKey = req.headers['x-user-id'] || null;
+  if (!userKey) return res.status(401).json({ error: 'Unauthorized' });
 
-  bb.on('field', (name, val) => {
-    if (name === 'type') assetType = val;
-    if (name === 'is_public') isPublic = val === 'true' || val === '1';
-    if (name === 'meta') { try { meta = JSON.parse(val); } catch { meta = null; } }
-  });
-
-  bb.on('file', (name, stream, info) => {
-    const filename = info && info.filename ? info.filename : `upload-${Date.now()}`;
-    // dinaminis importas, nes @vercel/blob yra ESM
-    filePromise = (async () => {
-      const { put } = await import('@vercel/blob');
-      return put(filename, stream, {
-        access: 'public',
-        addRandomSuffix: true,
-        token: process.env.BLOB_READ_WRITE_TOKEN
-      });
-    })();
-  });
-
-  bb.on('finish', async () => {
-    try {
-      if (!filePromise || !assetType) return bad(res, 'file + type required');
-      if (!['song','photo','video'].includes(assetType)) return bad(res, 'type must be song|photo|video');
-      const uploaded = await filePromise; // { url, pathname, contentType, ... }
-      const { rows } = await q(
-        'INSERT INTO assets (user_id, type, url, meta, is_public) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-        [auth.userId, assetType, uploaded.url, meta, isPublic]
-      );
-      return json(res, 200, { asset: rows[0] });
-    } catch (e) {
-      return json(res, 500, { error: e && e.message ? e.message : 'Upload error' });
+  try {
+    const { dataUrl, filename, type, is_public, meta } = req.body || {};
+    if (!dataUrl || !/^data:/.test(dataUrl)) {
+      return res.status(400).json({ error: 'Provide dataUrl (base64) and filename' });
     }
-  });
+    if (!['song','photo','video'].includes(String(type || ''))) {
+      return res.status(400).json({ error: 'type must be song|photo|video' });
+    }
 
-  req.pipe(bb);
+    const { put } = require('@vercel/blob');
+    const match = dataUrl.match(/^data:(.+?);base64,(.*)$/);
+    const contentType = match ? match[1] : 'application/octet-stream';
+    const base64 = match ? match[2] : '';
+    const buffer = Buffer.from(base64, 'base64');
+
+    const safeName = (filename || `file-${Date.now()}`).replace(/[^a-z0-9._-]+/gi, '_');
+    const blob = await put(safeName, buffer, {
+      access: is_public ? 'public' : 'private',
+      contentType
+    });
+
+    // DB įrašas
+    const { getSql } = require('../../lib/db-any');
+    const sql = await getSql();
+
+    // ensure user
+    await sql`INSERT INTO users (clerk_id) VALUES (${String(userKey)}) ON CONFLICT (clerk_id) DO NOTHING`;
+
+    const rows = await sql`
+      INSERT INTO assets (user_id, type, url, meta, is_public)
+      VALUES (
+        (SELECT id FROM users WHERE clerk_id = ${String(userKey)}),
+        ${String(type)}, ${blob.url}, ${sql.json(meta || {})}, ${!!is_public}
+      )
+      RETURNING id, type, url, meta, is_public, created_at
+    `;
+
+    res.setHeader('Cache-Control','no-store');
+    return res.status(200).json({ ok: true, blob: blob, asset: rows[0] });
+  } catch (e) {
+    console.error('upload error', e);
+    return res.status(500).json({ error: 'Upload failed' });
+  }
 };
