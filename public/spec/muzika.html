@@ -273,5 +273,74 @@ qs('#go').addEventListener('click', async ()=>{
 
 fetchCredits();
 </script>
+  <script>
+(function(){
+  const $ = (s)=>document.querySelector(s);
+  function setLoader(on){
+    const l1 = document.getElementById('l1');
+    const l2 = document.getElementById('l2');
+    if (l1) l1.hidden = !on;
+    if (l2) l2.hidden = !on;
+  }
+  async function jres(r){ try{return await r.json()}catch(_){ return {ok:false} } }
+
+  // deleguotas paspaudimo gaudymas (veiks net jei mygtukas įterpiamas vėliau)
+  document.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('#go');
+    if (!btn) return;
+
+    try{
+      setLoader(true);
+      const title = ($('#title')?.value||'Daina').trim();
+      const meta  = ($('#meta')?.value||'').trim();
+      const voice = $('#voice')?.value || 'female';
+      const model = $('#model')?.value || 'V3_5';
+      const lang  = $('#lang')?.value || 'lt';
+      let text    = ($('#lyrics')?.value||'').trim();
+
+      if (!text) {
+        const r0 = await fetch('/api/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:'Return ≤180 chars catchy song idea'},{role:'user',content:JSON.stringify({title,meta})}]})});
+        const j0 = await jres(r0);
+        text = (j0.output||'dreamy chorus, melodic hook').slice(0,180);
+      }
+
+      const r = await fetch('/api/music/create',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ title, prompt:text, model, style:meta, instrumental:(voice==='none'), vocalGender:voice, language:lang })
+      });
+      const j = await jres(r);
+      if (!j.ok || !j.task_id) {
+        // atsarginis GET kelias, jei kažkur POST „nepralenda“
+        const q = new URLSearchParams({ title, prompt:text, model, style:meta, instrumental:String(voice==='none'), vocalGender:voice });
+        const r2 = await fetch('/api/music/create?'+q.toString());
+        const j2 = await jres(r2);
+        if (!j2.ok || !j2.task_id){ setLoader(false); console.error('create failed', j, j2); return; }
+        j.task_id = j2.task_id;
+      }
+
+      let tries=0;
+      async function poll(){
+        tries++;
+        const rr = await fetch('/api/music/status?task='+encodeURIComponent(j.task_id));
+        const s  = await jres(rr);
+        if (s.status==='ready'){
+          const a1 = document.getElementById('a1'), c1=document.getElementById('c1'), tt1=document.getElementById('tt1');
+          const t = s.tracks?.[0]; if (t && a1){ a1.src=t.audio_url||t.stream||''; if (c1 && t.image) c1.src=t.image; if (tt1 && t.title) tt1.textContent=t.title; }
+          const t2 = s.tracks?.[1]; const a2 = document.getElementById('a2'), c2=document.getElementById('c2'), tt2=document.getElementById('tt2');
+          if (t2 && a2){ a2.src=t2.audio_url||t2.stream||''; if (c2 && t2.image) c2.src=t2.image; if (tt2 && t2.title) tt2.textContent=t2.title; }
+          setLoader(false); return;
+        }
+        if (s.status==='failed'){ setLoader(false); return; }
+        if (tries<180) setTimeout(poll, 3000); else setLoader(false);
+      }
+      poll();
+    }catch(err){
+      setLoader(false);
+      console.error('music click error', err);
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
