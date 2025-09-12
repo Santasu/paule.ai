@@ -1,109 +1,170 @@
- {
+{
   "version": 2,
   "framework": null,
+  "regions": ["fra1", "arn1"],
+  "cleanUrls": true,
+  "trailingSlash": false,
+
   "builds": [
     { "src": "api/**/*.js", "use": "@vercel/node" },
     { "src": "public/**/*", "use": "@vercel/static" }
   ],
+
+  "functions": {
+    "api/stream.js": { "maxDuration": 300, "memory": 1024 },
+    "api/**.js": { "maxDuration": 60, "memory": 512 }
+  },
+
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "NEON_DATABASE_URL": "@database_url"
+  },
+
+  "headers": [
+    {
+      "source": "/(index.html)?",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/spec/(.*)\\.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "Pragma", "value": "no-cache" },
+        { "key": "Expires", "value": "0" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.(css|js|mjs|svg|png|jpg|jpeg|gif|webp|ico|woff2)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ],
+
   "routes": [
-    { "src": "^/api/stream$",               "dest": "/api/stream.js" },
-    { "src": "^/api/complete$",             "dest": "/api/complete.js" },
-    { "src": "^/api/suggest$",              "dest": "/api/suggest.js" },
-    { "src": "^/api/models$",               "dest": "/api/models.js" },
-    { "src": "^/api/diagnostics$",          "dest": "/api/diagnostics.js" },
-    { "src": "^/api/library/recent$",       "dest": "/api/library/recent.js" },
-    { "src": "/api/complete",               "dest": "/api/complete.js" },
+    { "src": "^/api/stream$", "dest": "/api/stream.js" },
+    { "src": "^/api/complete$", "dest": "/api/complete.js" },
+    { "src": "^/api/suggest$", "dest": "/api/suggest.js" },
+    { "src": "^/api/models$", "dest": "/api/models.js" },
+    { "src": "^/api/diagnostics$", "dest": "/api/diagnostics.js" },
+    { "src": "^/api/ping$", "dest": "/api/ping.js" },
 
-    { "src": "^/api/flux/create$",          "dest": "/api/flux/create.js" },
-    { "src": "^/api/comic/create$",         "dest": "/api/comic/create.js" },
+    { "src": "^/api/library/recent$", "dest": "/api/library/recent.js" },
 
-    { "src": "^/api/runway/image$",         "dest": "/api/runway/image.js" },
+    { "src": "^/api/chats$", "dest": "/api/chats/index.js" },
+    { "src": "^/api/chats/([^/]+)/messages$", "dest": "/api/chats/[id]/messages.js" },
+    { "src": "^/api/assets$", "dest": "/api/assets/index.js" },
+    { "src": "^/api/assets/upload$", "dest": "/api/assets/upload.js" },
+
+    { "src": "^/api/flux/create$", "dest": "/api/flux/create.js" },
+    { "src": "^/api/comic/create$", "dest": "/api/comic/create.js" },
+
+    { "src": "^/api/runway/image$", "dest": "/api/runway/image.js" },
     { "src": "^/api/runway/image-to-video$", "dest": "/api/runway/image.js" },
-    { "src": "^/api/runway/status$",        "dest": "/api/runway/status.js" },
-    { "src": "^/api/runway/ping$",          "dest": "/api/diagnostics.js" },
+    { "src": "^/api/runway/status$", "dest": "/api/runway/status.js" },
+    { "src": "^/api/runway/ping$", "dest": "/api/diagnostics.js" },
 
-    { "src": "^/api/music/create$",         "dest": "/api/music/create.js" },
-    { "src": "^/api/music/status$",         "dest": "/api/music/status.js" },
-    { "src": "^/api/music/extend$",         "dest": "/api/music/extend.js" },
-    { "src": "^/api/music/add-vocals$",     "dest": "/api/music/add-vocals.js" },
+    { "src": "^/api/music/create$", "dest": "/api/music/create.js" },
+    { "src": "^/api/music/status$", "dest": "/api/music/status.js" },
+    { "src": "^/api/music/extend$", "dest": "/api/music/extend.js" },
+    { "src": "^/api/music/add-vocals$", "dest": "/api/music/add-vocals.js" },
     { "src": "^/api/music/add-instrumental$", "dest": "/api/music/add-instrumental.js" },
-    { "src": "^/api/music/upload-cover$",   "dest": "/api/music/upload-cover.js" },
+    { "src": "^/api/music/upload-cover$", "dest": "/api/music/upload-cover.js" },
     { "src": "^/api/music/cover-generate$", "dest": "/api/music/cover-generate.js" },
-    { "src": "^/api/music/cover-status$",   "dest": "/api/music/cover-status.js" },
-    { "src": "^/api/music/credits$",        "dest": "/api/music/credits.js" },
-    { "src": "^/api/music/callback$",       "dest": "/api/music/callback.js" },
+    { "src": "^/api/music/cover-status$", "dest": "/api/music/cover-status.js" },
+    { "src": "^/api/music/credits$", "dest": "/api/music/credits.js" },
+    { "src": "^/api/music/callback$", "dest": "/api/music/callback.js" },
 
-    { "src": "^/api/clerk/pk$",             "dest": "/api/clerk/pk.js" },
+    { "src": "^/api/clerk/pk$", "dest": "/api/clerk/pk.js" },
 
-    { "src": "^/api/paule/v1/stream$",        "dest": "/api/stream.js" },
-    { "src": "^/api/paule/v1/complete$",      "dest": "/api/complete.js" },
-    { "src": "^/api/paule/v1/suggest$",       "dest": "/api/suggest.js" },
-    { "src": "^/api/paule/v1/models$",        "dest": "/api/models.js" },
-    { "src": "^/api/paule/v1/diagnostics$",   "dest": "/api/diagnostics.js" },
-    { "src": "^/api/paule/v1/flux/create$",   "dest": "/api/flux/create.js" },
-    { "src": "^/api/paule/v1/comic/create$",  "dest": "/api/comic/create.js" },
-    { "src": "^/api/paule/v1/runway/image$",  "dest": "/api/runway/image.js" },
+    { "src": "^/api/paule/v1/stream$", "dest": "/api/stream.js" },
+    { "src": "^/api/paule/v1/complete$", "dest": "/api/complete.js" },
+    { "src": "^/api/paule/v1/suggest$", "dest": "/api/suggest.js" },
+    { "src": "^/api/paule/v1/models$", "dest": "/api/models.js" },
+    { "src": "^/api/paule/v1/diagnostics$", "dest": "/api/diagnostics.js" },
+    { "src": "^/api/paule/v1/flux/create$", "dest": "/api/flux/create.js" },
+    { "src": "^/api/paule/v1/comic/create$", "dest": "/api/comic/create.js" },
+    { "src": "^/api/paule/v1/runway/image$", "dest": "/api/runway/image.js" },
     { "src": "^/api/paule/v1/runway/status$", "dest": "/api/runway/status.js" },
 
-    { "src": "^/api/paule/v1/music/create$",       "dest": "/api/music/create.js" },
-    { "src": "^/api/paule/v1/music/status$",       "dest": "/api/music/status.js" },
-    { "src": "^/api/paule/v1/music/extend$",       "dest": "/api/music/extend.js" },
-    { "src": "^/api/paule/v1/music/add-vocals$",   "dest": "/api/music/add-vocals.js" },
+    { "src": "^/api/paule/v1/music/create$", "dest": "/api/music/create.js" },
+    { "src": "^/api/paule/v1/music/status$", "dest": "/api/music/status.js" },
+    { "src": "^/api/paule/v1/music/extend$", "dest": "/api/music/extend.js" },
+    { "src": "^/api/paule/v1/music/add-vocals$", "dest": "/api/music/add-vocals.js" },
     { "src": "^/api/paule/v1/music/add-instrumental$", "dest": "/api/music/add-instrumental.js" },
     { "src": "^/api/paule/v1/music/upload-cover$", "dest": "/api/music/upload-cover.js" },
     { "src": "^/api/paule/v1/music/cover-generate$", "dest": "/api/music/cover-generate.js" },
     { "src": "^/api/paule/v1/music/cover-status$", "dest": "/api/music/cover-status.js" },
-    { "src": "^/api/paule/v1/music/credits$",      "dest": "/api/music/credits.js" },
-    { "src": "^/api/paule/v1/music/callback$",     "dest": "/api/music/callback.js" },
+    { "src": "^/api/paule/v1/music/credits$", "dest": "/api/music/credits.js" },
+    { "src": "^/api/paule/v1/music/callback$", "dest": "/api/music/callback.js" },
 
-    { "src": "^/wp-json/paule/v1/stream$",        "dest": "/api/stream.js" },
-    { "src": "^/wp-json/paule/v1/complete$",      "dest": "/api/complete.js" },
-    { "src": "^/wp-json/paule/v1/suggest$",       "dest": "/api/suggest.js" },
-    { "src": "^/wp-json/paule/v1/models$",        "dest": "/api/models.js" },
-    { "src": "^/wp-json/paule/v1/diagnostics$",   "dest": "/api/diagnostics.js" },
-    { "src": "^/wp-json/paule/v1/flux/create$",   "dest": "/api/flux/create.js" },
-    { "src": "^/wp-json/paule/v1/comic/create$",  "dest": "/api/comic/create.js" },
-    { "src": "^/wp-json/paule/v1/runway/image$",  "dest": "/api/runway/image.js" },
+    { "src": "^/wp-json/paule/v1/stream$", "dest": "/api/stream.js" },
+    { "src": "^/wp-json/paule/v1/complete$", "dest": "/api/complete.js" },
+    { "src": "^/wp-json/paule/v1/suggest$", "dest": "/api/suggest.js" },
+    { "src": "^/wp-json/paule/v1/models$", "dest": "/api/models.js" },
+    { "src": "^/wp-json/paule/v1/diagnostics$", "dest": "/api/diagnostics.js" },
+    { "src": "^/wp-json/paule/v1/flux/create$", "dest": "/api/flux/create.js" },
+    { "src": "^/wp-json/paule/v1/comic/create$", "dest": "/api/comic/create.js" },
+    { "src": "^/wp-json/paule/v1/runway/image$", "dest": "/api/runway/image.js" },
     { "src": "^/wp-json/paule/v1/runway/status$", "dest": "/api/runway/status.js" },
 
-    { "src": "^/wp-json/paule/v1/music/create$",       "dest": "/api/music/create.js" },
-    { "src": "^/wp-json/paule/v1/music/status$",       "dest": "/api/music/status.js" },
-    { "src": "^/wp-json/paule/v1/music/extend$",       "dest": "/api/music/extend.js" },
-    { "src": "^/wp-json/paule/v1/music/add-vocals$",   "dest": "/api/music/add-vocals.js" },
+    { "src": "^/wp-json/paule/v1/music/create$", "dest": "/api/music/create.js" },
+    { "src": "^/wp-json/paule/v1/music/status$", "dest": "/api/music/status.js" },
+    { "src": "^/wp-json/paule/v1/music/extend$", "dest": "/api/music/extend.js" },
+    { "src": "^/wp-json/paule/v1/music/add-vocals$", "dest": "/api/music/add-vocals.js" },
     { "src": "^/wp-json/paule/v1/music/add-instrumental$", "dest": "/api/music/add-instrumental.js" },
     { "src": "^/wp-json/paule/v1/music/upload-cover$", "dest": "/api/music/upload-cover.js" },
     { "src": "^/wp-json/paule/v1/music/cover-generate$", "dest": "/api/music/cover-generate.js" },
     { "src": "^/wp-json/paule/v1/music/cover-status$", "dest": "/api/music/cover-status.js" },
-    { "src": "^/wp-json/paule/v1/music/credits$",      "dest": "/api/music/credits.js" },
-    { "src": "^/wp-json/paule/v1/music/callback$",     "dest": "/api/music/callback.js" },
+    { "src": "^/wp-json/paule/v1/music/credits$", "dest": "/api/music/credits.js" },
+    { "src": "^/wp-json/paule/v1/music/callback$", "dest": "/api/music/callback.js" },
 
-    { "src": "^/wp-json/augam/v1/stream$",        "dest": "/api/stream.js" },
-    { "src": "^/wp-json/augam/v1/complete$",      "dest": "/api/complete.js" },
-    { "src": "^/wp-json/augam/v1/suggest$",       "dest": "/api/suggest.js" },
-    { "src": "^/wp-json/augam/v1/models$",        "dest": "/api/models.js" },
-    { "src": "^/wp-json/augam/v1/diagnostics$",   "dest": "/api/diagnostics.js" },
-    { "src": "^/wp-json/augam/v1/flux/create$",   "dest": "/api/flux/create.js" },
-    { "src": "^/wp-json/augam/v1/comic/create$",  "dest": "/api/comic/create.js" },
-    { "src": "^/wp-json/augam/v1/runway/image$",  "dest": "/api/runway/image.js" },
+    { "src": "^/wp-json/augam/v1/stream$", "dest": "/api/stream.js" },
+    { "src": "^/wp-json/augam/v1/complete$", "dest": "/api/complete.js" },
+    { "src": "^/wp-json/augam/v1/suggest$", "dest": "/api/suggest.js" },
+    { "src": "^/wp-json/augam/v1/models$", "dest": "/api/models.js" },
+    { "src": "^/wp-json/augam/v1/diagnostics$", "dest": "/api/diagnostics.js" },
+    { "src": "^/wp-json/augam/v1/flux/create$", "dest": "/api/flux/create.js" },
+    { "src": "^/wp-json/augam/v1/comic/create$", "dest": "/api/comic/create.js" },
+    { "src": "^/wp-json/augam/v1/runway/image$", "dest": "/api/runway/image.js" },
     { "src": "^/wp-json/augam/v1/runway/image-to-video$", "dest": "/api/runway/image.js" },
     { "src": "^/wp-json/augam/v1/runway/status$", "dest": "/api/runway/status.js" },
-    { "src": "^/wp-json/augam/v1/runway/ping$",   "dest": "/api/diagnostics.js" },
+    { "src": "^/wp-json/augam/v1/runway/ping$", "dest": "/api/diagnostics.js" },
 
-    { "src": "^/wp-json/augam/v1/music/create$",       "dest": "/api/music/create.js" },
-    { "src": "^/wp-json/augam/v1/music/status$",       "dest": "/api/music/status.js" },
-    { "src": "^/wp-json/augam/v1/music/extend$",       "dest": "/api/music/extend.js" },
-    { "src": "^/wp-json/augam/v1/music/add-vocals$",   "dest": "/api/music/add-vocals.js" },
+    { "src": "^/wp-json/augam/v1/music/create$", "dest": "/api/music/create.js" },
+    { "src": "^/wp-json/augam/v1/music/status$", "dest": "/api/music/status.js" },
+    { "src": "^/wp-json/augam/v1/music/extend$", "dest": "/api/music/extend.js" },
+    { "src": "^/wp-json/augam/v1/music/add-vocals$", "dest": "/api/music/add-vocals.js" },
     { "src": "^/wp-json/augam/v1/music/add-instrumental$", "dest": "/api/music/add-instrumental.js" },
     { "src": "^/wp-json/augam/v1/music/upload-cover$", "dest": "/api/music/upload-cover.js" },
     { "src": "^/wp-json/augam/v1/music/cover-generate$", "dest": "/api/music/cover-generate.js" },
     { "src": "^/wp-json/augam/v1/music/cover-status$", "dest": "/api/music/cover-status.js" },
-    { "src": "^/wp-json/augam/v1/music/credits$",      "dest": "/api/music/credits.js" },
-    { "src": "^/wp-json/augam/v1/music/callback$",     "dest": "/api/music/callback.js" },
+    { "src": "^/wp-json/augam/v1/music/credits$", "dest": "/api/music/credits.js" },
+    { "src": "^/wp-json/augam/v1/music/callback$", "dest": "/api/music/callback.js" },
 
-    { "src": "^/wp-json$",                   "dest": "/api/diagnostics.js" },
+    { "src": "^/wp-json$", "dest": "/api/diagnostics.js" },
 
-    { "src": "^/$",                 "dest": "/public/index.html" },
-    { "src": "^(?!/api)(.*)$",      "dest": "/public$1" }
+    { "src": "^/$", "dest": "/public/index.html" },
+    { "src": "^(?!/api)(.*)$", "dest": "/public$1" }
   ]
 }
-
