@@ -4,8 +4,14 @@
   "version": "1.0.0",
   "description": "Paule on Vercel",
   "engines": { "node": "22.x" },
+  "type": "commonjs",
   "scripts": {
     "dev": "vercel dev",
     "build": "echo \"no build step\""
   },
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.1",
+    "@vercel/blob": "^0.23.2"
+  }
+}
