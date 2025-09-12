@@ -1,20 +1,11 @@
 {
-  "name": "paule-ai-backend",
+  "name": "paule.ai",
   "private": true,
-  "type": "module",
+  "version": "1.0.0",
+  "description": "Paule on Vercel",
+  "engines": { "node": "22.x" },
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'Vercel builds functions automatically'",
-    "db:migrate": "psql $DATABASE_URL -f db/schema.sql",
-    "db:seed": "node scripts/seed.js"
+    "build": "echo \"no build step\""
   },
-  "dependencies": {
-    "@clerk/backend": "^1.3.2",
-    "@vercel/blob": "^0.20.2",
-    "@vercel/node": "^3.2.17",
-    "busboy": "^1.6.0",
-    "pg": "^8.12.0",
-    "uuid": "^9.0.1",
-    "zod": "^3.23.8"
-  }
-}
+  "license": "UNLICENSED"
